@@ -11,7 +11,13 @@ def valid_dicts(root: Path | None = None) -> tuple[dict, dict, dict, dict]:
     return (
         {"name": "finite_exact_smoke", "seed": 20260808},
         {"experiment": "finite_exact", "retained_interaction_order": 2},
-        {"dtype": "float64", "atol": 1e-10, "rtol": 1e-9},
+        {
+            "dtype": "float64",
+            "atol": 1e-10,
+            "rtol": 1e-9,
+            "min_spd_rcond": 1e-12,
+            "max_frame_condition": 1.0e6,
+        },
         {
             "root": str(root or Path("artifacts")),
             "collect_diagnostics": True,
@@ -61,6 +67,42 @@ def test_invalid_config_has_no_filesystem_side_effect(tmp_path: Path):
         ("numerics", "dtype", "float32", "dtype must be 'float64'"),
         ("numerics", "atol", 0.0, "atol must be a positive finite float"),
         (
+            "numerics",
+            "min_spd_rcond",
+            0.0,
+            r"min_spd_rcond must be a finite float in \(0, 1\]",
+        ),
+        (
+            "numerics",
+            "min_spd_rcond",
+            2.0,
+            r"min_spd_rcond must be a finite float in \(0, 1\]",
+        ),
+        (
+            "numerics",
+            "min_spd_rcond",
+            "1e-12",
+            r"min_spd_rcond must be a finite float in \(0, 1\]",
+        ),
+        (
+            "numerics",
+            "max_frame_condition",
+            1,
+            "max_frame_condition must be a finite float at least 1",
+        ),
+        (
+            "numerics",
+            "max_frame_condition",
+            None,
+            "max_frame_condition must be a finite float at least 1",
+        ),
+        (
+            "numerics",
+            "max_frame_condition",
+            float("inf"),
+            "max_frame_condition must be a finite float at least 1",
+        ),
+        (
             "output",
             "collect_diagnostics",
             1,
@@ -84,5 +126,7 @@ def test_resolved_config_is_frozen_and_normalizes_output_path(tmp_path: Path):
     config = ExperimentConfig.from_dicts(run, theory, numerics, output)
 
     assert config.output.root == tmp_path / "out"
+    assert config.numerics.min_spd_rcond == 1e-12
+    assert config.numerics.max_frame_condition == 1.0e6
     with pytest.raises(AttributeError):
         config.run.seed = 1  # type: ignore[misc]

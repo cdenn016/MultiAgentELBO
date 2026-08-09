@@ -31,6 +31,8 @@ class NumericsConfig:
     dtype: Literal["float64"]
     atol: float
     rtol: float
+    min_spd_rcond: float = 1e-12
+    max_frame_condition: float = 1.0e6
 
 
 @dataclass(frozen=True)
@@ -60,7 +62,17 @@ class ExperimentConfig:
         _require_exact_keys(
             theory, "theory", {"experiment", "retained_interaction_order"}
         )
-        _require_exact_keys(numerics, "numerics", {"dtype", "atol", "rtol"})
+        _require_exact_keys(
+            numerics,
+            "numerics",
+            {
+                "dtype",
+                "atol",
+                "rtol",
+                "min_spd_rcond",
+                "max_frame_condition",
+            },
+        )
         _require_exact_keys(
             output,
             "output",
@@ -94,6 +106,20 @@ class ExperimentConfig:
             raise ConfigError("dtype must be 'float64'")
         atol = _require_positive_float(numerics["atol"], "atol")
         rtol = _require_positive_float(numerics["rtol"], "rtol")
+        min_spd_rcond = _require_bounded_float(
+            numerics["min_spd_rcond"],
+            "min_spd_rcond",
+            minimum=0.0,
+            maximum=1.0,
+            minimum_inclusive=False,
+        )
+        max_frame_condition = _require_bounded_float(
+            numerics["max_frame_condition"],
+            "max_frame_condition",
+            minimum=1.0,
+            maximum=None,
+            minimum_inclusive=True,
+        )
 
         root_value = output["root"]
         if not isinstance(root_value, (str, Path)):
@@ -110,7 +136,13 @@ class ExperimentConfig:
                 experiment=experiment,
                 retained_interaction_order=retained_interaction_order,
             ),
-            numerics=NumericsConfig(dtype=dtype, atol=atol, rtol=rtol),
+            numerics=NumericsConfig(
+                dtype=dtype,
+                atol=atol,
+                rtol=rtol,
+                min_spd_rcond=min_spd_rcond,
+                max_frame_condition=max_frame_condition,
+            ),
             output=OutputConfig(
                 root=root,
                 collect_diagnostics=collect_diagnostics,
@@ -159,6 +191,28 @@ def _require_int(value: object, field: str) -> int:
 def _require_positive_float(value: object, field: str) -> float:
     if type(value) is not float or not math.isfinite(value) or value <= 0.0:
         raise ConfigError(f"{field} must be a positive finite float")
+    return value
+
+
+def _require_bounded_float(
+    value: object,
+    field: str,
+    *,
+    minimum: float,
+    maximum: float | None,
+    minimum_inclusive: bool,
+) -> float:
+    valid_type_and_finite = type(value) is float and math.isfinite(value)
+    valid_minimum = valid_type_and_finite and (
+        value >= minimum if minimum_inclusive else value > minimum
+    )
+    valid_maximum = valid_type_and_finite and (
+        maximum is None or value <= maximum
+    )
+    if not valid_minimum or not valid_maximum:
+        if maximum is not None:
+            raise ConfigError(f"{field} must be a finite float in (0, 1]")
+        raise ConfigError(f"{field} must be a finite float at least 1")
     return value
 
 
