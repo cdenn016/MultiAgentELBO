@@ -45,6 +45,22 @@ def test_measure_pair_rejects_evidence_outside_reference_support():
         MeasurePair(reference, evidence)
 
 
+def test_measure_pair_requires_a_probability_reference_at_runtime():
+    reference = FiniteMeasure(("x", "y"), (0.5, 0.5), NUMERICS)
+    evidence = FiniteMeasure(("x", "y"), (0.2, 0.3), NUMERICS)
+
+    with pytest.raises(TypeError, match="reference must be a ProbabilityMeasure"):
+        MeasurePair(reference, evidence)  # type: ignore[arg-type]
+
+
+def test_measure_pair_rejects_equal_sets_in_different_label_order():
+    reference = ProbabilityMeasure(("x", "y"), (0.5, 0.5), NUMERICS)
+    evidence = FiniteMeasure(("y", "x"), (0.2, 0.3), NUMERICS)
+
+    with pytest.raises(ValueError, match="labels must match"):
+        MeasurePair(reference, evidence)
+
+
 def test_non_row_stochastic_kernel_is_rejected():
     with pytest.raises(ValueError, match="row sums"):
         MarkovKernel(
@@ -53,6 +69,22 @@ def test_non_row_stochastic_kernel_is_rejected():
             ((0.5, 0.5), (0.7, 0.7)),
             NUMERICS,
         )
+
+
+@pytest.mark.parametrize("entry", [np.nan, -0.1])
+def test_nonfinite_or_negative_kernel_entry_is_rejected(entry: float):
+    with pytest.raises(ValueError, match="finite nonnegative"):
+        MarkovKernel(
+            ("x", "y"),
+            ("A", "B"),
+            ((entry, 1.0), (0.0, 1.0)),
+            NUMERICS,
+        )
+
+
+def test_probability_measure_rejects_nonunit_total_mass():
+    with pytest.raises(ValueError, match="sum to one"):
+        ProbabilityMeasure(("x", "y"), (0.45, 0.45), NUMERICS)
 
 
 def test_posterior_normalizes_positive_evidence_submeasure_and_refuses_zero_evidence():

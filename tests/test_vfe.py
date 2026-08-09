@@ -15,6 +15,7 @@ from multiagent_elbo.finite.measures import (
 from multiagent_elbo.finite.vfe import (
     block_update_decomposition,
     free_energy,
+    kl_divergence,
     vfe_channel_decomposition,
 )
 
@@ -76,6 +77,38 @@ def test_recoverable_channel_has_zero_conditional_kl_and_ordinary_residual():
     assert result.residual == pytest.approx(0.0, abs=1e-12)
 
 
+def test_kl_with_smallest_positive_subnormal_support_is_finite():
+    tiny = np.nextafter(0.0, 1.0)
+    q = ProbabilityMeasure(("rare", "other"), (1.0, 0.0), NUMERICS)
+    p = ProbabilityMeasure(("rare", "other"), (tiny, 1.0), NUMERICS)
+    pair = MeasurePair(p, FiniteMeasure(p.labels, p.masses, NUMERICS))
+    identity = MarkovKernel(p.labels, p.labels, np.eye(2), NUMERICS)
+
+    divergence = kl_divergence(q, p)
+    result = vfe_channel_decomposition(q, pair, identity)
+
+    assert p.total_mass == 1.0
+    assert p.masses[0] == tiny
+    assert divergence == pytest.approx(-math.log(tiny))
+    assert math.isfinite(divergence)
+    assert math.isfinite(result.fine_vfe)
+    assert result.offending_state is None
+
+
+@pytest.mark.parametrize("invalid_argument", ["q", "p"])
+def test_kl_requires_probability_measures_at_runtime(invalid_argument: str):
+    probability = ProbabilityMeasure(("x", "y"), (0.5, 0.5), NUMERICS)
+    merely_finite = FiniteMeasure(("x", "y"), (0.5, 0.5), NUMERICS)
+    q, p = (
+        (merely_finite, probability)
+        if invalid_argument == "q"
+        else (probability, merely_finite)
+    )
+
+    with pytest.raises(TypeError, match=f"{invalid_argument} must be a ProbabilityMeasure"):
+        kl_divergence(q, p)  # type: ignore[arg-type]
+
+
 def test_block_update_matches_collective_vfe_difference_with_fixed_outside_marginal():
     posterior = np.array([[0.10, 0.20], [0.30, 0.40]])
     q_before = np.array([[0.21, 0.13], [0.14, 0.52]])
@@ -107,3 +140,38 @@ def test_block_update_requires_exactly_equal_outside_marginals():
 
     with pytest.raises(ValueError, match="outside marginals"):
         block_update_decomposition(posterior, q_before, q_after, block_axes=(0,))
+
+
+def test_block_update_supports_a_nonleading_block_axis():
+    posterior = np.array([[0.10, 0.20], [0.30, 0.40]]).T
+    q_before = np.array([[0.21, 0.13], [0.14, 0.52]]).T
+    q_after = np.array([[0.14, 0.325], [0.21, 0.325]]).T
+
+    result = block_update_decomposition(posterior, q_before, q_after, block_axes=(1,))
+
+    assert result.local_difference == pytest.approx(-0.06702325206172067)
+    assert result.collective_difference == pytest.approx(result.local_difference)
+    assert result.residual == pytest.approx(0.0, abs=1e-12)
+
+
+def test_block_update_supports_multiple_noncontiguous_block_axes():
+    def table_from_block_outside(rows: list[list[float]]) -> np.ndarray:
+        return np.asarray(rows).reshape(2, 2, 2).transpose(0, 2, 1)
+
+    posterior = table_from_block_outside(
+        [[0.125, 0.0625], [0.125, 0.125], [0.125, 0.125], [0.125, 0.1875]]
+    )
+    q_before = table_from_block_outside(
+        [[0.125, 0.125], [0.0625, 0.125], [0.125, 0.125], [0.0625, 0.25]]
+    )
+    q_after = table_from_block_outside(
+        [[0.0625, 0.25], [0.125, 0.125], [0.0625, 0.125], [0.125, 0.125]]
+    )
+
+    result = block_update_decomposition(
+        posterior, q_before, q_after, block_axes=(0, 2)
+    )
+
+    assert result.outside_marginal.tolist() == pytest.approx([0.375, 0.625])
+    assert result.collective_difference == pytest.approx(result.local_difference)
+    assert result.residual == pytest.approx(0.0, abs=1e-12)

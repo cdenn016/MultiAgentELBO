@@ -38,11 +38,16 @@ def _kl_arrays(q: np.ndarray, p: np.ndarray) -> tuple[float, int | None]:
     if locations.size:
         return math.inf, int(locations[0])
     positive_q = q > 0.0
-    return float(np.sum(q[positive_q] * np.log(q[positive_q] / p[positive_q]))), None
+    log_ratio = np.log(q[positive_q]) - np.log(p[positive_q])
+    return float(np.sum(q[positive_q] * log_ratio)), None
 
 
 def kl_divergence(q: ProbabilityMeasure, p: ProbabilityMeasure) -> float:
     """Return KL(q || p), as infinity when q is outside p's support."""
+    if not isinstance(q, ProbabilityMeasure):
+        raise TypeError("q must be a ProbabilityMeasure")
+    if not isinstance(p, ProbabilityMeasure):
+        raise TypeError("p must be a ProbabilityMeasure")
     if q.labels != p.labels:
         raise ValueError("KL measures must have matching labels")
     value, _ = _kl_arrays(q.masses, p.masses)

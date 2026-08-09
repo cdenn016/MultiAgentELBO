@@ -116,6 +116,8 @@ class MeasurePair:
     evidence_measure: FiniteMeasure
 
     def __post_init__(self) -> None:
+        if not isinstance(self.reference, ProbabilityMeasure):
+            raise TypeError("reference must be a ProbabilityMeasure")
         if self.reference.labels != self.evidence_measure.labels:
             raise ValueError("reference and evidence labels must match")
         outside_support = (self.evidence_measure.masses > 0.0) & (
