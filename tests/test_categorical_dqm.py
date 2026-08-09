@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import warnings
 
 import numpy as np
 import pytest
@@ -126,6 +127,56 @@ def test_centered_pushed_difference_matches_hand_derived_conditional_score():
         [[7.0 / 15.0, -1.0 / 2.0], [-1.0 / 3.0, 5.0 / 14.0]]
     )
     assert np.max(np.abs(finite_difference - expected)) < 1.0e-8
+
+
+def test_centered_fine_difference_avoids_overflowing_doubled_step():
+    family = CategoricalExponentialFamily(
+        ("x0", "x1"),
+        (0.0, 0.0),
+        ((1.0e-308,), (-1.0e-308,)),
+        NUMERICS,
+    )
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        finite_difference = centered_log_probability_finite_difference(
+            family, (0.0,), 1.0e308
+        )
+
+    np.testing.assert_allclose(
+        finite_difference,
+        [[1.0e-308], [-1.0e-308]],
+        rtol=2.0e-15,
+        atol=0.0,
+    )
+
+
+def test_centered_pushed_difference_avoids_overflowing_doubled_step():
+    family = CategoricalExponentialFamily(
+        ("x0", "x1"),
+        (0.0, 0.0),
+        ((1.0e-308,), (-1.0e-308,)),
+        NUMERICS,
+    )
+    swap = MarkovKernel(
+        ("x0", "x1"),
+        ("z0", "z1"),
+        ((0.0, 1.0), (1.0, 0.0)),
+        NUMERICS,
+    )
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        finite_difference = centered_pushed_log_probability_finite_difference(
+            family, (0.0,), swap, 1.0e308
+        )
+
+    np.testing.assert_allclose(
+        finite_difference,
+        [[-1.0e-308], [1.0e-308]],
+        rtol=2.0e-15,
+        atol=0.0,
+    )
 
 
 def test_analysis_matches_hand_derived_fisher_channel_identity():

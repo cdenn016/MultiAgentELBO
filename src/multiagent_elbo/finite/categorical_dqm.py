@@ -15,6 +15,7 @@ from .measures import MarkovKernel, ProbabilityMeasure
 
 FamilyDqmScope = Literal["finite_positive_smooth_exponential_family"]
 FixedChannelScope = Literal["declared_fixed_parameter_independent"]
+_MAX_SAFE_HALF_DENOMINATOR_STEP = np.finfo(np.float64).max / 2.0
 
 
 def _readonly(values: np.ndarray) -> np.ndarray:
@@ -123,6 +124,15 @@ def _positive_step(step: float) -> float:
     return value
 
 
+def _centered_quotient(
+    values_plus: np.ndarray, values_minus: np.ndarray, step: float
+) -> np.ndarray:
+    if step <= _MAX_SAFE_HALF_DENOMINATOR_STEP:
+        return (values_plus - values_minus) / (2.0 * step)
+    half_difference = 0.5 * values_plus - 0.5 * values_minus
+    return half_difference / step
+
+
 def _coordinate_perturbations(
     family: CategoricalExponentialFamily,
     theta: Sequence[float],
@@ -165,7 +175,7 @@ def centered_log_probability_finite_difference(
         log_plus = validated_family.log_probabilities(theta_plus)
         log_minus = validated_family.log_probabilities(theta_minus)
         with np.errstate(over="ignore", invalid="ignore"):
-            difference = (log_plus - log_minus) / (2.0 * step_value)
+            difference = _centered_quotient(log_plus, log_minus, step_value)
         if not np.all(np.isfinite(difference)):
             raise ValueError("nonfinite fine finite-difference result")
         result[:, coordinate] = difference
@@ -204,9 +214,9 @@ def centered_pushed_log_probability_finite_difference(
         if np.any(pushed_plus <= 0.0) or np.any(pushed_minus <= 0.0):
             raise ValueError("pushed probabilities must remain strictly positive")
         with np.errstate(divide="ignore", invalid="ignore"):
-            difference = (
-                np.log(pushed_plus) - np.log(pushed_minus)
-            ) / (2.0 * step_value)
+            difference = _centered_quotient(
+                np.log(pushed_plus), np.log(pushed_minus), step_value
+            )
         if not np.all(np.isfinite(difference)):
             raise ValueError("nonfinite pushed finite-difference result")
         result[:, coordinate] = difference
