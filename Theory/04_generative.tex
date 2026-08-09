@@ -1,0 +1,477 @@
+\chapter[The Fixed Normalized Generative Law]{The Fixed Normalized\\Generative Law}
+\label{ch:generative}
+
+This chapter fixes one normalized joint before inference begins. The latent
+channels inherit the two representations of the common principal gauge group
+from \Cref{ch:geometry}. Their local coordinates may be re-expressed
+independently, so the covariance formulas carry a passive product of frame
+changes without introducing a second principal bundle. The linear-Gaussian
+realization is deferred to \Cref{ch:generative-gaussian}.
+
+\section{Parameters, structure, and kernel types}
+\label{sec:gen-typing-setup}
+
+Fix the design $D=\{c_a\}_{a=1}^{M}$, the agent set $V=\{1,\dots,N\}$, and the measurable spaces
+and sigma-finite reference measures of \Cref{ch:probability}.  Structural data
+$X\in\mathsf X$ contain a finite directed acyclic graph $\Gamma=(V,E)$, design incidence, and the
+geometric data.  Numerical parameters that a learning coordinate may move are denoted $\theta$.
+This split is declared rather than derived; all typing requirements below apply to both symbols.
+\status{DEFINITION}\label{def:gen-parameter-split}
+
+Write $\operatorname{pa}(i)$ for the parents of $i$ and
+$\mathcal R=\{r:\operatorname{pa}(r)=\varnothing\}$.  At one design point, declare normalized
+Markov kernels
+\begin{equation}
+P_{\theta,i}^{m}(dm_i\given m_{\operatorname{pa}(i)},X),
+\qquad
+P_{\theta,i}^{k}(dk_i\given k_{\operatorname{pa}(i)},m_i,X),
+\qquad
+P_{\theta,i}^{o}(do_i\given k_i,m_i,X).
+\label{eq:gen-kernels}
+\end{equation}
+At a root, the first factor is a proper model law and the second is a normalized bridge from the
+same-agent model coordinate to the belief coordinate. \status{DEFINITION}
+
+The channels are asymmetric by declaration.  At a root, write
+$K_i(m,A)=P_{\theta,i}^{k}(A\given m,X)$.  This kernel induces a map on laws,
+\begin{equation}
+\widetilde\phi_i(s)(A)=\int_{\mathsf M}K_i(m,A)s(dm).
+\label{eq:gen-root-law-bridge}
+\end{equation}
+Only this pushforward-on-laws map can represent the local associated-bundle morphism
+$\widetilde\Phi:(\mathcal E_m)_c\to(\mathcal E_b)_c$, and only if its contextual and gauge
+compatibility is declared.  At a nonroot, the kernel is indexed by the parent belief coordinate; it
+does not define a map $\mathcal E_m\to\mathcal E_b$ unless that parent is fixed or the domain is
+enlarged.  Otherwise it is a separately declared kernel-valued bridge.  In every case the
+generative dependence runs from model samples to belief samples.  The geometric existence of
+$\Phi:\mathcal E_b\to\mathcal E_m$ neither inserts a reverse factor into
+\eqref{eq:gen-kernels} nor forces cyclic generative dependence.  A model using both directions
+would need a separately normalized joint and cannot infer its factorization from the two
+associated-bundle morphisms.
+
+\section{Iterated composition and densities}
+\label{sec:gen-composition}
+
+Choose a topological ordering $v_1,\dots,v_N$ of $\Gamma$.  The one-design-point law is the
+successive kernel composition
+\begin{equation}
+P_{\theta,a}(do_a,dY_a\given X)
+=\prod_{\ell=1}^{N}
+P_{\theta,v_\ell}^{m}(dm_{v_\ell}\given m_{\operatorname{pa}(v_\ell)},X)
+P_{\theta,v_\ell}^{k}(dk_{v_\ell}\given k_{\operatorname{pa}(v_\ell)},m_{v_\ell},X)
+P_{\theta,v_\ell}^{o}(do_{v_\ell}\given k_{v_\ell},m_{v_\ell},X).
+\label{eq:gen-composition}
+\end{equation}
+The product denotes ordered application of kernels, not multiplication of measures.  For bounded
+measurable $f$, its meaning is
+\begin{equation}
+\int f dP_{\theta,a}
+=\int P_{\theta,v_1}^{m}(dm_{v_1}\given X)
+\int P_{\theta,v_1}^{k}(dk_{v_1}\given m_{v_1},X)
+\int P_{\theta,v_1}^{o}(do_{v_1}\given k_{v_1},m_{v_1},X)
+\cdots f(o_a,y_a).
+\label{eq:gen-iterated-integral}
+\end{equation}
+Every conditioning coordinate has been introduced before its kernel is applied.
+
+\medskip
+\constructionheading{Finite directed law}{cons:gen-finite-directed-law}
+Equation~\eqref{eq:gen-iterated-integral} defines a probability kernel
+$X\mapsto P_{\theta,a}(\cdot\given X)$. \status{ESTABLISHED}
+\medskip
+
+\noindent\emph{Proof.}
+Integrating a bounded measurable function against a probability kernel preserves boundedness and
+measurability in the remaining variables.  Finite iteration therefore defines a measure, and
+$f\equiv1$ gives total mass one.  This is the finite kernel construction underlying directed
+graphical models \citep{Klenke2020,Lauritzen1996,Wainwright2008}. \hfill$\square$
+
+Distinct design points are conditionally independent given $X$:
+\begin{equation}
+P_\theta(do,dY\given X)
+=\bigotimes_{a=1}^{M}P_{\theta,a}(do_a,dY_a\given X).
+\label{eq:gen-design-product}
+\end{equation}
+This modeling hypothesis excludes residual cross-design dependence and is used in the finite-design
+normalization and factor count. \status{HYPOTHESIS}\label{hyp:gen-design-product}
+
+When component kernels have densities relative to the declared component reference measures,
+\begin{equation}
+p_{\theta,a}(o_a,y_a\given X)
+=\prod_{i\in V}
+p_{\theta,i}^{m}(m_i\given m_{\operatorname{pa}(i)},X)
+p_{\theta,i}^{k}(k_i\given k_{\operatorname{pa}(i)},m_i,X)
+p_{\theta,i}^{o}(o_i\given k_i,m_i,X),
+\label{eq:gen-density}
+\end{equation}
+and
+\begin{equation}
+p_\theta(o,y\given X)=\prod_{a=1}^{M}p_{\theta,a}(o_a,y_a\given X),
+\qquad
+P_\theta(do,dY\given X)
+=p_\theta(o,y\given X)\nu_D^O(do)\nu_D^Y(dy).
+\label{eq:gen-design-density}
+\end{equation}
+The measure $P_\theta$ is authoritative; $p_\theta$ denotes only its Radon--Nikodym density.
+
+\section{The typing prohibition}
+\label{sec:gen-typing}
+
+\requirementheading{Typing prohibition}{req:gen-typing-prohibition}
+\emph{Each factor in \eqref{eq:gen-kernels} is a function only of $\theta$, $X$, and its displayed
+parent and same-agent latent coordinates.  No generative kernel may take as an argument the
+recognition kernel $Q_X$, one of its marginals or parameters, or a posterior of the model.}
+\status{DEFINITION}
+
+This requirement defines the fixed-joint construction and proves nothing.  A transition built from
+a live peer recognition marginal is a map from recognition laws to kernels, not a factor of a
+joint fixed before inference.
+
+\propositionheading{No distinguished target}{prop:gen-no-distinguished-target}
+Let $\mathcal Q$ be a nonempty family of recognition laws.  If a factor in
+\eqref{eq:gen-composition} is replaced by a nonconstant $Q$-indexed family, producing a normalized
+joint $P_{\theta,Q}$ for each $Q\in\mathcal Q$, assume at the displayed observation that
+$0<p_{\theta,Q}(o\given X)<\infty$, that
+$Q\ll P_{\theta,Q}(\cdot\given o,X)$, and that the log-density terms defining the ELBO and KL
+divergence are integrable. Then for each fixed $Q$
+\begin{equation}
+\log p_{\theta,Q}(o\given X)
+=\Lelbo(Q;X)
++\KL\left(Q\middle\Vert P_{\theta,Q}(\cdot\given o,X)\right).
+\label{eq:gen-moving-target}
+\end{equation}
+The family itself selects no joint as ``the model.''  Writing
+$e(Q)=\log p_{\theta,Q}(o\given X)$, two members satisfy
+\begin{equation}
+\begin{aligned}
+\Lelbo(Q';X)-\Lelbo(Q;X)
+={}&e(Q')-e(Q)\\
+&-\left[
+\KL\bigl(Q'\Vert P_{\theta,Q'}(\cdot\given o,X)\bigr)
+-\KL\bigl(Q\Vert P_{\theta,Q}(\cdot\given o,X)\bigr)
+\right].
+\end{aligned}
+\label{eq:gen-elbo-difference}
+\end{equation}
+Thus a divergence decrease certifies improvement relative to one fixed reference value exactly
+when the two members lie on one level set of $e$. \status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+Apply the exact ELBO identity to each fixed pair $(Q,P_{\theta,Q})$ and subtract the two
+instances.  No member is distinguished because no selection rule was declared. \hfill$\square$
+
+\propositionheading{The stronger consequences fail}{prop:gen-moving-target-witness}
+Nonconstant dependence of $P_{\theta,Q}$ on $Q$ does not imply that $e$ varies, that no ascent can
+improve a fixed quantity, or that no single member's evidence bounds the family of bounds.
+\status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+Take one binary latent $y$, one binary observation $o$, and
+$Q_\beta=\operatorname{Ber}(\beta)$ for $\beta\in(0,1)$.  Let
+$g(\beta)=\beta/2+1/4$ and define
+\begin{equation}
+P_{\theta,Q_\beta}(o,y\given X)
+=\tfrac12\operatorname{Ber}\bigl(g(\beta)\bigr)(y).
+\label{eq:gen-moving-target-witness}
+\end{equation}
+The joint is normalized and varies injectively with $\beta$, but
+$e(Q_\beta)=\log(1/2)$ for every $\beta$.  The posterior is
+$\operatorname{Ber}(g(\beta))$, so the gap at
+$\beta=9/10,7/10,1/2$ is respectively
+\begin{equation}
+\tfrac9{10}\log\tfrac97+\tfrac1{10}\log\tfrac13
+=0.1163218\ldots,
+\qquad
+\tfrac7{10}\log\tfrac76+\tfrac3{10}\log\tfrac34
+=0.0216009\ldots,
+\qquad
+0.
+\label{eq:gen-moving-target-values}
+\end{equation}
+The bound therefore increases to the fixed evidence, and the member at $\beta=1/2$ has evidence
+equal to the supremum of all these bounds. \hfill$\square$
+
+These are closed-form relative entropies, not numerical experiments.  The development declines the
+three stronger statements as false in this witness, while retaining the absence of a distinguished
+member. \status{NOT-CLAIMED}
+
+The typing prohibition does not ban population coupling through latents inside
+a fixed joint; it bans a generative factor from reading the posterior that the
+joint is supposed to determine. \status{DEFINITION}
+
+\section{Exact normalization}
+\label{sec:gen-normalization}
+
+\propositionheading{Normalization without a partition function}{prop:gen-exact-normalization}
+Under the domination assumptions of \Cref{ch:probability} and
+\Cref{hyp:gen-design-product},
+\begin{equation}
+P_\theta(\mathsf O_D\times\mathsf Y_D\given X)=1,
+\qquad
+\int p_\theta(o,y\given X)\nu_D^O(do)\nu_D^Y(dy)=1
+\label{eq:gen-normalization}
+\end{equation}
+for every admissible $(\theta,X)$, without a global normalizing constant. \status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+At one design point, Tonelli's theorem permits reverse-topological integration.  Integrate each
+observation factor first.  Then remove each nonroot in reverse topological order by integrating its
+normalized belief kernel and then its normalized model kernel; all descendant factors containing
+those coordinates have already disappeared.  Finally integrate each root bridge and proper root
+law.  Every integral contributes one.  The same induction proves the measure statement without
+domination, and \eqref{eq:gen-design-product} multiplies $M$ unit masses. \hfill$\square$
+
+\section{The normalized undirected alternative}
+\label{sec:gen-undirected}
+
+An undirected cyclic model is valid when its global normalizer exists.  For nonnegative node and
+edge potentials, define
+\begin{align}
+\Psi_X(o,y)
+&=\prod_{i\in V}\psi_i(o_i,k_i,m_i;X)
+\prod_{\{i,j\}\in E}\psi_{ij}(k_i,m_i,k_j,m_j;X),
+\label{eq:gen-gibbs-potential}\\
+Z_X
+&=\int\Psi_X(o,y)\nu_D^O(do)\nu_D^Y(dy),
+\qquad 0<Z_X<\infty,
+\label{eq:gen-gibbs-partition}\\
+p_\theta^{\mathrm{Gibbs}}(o,y\given X)
+&=Z_X^{-1}\Psi_X(o,y).
+\label{eq:gen-gibbs-density}
+\end{align}
+Finiteness and positivity of $Z_X$ are model-existence conditions. \status{DEFINITION}
+
+\propositionheading{Local normalization is insufficient}{prop:gen-gibbs-counterexample}
+Normalized node potentials and an everywhere positive, finite, continuous edge potential need not
+give finite $Z_X$. \status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+On $\R^2$ take
+\begin{equation}
+\psi_i(y_i)=(2\pi)^{-1/2}e^{-y_i^2/2},
+\qquad
+\psi_{12}(y_1,y_2)=e^{cy_1y_2},
+\qquad c\geq1.
+\label{eq:gen-gibbs-counterexample}
+\end{equation}
+The quadratic precision is
+\begin{equation}
+\Lambda_{\mathrm{ex}}=\begin{pmatrix}1&-c\\-c&1\end{pmatrix},
+\qquad
+\operatorname{spec}\Lambda_{\mathrm{ex}}=\{1-c,1+c\}.
+\label{eq:gen-gibbs-counterexample-matrix}
+\end{equation}
+In orthonormal sum-and-difference coordinates the integral factorizes, and the factor in the
+$1-c$ direction diverges. \hfill$\square$
+
+The document chooses the directed construction because its normalization does not depend on the
+parameters, not because normalized cyclic Gaussian Markov random fields are invalid.
+
+\section{Covariance under independent channel-frame re-expression}
+\label{sec:gen-gauge}
+
+At each design point $c_a$ and vertex, independently re-express the belief and
+model frame coordinates by
+$g_{a,i}^b=g_i^b(c_a)\in G$ and $g_{a,i}^m=g_i^m(c_a)\in G$.  Define the
+old-to-new represented sample-coordinate maps
+\begin{equation}
+R_{a,i}^b:=\rho_b(g_{a,i}^b):\mathsf K\longrightarrow\mathsf K,
+\qquad
+R_{a,i}^m:=\rho_m(g_{a,i}^m):\mathsf M\longrightarrow\mathsf M.
+\label{eq:gen-rep-actions}
+\end{equation}
+With the passive-section convention of
+\eqref{eq:geo-local-reframing}, this sample-coordinate transformation
+corresponds to the section rechoice
+$u_i^{x\prime}=u_i^x\cdot(g_i^x)^{-1}$, whose value at $c_a$ uses
+$(g_{a,i}^x)^{-1}$.  Thus $R_{a,i}^x$ acts within the
+channel's sample fiber, while the group element $(g_i^x)^{-1}\in G$, not the
+represented operator $(R_{a,i}^x)^{-1}$, multiplies the principal frame on the right.  This
+distinction remains necessary when the representation is not faithful.
+Within a formula for one design point, suppress the index $a$ and write $g_i^x,R_i^x$.
+They act on latent coordinates as $k_i'=R_i^bk_i$ and $m_i'=R_i^mm_i$, while observations are
+gauge inert. \status{DEFINITION}
+
+To permit all such independent coordinate changes, the finite-design structural
+data carry graph-link copies \(\Theta_{a,ij}^x\), one for each design
+incidence. At fixed \(a\) write \(\Theta_{ij}^x\); their discrete vertex
+frame changes are
+\begin{equation}
+h_{a,i}^x:=g_{a,i}^x=g_i^x(c_a),
+\qquad
+a_{a,i}^x:=(h_{a,i}^x)^{-1},
+\label{eq:gen-contextual-frame-change}
+\end{equation}
+in the notation of \eqref{eq:geo-regime-two-gauge-law}.  The contextual coordinate element
+$h_{a,i}^x$, abbreviated $h_i^x$ at one design point, is unrelated to the relative
+principal-frame field $h_i$ defined by \eqref{eq:geo-relative-frame}.  The suppressed
+one-design-point law is
+\begin{equation}
+\Theta_{ij}^{b\prime}=h_i^b\Theta_{ij}^b(h_j^b)^{-1},
+\qquad
+\Theta_{ij}^{m\prime}=h_i^m\Theta_{ij}^m(h_j^m)^{-1}.
+\label{eq:gen-gauge-links}
+\end{equation}
+Consequently the represented links obey
+\begin{equation}
+\rho_x(\Theta_{ij}^{x\prime})
+=R_i^x\rho_x(\Theta_{ij}^x)(R_j^x)^{-1},
+\qquad x\in\{b,m\},
+\label{eq:gen-represented-gauge-links}
+\end{equation}
+and the inverse-orientation rule is preserved.  Equations
+\eqref{eq:geo-regime-two-gauge-law} and \eqref{eq:gen-gauge-links} are therefore the same passive
+law written with mutually inverse rechoice conventions. \status{ESTABLISHED}
+
+If instead one structural link is constrained to be identical at every
+design point, an admissible frame rechoice must preserve that constraint:
+for every two design indices \(a,a'\) and every constrained edge,
+\begin{equation}
+h_{a,i}^x\Theta_{ij}^x(h_{a,j}^x)^{-1}
+=h_{a',i}^x\Theta_{ij}^x(h_{a',j}^x)^{-1}.
+\label{eq:gen-shared-link-admissibility}
+\end{equation}
+\status{DEFINITION}
+
+At one fixed shared-link datum, define the admissible family to be the solution set of
+\eqref{eq:gen-shared-link-admissibility}.  Define the group that acts on the entire constrained
+submodel to be the setwise stabilizer of the shared-link constraint set.  A larger
+transformation law requires an explicitly declared parameter compensation.
+\status{DEFINITION}
+
+\propositionheading{Shared-link admissibility need not be closed under composition}{prop:gen-shared-link-nonclosure}
+For $G=\GL(2,\R)$, two design points, one constrained edge, and
+$\Theta_{ij}=I$, the solution set of \eqref{eq:gen-shared-link-admissibility} is not closed under
+pointwise multiplication. \status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+Let $S=\operatorname{diag}(2,1)$ and
+$C=\begin{psmallmatrix}1&1\\0&1\end{psmallmatrix}$.  The rechoice
+$h_{1,i}=h_{1,j}=I$, $h_{2,i}=h_{2,j}=S$ sends the shared link to $I$ at both design points.
+The rechoice $\widetilde h_{a,i}=C$, $\widetilde h_{a,j}=I$ sends it to $C$ at both points.
+For their pointwise product $h\widetilde h$, the two transformed links are $C$ and
+$SCS^{-1}=\begin{psmallmatrix}1&2\\0&1\end{psmallmatrix}$, respectively, so the product violates
+\eqref{eq:gen-shared-link-admissibility}. \hfill$\square$
+
+Context-independent rechoices form a sufficient subgroup, but the first
+rechoice in the proof shows that they are not necessary. \status{ESTABLISHED}
+
+At the unconstrained finite-design level, declaring the coordinate re-expressions independently
+gives the passive product $\prod_{a,i}(G\times G)$.  If they must arise as values of smooth maps
+$g_i^x:\mathcal C_i\to G$, the realized group is the image of the corresponding evaluation map;
+it equals the displayed product whenever that evaluation map is surjective.  For example, this
+holds for a smooth positive-dimensional base at finitely many distinct design points when $G$ is
+connected, by smooth interpolation in disjoint coordinate neighborhoods.  This product records two independently chosen
+trivializations of associated bundles induced from the same $P$; it is not a second principal
+structure group. The active principal gauge group is $\operatorname{Aut}_G(P)$ over
+$\operatorname{id}_{\mathcal C}$; one automorphism acts on both associated bundles, with local
+functions related by \eqref{eq:geo-diagonal-gauge-functions}.  Its image in the passive product is
+contained in the pointwise $h_i$-twisted diagonal and is contained in the ordinary diagonal in the
+common-frame specialization $h_i=e_G$.  Equality with the corresponding pointwise diagonal holds
+only when the relevant active-gauge evaluation map is surjective; disconnected structure groups
+or global bundle constraints can obstruct that surjectivity.  It is not the principal right
+$G$-action itself. A
+context-independent frame re-expression is the subgroup for which
+$g_{a,i}^x$ does not depend on $a$.
+\status{DEFINITION}\label{def:gen-product-action}
+
+\medskip
+\hypothesisheading{Kernel covariance}{hyp:gen-kernel-covariance}
+The transformed parameters $(\theta',X')$ are declared so that every nonroot factor obeys
+\begin{align}
+P_{\theta',i}^{m}
+\left(\cdot\given R_{\operatorname{pa}(i)}^mm_{\operatorname{pa}(i)},X'\right)
+&=(R_i^m)_{\#}
+P_{\theta,i}^{m}
+\left(\cdot\given m_{\operatorname{pa}(i)},X\right),
+\label{eq:gen-gauge-pushforward-model}\\
+P_{\theta',i}^{k}
+\left(\cdot\given R_{\operatorname{pa}(i)}^bk_{\operatorname{pa}(i)},R_i^mm_i,X'\right)
+&=(R_i^b)_{\#}
+P_{\theta,i}^{k}
+\left(\cdot\given k_{\operatorname{pa}(i)},m_i,X\right),
+\label{eq:gen-gauge-pushforward-state}\\
+P_{\theta',i}^{o}
+\left(\cdot\given R_i^bk_i,R_i^mm_i,X'\right)
+&=P_{\theta,i}^{o}
+\left(\cdot\given k_i,m_i,X\right),
+\label{eq:gen-gauge-pushforward-obs}
+\end{align}
+with the analogous root identities. \status{HYPOTHESIS}
+\medskip
+
+The second identity is the covariance requirement for the model-to-belief sample kernel. At a
+root it implies that the induced law map \eqref{eq:gen-root-law-bridge} obeys
+\eqref{eq:geo-tildephi-gauge-law}; at a nonroot it remains a parent-indexed kernel law unless an
+enlarged cross-bundle domain is declared. Neither route uses $\Phi$.
+
+\propositionheading{Joint measure covariance and evidence invariance}{prop:gen-product-evidence-invariance}
+Let
+$T(o,y)=(o,Ry)$, where
+$R=\bigoplus_{a,i}(R_{a,i}^b\oplus R_{a,i}^m)$.  Under
+\Cref{hyp:gen-kernel-covariance},
+\begin{equation}
+P_{\theta'}(\cdot\given X')=T_{\#}P_\theta(\cdot\given X),
+\label{eq:gen-gauge-joint-pushforward}
+\end{equation}
+as probability measures, without a density or reference-measure hypothesis.  Because $T$ is the
+identity on observations, the observation marginals agree.  Relative to the common observation
+reference measure this gives
+\begin{equation}
+p_{\theta'}(o\given X')=p_\theta(o\given X)
+\quad\text{for }\nu_D^O\text{-almost every }o.
+\label{eq:gen-gauge-evidence-invariance}
+\end{equation}
+If latent densities exist and $R_\#\nu_D^Y\ll\nu_D^Y$, define
+\begin{equation}
+j_R(y'):=\frac{d(R_\#\nu_D^Y)}{d\nu_D^Y}(y').
+\label{eq:gen-gauge-reference-rn}
+\end{equation}
+Then the density statement is
+\begin{equation}
+p_{\theta'}(o,y'\given X')
+=p_\theta(o,R^{-1}y'\given X)j_R(y')
+\quad\text{for }(\nu_D^O\otimes\nu_D^Y)\text{-almost every }(o,y').
+\label{eq:gen-gauge-rn-density}
+\end{equation}
+On the further differentiable equal-dimensional Euclidean tier, when every represented block is
+an invertible linear map and $\nu_D^Y$ is product Lebesgue measure,
+$j_R=|\det R|^{-1}$ and hence
+\begin{equation}
+p_{\theta'}(o,y'\given X')
+=|\det R|^{-1}p_\theta(o,R^{-1}y'\given X).
+\label{eq:gen-gauge-lebesgue-density}
+\end{equation}
+Equal dimensionality here is between the source and target coordinates within each channel; it
+does not impose $K=d_m$.  The determinant formula is not asserted for mixed or atomic reference
+measures.
+\status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+Apply \eqref{eq:gen-gauge-pushforward-model}--\eqref{eq:gen-gauge-pushforward-obs} along the
+topological ordering.  Each factor is the receiving-coordinate pushforward of the original factor,
+so the composed law is $T_{\#}P_\theta$.  Projection to the observation coordinate commutes with
+this pushforward, so the observation measures agree and their densities satisfy
+\eqref{eq:gen-gauge-evidence-invariance}.  For a bounded measurable test function $F$ on the joint
+observation--latent space,
+\[
+\int F(o,y')p_{\theta'}(o,y'\given X')\nu_D^O(do)\nu_D^Y(dy')
+=\int F(o,Ry)p_\theta(o,y\given X)\nu_D^O(do)\nu_D^Y(dy),
+\]
+by the measure identity.  Rewriting the right side against $R_\#\nu_D^Y$ and applying
+\eqref{eq:gen-gauge-reference-rn} gives \eqref{eq:gen-gauge-rn-density}.  On the stated Lebesgue
+tier, linear change of variables gives
+$d(R_\#\nu_D^Y)/d\nu_D^Y=|\det R|^{-1}$, proving
+\eqref{eq:gen-gauge-lebesgue-density}. \hfill$\square$
+
+Evidence invariance is a redundancy constraint, not an empirical prediction: the action changes
+latent coordinates while leaving the observation law fixed.  The linear-Gaussian chapter verifies
+\Cref{hyp:gen-kernel-covariance} parameter by parameter and then displays the stronger
+common-frame reduction.
+
+The passive coordinate action on the full parameter space can have nontrivial
+stabilizers, so its orbit space need not be a manifold. Subtracting the
+dimension of the coordinate group from a parameter count is unjustified
+without freeness and properness. Determining generic stabilizers and a regular
+quotient remains open; nothing later depends on that quotient.
+\status{OPEN}\label{open:gen-gauge-quotient}

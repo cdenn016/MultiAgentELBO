@@ -1,0 +1,157 @@
+\documentclass[11pt,letterpaper]{report}
+\usepackage{scientific_report}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{mathrsfs}
+\usepackage{microtype}
+\usepackage{longtable}
+\usepackage{cleveref}
+
+\setlength{\headheight}{22pt}
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
+\makeatletter
+\renewcommand{\@pnumwidth}{2em}
+\renewcommand{\@tocrmarg}{3em}
+\makeatother
+
+\hypersetup{
+  pdftitle={Gauge-Covariant Variational Free Energy and Renormalization},
+  pdfauthor={Robert C. Dennis},
+  pdfsubject={Belief and model associated bundles, covariant informational pullbacks, relational inference histories, local and collective evidence bounds, exact agent-network renormalization, and a multivariate-Gaussian realization},
+  pdfkeywords={variational free energy, ELBO, associated bundle, gauge covariance, Fisher information, pullback geometry, timeless inference histories, Markov kernel, renormalization group, graph coarsening, multivariate Gaussian}
+}
+
+% ---- shared macros: chapters must use these and must not redefine them ----
+\newcommand{\KL}{D_{\mathrm{KL}}}
+\newcommand{\E}{\mathbb E}
+\newcommand{\R}{\mathbb R}
+\newcommand{\given}{\mid}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Sym}{\mathbb S}
+\newcommand{\PSD}{\mathbb S_{+}}
+\newcommand{\GL}{\mathrm{GL}}
+\newcommand{\Lagg}{\Lambda_{\mathrm{c}}}
+\newcommand{\Fenergy}{\mathcal F}
+\newcommand{\Lelbo}{\mathcal L}
+
+% ---- compact, semantic result headings with one chapter-scoped sequence ----
+% These preserve the manuscript's paragraph-style presentation while giving
+% every result a real typed counter and a stable label for cleveref.
+\newcounter{statementsequence}[chapter]
+\newcounter{definition}[chapter]
+\newcounter{lemma}[chapter]
+\newcounter{proposition}[chapter]
+\newcounter{theorem}[chapter]
+\newcounter{corollary}[chapter]
+\newcounter{conjecture}[chapter]
+\newcounter{openproblem}[chapter]
+\newcounter{hypothesis}[chapter]
+\newcounter{construction}[chapter]
+\newcounter{requirement}[chapter]
+\renewcommand{\thedefinition}{\thechapter.\arabic{definition}}
+\renewcommand{\thelemma}{\thechapter.\arabic{lemma}}
+\renewcommand{\theproposition}{\thechapter.\arabic{proposition}}
+\renewcommand{\thetheorem}{\thechapter.\arabic{theorem}}
+\renewcommand{\thecorollary}{\thechapter.\arabic{corollary}}
+\renewcommand{\theconjecture}{\thechapter.\arabic{conjecture}}
+\renewcommand{\theopenproblem}{\thechapter.\arabic{openproblem}}
+\renewcommand{\thehypothesis}{\thechapter.\arabic{hypothesis}}
+\renewcommand{\theconstruction}{\thechapter.\arabic{construction}}
+\renewcommand{\therequirement}{\thechapter.\arabic{requirement}}
+\crefname{definition}{definition}{definitions}
+\crefname{lemma}{lemma}{lemmas}
+\crefname{proposition}{proposition}{propositions}
+\crefname{theorem}{theorem}{theorems}
+\crefname{corollary}{corollary}{corollaries}
+\crefname{conjecture}{conjecture}{conjectures}
+\crefname{openproblem}{open problem}{open problems}
+\crefname{hypothesis}{hypothesis}{hypotheses}
+\crefname{construction}{construction}{constructions}
+\crefname{requirement}{requirement}{requirements}
+\Crefname{definition}{Definition}{Definitions}
+\Crefname{lemma}{Lemma}{Lemmas}
+\Crefname{proposition}{Proposition}{Propositions}
+\Crefname{theorem}{Theorem}{Theorems}
+\Crefname{corollary}{Corollary}{Corollaries}
+\Crefname{conjecture}{Conjecture}{Conjectures}
+\Crefname{openproblem}{Open Problem}{Open Problems}
+\Crefname{hypothesis}{Hypothesis}{Hypotheses}
+\Crefname{construction}{Construction}{Constructions}
+\Crefname{requirement}{Requirement}{Requirements}
+\newcommand{\syncstatementcounter}[1]{%
+  \stepcounter{statementsequence}%
+  \setcounter{#1}{\numexpr\value{statementsequence}-1\relax}%
+  \refstepcounter{#1}%
+}
+\newcommand{\resultheading}[4]{%
+  \syncstatementcounter{#2}%
+  \label{#4}%
+  \paragraph{#1~\csname the#2\endcsname\ (#3).}%
+}
+\newcommand{\definitionheading}[2]{\resultheading{Definition}{definition}{#1}{#2}}
+\newcommand{\lemmaheading}[2]{\resultheading{Lemma}{lemma}{#1}{#2}}
+\newcommand{\propositionheading}[2]{\resultheading{Proposition}{proposition}{#1}{#2}}
+\newcommand{\theoremheading}[2]{\resultheading{Theorem}{theorem}{#1}{#2}}
+\newcommand{\corollaryheading}[2]{\resultheading{Corollary}{corollary}{#1}{#2}}
+\newcommand{\conjectureheading}[2]{\resultheading{Conjecture}{conjecture}{#1}{#2}}
+\newcommand{\openproblemheading}[2]{\resultheading{Open Problem}{openproblem}{#1}{#2}}
+\newcommand{\hypothesisheading}[2]{\resultheading{Hypothesis}{hypothesis}{#1}{#2}}
+\newcommand{\constructionheading}[2]{\resultheading{Construction}{construction}{#1}{#2}}
+\newcommand{\requirementheading}[2]{\resultheading{Requirement}{requirement}{#1}{#2}}
+
+% ---- epistemic status tag: every non-trivial claim carries one ----
+\definecolor{statusfg}{RGB}{120,20,20}
+\newcommand{\status}[1]{\mbox{{\small\textsc{\textcolor{statusfg}{[#1]}}}}}
+
+\begin{document}
+\hypersetup{pageanchor=false}
+\makereporttitle
+  {Gauge-Covariant Variational Free Energy\\and Renormalization}
+  {Covariant Information Geometry, Timeless Inference Histories, Local--Collective Bounds, and Exact Effective Scale Theory}
+  {Robert C. Dennis}
+  {Independent Researcher}
+  {August 2026}
+
+\hypersetup{pageanchor=true}
+\pagenumbering{roman}
+\tableofcontents
+\listoftables
+\clearpage
+\pagenumbering{arabic}
+
+\part{General Gauge-Variational Foundations}
+\input{01_introduction}
+\input{02_geometry}
+\input{03_probability}
+\input{04_generative}
+\input{05_elbo}
+\input{05a_expfamily}
+\input{05b_local_collective_elbo}
+\input{05c_pullback_geometry}
+\input{05d_relational_inference}
+
+\part{General Coarse Maps and Renormalization}
+\input{06_general_coarsegraining}
+\input{07_general_renormalization}
+\input{07b_agent_network_rg}
+
+\part{The Multivariate-Gaussian Realization}
+\input{06a_generative_gaussian}
+\input{06_gaussian}
+\input{07_restrictions}
+\input{08_infogeometry}
+\input{09_coarsegraining}
+\input{10_renormalization}
+
+\part{Boundaries, Evidence, and Interpretation}
+\input{11_obstructions}
+\input{12_philosophy}
+
+\appendix
+\input{appendix_notation}
+\input{appendix_claim_ledger}
+\input{appendix_numerical_provenance}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+\end{document}

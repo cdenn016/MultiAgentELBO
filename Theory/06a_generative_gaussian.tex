@@ -1,0 +1,308 @@
+\chapter{A Linear-Gaussian Generative Realization}
+\label{ch:generative-gaussian}
+
+This chapter realizes the fixed directed law of \Cref{ch:generative} in two
+associated bundles induced from the same principal $G$-bundle, using possibly
+different representations and separately chosen local frames. The Gaussian
+is a tractable subclass, not the ambient theory. The specialization assumes that
+at a root the model-to-belief kernel induces a map from model laws to belief laws that may realize
+$\widetilde\Phi:\mathcal E_m\to\mathcal E_b$.  The sample matrix inside that kernel is not itself
+the associated-bundle morphism.  At a nonroot the kernel is parent-indexed unless its domain is
+enlarged.  The existence of $\Phi:\mathcal E_b\to\mathcal E_m$ creates no reverse conditional.
+
+\section{Directed forest and conditional laws}
+\label{sec:gen-gaussian}
+
+Take
+\begin{equation}
+k_i\in\R^K,
+\qquad
+m_i\in\R^{d_m},
+\qquad
+o_i\in\R^{d_{o,i}},
+\label{eq:gen-lg-domains}
+\end{equation}
+and specialize the directed acyclic graph to a forest, so each nonroot $i$ has one parent
+$j=\operatorname{par}(i)$.  This is a displayed subclass; the general DAG replaces each parent
+term by a finite sum. \status{DEFINITION}\label{def:gen-lg-forest}
+
+Fix one design point \(c_a\). Let
+\(\Theta_{ij}^b:=\Theta_{a,ij}^b\in G\) and
+\(\Theta_{ij}^m:=\Theta_{a,ij}^m\in G\) abbreviate the design-indexed
+same-channel graph-link copies of \Cref{def:gen-product-action}. A submodel
+that constrains one common link across all design points retains the
+stabilizer of that constraint, namely the frame rechoices for which
+\(h_{a,i}^x\Theta_{ij}^x(h_{a,j}^x)^{-1}\) is independent of \(a\).
+Context-independent rechoices form a sufficient, but not generally maximal,
+subgroup; any larger law must be declared explicitly. For a nonroot,
+\begin{align}
+m_i\given m_j,X
+&\sim\mathcal N\left(
+F_i^m\rho_m(\Theta_{ij}^m)m_j+\eta_i^m,
+\Sigma_i^m\right),
+\label{eq:gen-lg-model}\\
+k_i\given k_j,m_i,X
+&\sim\mathcal N\left(
+F_i^b\rho_b(\Theta_{ij}^b)k_j+B_im_i+\eta_i^b,
+\Sigma_i^b\right),
+\label{eq:gen-lg-state}\\
+o_i\given k_i,m_i,X
+&\sim\mathcal N\left(
+H_i^bk_i+H_i^mm_i+\eta_i^o,
+\Sigma_i^o\right).
+\label{eq:gen-lg-obs}
+\end{align}
+The parameter shapes are
+\begin{align}
+&\rho_b(\Theta_{ij}^b),F_i^b\in\R^{K\times K},
+&&\rho_m(\Theta_{ij}^m),F_i^m\in\R^{d_m\times d_m},
+&&B_i\in\R^{K\times d_m},
+\label{eq:gen-lg-shapes-latent}\\
+&H_i^b\in\R^{d_{o,i}\times K},
+&&H_i^m\in\R^{d_{o,i}\times d_m},
+&&\eta_i^b\in\R^K,
+\quad
+\eta_i^m\in\R^{d_m},
+\quad
+\eta_i^o\in\R^{d_{o,i}}.
+\label{eq:gen-lg-shapes-obs}
+\end{align}
+The represented links are invertible.  The conditional endomorphisms $F_i^b,F_i^m$ need not be:
+positive definiteness of the receiving covariance, not invertibility of the mean map, normalizes a
+Gaussian kernel.
+
+The bridge matrix $B_i:\R^{d_m}\to\R^K$ acts on sample coordinates.  It is one parameter of a
+Gaussian kernel, not a map between probability-law fibers.  At a nonroot, the kernel also depends
+on the parent belief coordinate.  Only after fixing that parent, or enlarging the domain to include
+it, does integration against a model law define a belief law.  The left-right covariance law below
+is a parameter transformation that makes this induced law map covariant; it does not identify
+$B_i$ with $\widetilde\Phi$.  No reading supplies a belief-to-model factor.
+
+Each root $r$ has the proper laws
+\begin{align}
+m_r\given X
+&\sim\mathcal N(\bar m_r,\Sigma_{r,0}^m),
+\label{eq:gen-lg-root-model}\\
+k_r\given m_r,X
+&\sim\mathcal N(B_rm_r+\eta_{r,0}^b,\Sigma_{r,0}^b),
+\label{eq:gen-lg-root-state}
+\end{align}
+followed by \eqref{eq:gen-lg-obs}.  Every receiving covariance is positive definite:
+\begin{equation}
+\Sigma_i^m,\Sigma_{r,0}^m\in\Sym_{++}^{d_m},
+\qquad
+\Sigma_i^b,\Sigma_{r,0}^b\in\Sym_{++}^{K},
+\qquad
+\Sigma_i^o\in\Sym_{++}^{d_{o,i}}.
+\label{eq:gen-lg-spd}
+\end{equation}
+\status{HYPOTHESIS}\label{hyp:gen-lg-spd}
+
+\propositionheading{Normalization and root moments}{prop:gen-lg-normalization}
+Under \eqref{eq:gen-lg-spd}, every kernel above is a nondegenerate normalized density and the
+assembled directed law is a probability measure.  The root belief coordinate has
+\begin{equation}
+\bar k_r=B_r\bar m_r+\eta_{r,0}^b,
+\qquad
+\Sigma_{r,0}^{b,\mathrm{marg}}
+=\Sigma_{r,0}^b+B_r\Sigma_{r,0}^mB_r^\top.
+\label{eq:gen-lg-root-marginal}
+\end{equation}
+\status{ESTABLISHED}
+
+More generally, if a root model law is
+$s=\mathcal N(\mu_m,C_m)$, then the law map induced by the root kernel is
+\begin{equation}
+\widetilde\phi_r(s)
+=\mathcal N\left(
+B_r\mu_m+\eta_{r,0}^b,\quad
+\Sigma_{r,0}^b+B_rC_mB_r^\top
+\right).
+\label{eq:gen-lg-induced-law-map}
+\end{equation}
+This map, rather than $B_r$ alone, is the candidate local realization of
+$\widetilde\Phi$. \status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+A Gaussian density with positive definite covariance integrates to one for every mean, so the
+normalization proposition of \Cref{ch:generative} applies.  The tower property gives the first
+moment and the law of total covariance gives the second identity.  Its added term is positive
+semidefinite, so the marginal covariance dominates the conditional covariance. \hfill$\square$
+
+The Gaussian observation kernel may be replaced by any normalized Markov kernel from
+$\R^K\times\R^{d_m}$ to the observation space.  That changes the likelihood but not the exact ELBO
+identity, which uses only the fixed normalized joint. \status{ESTABLISHED}
+
+\section{Independent channel-frame covariance}
+\label{sec:gen-gaussian-covariance}
+
+For the global coordinate formulas in this section, invoke
+\Cref{hyp:geo-common-trivializations} on a declared region
+\(\mathcal C_0\) containing the contexts under study. Choose
+\(\sigma_0:\mathcal C_0\to P|_{\mathcal C_0}\) and restrict each local frame
+to \(\mathcal C_i\cap\mathcal C_0\). Then write the independent frame
+coordinates as
+\begin{equation}
+U_i^b:\mathcal C_i\cap\mathcal C_0\to G,
+\qquad
+U_i^m:\mathcal C_i\cap\mathcal C_0\to G,
+\qquad
+u_i^x=\sigma_0\cdot(U_i^x)^{-1}.
+\label{eq:gen-frames}
+\end{equation}
+Thus $\sigma_0$ is common only on the explicitly trivialized region; no
+global triviality of \(P\) is inferred. The corresponding
+relative principal-frame field is
+\begin{equation}
+h_i=U_i^b(U_i^m)^{-1},
+\qquad
+u_i^m=u_i^b h_i.
+\label{eq:gen-relative-principal-frame}
+\end{equation}
+This $G$-valued field exists even when $\rho_b$ and $\rho_m$ are inequivalent
+or have different dimensions. Its represented actions $\rho_b(h_i)$ and
+$\rho_m(h_i)$ live in different endomorphism spaces and do not define the
+bridge $B_i$ or either associated-bundle morphism.
+An independent pair of channel-frame re-expressions is
+$(g_i^b,g_i^m)\in G\times G$, with represented matrices
+$R_i^b=\rho_b(g_i^b)$ and $R_i^m=\rho_m(g_i^m)$ as in
+\eqref{eq:gen-rep-actions}. The pair records two choices of local
+trivialization of bundles associated to the same $P$; it does not replace the
+principal structure group $G$ by $G\times G$.
+In the convention of \eqref{eq:geo-local-reframing}, the corresponding
+principal-section rechoices are
+$u_i^{b\prime}=u_i^b\cdot(g_i^b)^{-1}$ and
+$u_i^{m\prime}=u_i^m\cdot(g_i^m)^{-1}$. This accounts for the opposite-sided
+inverse in the geometric local-map law and makes the formulas below identical
+to \eqref{eq:geo-tildephi-gauge-law}.
+
+The same-channel links obey \eqref{eq:gen-gauge-links}.  The conditional maps and offsets transform
+as
+\begin{align}
+F_i^{b\prime}
+&=R_i^bF_i^b(R_i^b)^{-1},
+&
+F_i^{m\prime}
+&=R_i^mF_i^m(R_i^m)^{-1},
+\label{eq:gen-gauge-selfmaps}\\
+B_i'
+&=R_i^bB_i(R_i^m)^{-1},
+&
+\eta_i^{b\prime}
+&=R_i^b\eta_i^b,
+\qquad
+\eta_i^{m\prime}=R_i^m\eta_i^m.
+\label{eq:gen-gauge-bridge-offsets}
+\end{align}
+The left-right law for $B_i$, together with the covariance and offset laws, makes the induced root
+law map \eqref{eq:gen-lg-induced-law-map} obey the local law of $\widetilde\Phi$.  The parameter
+$B_i$ alone is not that morphism, and the two frames remain independent.  Receiving covariances
+transform by their own congruences:
+\begin{equation}
+\Sigma_i^{b\prime}=R_i^b\Sigma_i^b(R_i^b)^\top,
+\qquad
+\Sigma_i^{m\prime}=R_i^m\Sigma_i^m(R_i^m)^\top.
+\label{eq:gen-gauge-covariances}
+\end{equation}
+For either channel,
+\begin{equation}
+\Lambda_i=\Sigma_i^{-1},
+\qquad
+\Sigma_i'=R_i\Sigma_iR_i^\top,
+\qquad
+\Lambda_i'=R_i^{-\top}\Lambda_iR_i^{-1}.
+\label{eq:gen-gauge-precision}
+\end{equation}
+At a root,
+\begin{align}
+\bar m_r'
+&=R_r^m\bar m_r,
+&
+\Sigma_{r,0}^{m\prime}
+&=R_r^m\Sigma_{r,0}^m(R_r^m)^\top,
+\label{eq:gen-gauge-root-model}\\
+B_r'
+&=R_r^bB_r(R_r^m)^{-1},
+&
+\eta_{r,0}^{b\prime}
+&=R_r^b\eta_{r,0}^b,
+\qquad
+\Sigma_{r,0}^{b\prime}
+=R_r^b\Sigma_{r,0}^b(R_r^b)^\top.
+\label{eq:gen-gauge-root-state}
+\end{align}
+Gauge-inert observations require
+\begin{equation}
+H_i^{b\prime}=H_i^b(R_i^b)^{-1},
+\qquad
+H_i^{m\prime}=H_i^m(R_i^m)^{-1},
+\qquad
+\eta_i^{o\prime}=\eta_i^o,
+\qquad
+\Sigma_i^{o\prime}=\Sigma_i^o.
+\label{eq:gen-gauge-observation}
+\end{equation}
+\status{DEFINITION}
+
+\propositionheading{Gaussian kernel covariance}{prop:gen-lg-kernel-covariance}
+The transformation laws above satisfy the three kernel pushforward identities
+\eqref{eq:gen-gauge-pushforward-model}--\eqref{eq:gen-gauge-pushforward-obs}, and hence the
+normalized joint and its evidence obey
+\eqref{eq:gen-gauge-joint-pushforward}--\eqref{eq:gen-gauge-evidence-invariance} under all
+independent channel-frame re-expressions. \status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+For the belief kernel, the transformed conditional mean evaluated at transformed inputs is
+\begin{equation}
+F_i^{b\prime}\rho_b(\Theta_{ij}^{b\prime})(R_j^bk_j)
++B_i'(R_i^mm_i)+\eta_i^{b\prime}
+=R_i^b\left(
+F_i^b\rho_b(\Theta_{ij}^b)k_j+B_im_i+\eta_i^b
+\right).
+\label{eq:gen-gauge-mean-identity}
+\end{equation}
+The model-channel calculation is the same without a bridge.  Congruence
+\eqref{eq:gen-gauge-covariances} therefore makes each transformed Gaussian the receiving-frame
+pushforward of the original.  At the observation kernel,
+\begin{equation}
+H_i^{b\prime}(R_i^bk_i)+H_i^{m\prime}(R_i^mm_i)+\eta_i^{o\prime}
+=H_i^bk_i+H_i^mm_i+\eta_i^o,
+\label{eq:gen-gauge-observation-identity}
+\end{equation}
+and its covariance is fixed.  The root calculation is identical.  Composition now invokes the
+frame-covariance result of \Cref{ch:generative}. \hfill$\square$
+
+Equation~\eqref{eq:gen-lg-root-marginal} transforms by belief-channel congruence, because both of
+its summands do.  Positive definiteness is preserved independently in each channel.
+
+Group-valued frame coordinates remain primary.  An expression $U=\exp\phi$ is valid only inside an
+exponential chart; for example,
+$\operatorname{diag}(-1,-2)\in\GL^+(2)$ has no real logarithm because each negative eigenvalue
+occurs in one Jordan block \citep{culver1966existence}. \status{ESTABLISHED}
+
+\section{Common-frame specialization}
+\label{sec:gen-gaussian-diagonal}
+
+Under the common-frame specialization of \Cref{sec:geo-diagonal}, impose
+$u_i^b=u_i^m$ and use one frame re-expression $g_i\in G$ with
+\begin{equation}
+R_i^b=\rho_b(g_i),
+\qquad
+R_i^m=\rho_m(g_i).
+\label{eq:gen-gaussian-diagonal-action}
+\end{equation}
+If the graph links are also identified, $\Theta_{ij}^b$ and
+$\Theta_{ij}^m$ are the same group link seen through the two
+representations. Equations
+\eqref{eq:gen-gauge-selfmaps}--\eqref{eq:gen-gauge-observation} then reduce to the familiar
+common-frame, two-representation formulas. \status{ESTABLISHED}
+
+This reduction ties the gauge choices but does not identify the latent dimensions, make $B_i$
+invertible, turn $\Phi$ and $\widetilde\Phi$ into inverses, or add a reverse generative factor.
+Compatibility of a cross map with the two connections remains the parallelness
+condition of \Cref{ch:geometry}; an equal connection is a further hypothesis.
+
+Finally, the assembled Gaussian precision need not have the Laplacian-plus-self-terms form used
+later.  A general directed transition can contribute an off-diagonal block that is neither
+symmetric nor sign-correct.  The interaction family is therefore a separately declared Gaussian
+operator subfamily, not a consequence of linear-Gaussian directedness. \status{NOT-CLAIMED}

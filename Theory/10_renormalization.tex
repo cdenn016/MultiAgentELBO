@@ -1,0 +1,625 @@
+\chapter{Multivariate-Gaussian Operator Renormalization}
+\label{ch:gaussian-renormalization}
+
+\Cref{ch:renormalization} separates a genuine scale diagram from a sequence
+of differently sized objects.  This chapter instantiates that diagram on the
+multivariate-Gaussian (MVG) interaction sector of
+\Cref{ch:gaussian-coarsegraining}.  The flowed object is an operator
+parameter, not automatically a normalized Gaussian law: a law-level flow
+also needs a coarse reference measure, an information-vector rule, and a
+finite normalizer at every scale.  Likewise, the hard aggregation below is
+only one admissible coarse arrow.  The effective-support, sheaf, and Kron
+reductions of \Cref{ch:gaussian-coarsegraining} give other arrows on narrower
+domains. Unless a channel index is displayed, this chapter flows the
+belief/recognition operator sector; a model-channel flow is a separate typed
+construction with its own dimension, links, and parameters. \status{DEFINITION}
+
+\section{The MVG operator arrow}
+\label{sec:grg-operator-arrow}
+
+At level \(\ell\), let
+\(\boldsymbol\Xi_\ell^{\mathrm{MVG}}
+=((A_i^{(\ell)}),(W_{ij}^{(\ell)}))\) with
+\(A_i^{(\ell)},W_{ij}^{(\ell)}\in\PSD^K\), and assemble
+\begin{equation}
+(\Lambda_\ell)_{ii}
+ =A_i^{(\ell)}+\sum_{j\ne i}W_{ij}^{(\ell)},
+\qquad
+(\Lambda_\ell)_{ij}=-W_{ij}^{(\ell)}.
+\label{eq:grg-family}
+\end{equation}
+For a hard partition, write
+\(S_\ell=\widehat S_\ell\otimes I_K\).  Its unrescaled aggregation map is
+\begin{equation}
+\mathcal A_{S_\ell}(\Lambda_\ell)
+ =S_\ell^\top\Lambda_\ell S_\ell,
+\qquad
+\mathcal A_{S_\ell}(\boldsymbol\Xi_\ell^{\mathrm{MVG}})
+ =\left(
+ \left(\sum_{i\in I}A_i^{(\ell)}\right)_I,
+ \left(\sum_{\substack{i\in I\\j\in J}}W_{ij}^{(\ell)}\right)_{I\ne J}
+ \right).
+\label{eq:grg-aggregation}
+\end{equation}
+\status{DEFINITION}
+
+The second identity is exact on the hard-aggregation domain proved in
+\Cref{sec:cg-gaussian-aggregation}; nonflat data must first satisfy the
+effective-support or rectangular endpoint conditions of
+\Cref{sec:cg-effective-support,sec:cg-sheaf-closure}. \status{ESTABLISHED}
+
+\propositionheading{Aggregation is a positive semigroup action}{prop:grg-aggregation-semigroup}
+If \(S_1\) maps fine nodes to intermediate clusters and \(S_2\) maps those
+clusters to coarse clusters, then
+\begin{equation}
+\mathcal A_{S_2}\mathcal A_{S_1}
+ =\mathcal A_{S_1S_2}.
+\label{eq:grg-semigroup}
+\end{equation}
+Each \(\mathcal A_S\) is linear and positive on the product cone of node and
+edge weights.  It is generally noninjective because every edge internal to a
+cluster is annihilated. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Congruence gives
+\(S_2^\top(S_1^\top\Lambda S_1)S_2
+=(S_1S_2)^\top\Lambda(S_1S_2)\).
+The parameter formula follows by associativity of finite sums.  Sums preserve
+positive semidefiniteness, so the map is positive.  Changing an internal
+weight while holding every cut weight and self term fixed leaves
+\(\mathcal A_S(\pi)\) unchanged, proving noninjectivity.
+
+An RG arrow additionally declares a positive rescaling:
+\begin{equation}
+\Lambda_{\ell+1}
+ =\zeta_\ell^{-1}\mathcal A_{S_\ell}(\Lambda_\ell),
+\qquad
+\zeta_\ell>0.
+\label{eq:grg-flow}
+\end{equation}
+This is the MVG component of the comparison data required by
+\Cref{sec:rg-scale-category}.  The source and target usually have different
+dimensions.  A fixed ray is therefore typed only after comparison maps
+identify a repeated hierarchy with one fixed parameter space.  Without that
+identification, \eqref{eq:grg-flow} is a cocycle of positive maps, not an
+autonomous dynamical system.
+
+\paragraph{Equal-block spectral bounds.}
+If every cluster has \(b\) nodes, then \(S^\top S=bI\).  For every symmetric
+\(\Lambda\),
+\begin{equation}
+b\lambda_{\min}(\Lambda)
+\leq\lambda_{\min}(S^\top\Lambda S),
+\qquad
+\lambda_{\max}(S^\top\Lambda S)
+\leq b\lambda_{\max}(\Lambda).
+\label{eq:grg-spectral-bounds}
+\end{equation}
+Indeed, congruence preserves the Loewner inequalities
+\(\lambda_{\min}(\Lambda)I\preceq\Lambda
+\preceq\lambda_{\max}(\Lambda)I\).
+These are finite-level bounds.  Divergence or convergence as
+\(\ell\to\infty\) additionally requires an infinite hierarchy and a declared
+normalization. \status{ESTABLISHED}
+
+\section{The biadditive closed family}
+\label{sec:grg-biadditive}
+
+Let each node carry \(x_i\geq0\), and fix \(A,M\in\PSD^K\).  The family
+\begin{equation}
+A_i=x_iA,\qquad W_{ij}=x_ix_jM
+\label{eq:grg-biadditive}
+\end{equation}
+is exactly closed under every hard partition: with
+\(x_I=\sum_{i\in I}x_i\),
+\begin{equation}
+A_I=x_IA,\qquad W_{IJ}=x_Ix_JM.
+\label{eq:grg-biadditive-coarse}
+\end{equation}
+This follows from distributivity and proves closure, not attraction.
+\status{ESTABLISHED}
+
+\propositionheading{Positive additive rules are forced to be linear}{prop:grg-positive-additive-linear}
+Suppose
+\(\alpha:\mathbb R_+\to\PSD^K\) is additive and
+\(w:\mathbb R_+^2\to\PSD^K\) is symmetric and separately additive.
+Then there are \(A,M\in\PSD^K\) such that
+\begin{equation}
+\alpha(x)=xA,\qquad w(x,y)=xyM.
+\label{eq:grg-additive-classification}
+\end{equation}
+Thus \eqref{eq:grg-biadditive} is the maximal positive family among rules
+depending only on additive scalar node masses and obeying those additivity
+hypotheses. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+If \(y\geq x\), additivity gives
+\(\alpha(y)-\alpha(x)=\alpha(y-x)\succeq0\); hence \(\alpha\) is Loewner
+monotone.  For every \(v\), the scalar function
+\(x\mapsto v^\top\alpha(x)v\) is additive, nonnegative, and therefore
+monotone.  A monotone additive function on \(\mathbb R_+\) is linear, so
+\(v^\top\alpha(x)v=xv^\top\alpha(1)v\).  Polarization yields
+\(\alpha(x)=x\alpha(1)\).  For fixed \(y\), the same argument gives
+\(w(x,y)=xw(1,y)\); applying it to the second argument gives
+\(w(1,y)=yw(1,1)\).  Take \(A=\alpha(1)\) and \(M=w(1,1)\).
+
+On a homogeneous complete graph with equal blocks of size \(b\), the
+unrescaled map acts on the common pair \((A,W)\) by
+\begin{equation}
+A\longmapsto bA,\qquad W\longmapsto b^2W.
+\label{eq:grg-homogeneous-map}
+\end{equation}
+The dense normalization \(\zeta=b^2\) fixes the coupling sector and contracts
+the self sector by \(1/b\).  Consequently the candidate limiting ray has
+\(A=0\).  It is a boundary operator: its consensus directions lie in the
+kernel, so it does not define a full-space normalized Gaussian density.
+Pinning, quotienting the kernel, and retaining an external positive mass are
+different repairs and define different probability problems.  A
+pseudoinverse inserted into the original Lebesgue density is not a fourth
+repair.
+
+The exponent \(2\) is not topology independent. For a typical block
+\(B(b)\) and coarse cut \(\partial B(b)\), define the weighted sums
+\[
+W_{\partial}(b)=\sum_{e\in\partial B(b)}W_e,
+\qquad
+A_B(b)=\sum_{i\in B(b)}A_i.
+\]
+If, in a declared matrix norm,
+\(\lVert W_{\partial}(b)\rVert\asymp b^{s_W}\) and
+\(\lVert A_B(b)\rVert\asymp b^{s_A}\), then a scalar normalization that keeps
+the coupling sector nondegenerate scales as \(b^{s_W}\), while the normalized
+self sector scales as \(b^{s_A-s_W}\). Edge count alone does not determine
+either exponent when the fine weights vary with \(b\).
+
+The count-based exponents follow only under explicit nonzero-average
+assumptions. If \(n_{\mathrm{cut}}(b)\asymp b^s\) and
+\[
+\frac{W_{\partial}(b)}{n_{\mathrm{cut}}(b)}\longrightarrow\overline W\ne0,
+\qquad
+\frac{A_B(b)}{b}\longrightarrow\overline A\ne0,
+\]
+then \(s_W=s\), \(s_A=1\), and the coupling and normalized-self exponents are
+respectively \(s\) and \(1-s\). For the homogeneous complete-graph scheme
+above, a cut between two \(\Theta(b)\)-sized blocks has \(s=2\); consecutive
+blocks in a nearest-neighbor chain have \(s=0\). Relevance of the self term is
+therefore a property of the declared
+weighted graph family and normalization scheme, not of
+\eqref{eq:grg-flow} alone. \status{ESTABLISHED}
+
+\section{Cone dynamics: what Birkhoff does and does not prove}
+\label{sec:grg-cones}
+
+Let
+\begin{equation}
+\mathcal K_N
+=\left(\prod_i\PSD^K\right)
+ \times\left(\prod_{i<j}\PSD^K\right)
+\label{eq:grg-full-cone}
+\end{equation}
+be the full MVG parameter cone.  On the interior of a proper cone
+\(\mathcal K\), Hilbert's projective metric is
+\begin{equation}
+d_{\mathrm H}(x,y)
+=\log\left(
+\frac{\inf\{\beta>0:x\preceq_{\mathcal K}\beta y\}}
+{\sup\{\alpha>0:\alpha y\preceq_{\mathcal K}x\}}
+\right).
+\label{eq:grg-hilbert}
+\end{equation}
+A positive endomorphism of finite projective diameter contracts this metric;
+a primitive finite-dimensional positive matrix is the familiar special
+case \citep{Birkhoff1957,nussbaum1988hilbert}.  The hypotheses fail for
+sum-only MVG aggregation on the full cone.
+
+\propositionheading{The full-cone route is blocked}{prop:grg-full-cone-blocked}
+After a hierarchical identification makes \(\mathcal A_S\) an endomorphism,
+sum-only aggregation is not primitive on \(\mathcal K_N\).  Moreover, the
+dense candidate ray with \(A=0\) lies on \(\partial\mathcal K_N\), whereas a
+full-cone Birkhoff contraction has an interior Perron ray.  Hence Birkhoff's
+full-cone theorem cannot prove attraction to that candidate. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+An absent coarse cut remains a zero edge coordinate, so the map can meet the
+boundary even from positive data on the represented fine edges.  More
+sharply, define for a subspace \(U\subseteq\mathbb R^K\)
+\begin{equation}
+\mathcal F_U
+=\{(W_e)_e:\operatorname{ran}W_e\subseteq U\ \text{for every }e\}.
+\label{eq:grg-common-range-face}
+\end{equation}
+Each \(\mathcal F_U\) is an invariant face because the range of a sum of
+positive semidefinite matrices contained in \(U\) is still contained in
+\(U\).  Proper invariant faces rule out primitivity.  Finally, \(A=0\) is a
+boundary coordinate of \(\prod_i\PSD^K\), while the Perron ray of a strict
+interior contraction is interior.
+
+The coupling cone alone removes the vanishing self coordinate but not the
+matrix obstruction.  Suppose an identified spatial map \(B\geq0\) has a
+positive eigenvector \(c=(c_e)_e\).  Because aggregation only adds weights,
+for every \(M\in\PSD^K\)
+\begin{equation}
+W_e=c_eM
+\label{eq:grg-inert-fiber}
+\end{equation}
+is an eigenray with the same spatial eigenvalue.  Different matrix rays are
+not mixed; on the raw product cone their projective separation can be
+infinite.  Thus sum-only aggregation cannot select a fiber direction.  It
+can at most contract a spatial cone after the fiber ray has been declared.
+
+\conjectureheading{Fixed-\(B\) scalarized attraction}{conj:grg-fixed-b-attraction}
+Fix \(M_0\succ0\) and restrict to
+\begin{equation}
+\mathcal K^W_{M_0}
+=\{(c_eM_0)_e:c_e\geq0\}.
+\label{eq:grg-scalarized-cone}
+\end{equation}
+If a hierarchical identification yields one fixed spatial endomorphism
+\(B\), some power \(B^q\) is strictly positive, and its Perron vector
+factorizes as \(c_{ij}=x_ix_j\), then Birkhoff's theorem gives a unique
+attracting spatial ray \(W_{ij}=x_ix_jM_0\) on this scalarized cone.
+\status{CONJECTURE}
+
+This statement freezes every matrix direction.  It is not a theorem about
+the full coupling cone, a nonautonomous sequence \(B_\ell\), or the
+common-principal RG state of \Cref{sec:rg-common-principal-state}. Alternating positive
+maps may contract projective distances while approaching a periodic orbit,
+as \Cref{sec:rg-dynamical-types} shows.  The missing obligations are a fixed
+hierarchical identification, primitivity of the resulting \(B\), and the
+factorization of its Perron vector.
+
+\propositionheading{Residual fiber label}{prop:grg-residual-fiber-label}
+For \(M\in\PSD^K\), the orbit under residual global reframing
+\(M\mapsto h^\top Mh\), \(h\in\GL(K)\), is determined exactly by
+\(\operatorname{rank}M\).  Hence the biadditive ansatz has \(K+1\) internal
+congruence classes and no continuous internal modulus. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Sylvester's law of inertia classifies real symmetric matrices under
+congruence \citep{HornJohnson2013}.  A positive semidefinite matrix has no
+negative eigenvalues, so its inertia is determined by its rank.  In
+particular, every \(M\succ0\) is congruent to \(I_K\), witnessed by
+\(h=M^{-1/2}\).
+
+Rank does not classify the spatial graph, the limiting spectral measure,
+corrections to scaling, basin, or scheme.  Nor does the proposition extend
+unchanged to a nonflat pair \((W,\Theta)\), whose residual action combines
+congruence on \(W\) with conjugation on \(\Theta\).
+
+\section{An exact finite-sector gate}
+\label{sec:grg-numerical-gate}
+
+The homogeneous calculation
+\eqref{eq:grg-homogeneous-map} is exact.  On
+\(\Sym^K\oplus\Sym^K\), its eigenvalues are \(b^2\) on the coupling sector
+and \(b\) on the self sector, each with multiplicity \(K(K+1)/2\).  The
+spectral ratio outside the dominant eigenspace is therefore
+\begin{equation}
+\frac{b}{b^2}=\frac1b,
+\label{eq:grg-sector-gap}
+\end{equation}
+equal to \(0.5\) at \(b=2\).  Comparing the two largest entries of the sorted
+spectrum would incorrectly return one because the dominant eigenvalue is
+degenerate. \status{ESTABLISHED}
+
+Equation~\eqref{eq:grg-sector-gap} is the complete finite-sector result.
+Attraction, uniqueness, and scheme independence remain open because they
+require a declared invariant cone, hierarchy, and limiting protocol.
+\status{OPEN}
+
+\section{Gauge-invariant spectral data}
+\label{sec:grg-spectra}
+
+Let \(L\) be the interaction Laplacian obtained from
+\eqref{eq:grg-family} by setting all \(A_i=0\).  Both \(L\) and
+\(\Lambda=L+A\) are bilinear forms.  Represent a local reframing by the
+invertible new-to-old coordinate map
+\[
+G:\mathbb R_{\mathrm{new}}^{NK}\xrightarrow{\sim}
+\mathbb R_{\mathrm{old}}^{NK},
+\qquad
+G=\operatorname{diag}(g_1,\ldots,g_N).
+\]
+Pullback to the new coordinates sends both forms by congruence,
+\((L,\Lambda)\mapsto(G^\top LG,G^\top\Lambda G)\).
+Ordinary eigenvalues of either matrix are therefore frame dependent.  The
+generalized spectrum of the pair is invariant when the pencil is regular.
+
+\propositionheading{Regular-pencil invariance}{prop:grg-pencil-invariance}
+Suppose \(\det(L-d\Lambda)\) is not the zero polynomial.  Then
+\((L,\Lambda)\) and
+\((G^\top LG,G^\top\Lambda G)\) have the same generalized eigenvalues with
+the same multiplicities.  If \(\Lambda\) is invertible, there are exactly
+\(NK\) finite roots. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+\begin{equation}
+\det(G^\top LG-dG^\top\Lambda G)
+=\det(G)^2\det(L-d\Lambda).
+\label{eq:grg-pencil-congruence}
+\end{equation}
+The nonzero factor does not change roots or regularity.  When
+\(\Lambda\) is invertible, the coefficient of \(d^{NK}\) is
+\((-1)^{NK}\det\Lambda\ne0\).
+
+\propositionheading{Regularity criterion}{prop:grg-pencil-regularity}
+For \(L,A\succeq0\) and \(\Lambda=L+A\), the pencil
+\((L,\Lambda)\) is regular if and only if
+\begin{equation}
+\ker L\cap\ker A=\{0\}.
+\label{eq:grg-regularity}
+\end{equation}
+In that case \(\Lambda\succ0\). \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Positive semidefiniteness gives
+\(\ker(L+A)=\ker L\cap\ker A\).  A nonzero common-kernel vector annihilates
+\(L-d\Lambda\) for every \(d\), so the determinant is identically zero.
+Conversely, if the intersection is trivial then
+\(L+\Lambda=2L+A\succ0\); evaluating at \(d=-1\) proves that the determinant
+polynomial is not identically zero.  The same intersection identity gives
+\(\ker\Lambda=\{0\}\).
+
+At the dense candidate ray \(A=0\), one has \(\Lambda=L\) and
+\(\det(L-dL)\equiv0\).  Passing to a complement of \(\ker L\) produces the
+constant generalized spectrum \(\{1\}\), not a graph-sensitive label.
+Pinning and quotienting therefore do not preserve the same spectral object.
+
+\propositionheading{Mass-pencil transfer}{prop:grg-mass-pencil-transfer}
+Let \(R\succ0\), \(a>0\), and \(\Lambda=L+aR\).  Generalized eigenvalues of
+\((L,R)\) and \((L,\Lambda)\) are related by
+\begin{equation}
+d=\frac{\lambda}{\lambda+a},
+\qquad
+\lambda=\frac{ad}{1-d}.
+\label{eq:grg-mass-transfer}
+\end{equation}
+The correspondence preserves eigenvectors, multiplicities, and ordering.
+Consequently,
+\begin{equation}
+N_d(t)=N_\lambda\left(\frac{at}{1-t}\right),
+\qquad 0\leq t<1.
+\label{eq:grg-counting-transfer}
+\end{equation}
+If \(N_\lambda(s)-N_\lambda(0)\sim Cs^\alpha\) near zero, then at fixed
+\(a>0\),
+\(N_d(t)-N_d(0)\sim Ca^\alpha t^\alpha\). \status{ESTABLISHED}
+
+\paragraph{Proof.}
+The equation \(Lv=d(L+aR)v\) is equivalent, for \(d\ne1\), to
+\(Lv=(ad/(1-d))Rv\).  The case \(d=1\) would require \(Rv=0\), which is
+impossible.  Monotonicity of the fractional map gives the counting identity
+and its asymptotic consequence.
+
+Mass removal and the infrared limit do not commute:
+\begin{equation}
+\lim_{a\downarrow0}\lim_{\lambda\downarrow0}
+\frac{\lambda}{\lambda+a}=0,
+\qquad
+\lim_{\lambda\downarrow0}\lim_{a\downarrow0}
+\frac{\lambda}{\lambda+a}=1.
+\label{eq:grg-noncommuting-mass}
+\end{equation}
+Thus a positive mass regularizes each finite problem but does not supply a
+mass-independent fixed-ray spectrum.
+
+\paragraph{Thermodynamic spectral labels.}
+For a declared sequence \((V_n,L_n,R_n)\), define
+\begin{equation}
+N_n(t)
+=\frac{1}{|V_n|K}
+\#\{k:\lambda_k^{(n)}\leq t\}.
+\label{eq:grg-ids}
+\end{equation}
+A cumulative exponent
+\(N(t)-N(0)\sim Ct^\alpha\) is meaningful only after proving convergence
+\(N_n\to N\) in a stated mode.  A fixed finite graph has an atomic measure,
+so a density exponent is not defined there.  RG depth \(\ell\) and
+thermodynamic size \(n\) form the two-index family of
+\Cref{sec:rg-two-index-limits}; neither the existence nor the commutation of
+those limits follows from the finite congruence identity. \status{OPEN}
+
+Equality of one exponent is not equality of universality classes.  The full
+limiting measure, amplitudes, corrections to scaling, invariant faces,
+basin, and blocking scheme may still differ.  Projective eigenvalue ratios,
+block-normalized scaling dimensions, and matched heat/IDS exponents are
+candidate invariant observables; the raw running matrices are
+scheme-dependent coordinates.
+
+\section{Finite stochastic refinement on matrix cones}
+\label{sec:grg-stochastic-refinement}
+
+\Cref{sec:rg-projective-refinement} proves the general typing statement:
+a stochastic right section samples a fine preimage and is not an inverse of
+the realized coarse map.  The matrix cone sharpens both the obstruction and
+the available finite construction.
+
+The central Wishart family has Laplace transform
+\(\det(I+\sigma\Theta)^{-p}\). Apart from the degenerate law
+\(\delta_0\), it is infinitely divisible exactly when
+\(\operatorname{rank}\sigma=1\) \citep{Mayerhofer2010Wishart}. Therefore a
+full-rank Wishart prior cannot provide convolution roots of every order for
+\(K\geq2\); the surviving rank-one case is an embedded scalar Gamma law on
+a proper face.  This does not mean full-cone convolution semigroups are
+absent. Define the trace-one cone
+\[
+\mathbb S_{+,1}^K
+=\{U\succeq0:\operatorname{tr}U=1\}.
+\]
+Let \(\alpha\) be a finite positive Borel measure on
+\(\mathbb S_{+,1}^K\), and let
+\(\beta:\mathbb S_{+,1}^K\to(0,\infty)\) be measurable with
+\[
+\int_{\mathbb S_{+,1}^K}
+\log\left(1+\beta(U)^{-1}\right)\alpha(dU)<\infty.
+\]
+For \(\Theta\succeq0\), the corresponding matrix-Gamma law on
+\(\PSD^K\) has Laplace transform
+\begin{equation}
+\mathcal L_{\alpha,\beta}(\Theta)
+=\exp\left[
+-\int_{\mathbb S_{+,1}^K}
+\log\left(
+1+\frac{\operatorname{tr}(U\Theta)}{\beta(U)}
+\right)\alpha(dU)
+\right],
+\label{eq:grg-matrix-gamma}
+\end{equation}
+and, for fixed \(\beta\), replacing \(\alpha\) by \(t\alpha\), \(t\geq0\),
+produces a convolution semigroup; \(t=0\) is \(\delta_0\)
+\citep{PerezAbreuStelzer2014}. Generic full-cone draws need not lie in one
+Kron-closed chart, however.
+
+\theoremheading{Congruence-diagonal Gamma--Dirichlet bridge}{thm:grg-gamma-dirichlet-bridge}
+Fix the Kron-closed cone
+\(\mathcal C_H\) from \Cref{sec:cg-kron}, channel parameters
+\(a_r,\beta_r>0\), and intensities \(t_e>0\).  Independently draw
+\begin{equation}
+X_{e,r}\sim\operatorname{Gamma}(t_ea_r,\text{ rate }\beta_r),
+\qquad
+W_e=H\operatorname{diag}(X_{e,1},\ldots,X_{e,K})H^\top.
+\label{eq:grg-gamma-weights}
+\end{equation}
+For a coarse coordinate \(f\) formed from constituents \(E_f\),
+\(\sum_{e\in E_f}W_e\) has the same form with intensity
+\(\sum_{e\in E_f}t_e\).  Conditioned on
+\[
+W_f=H\operatorname{diag}(c_1,\ldots,c_K)H^\top,
+\]
+sample independently over channels
+\begin{equation}
+(P_{e,r})_{e\in E_f}
+\sim\operatorname{Dirichlet}((t_ea_r)_{e\in E_f}),
+\qquad
+X_{e,r}=c_rP_{e,r}.
+\label{eq:grg-dirichlet-bridge}
+\end{equation}
+Then every \(W_e\in\mathcal C_H\) and
+\(\sum_{e\in E_f}W_e=W_f\) exactly.  Applied independently to coarse self
+terms and cut edges, this is a stochastic right section of any fixed finite
+aggregation map on the represented coordinates. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Scalar Gamma variables with a common rate add by addition of their shape
+parameters.  Conditional on their sum, their proportions have the
+Dirichlet law in \eqref{eq:grg-dirichlet-bridge}.  The identities hold
+channelwise, and multiplication by the fixed congruence \(H(\cdot)H^\top\)
+preserves both \(\mathcal C_H\) and addition.
+
+Internal fine edges are absent from the coarse coordinates and require a
+separate prior.  The theorem neither recovers the discarded realization nor
+constructs a two-sided inverse.  An infinite graph-level construction still
+owes compatible internal-edge priors, nested bridge kernels, gauge-covariant
+chart data, cylinder consistency, and tightness or another projective-limit
+theorem. \status{OPEN}
+
+\section{Relations to Bayesian, Laplacian, network, and learned RG}
+\label{sec:grg-literature-boundary}
+
+\paragraph{Bayesian renormalization.}
+For a Gaussian mean family with fixed precision \(\Lambda\), the Fisher
+metric in the mean coordinates is \(\Lambda\), and the inverse Fisher
+cometric is \(\Lambda^{-1}\).  This local identity makes an MVG comparison
+with Bayesian renormalization natural.  Berman, Klinger, and Stapleton,
+however, begin with a posterior over model parameters. In a late-data local
+Gaussian regime, the delta method pushes an inverse Fisher cometric through a
+forward map to obtain a sample-space diffusion tensor, exactly for an affine
+map and to leading local order for a nonlinear map
+\citep{BermanKlingerStapleton2023,BermanKlinger2024Inverse}. Howard,
+Klinger, Maiti, and Stapleton subsequently apply Bayesian RG to neural
+network field theories \citep{HowardKlingerMaitiStapleton2025}.
+\status{ESTABLISHED}
+
+Hard energy precomposition \(\Lambda\mapsto S^\top\Lambda S\) is not that
+posterior flow. \status{ESTABLISHED}
+
+No theorem identifies their scale orientation,
+connection data, or global continuation with \eqref{eq:grg-flow}; the
+comparison therefore supplies no ``opposite-flow'' theorem between this
+operator coarsening and Bayesian learning. \status{NOT-CLAIMED}
+
+\paragraph{Laplacian RG.}
+With a positive reference form \(R\), the generalized heat generator
+\(R^{-1}L\) transforms by similarity, so its spectrum and heat trace are
+gauge invariant.  The scalar Laplacian-RG construction motivates the
+entropy scale diagnostic and the positive susceptibility
+\begin{equation}
+C(\tau)=-\frac{dS}{d\log\tau}
+\label{eq:grg-heat-capacity}
+\end{equation}
+\citep{villegas2023laplacian}.  Raw off-diagonal heat-kernel blocks transform
+as \(K_{ij}\mapsto g_i^{-1}K_{ij}g_j\), however, and are not invariant scalar
+node affinities. \status{ESTABLISHED}
+
+A gauge-invariant real-space block selector, zero-mode
+treatment, and entropy normalization remain open.  The heat scale diagnostic
+does not by itself prove a unique or scheme-independent partition.
+\status{OPEN}
+
+\paragraph{Network RG.}
+Exact closure occurs in the independent-edge multiscale family of Garuccio,
+Lalli, and Garlaschelli, whose hidden variables aggregate additively
+\citep{Garuccio2023Multiscale}. It is a characterized family, not a theorem
+for arbitrary hidden-variable networks. Interaction closure after a
+separately specified elimination is a different result. Interacting-network
+RG can generate higher-order interactions
+outside restricted coordination classes
+\citep{CatanzaroGarlaschelliPatil2026}; it does not imply exact closure of
+arbitrary matrix-weighted node aggregation.  Conversely,
+\eqref{eq:grg-aggregation} does not integrate out edge variables and should
+not be presented as that network transformation. The broader network-RG
+taxonomy is reviewed by \citet{gabrielli2025network}. \status{ESTABLISHED}
+
+\paragraph{Graph learning and variational RG.}
+The Galerkin identity
+\(L_c=S^\top LS\) preserves the restricted quadratic energy.  It does not
+imply spectral approximation, message-passing commutation, or a graph neural
+network realization; those require the approximation and residual controls
+separated in \Cref{sec:cg-galerkin}
+\citep{Loukas2019,JolyKeriven2024}. DiffPool instead learns soft cluster
+assignments end to end \citep{Ying2018DiffPool}; that modeling choice does
+not by itself provide an exact RG semigroup or a closure theorem.
+Oono and Suzuki prove conditional exponential information loss for deep
+graph convolutional networks under spectral and weight hypotheses
+\citep{OonoSuzuki2020}; their result is an oversmoothing boundary, not a
+Galerkin-commutation theorem. Likewise,
+Mehta and Schwab's exact variational-RG/deep-network correspondence assumes a
+hidden-variable kernel satisfying its trace condition
+\citep{MehtaSchwab2014}.  A deterministic identification \(y=S\widetilde y\)
+does not supply that kernel or trace condition, so their exact mapping is a
+precedent within its own construction, not a proof that
+\eqref{eq:grg-flow} is a deep network. \status{ESTABLISHED}
+
+\section{Remaining MVG obligations}
+\label{sec:grg-obligations}
+
+The operator recursion is exact on its declared domain, but the following
+extensions remain open.  Partial fixed-section fibers and rectangular
+cellular-sheaf endpoint maps are already structurally closed under nested
+blocking by \Cref{sec:cg-partial,sec:cg-sheaf-closure}.
+\status{ESTABLISHED}
+
+This structural result does not supply a canonical
+compression to one invertible link and one SPD weight or an RG rescaling
+across variable-rank fibers.  A full MVG law flow must specify the information
+vector, reference measure, and normalizer and prove that every iterate stays
+in the Gaussian natural domain.  Attraction needs a typed autonomous
+endomorphism or a cocycle theorem, a basin, and a matrix mixing mechanism or
+an explicit scalarized restriction.  Universality needs scheme-invariant
+observables and the two-index convergence required by
+\Cref{sec:rg-two-index-limits}.  A gauge-invariant, nondegenerate block
+selector remains open.  Stochastic inverse RG needs graph-level projective
+priors, including priors for annihilated internal edges. \status{OPEN}
+
+\paragraph{Physicist summary.}
+The MVG interaction precision has a clean positive coarse map:
+cut weights and self terms add, and a declared scalar restores the chosen
+units.  On dense homogeneous graphs the coupling sector scales like \(b^2\)
+while the self sector scales like \(b\), giving an exact relative factor
+\(1/b\).  That algebra produces a boundary operator ray, not a normalized
+Gaussian fixed law.  Birkhoff contraction becomes plausible only after
+freezing the matrix direction and constructing one primitive spatial
+endomorphism; sum-only aggregation preserves matrix faces and cannot select
+that direction.  Generalized spectra and Gamma--Dirichlet finite refinements
+are exact gauge-compatible tools, but neither solves scheme independence,
+nonflat hierarchy, or the infinite projective-limit problem.

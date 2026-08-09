@@ -1,0 +1,449 @@
+\chapter{Probability Semantics}
+\label{ch:probability}
+
+Chapter~\ref{ch:geometry} fixed a geometry. This chapter fixes the measurable typing on which every probabilistic statement rests, and it fixes it before any density is written. The order is a substantive commitment: probability measures and normalized kernels are declared first, densities appear afterward as Radon-Nikodym derivatives against explicitly declared reference measures, and logarithms of density ratios appear only under an absolute-continuity convention stated in advance. That convention looks like bookkeeping and is not. It is what makes the exact evidence bound of Chapter~\ref{ch:elbo} an identity rather than an inequality with hidden exceptions, and it is what later forbids degenerate recognition laws whose support is a null set of the posterior. A development that introduces densities first and normalizes later can write those degenerate objects down without noticing, and the resulting statements are false rather than merely imprecise.
+
+Throughout, $\mathcal P(\mathsf S,\mathscr S)$ denotes the set of probability measures on a measurable space $(\mathsf S,\mathscr S)$; the calligraphic symbol with a measurable-space argument is unrelated to the total space $P$ of the principal bundle in Chapter~\ref{ch:geometry}.
+
+\section{The finite design and its evaluation}
+\label{sec:prob-design}
+
+\medskip
+\definitionheading{Finite design and incidence}{def:prob-finite-design}
+A \emph{design} is a finite set of distinct contexts
+\begin{equation}
+D=\{c_a\}_{a=1}^{M}\subseteq\mathcal C,
+\label{eq:prob-design}
+\end{equation}
+indexed by $a\in\{1,\dots,M\}$. The \emph{incidence set} is $\mathfrak A=\{(i,a):c_a\in\mathcal C_i\}$, where $\mathcal C_i$ is the support of agent $i$ from \Cref{def:geo-principal-systems}. For the reference presentation $D\subseteq\bigcap_{i\in V}\mathcal C_i$, so $\mathfrak A=V\times\{1,\dots,M\}$ is rectangular and every listed agent is defined at every design point. \status{DEFINITION}
+\medskip
+
+Nothing is proved by this. The sparse-support case replaces the rectangular index set by $\mathfrak A$ throughout, and it is stated this way to make one point explicit: a sparse design is handled by indexing over declared incidences, never by writing a product over all $(i,a)$ and then deleting the coordinates that happen to be undefined. Deleting coordinates from a product silently changes the sample space, and a bound computed on one sample space is not a bound on another.
+
+\medskip
+\definitionheading{Sample spaces and product sigma-algebras}{def:prob-product-sample-spaces}
+At each admissible $(i,a)$ declare measurable state, model, and observation fibers $(\mathsf K_{i,a},\mathscr K_{i,a})$, $(\mathsf M_{i,a},\mathscr M_{i,a})$, and $(\mathsf O_{i,a},\mathscr O_{i,a})$. The finite latent and observation spaces are
+\begin{align}
+\mathsf Y_D&=\prod_{a=1}^{M}\prod_{i\in V}\bigl(\mathsf K_{i,a}\times\mathsf M_{i,a}\bigr),
+&\mathscr Y_D&=\bigotimes_{a=1}^{M}\bigotimes_{i\in V}\bigl(\mathscr K_{i,a}\otimes\mathscr M_{i,a}\bigr),
+\label{eq:prob-latent-space}\\
+\mathsf O_D&=\prod_{a=1}^{M}\prod_{i\in V}\mathsf O_{i,a},
+&\mathscr O_D&=\bigotimes_{a=1}^{M}\bigotimes_{i\in V}\mathscr O_{i,a}.
+\label{eq:prob-observation-space}
+\end{align}
+The stacked latent is written $Y\in\mathsf Y_D$ and the realized observation $o\in\mathsf O_D$. In the Gaussian realization $\mathsf K_{i,a}=\R^{K}$ and $\mathsf M_{i,a}=\R^{d_m}$ with their Borel sigma-algebras. \status{DEFINITION}
+\medskip
+
+Evaluation and section evaluation have different codomains, and the difference is the one Chapter~\ref{ch:geometry} insisted on. For a sample-field realization $y=((k_i,m_i))_{i\in V}$ defined on $D$, the evaluation map
+\begin{equation}
+\operatorname{Ev}_D(y)=\bigl((k_i(c_a),m_i(c_a))_{i\in V}\bigr)_{a=1}^{M}\in\mathsf Y_D
+\label{eq:prob-evaluation-map}
+\end{equation}
+returns a point of the latent space. Evaluating a distribution-valued section returns something else entirely: $q_i^{o,X}(c_a)$ is a probability measure on $\mathsf K_{i,a}$ and $s_i^{o,X}(c_a)$ is a probability measure on $\mathsf M_{i,a}$, and neither is an element of $\mathsf Y_D$. The finite random element $Y$ takes values in $\mathsf Y_D$; the section values are laws. Section~\ref{sec:prob-compatibility} is where the two are related, and it relates them by hypothesis.
+
+Missing or aggregated observations are not represented by removing latent coordinates from \eqref{eq:prob-latent-space}. They require a separately declared observation map or kernel into a coarser observation space, and the declaration changes $\mathsf O_D$ rather than $\mathsf Y_D$.
+
+\section{Structural data and measurable typing}
+\label{sec:prob-structural}
+
+\medskip
+\definitionheading{Structural configuration and kernel signatures}{def:prob-structural-kernel-signatures}
+Fix a measurable configuration space $(\mathsf X,\mathscr X)$. Every $X\in\mathsf X$ uses the same design $D$, the same agent index set $V$, the same incidence set $\mathfrak A$, and the same measurable identifications of the fibers in \eqref{eq:prob-latent-space} and \eqref{eq:prob-observation-space}; therefore $(\mathsf Y_D,\mathscr Y_D)$ and $(\mathsf O_D,\mathscr O_D)$ do not vary with $X$. A configuration may carry the finite interaction complex $\mathfrak I$ of \Cref{def:geo-graph-links} with its edge set, the frames $U_i$ or the links $L_{ij}$, and the parameters of the observation and transition mechanisms. The generative and recognition objects have the signatures
+\begin{align}
+P_\theta&:(\mathsf X,\mathscr X)\longrightarrow\mathcal P\bigl(\mathsf O_D\times\mathsf Y_D,\mathscr O_D\otimes\mathscr Y_D\bigr),
+&X&\longmapsto P_\theta(\cdot\given X),
+\label{eq:prob-generative-signature}\\
+Q&:(\mathsf O_D\times\mathsf X,\mathscr O_D\otimes\mathscr X)\longrightarrow\mathcal P\bigl(\mathsf Y_D,\mathscr Y_D\bigr),
+&(o,X)&\longmapsto Q_X(\cdot\given o),
+\label{eq:prob-recognition-signature}
+\end{align}
+each measurable in its argument: for every $A\in\mathscr O_D\otimes\mathscr Y_D$ the map $X\mapsto P_\theta(A\given X)$ is $\mathscr X$-measurable, and for every $B\in\mathscr Y_D$ the map $(o,X)\mapsto Q_X(B\given o)$ is $\mathscr O_D\otimes\mathscr X$-measurable. \status{DEFINITION}
+\medskip
+
+Signature \eqref{eq:prob-generative-signature} is the typing on which several later results depend, and it is worth reading for what it omits. The arguments of the generative kernel are $\theta$ and $X$ and nothing else. A recognition law, a recognition parameter, and a posterior are not among them, so no factor of the generative model may read one. This is a definitional requirement of the fixed-joint construction rather than a modeling preference: the joint must be a single measure fixed before an observation is seen, and a factor that reads a posterior makes the joint a function of the object it is supposed to be conditioned into. Nothing is proved here beyond the type; the consequences are drawn in Chapter~\ref{ch:generative}, where the joint is built, and again in Chapter~\ref{ch:obstructions}, where a construction that violates the typing is examined and found inadmissible.
+
+Later chapters may make $X$ random, but only within this fixed measurable space, and at a different probability level. Doing so introduces a configuration prior in $\mathcal P(\mathsf X,\mathscr X)$ and a configuration recognition kernel from $(\mathsf O_D,\mathscr O_D)$ into $\mathcal P(\mathsf X,\mathscr X)$; neither changes $D$, $\mathfrak A$, or the identified fibers, and neither is denoted by any symbol reserved above for a state-level object.
+
+\section{Reference measures}
+\label{sec:prob-reference}
+
+\medskip
+\definitionheading{Declared reference measures}{def:prob-reference-measures}
+Each continuous Euclidean coordinate carries its Borel sigma-algebra and Lebesgue base measure. Each discrete coordinate carries its power-set sigma-algebra and counting base measure. Each mixed real coordinate carries the measure declared in \Cref{prop:prob-mixed-coordinate-dominating-measure}. Any other fiber carries an explicitly declared sigma-finite base measure. Writing $\nu^{k}_{i,a}$, $\nu^{m}_{i,a}$, and $\nu^{o}_{i,a}$ for the component measures, the finite product reference measures are
+\begin{equation}
+\nu^{Y}_{D}=\bigotimes_{a=1}^{M}\bigotimes_{i\in V}\bigl(\nu^{k}_{i,a}\otimes\nu^{m}_{i,a}\bigr),
+\qquad
+\nu^{O}_{D}=\bigotimes_{a=1}^{M}\bigotimes_{i\in V}\nu^{o}_{i,a}.
+\label{eq:prob-reference-measures}
+\end{equation}
+\status{DEFINITION}
+\medskip
+
+Sigma-finiteness of every component is required and is not decoration. It is the hypothesis of the Radon-Nikodym theorem, without which the densities of Section~\ref{sec:prob-kernels} need not exist, and it is the hypothesis of the Fubini-Tonelli theorem, without which the iterated integrals used to marginalize $Y$ out of the joint need not agree with the product integral. A finite product of sigma-finite measures is sigma-finite, so \eqref{eq:prob-reference-measures} inherits the property from its factors; this is the reason the construction is stated on a finite design and is one of the reasons the continuum question of Section~\ref{sec:prob-continuum} stays open.
+
+Mixed coordinates are the case where a declaration is genuinely needed rather than conventional.  A reference measure used by a parameterized family must be fixed for the whole family; choosing a new atomic reference after seeing the parameter would not define one density model.
+
+\medskip
+\theoremheading{Common domination for a mixed family}{thm:prob-mixed-family-common-domination}
+Let $(\mu_t)_{t\in T}$ be any family of Borel probability measures on $\R$ with no singular-continuous part, written
+\[
+\mu_t=f_t\lambda+\sum_{a\in A_t}p_t(a)\delta_a,
+\qquad
+A_t:=\{a\in\R:\mu_t(\{a\})>0\}.
+\]
+There exists a single sigma-finite Borel measure dominating every $\mu_t$ if and only if $A_*:=\bigcup_{t\in T}A_t$ is countable. When $A_*=\{a_1,a_2,\ldots\}$, one such parameter-independent measure is
+\begin{equation}
+\nu_{\mathrm{mix}}
+:=\lambda+\sum_{n\geq1}2^{-n}\delta_{a_n}.
+\label{eq:prob-mixed-family-reference}
+\end{equation}
+In particular, the moving-atom mixed family $\mu_t=\tfrac12\mathcal N(0,1)+\tfrac12\delta_t$, $t\in\R$, has no common sigma-finite dominating measure. \status{ESTABLISHED}
+\medskip
+
+\noindent\emph{Proof.} If $A_*$ is countable, \eqref{eq:prob-mixed-family-reference} is sigma-finite and a $\nu_{\mathrm{mix}}$-null set is both Lebesgue null and contains no point of $A_*$. Hence every continuous and atomic term of every $\mu_t$ vanishes on it, so $\mu_t\ll\nu_{\mathrm{mix}}$. Conversely, suppose a sigma-finite $\xi$ dominates every $\mu_t$. For each $a\in A_*$ some $t$ has $\mu_t(\{a\})>0$, whence $\xi(\{a\})>0$. A sigma-finite measure has at most countably many positive-mass point atoms: on each finite-measure member of a countable cover, the points of mass at least $1/n$ are finite, and the countable union over the cover and $n$ exhausts them. Thus $A_*$ is countable. The displayed moving-atom family has $A_*=\R$, proving the last assertion. \hfill$\square$
+
+\medskip
+\corollaryheading{Dominating measure for one mixed coordinate}{prop:prob-mixed-coordinate-dominating-measure}
+Let $\mu$ be a Borel probability measure on $\R$ whose Lebesgue decomposition has no singular continuous part, so that $\mu=\mu_{\mathrm{ac}}+\mu_{\mathrm d}$ with $\mu_{\mathrm{ac}}\ll\lambda$ and $\mu_{\mathrm d}$ carried by a countable set $A$. Put
+\begin{equation}
+\nu=\lambda+\sum_{x\in A}\delta_x .
+\label{eq:prob-mixed-reference}
+\end{equation}
+Then $\nu$ is sigma-finite and $\mu\ll\nu$. \status{ESTABLISHED}
+\medskip
+
+\noindent\emph{Proof.} Apply \Cref{thm:prob-mixed-family-common-domination} to the singleton family $\{\mu\}$. The measure displayed here and the weighted atomic reference in \eqref{eq:prob-mixed-family-reference} have the same null sets, so either dominates $\mu$. \hfill$\square$
+
+The hypothesis excluding a singular-continuous part is a restriction on this particular Lebesgue-plus-atoms formula, not an intrinsic nondominability claim. A family carrying Cantor-type or other singular-continuous components can be dominated when a common sigma-finite singular reference is available, but that reference must be declared as part of the family before any density is written. Equation~\eqref{eq:prob-mixed-family-reference} supplies no such component.
+
+\section{Kernels first, densities second}
+\label{sec:prob-kernels}
+
+\medskip
+\definitionheading{Normalized kernels; densities as derivatives}{def:prob-normalized-kernels}
+The objects \eqref{eq:prob-generative-signature} and \eqref{eq:prob-recognition-signature} are probability kernels, hence normalized by type. When $P_\theta(\cdot\given X)\ll\nu^{O}_{D}\otimes\nu^{Y}_{D}$, its density is the Radon-Nikodym derivative $p_\theta(o,y\given X)$ determined by
+\begin{equation}
+P_\theta(do,dY\given X)=p_\theta(o,y\given X)\nu^{O}_{D}(do)\nu^{Y}_{D}(dy),
+\label{eq:prob-generative-density}
+\end{equation}
+and the evidence is the normalized marginal
+\begin{equation}
+p_\theta(o\given X)=\int_{\mathsf Y_D}p_\theta(o,y\given X)\nu^{Y}_{D}(dy).
+\label{eq:prob-evidence}
+\end{equation}
+When $Q_X(\cdot\given o)\ll\nu^{Y}_{D}$, its density is written $q_X(y\given o)$. Densities are determined only up to a null set of the declared reference measure, and any two versions agreeing outside such a set denote the same density. \status{DEFINITION}
+\medskip
+
+The order in \Cref{def:prob-normalized-kernels} is the content. A normalized kernel is declared, and only then is a density extracted; the reverse order, in which a nonnegative function is written down and a normalizer is invoked afterward, is a different construction whose normalizer must be shown finite before anything it appears in denotes a probability. This document uses the first order everywhere, and where a later chapter writes an unnormalized energy it says so and exhibits the normalizer.
+
+\medskip
+\noindent\textbf{Regular-conditional convention.} Whenever a later result conditions on a realized observation, assume in addition that $(\mathsf O_D,\mathscr O_D)$ and $(\mathsf Y_D,\mathscr Y_D)$ are standard Borel spaces. This holds for the finite products of Euclidean and countable discrete fibers used in the worked construction; it is an additional hypothesis for a general measurable fiber. For fixed $(\theta,X)$, write
+\begin{equation}
+P_{\theta,X}^{O}(A)
+:=P_\theta(A\times\mathsf Y_D\given X),
+\qquad A\in\mathscr O_D,
+\label{eq:prob-observation-marginal}
+\end{equation}
+for the observation marginal. The standard-Borel hypothesis supplies a regular conditional probability
+\begin{equation}
+\Pi_{\theta,X}(o,B)
+=P_\theta(B\given o,X),
+\qquad B\in\mathscr Y_D,
+\label{eq:prob-rcp}
+\end{equation}
+unique only for $P_{\theta,X}^{O}$-almost every $o$.
+
+When the domination in \eqref{eq:prob-generative-density} holds, Tonelli's theorem makes the function in \eqref{eq:prob-evidence} a density of $P_{\theta,X}^{O}$ relative to $\nu_D^O$. After altering it on a $\nu_D^O$-null set if necessary, there is a measurable set $\mathsf O_{\theta,X}^{\mathrm{reg}}$ with
+\begin{equation}
+P_{\theta,X}^{O}\bigl(\mathsf O_{\theta,X}^{\mathrm{reg}}\bigr)=1,
+\qquad
+0<p_\theta(o\given X)<\infty,
+\label{eq:prob-regular-observations}
+\end{equation}
+such that, for every $o\in\mathsf O_{\theta,X}^{\mathrm{reg}}$ and $B\in\mathscr Y_D$,
+\begin{equation}
+\Pi_{\theta,X}(o,B)
+=\frac{\displaystyle\int_B p_\theta(o,y\given X)\nu_D^Y(dy)}
+{\displaystyle p_\theta(o\given X)}.
+\label{eq:prob-rcp-density}
+\end{equation}
+The displayed version is obtained directly from the density on the positive-finite evidence set and completed arbitrarily off that set. Fubini's theorem shows why the qualification is unavoidable: changing a joint density on a $(\nu_D^O\otimes\nu_D^Y)$-null set can change an entire slice at an exceptional observation, while it changes \eqref{eq:prob-rcp-density} only on an observation-marginal-null set. An exact witness is available on $\R^2$. Let $\phi$ be the standard normal density and let $\psi$ be any different probability density. The functions
+\[
+p(o,y)=\phi(o)\phi(y),
+\qquad
+\widetilde p(o,y)=
+\begin{cases}
+\phi(o)\phi(y),&o\neq0,\\
+\phi(0)\psi(y),&o=0
+\end{cases}
+\]
+are versions of the same joint density because they differ only on the Lebesgue-null slice $\{0\}\times\R$. Both displayed evidence representatives equal $\phi(0)$ at $o=0$, but their density-ratio conditionals there are $\phi(y)dy$ and $\psi(y)dy$. The joint measure therefore determines neither pointwise posterior at that exceptional observation. Accordingly, every later fixed-observation posterior, ELBO, or free-energy statement is asserted for $P_{\theta,X}^{O}$-almost every $o$, represented by $o\in\mathsf O_{\theta,X}^{\mathrm{reg}}$. An everywhere pointwise statement instead requires a particular jointly measurable density, evidence representative, and regular-conditional version to be declared as part of the model data; its exceptional-point values then belong to that declaration and are not determined by the joint measure alone. \status{HYPOTHESIS}
+
+The same order is what makes the group action of Chapter~\ref{ch:geometry} well typed. The action \eqref{eq:geo-pushforward-actions} is defined on measures. A frame change that does not preserve the reference measure changes the density and the base-measure Jacobian together, and only their combination is invariant, so a rule that multiplies a matrix into a density and stops is not the represented action unless the Jacobian is identically one. \status{ESTABLISHED}
+
+\medskip
+\theoremheading{Jointly measurable Radon--Nikodym version for a dominated kernel}{thm:prob-kernel-rn-measurable-version}
+Let $(\mathsf E,\mathscr E)$ be a measurable space, let $(\mathsf F,\mathscr F)$ be standard Borel, and let $K$ and $L$ be probability kernels from $\mathsf E$ to $\mathsf F$ satisfying $K(x,\cdot)\ll L(x,\cdot)$ for every $x$. Then there is a finite-valued $\mathscr E\otimes\mathscr F$-measurable $r:\mathsf E\times\mathsf F\to[0,\infty)$ such that
+\[
+K(x,B)=\int_B r(x,y)L(x,dy)
+\quad\text{for every }x\in\mathsf E, B\in\mathscr F.
+\]
+The theorem supplies one simultaneous version; independently selecting an RN derivative for each $x$ does not establish joint measurability. \status{ESTABLISHED}
+\medskip
+
+\noindent\emph{Proof.} Standard Borelness gives finite refining measurable partitions $(\mathcal P_n)_{n\geq1}$ whose generated sigma-algebras increase to $\mathscr F$. With $0/0:=0$, set
+\begin{equation}
+ r_n(x,y)
+=\sum_{A\in\mathcal P_n}
+  \frac{K(x,A)}{L(x,A)}\mathbf 1_A(y),
+\qquad
+r(x,y)=
+\begin{cases}
+\limsup_{n\to\infty}r_n(x,y),&\limsup_n r_n(x,y)<\infty,\\
+0,&\limsup_n r_n(x,y)=+\infty.
+\end{cases}
+\label{eq:prob-kernel-rn-partitions}
+\end{equation}
+Every $r_n$ and therefore the finite-valued $r$ is jointly measurable. For each fixed $x$, if $h_x=dK(x,\cdot)/dL(x,\cdot)$, then $r_n(x,\cdot)$ is the conditional expectation of $h_x$ on the finite sigma-algebra generated by $\mathcal P_n$. Martingale convergence gives $r_n(x,\cdot)\to h_x$ at $L(x,\cdot)$-almost every point. Because $h_x$ is finite $L(x,\cdot)$-almost everywhere, the second branch of \eqref{eq:prob-kernel-rn-partitions} changes only an $L(x,\cdot)$-null set, and $r(x,\cdot)$ is the required derivative for every $x$. \hfill$\square$
+
+\medskip
+\corollaryheading{Joint densities against one reference}{cor:prob-common-reference-joint-density}
+Let $\nu$ be a fixed sigma-finite measure on a standard Borel $(\mathsf F,\mathscr F)$, and let $K$ be a probability kernel from $(\mathsf E,\mathscr E)$ to $\mathsf F$ with $K(x,\cdot)\ll\nu$ for every $x$. Then $K$ has a finite jointly measurable density $k(x,y)$ against $\nu$. Consequently every finite or countable declared collection of kernels dominated by the same fixed $\nu$ may be represented by jointly measurable densities against that common reference. In particular this applies to the generative and recognition kernels in \eqref{eq:prob-generative-signature}--\eqref{eq:prob-recognition-signature} when they are dominated by the declared product references. \status{ESTABLISHED}
+\medskip
+
+\noindent\emph{Proof.} Sigma-finiteness supplies measurable $w$ with $0<w<\infty$ $\nu$-almost everywhere and $\int w d\nu=1$. The constant probability kernel $L(x,dy)=w(y)\nu(dy)$ is equivalent to $\nu$. Apply \Cref{thm:prob-kernel-rn-measurable-version} to $(K,L)$ to obtain finite jointly measurable $r=dK/dL$ and set $k(x,y)=r(x,y)w(y)$, completing $w$ arbitrarily on its $\nu$-null exceptional set. Applying this construction to each member proves the collection statement. \hfill$\square$
+
+\medskip
+\propositionheading{Integration against a fixed sigma-finite measure}{prop:prob-sigmafinite-integration-measurability}
+If $f:\mathsf E\times\mathsf F\to[0,\infty]$ is $\mathscr E\otimes\mathscr F$-measurable and $\nu$ is a fixed sigma-finite measure on $(\mathsf F,\mathscr F)$, then
+\[
+x\longmapsto\int_{\mathsf F}f(x,y)\nu(dy)
+\]
+is $\mathscr E$-measurable.  For an extended signed integrand the same conclusion holds whenever at least one of the positive- and negative-part integrals is finite; no expression of the form $+\infty-\infty$ is defined. \status{ESTABLISHED}
+\medskip
+
+\noindent\emph{Proof.} Choose a measurable disjoint partition
+$\mathsf F=\bigsqcup_{m\geq1}F_m$ with $\nu(F_m)<\infty$.  For fixed $m$, let
+\[
+ \mathscr D_m=\left\{C\in\mathscr E\otimes\mathscr F:
+ x\longmapsto\nu(C_x\cap F_m)\text{ is }\mathscr E\text{-measurable}\right\}.
+\]
+This class contains every measurable rectangle.  It is a Dynkin system:
+$\nu((C^c)_x\cap F_m)=\nu(F_m)-\nu(C_x\cap F_m)$, where finiteness of
+$\nu(F_m)$ makes the complement step legitimate, and section measures of a
+countable disjoint union are the corresponding pointwise sums.  The
+$\pi$--$\lambda$ theorem therefore gives
+$\mathscr D_m=\mathscr E\otimes\mathscr F$.  Hence, for every product-measurable
+$C$,
+\[
+ x\longmapsto\nu(C_x)=\sum_{m\geq1}\nu(C_x\cap F_m)
+\]
+is measurable.  This proves the assertion for indicators; linearity proves it
+for nonnegative simple functions, and monotone convergence proves it for every
+nonnegative measurable $f$.  Apply that result to $f^+$ and $f^-$ for the
+signed statement.  On the measurable domain where they are not both infinite,
+their extended-real difference is measurable and no infinity cancellation is
+used. \hfill$\square$
+
+\medskip
+\corollaryheading{Measurability of kernel relative entropy}{cor:prob-kernel-kl-measurability}
+Let $\kappa$ and $\eta$ be probability kernels from $(\mathsf E,\mathscr E)$ to a standard Borel space $(\mathsf F,\mathscr F)$.  Then $x\mapsto\KL(\kappa(x,\cdot)\Vert\eta(x,\cdot))$ is $\mathscr E$-measurable as an $[0,\infty]$-valued map.  More explicitly, for finite refining partitions $(\mathcal P_n)$ generating $\mathscr F$,
+\begin{equation}
+\KL(\kappa(x,\cdot)\Vert\eta(x,\cdot))
+=\sup_{n\geq1}\sum_{A\in\mathcal P_n}
+\kappa(x,A)\log\frac{\kappa(x,A)}{\eta(x,A)},
+\label{eq:prob-kernel-kl-partitions}
+\end{equation}
+with $0\log(0/b)=0$ and $a\log(a/0)=+\infty$ for $a>0$. \status{ESTABLISHED}
+\medskip
+
+\noindent\emph{Proof.} Put $L=(\kappa+\eta)/2$.  Applying
+\Cref{thm:prob-kernel-rn-measurable-version} to $(\kappa,L)$ and $(\eta,L)$
+gives finite jointly measurable densities $a=d\kappa/dL$ and $b=d\eta/dL$.
+Fix $x$ and abbreviate $L_x=L(x,\cdot)$.  If
+$\mathscr G_n=\sigma(\mathcal P_n)$, then the cellwise ratios in
+\eqref{eq:prob-kernel-kl-partitions} are versions of
+\[
+ a_n=\E_{L_x}[a(x,\cdot)\mid\mathscr G_n],\qquad
+ b_n=\E_{L_x}[b(x,\cdot)\mid\mathscr G_n].
+\]
+Define the nonnegative lower-semicontinuous convex perspective
+\[
+ \Phi(u,v)=u\log(u/v)-u+v,
+\]
+with $\Phi(0,v)=v$, $\Phi(u,0)=+\infty$ for $u>0$, and
+$\Phi(0,0)=0$.  Because both kernels have unit mass, the $n$th partition
+expression $D_n(x)$ equals
+$\int\Phi(a_n,b_n) dL_x$.  Conditional Jensen under refinement makes
+$D_n(x)$ nondecreasing, while the log-sum inequality gives
+\[
+ D_n(x)\leq \KL(\kappa(x,\cdot)\Vert\eta(x,\cdot)).
+\]
+Martingale convergence gives $(a_n,b_n)\to(a,b)$ $L_x$-almost everywhere.
+Fatou's lemma and the preceding upper bound yield
+\[
+ \KL(\kappa(x,\cdot)\Vert\eta(x,\cdot))
+ =\int\Phi(a,b) dL_x
+ \leq\liminf_nD_n(x)
+ \leq\limsup_nD_n(x)
+ \leq\KL(\kappa(x,\cdot)\Vert\eta(x,\cdot)).
+\]
+Thus $D_n(x)\uparrow\KL(\kappa(x,\cdot)\Vert\eta(x,\cdot))$, proving
+\eqref{eq:prob-kernel-kl-partitions} without a cofinality assertion.  Each
+$D_n$ is measurable in $x$, so its countable supremum is measurable. \hfill$\square$
+
+\medskip
+\propositionheading{Kernel integration preserves measurability}{prop:prob-kernel-integration-measurability}
+Let $\kappa$ be a probability kernel from $(\mathsf E,\mathscr E)$ to $(\mathsf F,\mathscr F)$ and let $f:\mathsf E\times\mathsf F\to[0,\infty]$ be $\mathscr E\otimes\mathscr F$-measurable. Then
+\begin{equation}
+x\longmapsto\int_{\mathsf F}f(x,y)\kappa(x,dy)
+\label{eq:prob-kernel-integration}
+\end{equation}
+is $\mathscr E$-measurable. Consequently $X\mapsto p_\theta(o\given X)$ and the $Q_X$-expectations appearing in the bound of Chapter~\ref{ch:elbo} are measurable in $(o,X)$ whenever their integrands are jointly measurable. \status{ESTABLISHED}
+\medskip
+
+\noindent\emph{Proof.} Let $\mathcal D$ be the collection of $C\in\mathscr E\otimes\mathscr F$ for which $x\mapsto\kappa(x,C_x)$ is $\mathscr E$-measurable, where $C_x=\{y:(x,y)\in C\}$. Measurable rectangles $A\times B$ lie in $\mathcal D$, since $\kappa(x,(A\times B)_x)=\mathbf 1_A(x)\kappa(x,B)$ and $x\mapsto\kappa(x,B)$ is measurable by the definition of a kernel; the rectangles form a $\pi$-system generating $\mathscr E\otimes\mathscr F$. The collection $\mathcal D$ contains $\mathsf E\times\mathsf F$, is closed under proper differences because $\kappa(x,\cdot)$ is a finite measure, and is closed under increasing limits by continuity from below, hence is a $\lambda$-system; Dynkin's lemma gives $\mathcal D=\mathscr E\otimes\mathscr F$. The claim therefore holds for indicators, hence for nonnegative simple functions by linearity, hence for all nonnegative measurable $f$ by monotone approximation and monotone convergence. The full development of kernels and their integrals is standard \citep{Kallenberg2021}. \hfill$\square$
+
+This proposition is stated because the measurability of the evidence and of the bound in their arguments is used implicitly whenever one writes an expectation over configurations, and an implicit use of an unproved measurability claim is a gap. It is discharged here rather than assumed.
+
+\section{The absolute-continuity convention}
+\label{sec:prob-abscont}
+
+\medskip
+\definitionheading{Standing convention on logarithmic density ratios}{def:prob-log-density-ratio-convention}
+Wherever this document writes a logarithmic density ratio, or an expectation of one, the measure appearing in the numerator is absolutely continuous with respect to the measure appearing in the denominator. Relative entropy is understood in the measure-theoretic sense,
+\begin{equation}
+\KL(Q\Vert P)=
+\begin{cases}
+\displaystyle\int\log\Bigl(\frac{dQ}{dP}(y)\Bigr)Q(dy), & Q\ll P,\\[1.2ex]
++\infty, & \text{otherwise},
+\end{cases}
+\label{eq:prob-kl-definition}
+\end{equation}
+following the measure-theoretic formulations of \citet{Kullback1951} and \citet{Csiszar1967}. \status{DEFINITION}
+\medskip
+
+The convention is not a restriction on what may be written; the second branch of \eqref{eq:prob-kl-definition} assigns a value in every case. It is a statement about which of those values is finite, and it is load-bearing precisely because the infinite branch is not an edge case to be ignored but the mechanism by which whole classes of candidate recognition laws are excluded. The next statement makes the criterion checkable in terms of densities, which is the form in which it is applied later.
+
+\medskip
+\propositionheading{Density criterion for absolute continuity}{prop:prob-density-absolute-continuity}
+Let $Q$ and $P$ be measures on a common measurable space with $Q\ll\nu$ and $P\ll\nu$ for a sigma-finite $\nu$, with densities $q$ and $p$. Write $Z=\{p=0\}$. Then
+\begin{equation}
+Q\ll P
+\iff
+Q(Z)=0
+\iff
+q=0\quad\nu\text{-almost everywhere on }Z .
+\label{eq:prob-abscont-criterion}
+\end{equation}
+\status{ESTABLISHED}
+\medskip
+
+\noindent\emph{Proof.} First, $P(Z)=\int_Z p(x)\nu(dx)=0$. If $Q\ll P$ then $Q(Z)=0$ follows at once. Conversely suppose $Q(Z)=0$ and let $A$ satisfy $P(A)=0$, that is $\int_A p(x)\nu(dx)=0$ with $p\geq0$; then $\nu(A\cap\{p>0\})=0$, so $Q(A\cap\{p>0\})=\int_{A\cap\{p>0\}}q(x)\nu(dx)=0$, while $Q(A\cap Z)\leq Q(Z)=0$. Adding gives $Q(A)=0$. The second equivalence is immediate from $Q(Z)=\int_Z q(x)\nu(dx)$ and $q\geq0$. \hfill$\square$
+
+The consequence used later has two cases that must not be conflated. \Cref{prop:prob-density-absolute-continuity} applies when both measures are dominated by the same $\nu$. If a candidate $Q$ is singular relative to that reference measure, its failure of absolute continuity must instead be checked directly from sets. Namely, if there is a measurable $S$ with
+\begin{equation}
+Q(S)=1,
+\qquad
+P(S)=0,
+\label{eq:prob-direct-null-set}
+\end{equation}
+then $Q\not\ll P$ by the definition of absolute continuity, and \eqref{eq:prob-kl-definition} gives $\KL(Q\Vert P)=+\infty$. For example, let $P$ be a nondegenerate Lebesgue-dominated law on $\R^d$ and let $Q$ be supported on a proper affine subspace $S$. The subspace is Lebesgue null, hence $P(S)=0$, whereas $Q(S)=1$; the direct argument \eqref{eq:prob-direct-null-set}, not \Cref{prop:prob-density-absolute-continuity}, proves the claim. This distinction matters because a subspace-supported $Q$ has no Lebesgue density to which the density criterion could be applied. The specific instance, in which an identification of latent coordinates across a cluster is shown to be a generative construction rather than a restriction on the recognition law, is developed in Part~II.
+
+\medskip
+\hypothesisheading{Regular positive-finite observation}{hyp:prob-regular-observation}
+For fixed $(\theta,X)$, the selected observation satisfies $o\in\mathsf O_{\theta,X}^{\mathrm{reg}}$ under the regular-conditional convention above, and
+\begin{equation}
+0<p_\theta(o\given X)<\infty.
+\label{eq:prob-support-condition}
+\end{equation}
+\status{HYPOTHESIS}
+\medskip
+
+This hypothesis selects a pointwise posterior version and a finite real log evidence.  It imposes no support or entropy condition on a candidate recognition law; those conditions are needed only for the classical split representation below.
+
+\medskip
+\hypothesisheading{Classical split-ELBO domain}{hyp:prob-classical-split-elbo}
+In addition to \Cref{hyp:prob-regular-observation}, the recognition law satisfies
+\[
+Q_X(\cdot\given o)\ll \Pi_{\theta,X}(o,\cdot)
+\]
+and
+\begin{equation}
+\E_{Q_X}\Bigl[\bigl|\log p_\theta(o,Y\given X)\bigr|+\bigl|\log q_X(Y\given o)\bigr|\Bigr]<\infty .
+\label{eq:prob-integrability}
+\end{equation}
+\status{HYPOTHESIS}
+\medskip
+
+These are choices, and each excludes something identifiable. Membership in $\mathsf O_{\theta,X}^{\mathrm{reg}}$ makes the posterior the selected regular-conditional version and makes the statement invariant under changes of density version outside a marginal-full set. The lower bound in \eqref{eq:prob-support-condition} excludes observations the selected representative deems impossible, for which the log evidence is $-\infty$. The separate absolute-continuity requirement in \Cref{hyp:prob-classical-split-elbo} excludes exactly the degenerate laws just described. Condition \eqref{eq:prob-integrability} excludes recognition laws whose tails make the two classical expectations individually infinite even when their formal difference suggests cancellation.  Chapter~\ref{ch:elbo} first defines an extended functional for every probability law and invokes \Cref{hyp:prob-classical-split-elbo} only when splitting it into separate expected-log-joint and entropy terms.
+
+\section{Recognition marginals and what they fail to determine}
+\label{sec:prob-marginals}
+
+\medskip
+\definitionheading{Coordinate marginals of the recognition law}{def:prob-recognition-marginals}
+With $\operatorname{pr}^{k}_{i,a}$ and $\operatorname{pr}^{m}_{i,a}$ the coordinate projections out of $\mathsf Y_D$, define the marginalization maps $\operatorname{Marg}^{k}_{i,a}(R)=(\operatorname{pr}^{k}_{i,a})_{\#}R$ and $\operatorname{Marg}^{m}_{i,a}(R)=(\operatorname{pr}^{m}_{i,a})_{\#}R$ on $\mathcal P(\mathsf Y_D,\mathscr Y_D)$, and set
+\begin{equation}
+q^{o,X}_{i,a}=\operatorname{Marg}^{k}_{i,a}\bigl(Q_X(\cdot\given o)\bigr),
+\qquad
+s^{o,X}_{i,a}=\operatorname{Marg}^{m}_{i,a}\bigl(Q_X(\cdot\given o)\bigr).
+\label{eq:prob-recognition-marginals}
+\end{equation}
+\status{DEFINITION}
+\medskip
+
+The recognition law is not required to factor across agents, design points, or channels. In the Gaussian realization with at least two nondegenerate real coordinates, the marginals \eqref{eq:prob-recognition-marginals} are therefore a lossy summary, and the next statement exhibits the loss. No such nonidentifiability is asserted for an arbitrary collection of fibers: if the finite latent space is a singleton, its unique law is determined by every marginal.
+
+\medskip
+\propositionheading{Coordinate marginals do not determine a sufficiently rich joint}{prop:prob-marginals-do-not-determine-joint}
+Suppose \(\mathsf Y_D\) contains at least two nondegenerate real coordinates, as it does in the nondegenerate Gaussian realization. Then there exist distinct probability measures on $\mathsf Y_D$ with identical coordinate marginals. Consequently the family $\{q^{o,X}_{i,a},s^{o,X}_{i,a}\}$ does not determine $Q_X(\cdot\given o)$ under this richness hypothesis. Without it the conclusion can fail: for one agent and one design point with \(\mathsf K_{i,a}=\mathsf M_{i,a}=\{0\}\), the space \(\mathsf Y_D\) is a singleton and its unique law is determined by its marginals. \status{ESTABLISHED}
+\medskip
+
+\noindent\emph{Proof.} Take $Q^{(0)}=\mathcal N(0,I_2)$ and $Q^{(r)}=\mathcal N(0,\Sigma_r)$ with $\Sigma_r=\begin{psmallmatrix}1&r\\r&1\end{psmallmatrix}$ for any $r\in(-1,1)$ with $r\neq0$; both are probability measures, since $\Sigma_r$ has eigenvalues $1\pm r>0$. The coordinate marginals of a centered Gaussian $\mathcal N(0,\Sigma)$ on $\R^2$ are $\mathcal N(0,\Sigma_{11})$ and $\mathcal N(0,\Sigma_{22})$, so both measures have standard normal marginals in both coordinates. They are distinct because a Gaussian law is determined by its mean and covariance and the covariances differ. Embedding this pair in any two coordinates of $\mathsf Y_D$ and keeping the remaining coordinates fixed produces two distinct elements of $\mathcal P(\mathsf Y_D,\mathscr Y_D)$ with the same family \eqref{eq:prob-recognition-marginals}. \hfill$\square$
+
+\section{Continuum sections versus finite evaluation}
+\label{sec:prob-compatibility}
+
+Chapter~\ref{ch:geometry} gave each agent continuum sections $q^{o,X}_i$ and $s^{o,X}_i$ over its support. This chapter has given the finite recognition law $Q_X$ and its marginals. There are now two ways to obtain a probability measure on $\mathsf K_{i,a}$: sample the continuum section at $c_a$, or marginalize the finite law at $(i,a)$. Write the first as
+\begin{equation}
+\operatorname{Samp}_{D,i}\bigl(q^{o,X}_i\bigr)=\bigl(q^{o,X}_i(c_a)\bigr)_{a=1}^{M},
+\qquad
+\operatorname{Samp}_{D,i}\bigl(s^{o,X}_i\bigr)=\bigl(s^{o,X}_i(c_a)\bigr)_{a=1}^{M}.
+\label{eq:prob-sampling-map}
+\end{equation}
+The two constructions have different domains. The map \eqref{eq:prob-sampling-map} acts on sections in $\Gamma(\mathcal C_i,\mathcal E\vert_{\mathcal C_i})$; the maps of \Cref{def:prob-recognition-marginals} act on $\mathcal P(\mathsf Y_D,\mathscr Y_D)$. Neither is defined in terms of the other, so their outputs coincide only if that is declared. The following statement shows that the declaration is substantive in one direction and empty in the other, so that calling it a consequence would be wrong in both.
+
+\medskip
+\propositionheading{Compatibility determines neither side}{prop:prob-compatibility-nonidentifiability}
+Suppose the compatibility relation
+\begin{equation}
+q^{o,X}_i(c_a)=q^{o,X}_{i,a},
+\qquad
+s^{o,X}_i(c_a)=s^{o,X}_{i,a}
+\qquad\text{for every }(i,a)\in\mathfrak A
+\label{eq:prob-compatibility}
+\end{equation}
+holds. Then (i), under the two-nondegenerate-coordinate richness hypothesis of \Cref{prop:prob-marginals-do-not-determine-joint}, \eqref{eq:prob-compatibility} does not determine $Q_X(\cdot\given o)$; and (ii), if some support \(\mathcal C_i\) contains a point outside the finite design \(D\) and the selected section class admits a nonzero smooth deformation supported away from \(D\), the relation does not determine the sections $q^{o,X}_i$ and $s^{o,X}_i$. The positive-dimensional Gaussian tier supplies such deformations. If every support is zero-dimensional and exhausted by its design points, the finite values can instead determine a section pointwise. \status{ESTABLISHED}
+\medskip
+
+\noindent\emph{Proof.} (i) By \Cref{prop:prob-marginals-do-not-determine-joint} there are distinct laws in $\mathcal P(\mathsf Y_D,\mathscr Y_D)$ with the same coordinate marginals, and \eqref{eq:prob-compatibility} constrains $Q_X$ only through those marginals; both such laws satisfy it against the same sections. (ii) Fix \(c^{\star}\in\mathcal C_i\setminus D\). In the positive-dimensional Gaussian realization, choose a neighborhood of \(c^\star\) disjoint from the finite set \(D\) and a smooth bump function $\chi:\mathcal C_i\to[0,1]$ supported there with $\chi(c^{\star})=1$. The section obtained from $q^{o,X}_i$ by replacing $\mu_i(c)$ with $\mu_i(c)+\chi(c)v$ for any fixed $v\neq0$ is a smooth section of the same bundle, differs from $q^{o,X}_i$ at $c^{\star}$, and agrees with it on all of $D$; it therefore satisfies \eqref{eq:prob-compatibility} against the same marginals. By contrast, if \(\mathcal C_i=D\cap\mathcal C_i\) as a zero-dimensional support, equality at those points is pointwise equality of the section, so the nonuniqueness conclusion has no such witness and can fail. \hfill$\square$
+
+\medskip
+\hypothesisheading{Sampling and marginalization are compatible}{hyp:prob-sampling-compatibility}
+Where a result requires the continuum sections and the finite recognition law to describe the same coordinate laws, relation \eqref{eq:prob-compatibility} is adopted. \status{HYPOTHESIS}
+\medskip
+
+This is a choice and is named as one. It excludes configurations in which an agent's continuum section and the finite law disagree at a design point, which is a genuine possibility because the two objects are declared independently. It is invoked only where a statement about the finite law is transferred to the geometric layer, or the reverse; a result stated entirely about the finite construction does not need it. \Cref{prop:prob-compatibility-nonidentifiability} records that, under its richness hypothesis, adopting compatibility does not reconstruct the joint from its marginals and, when the support extends beyond the design and the selected fiber is locally deformable, does not reconstruct a continuum section from finite samples. Singleton finite fibers and zero-dimensional supports exhausted by the design are the explicit exceptions.
+
+\section{What the finite construction does not supply}
+\label{sec:prob-continuum}
+
+\medskip
+\openproblemheading{Continuum probabilistic theory}{open:prob-continuum-theory}
+The finite construction supplies probability spaces and kernels associated with the declared design $D$. It supplies no probability measure on a space of sections over $\mathcal C$, no unique extension of the finite marginals to such a space, and no continuum limit. Whether one exists for this construction is not settled here. \status{OPEN}
+\medskip
+
+What would close it can be listed exactly, and listing it is the point of declaring the gap rather than gesturing at it. One would need a refining family of designs; a compatible, that is projective, system of finite laws indexed by those designs, so that a Kolmogorov-type extension theorem applies \citep{Kallenberg2021}; a declared topology and sigma-algebra on the candidate space of sections, since the extension theorem produces a measure on a product space and further work is needed to place it on a space of smooth sections; tightness or compactness sufficient to control the limit; convergence of the functionals and observables that the finite theory computes; control of the gauge choices of Chapter~\ref{ch:geometry} and of the reference measures of Section~\ref{sec:prob-reference} under refinement, since neither is canonical; and a proof that any proposed continuum interaction energy is normalizable.
+
+The last item is where the obstruction is concrete rather than merely laborious. The reference measures \eqref{eq:prob-reference-measures} are finite products, and sigma-finiteness was inherited from finitely many sigma-finite factors; the same construction does not extend to infinitely many non-probability factors, so a continuum theory cannot obtain its reference measure by the route used here and would have to declare a measure on the section space directly. Until that is done, a continuum energy has no density to be the exponent of, and the objects that the finite theory calls densities have no continuum counterparts. Every evidence-bound claim in this document is accordingly a finite-design claim, and none of them is asserted in a continuum limit.

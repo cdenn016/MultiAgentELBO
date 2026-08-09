@@ -1,0 +1,1736 @@
+[CmdletBinding()]
+param(
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateSet('Build', 'NumericalUpdate', 'NumericalVerify')]
+    [string]$Mode,
+    [Parameter(Position = 1, Mandatory = $true)][string]$RepositoryRoot,
+    [Parameter(Position = 2, Mandatory = $true)][string]$SourceRevision,
+    [Parameter(Position = 3, Mandatory = $true)][string]$ReceiptPath,
+    [Parameter(Position = 4, Mandatory = $true)][string]$SourceDirectory,
+    [Parameter(Position = 5, Mandatory = $true)][AllowEmptyString()][string]$OutputDirectory,
+    [Parameter(Position = 6, Mandatory = $true)][AllowEmptyString()][string]$AuditPath,
+    [Parameter(Position = 7, Mandatory = $true)][string]$VerificationResult,
+    [Parameter(Position = 8, Mandatory = $true)][string]$VerificationReport,
+    [Parameter(Position = 9, Mandatory = $true)][AllowEmptyString()][string]$PdflatexPath,
+    [Parameter(Position = 10, Mandatory = $true)][AllowEmptyString()][string]$BibtexPath,
+    [Parameter(Position = 11, Mandatory = $true)][AllowEmptyString()][string]$BibtexStylePath,
+    [Parameter(Position = 12, Mandatory = $true)][string]$ApprovedTransportSha256,
+    [Parameter(Position = 13, Mandatory = $true)][string]$ApprovedTransportByteCount
+)
+
+# AUDIT REFERENCE BODY ONLY. The release procedure approves the exact one-line
+# build_bootstrap_transport.txt bytes out of band and feeds them as raw ASCII
+# stdin to fixed powershell.exe -Command -. This readable body is embedded in
+# that transport byte-for-byte but is never itself an authenticated launcher.
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version 2.0
+$Profile = 'gauge-vfe-rg-production-v1'
+$PowerShellPath = 'C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe'
+$GitPath = 'C:\Program Files\Git\cmd\git.exe'
+$PythonPath = 'C:\Python314\python.exe'
+$TemporaryBase = 'C:\tmp'
+$Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+$AcquiredLocks = New-Object System.Collections.Generic.List[object]
+$SourceLock = $null
+$MaterializedSourceLock = $null
+$AttestationLock = $null
+$DirectoryHandle = $null
+$TemporaryDirectory = $null
+$MetadataM0 = $null
+$MetadataM1 = $null
+$script:MetadataRoots = $null
+$script:MetadataRootBinding = $null
+$DirectoryM0 = $null
+$DirectoryM1 = $null
+$OutputDirectoryHandle = $null
+$OutputDirectoryM0 = $null
+$OutputDirectoryM1 = $null
+$VerificationResultLock = $null
+$VerificationReportLock = $null
+$AuditLock = $null
+$OutputLocks = New-Object System.Collections.Generic.List[object]
+$EvidenceLocksByPath = @{}
+$script:BuildArtifactPathsM0 = @()
+$FreshTargets = [ordered]@{}
+$OutputRecords = [ordered]@{}
+$script:TransactionReceiptId = $null
+$ChildRecord = $null
+$RepositorySourceRecord = $null
+$ExecutedSourceRecord = $null
+$AttestationRecord = $null
+$M1Record = [ordered]@{ completed = $false; error = $null }
+$CleanupRecord = [ordered]@{ completed = $false; error = $null }
+$Accepted = $false
+$Failure = $null
+$script:ReceiptTargetValidated = $false
+$OuterArgv = @([System.Environment]::GetCommandLineArgs())
+
+if (-not ('GaugeVfeBootstrapNative' -as [type])) {
+    Add-Type -TypeDefinition @'
+using System;
+using System.ComponentModel;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Text;
+using Microsoft.Win32.SafeHandles;
+
+public static class GaugeVfeBootstrapNative
+{
+    private const uint GENERIC_READ = 0x80000000;
+    private const uint FILE_SHARE_READ = 0x00000001;
+    private const uint FILE_SHARE_WRITE = 0x00000002;
+    private const uint OPEN_EXISTING = 3;
+    private const uint FILE_FLAG_BACKUP_SEMANTICS = 0x02000000;
+    private const uint FILE_FLAG_OPEN_REPARSE_POINT = 0x00200000;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct FileTime { public uint Low; public uint High; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct ByHandleFileInformation
+    {
+        public uint FileAttributes;
+        public FileTime CreationTime;
+        public FileTime LastAccessTime;
+        public FileTime LastWriteTime;
+        public uint VolumeSerialNumber;
+        public uint FileSizeHigh;
+        public uint FileSizeLow;
+        public uint NumberOfLinks;
+        public uint FileIndexHigh;
+        public uint FileIndexLow;
+    }
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern bool CreateDirectoryW(string path, IntPtr securityAttributes);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern SafeFileHandle CreateFileW(
+        string path, uint access, uint share, IntPtr securityAttributes,
+        uint creationDisposition, uint flags, IntPtr templateFile
+    );
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool GetFileInformationByHandle(
+        SafeFileHandle handle, out ByHandleFileInformation information
+    );
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern uint GetFinalPathNameByHandleW(
+        SafeFileHandle handle, StringBuilder path, uint length, uint flags
+    );
+
+    private static ulong Join(uint high, uint low)
+    {
+        return ((ulong)high << 32) | low;
+    }
+
+    public static bool CreateFreshDirectory(string path)
+    {
+        if (CreateDirectoryW(path, IntPtr.Zero)) return true;
+        int error = Marshal.GetLastWin32Error();
+        if (error == 183 || error == 80) return false;
+        throw new Win32Exception(error);
+    }
+
+    public static SafeFileHandle OpenDirectoryDenyDelete(string path)
+    {
+        SafeFileHandle handle = CreateFileW(
+            path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+            IntPtr.Zero, OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+            IntPtr.Zero
+        );
+        if (handle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error());
+        return handle;
+    }
+
+    public static string[] Identity(SafeFileHandle handle)
+    {
+        ByHandleFileInformation information;
+        if (!GetFileInformationByHandle(handle, out information))
+            throw new Win32Exception(Marshal.GetLastWin32Error());
+        return new[]
+        {
+            information.VolumeSerialNumber.ToString(CultureInfo.InvariantCulture),
+            Join(information.FileIndexHigh, information.FileIndexLow).ToString(CultureInfo.InvariantCulture),
+            Join(information.FileSizeHigh, information.FileSizeLow).ToString(CultureInfo.InvariantCulture),
+            Join(information.CreationTime.High, information.CreationTime.Low).ToString(CultureInfo.InvariantCulture),
+            Join(information.LastWriteTime.High, information.LastWriteTime.Low).ToString(CultureInfo.InvariantCulture),
+            information.FileAttributes.ToString(CultureInfo.InvariantCulture),
+            information.NumberOfLinks.ToString(CultureInfo.InvariantCulture)
+        };
+    }
+
+    public static string FinalPath(SafeFileHandle handle)
+    {
+        StringBuilder buffer = new StringBuilder(32768);
+        uint length = GetFinalPathNameByHandleW(handle, buffer, (uint)buffer.Capacity, 0);
+        if (length == 0 || length >= buffer.Capacity)
+            throw new Win32Exception(Marshal.GetLastWin32Error());
+        string value = buffer.ToString();
+        return value.StartsWith(@"\\?\") ? value.Substring(4) : value;
+    }
+}
+'@
+}
+
+function Get-AbsolutePath {
+    param([string]$Value, [string]$Label)
+    if (-not $Value -or -not [System.IO.Path]::IsPathRooted($Value)) {
+        throw "$Label must be an explicit absolute path."
+    }
+    return [System.IO.Path]::GetFullPath($Value)
+}
+
+function Assert-NoReparseComponents {
+    param([string]$Path, [string]$Label, [switch]$AllowMissingLeaf)
+    $full = [System.IO.Path]::GetFullPath($Path)
+    $root = [System.IO.Path]::GetPathRoot($full)
+    $current = $root.TrimEnd('\')
+    if (-not $current) { $current = $root }
+    $parts = @($full.Substring($root.Length).Split('\') | Where-Object { $_ })
+    for ($index = 0; $index -lt $parts.Count; $index++) {
+        $current = Join-Path -Path $current -ChildPath $parts[$index]
+        if (-not (Test-Path -LiteralPath $current)) {
+            if ($AllowMissingLeaf -and $index -eq $parts.Count - 1) { return }
+            throw "$Label has a missing path component: $current"
+        }
+        $item = Get-Item -LiteralPath $current -Force -ErrorAction Stop
+        if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw "$Label is reparse-mediated at $current"
+        }
+    }
+}
+
+function ConvertTo-Argument {
+    param([AllowEmptyString()][string]$Value)
+    if ($Value.Length -gt 0 -and $Value -notmatch '[\s"]') { return $Value }
+    $builder = New-Object System.Text.StringBuilder
+    [void]$builder.Append('"')
+    $slashes = 0
+    foreach ($character in $Value.ToCharArray()) {
+        if ($character -eq '\') { $slashes++; continue }
+        if ($character -eq '"') {
+            [void]$builder.Append(('\' * ($slashes * 2 + 1)))
+            [void]$builder.Append('"')
+            $slashes = 0
+            continue
+        }
+        if ($slashes) { [void]$builder.Append(('\' * $slashes)); $slashes = 0 }
+        [void]$builder.Append($character)
+    }
+    if ($slashes) { [void]$builder.Append(('\' * ($slashes * 2))) }
+    [void]$builder.Append('"')
+    return $builder.ToString()
+}
+
+function Get-ClosedEnvironment {
+    param(
+        [string]$Executable,
+        [string]$TempDirectory,
+        [System.Collections.IDictionary]$Additional = $null
+    )
+    $pathEntries = New-Object System.Collections.Generic.List[string]
+    [void]$pathEntries.Add([System.IO.Path]::GetDirectoryName($Executable))
+    [void]$pathEntries.Add([System.IO.Path]::GetDirectoryName($GitPath))
+    [void]$pathEntries.Add('C:\WINDOWS\System32')
+    [void]$pathEntries.Add('C:\WINDOWS')
+    $environment = [ordered]@{
+        SystemRoot = 'C:\WINDOWS'
+        WINDIR = 'C:\WINDOWS'
+        SystemDrive = 'C:'
+        COMSPEC = 'C:\WINDOWS\System32\cmd.exe'
+        PATHEXT = '.COM;.EXE;.BAT;.CMD'
+        PATH = (@($pathEntries | Select-Object -Unique) -join ';')
+        TEMP = $TempDirectory
+        TMP = $TempDirectory
+        USERPROFILE = $TempDirectory
+        XDG_CONFIG_HOME = $TempDirectory
+        GIT_CONFIG_NOSYSTEM = '1'
+        GIT_CONFIG_GLOBAL = 'NUL'
+        GIT_TERMINAL_PROMPT = '0'
+        GIT_OPTIONAL_LOCKS = '0'
+        PSModulePath = 'C:\WINDOWS\System32\WindowsPowerShell\v1.0\Modules'
+    }
+    if ($null -ne $Additional) {
+        foreach ($entry in $Additional.GetEnumerator()) {
+            if ($environment.Contains([string]$entry.Key)) {
+                throw "Closed child environment key collides with fixed key: $($entry.Key)"
+            }
+            $environment[[string]$entry.Key] = [string]$entry.Value
+        }
+    }
+    return $environment
+}
+
+function Get-ByteSha256 {
+    param([byte[]]$Bytes)
+    $digest = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return ([System.BitConverter]::ToString(
+            $digest.ComputeHash($Bytes)
+        )).Replace('-', '').ToLowerInvariant()
+    }
+    finally { $digest.Dispose() }
+}
+
+function Invoke-ClosedProcess {
+    param(
+        [string]$Executable,
+        [string[]]$Arguments,
+        [string]$WorkingDirectory,
+        [System.Collections.IDictionary]$Environment,
+        [byte[]]$StandardInputBytes = $null
+    )
+    $start = New-Object System.Diagnostics.ProcessStartInfo
+    $start.FileName = $Executable
+    $start.Arguments = (@($Arguments | ForEach-Object { ConvertTo-Argument ([string]$_) }) -join ' ')
+    $start.WorkingDirectory = $WorkingDirectory
+    $start.UseShellExecute = $false
+    $start.CreateNoWindow = $true
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+    $start.RedirectStandardInput = $null -ne $StandardInputBytes
+    $start.EnvironmentVariables.Clear()
+    foreach ($entry in $Environment.GetEnumerator()) {
+        $start.EnvironmentVariables[[string]$entry.Key] = [string]$entry.Value
+    }
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $start
+    $started = [System.DateTimeOffset]::UtcNow.ToString('o')
+    if (-not $process.Start()) { throw "Could not start fixed child: $Executable" }
+    $stdoutBuffer = New-Object System.IO.MemoryStream
+    $stderrBuffer = New-Object System.IO.MemoryStream
+    $stdoutCopy = $process.StandardOutput.BaseStream.CopyToAsync($stdoutBuffer)
+    $stderrCopy = $process.StandardError.BaseStream.CopyToAsync($stderrBuffer)
+    if ($null -ne $StandardInputBytes) {
+        $previousInputEncoding = [Console]::InputEncoding
+        try {
+            [Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false)
+            $standardInput = $process.StandardInput
+        }
+        finally { [Console]::InputEncoding = $previousInputEncoding }
+        $standardInput.BaseStream.Write(
+            $StandardInputBytes,
+            0,
+            $StandardInputBytes.Length
+        )
+        $standardInput.BaseStream.Flush()
+        $standardInput.Close()
+    }
+    $process.WaitForExit()
+    $stdoutCopy.Wait()
+    $stderrCopy.Wait()
+    [byte[]]$stdoutBytes = $stdoutBuffer.ToArray()
+    [byte[]]$stderrBytes = $stderrBuffer.ToArray()
+    $stdoutBuffer.Dispose()
+    $stderrBuffer.Dispose()
+    $ended = [System.DateTimeOffset]::UtcNow.ToString('o')
+    $record = [ordered]@{
+        argv = @($Executable) + @($Arguments)
+        exit_code = [int]$process.ExitCode
+        stdout = [System.Text.Encoding]::UTF8.GetString($stdoutBytes)
+        stderr = [System.Text.Encoding]::UTF8.GetString($stderrBytes)
+        stdout_base64 = [Convert]::ToBase64String($stdoutBytes)
+        stderr_base64 = [Convert]::ToBase64String($stderrBytes)
+        stdout_sha256 = Get-ByteSha256 -Bytes $stdoutBytes
+        stderr_sha256 = Get-ByteSha256 -Bytes $stderrBytes
+        stdout_byte_count = [int64]$stdoutBytes.Length
+        stderr_byte_count = [int64]$stderrBytes.Length
+        stdin_sha256 = if ($null -eq $StandardInputBytes) { $null } else {
+            $inputDigest = [System.Security.Cryptography.SHA256]::Create()
+            try {
+                ([System.BitConverter]::ToString(
+                    $inputDigest.ComputeHash($StandardInputBytes)
+                )).Replace('-', '').ToLowerInvariant()
+            }
+            finally { $inputDigest.Dispose() }
+        }
+        stdin_byte_count = if ($null -eq $StandardInputBytes) {
+            $null
+        } else {
+            [int64]$StandardInputBytes.Length
+        }
+        started_at_utc = $started
+        ended_at_utc = $ended
+    }
+    $process.Dispose()
+    return $record
+}
+
+function Open-ReadLock {
+    param([string]$Path)
+    Assert-NoReparseComponents -Path $Path -Label 'locked file'
+    return [System.IO.FileStream]::new(
+        $Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read,
+        [System.IO.FileShare]::Read, 4096, [System.IO.FileOptions]::RandomAccess
+    )
+}
+
+function Get-HandleSnapshot {
+    param([string]$Path, [System.IO.FileStream]$Stream)
+    $digest = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $Stream.Position = 0
+        $hash = ([System.BitConverter]::ToString($digest.ComputeHash($Stream))).Replace('-', '').ToLowerInvariant()
+    }
+    finally { $digest.Dispose(); $Stream.Position = 0 }
+    return [ordered]@{
+        path = [System.IO.Path]::GetFullPath($Path)
+        final_path = [GaugeVfeBootstrapNative]::FinalPath($Stream.SafeFileHandle)
+        sha256 = $hash
+        byte_count = [int64]$Stream.Length
+        handle_identity = @([GaugeVfeBootstrapNative]::Identity($Stream.SafeFileHandle))
+    }
+}
+
+function Assert-SnapshotEqual {
+    param([object]$Expected, [object]$Actual, [string]$Label)
+    if (
+        [string]$Expected.path -cne [string]$Actual.path -or
+        [string]$Expected.final_path -cne [string]$Actual.final_path -or
+        [string]$Expected.sha256 -cne [string]$Actual.sha256 -or
+        [int64]$Expected.byte_count -ne [int64]$Actual.byte_count -or
+        (@($Expected.handle_identity) -join ',') -cne (@($Actual.handle_identity) -join ',')
+    ) { throw "$Label changed between M0 and M1." }
+}
+
+function Assert-PathNamesHandle {
+    param([string]$Path, [object]$HeldSnapshot, [string]$Label)
+    Assert-NoReparseComponents -Path $Path -Label $Label
+    $probe = Open-ReadLock -Path $Path
+    try { $probeSnapshot = Get-HandleSnapshot -Path $Path -Stream $probe }
+    finally { $probe.Dispose() }
+    if (
+        (@($probeSnapshot.handle_identity) -join ',') -cne (@($HeldSnapshot.handle_identity) -join ',') -or
+        [string]$probeSnapshot.final_path -cne [string]$HeldSnapshot.final_path
+    ) { throw "$Label lexical path no longer names the retained file." }
+}
+
+function Assert-PathNamesRetainedWritableHandle {
+    param([string]$Path, [object]$HeldSnapshot, [string]$Label)
+    Assert-NoReparseComponents -Path $Path -Label $Label
+    $probe = [System.IO.FileStream]::new(
+        $Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read,
+        [System.IO.FileShare]::ReadWrite, 4096, [System.IO.FileOptions]::RandomAccess
+    )
+    try { $probeSnapshot = Get-HandleSnapshot -Path $Path -Stream $probe }
+    finally { $probe.Dispose() }
+    if (
+        (@($probeSnapshot.handle_identity)[0..1] -join ',') -cne (@($HeldSnapshot.handle_identity)[0..1] -join ',') -or
+        [string]$probeSnapshot.final_path -cne [string]$HeldSnapshot.final_path
+    ) { throw "$Label lexical path no longer names the retained writable file." }
+}
+
+function Get-GitBlobOid {
+    param([System.IO.FileStream]$Stream)
+    $Stream.Position = 0
+    $raw = New-Object byte[] ([int]$Stream.Length)
+    $offset = 0
+    while ($offset -lt $raw.Length) {
+        $read = $Stream.Read($raw, $offset, $raw.Length - $offset)
+        if ($read -le 0) { throw 'Unexpected end of retained source stream.' }
+        $offset += $read
+    }
+    $bytes = $raw
+    $header = [System.Text.Encoding]::ASCII.GetBytes("blob $($bytes.Length)" + [char]0)
+    $payload = New-Object byte[] ($header.Length + $bytes.Length)
+    [System.Array]::Copy($header, 0, $payload, 0, $header.Length)
+    [System.Array]::Copy($bytes, 0, $payload, $header.Length, $bytes.Length)
+    $sha1 = [System.Security.Cryptography.SHA1]::Create()
+    try {
+        return ([System.BitConverter]::ToString($sha1.ComputeHash($payload))).Replace('-', '').ToLowerInvariant()
+    }
+    finally { $sha1.Dispose(); $Stream.Position = 0 }
+}
+
+function Get-RetainedStreamBytes {
+    param([System.IO.FileStream]$Stream)
+    $Stream.Position = 0
+    $bytes = New-Object byte[] ([int]$Stream.Length)
+    $offset = 0
+    while ($offset -lt $bytes.Length) {
+        $read = $Stream.Read($bytes, $offset, $bytes.Length - $offset)
+        if ($read -le 0) { throw 'Unexpected end of retained stream.' }
+        $offset += $read
+    }
+    $Stream.Position = 0
+    return ,$bytes
+}
+
+function ConvertFrom-RetainedJsonObject {
+    param([System.IO.FileStream]$Stream, [string]$Label)
+    [byte[]]$bytes = Get-RetainedStreamBytes -Stream $Stream
+    $strictUtf8 = New-Object System.Text.UTF8Encoding($false, $true)
+    try { $text = $strictUtf8.GetString($bytes) }
+    catch { throw "$Label is not strict UTF-8: $($_.Exception.Message)" }
+    try { $value = $text | ConvertFrom-Json -ErrorAction Stop }
+    catch { throw "$Label is not valid JSON: $($_.Exception.Message)" }
+    if ($null -eq $value -or $value -isnot [pscustomobject]) {
+        throw "$Label must contain exactly one JSON object."
+    }
+    return $value
+}
+
+function Assert-ExactJsonProperties {
+    param([object]$Value, [string[]]$Expected, [string]$Label)
+    $actualNames = @($Value.PSObject.Properties | ForEach-Object { [string]$_.Name } | Sort-Object)
+    $expectedNames = @($Expected | Sort-Object)
+    if (
+        $actualNames.Count -ne $expectedNames.Count -or
+        (Compare-Object -ReferenceObject $expectedNames -DifferenceObject $actualNames -SyncWindow 0)
+    ) { throw "$Label does not have the exact required property set." }
+}
+
+function Assert-CanonicalJsonBytes {
+    param([byte[]]$Bytes, [string]$Label)
+    $validator = @'
+import json
+import sys
+
+def reject_constant(value):
+    raise ValueError("nonfinite JSON constant: " + value)
+
+def unique_object(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError("duplicate JSON key: " + key)
+        value[key] = item
+    return value
+
+raw = sys.stdin.buffer.read()
+text = raw.decode("utf-8", errors="strict")
+value = json.loads(text, parse_constant=reject_constant, object_pairs_hook=unique_object)
+canonical = json.dumps(
+    value,
+    sort_keys=True,
+    separators=(",", ":"),
+    ensure_ascii=False,
+    allow_nan=False,
+).encode("utf-8")
+if raw != canonical:
+    raise SystemExit("JSON bytes are not canonical")
+sys.stdout.buffer.write(b"CANONICAL\n")
+'@
+    $result = Invoke-ClosedProcess `
+        -Executable $PythonPath `
+        -Arguments @('-I', '-S', '-c', $validator) `
+        -WorkingDirectory $RepositoryRoot `
+        -Environment (Get-ClosedEnvironment -Executable $PythonPath -TempDirectory $TemporaryDirectory) `
+        -StandardInputBytes $Bytes
+    if (
+        $result.exit_code -ne 0 -or
+        [string]$result.stdout_base64 -cne [Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes("CANONICAL`n"))
+    ) { throw "$Label is not canonical strict JSON: $($result.stderr)" }
+}
+
+function Add-RetainedOutputLock {
+    param([string]$Path, [string]$Name)
+    Assert-NoReparseComponents -Path $Path -Label $Name
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "$Name is missing after authenticated child exit."
+    }
+    $stream = Open-ReadLock -Path $Path
+    $entry = [pscustomobject]@{
+        Name = $Name
+        Path = $Path
+        Stream = $stream
+        M0 = (Get-HandleSnapshot -Path $Path -Stream $stream)
+    }
+    [void]$OutputLocks.Add($entry)
+    return $entry
+}
+
+function Assert-ShaCountRecord {
+    param([object]$Record, [string]$Label)
+    Assert-ExactJsonProperties `
+        -Value $Record `
+        -Expected @('sha256', 'byte_count') `
+        -Label $Label
+    if (
+        [string]$Record.sha256 -cnotmatch '^[0-9a-f]{64}$' -or
+        ($Record.byte_count -isnot [int] -and $Record.byte_count -isnot [long]) -or
+        [int64]$Record.byte_count -lt 0
+    ) { throw "$Label has an invalid raw-byte identity." }
+}
+
+function Assert-SafeRelativePosixPath {
+    param([string]$Value, [string]$Label)
+    if (
+        -not $Value -or
+        $Value.Contains('\') -or
+        [System.IO.Path]::IsPathRooted($Value) -or
+        @($Value.Split('/') | Where-Object {
+            -not $_ -or $_ -ceq '.' -or $_ -ceq '..' -or $_.Contains(':')
+        }).Count -ne 0
+    ) { throw "$Label is not a safe relative POSIX path." }
+}
+
+function Add-RetainedEvidenceBinding {
+    param([string]$Path, [object]$Record, [string]$Label)
+    Assert-ShaCountRecord -Record $Record -Label $Label
+    $absolute = Get-AbsolutePath -Value $Path -Label "$Label path"
+    if ($EvidenceLocksByPath.ContainsKey($absolute)) {
+        $existing = $EvidenceLocksByPath[$absolute]
+        if (
+            [string]$existing.M0.sha256 -cne [string]$Record.sha256 -or
+            [int64]$existing.M0.byte_count -ne [int64]$Record.byte_count
+        ) { throw "$Label disagrees with an earlier evidence identity for the same path." }
+        return
+    }
+    $entry = Add-RetainedOutputLock -Path $absolute -Name $Label
+    if (
+        [string]$entry.M0.sha256 -cne [string]$Record.sha256 -or
+        [int64]$entry.M0.byte_count -ne [int64]$Record.byte_count
+    ) { throw "$Label does not equal its retained post-child raw-byte identity." }
+    $EvidenceLocksByPath[$absolute] = $entry
+}
+
+function Assert-SortedIdentityMap {
+    param(
+        [object]$Map,
+        [ValidateSet('repository', 'build', 'external')][string]$Domain,
+        [string]$Label
+    )
+    if ($null -eq $Map -or $Map -isnot [pscustomobject]) {
+        throw "$Label must be one JSON object."
+    }
+    $properties = @($Map.PSObject.Properties)
+    $names = @($properties | ForEach-Object { [string]$_.Name })
+    $sorted = @($names)
+    [System.Array]::Sort($sorted, [System.StringComparer]::Ordinal)
+    if (($names -join "`n") -cne ($sorted -join "`n")) {
+        throw "$Label keys are not sorted with ordinal semantics."
+    }
+    $folded = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase
+    )
+    foreach ($property in $properties) {
+        $name = [string]$property.Name
+        if (-not $folded.Add($name)) { throw "$Label has a case-colliding path key." }
+        if ($Domain -ceq 'external') {
+            $path = Get-AbsolutePath -Value $name -Label "$Label key"
+        }
+        else {
+            Assert-SafeRelativePosixPath -Value $name -Label "$Label key"
+            $root = if ($Domain -ceq 'repository') { $RepositoryRoot } else { $OutputDirectory }
+            $path = [System.IO.Path]::GetFullPath((Join-Path $root $name.Replace('/', '\')))
+            if (
+                -not $path.Equals($root, [System.StringComparison]::OrdinalIgnoreCase) -and
+                -not $path.StartsWith($root + '\', [System.StringComparison]::OrdinalIgnoreCase)
+            ) { throw "$Label key escapes its declared domain." }
+        }
+        Add-RetainedEvidenceBinding -Path $path -Record $property.Value -Label "$Label $name"
+    }
+}
+
+function Get-BuildRegularFileInventory {
+    Assert-NoReparseComponents -Path $OutputDirectory -Label 'build artifact root'
+    $paths = New-Object System.Collections.Generic.List[string]
+    foreach ($entry in @(Get-ChildItem -LiteralPath $OutputDirectory -Force -Recurse -ErrorAction Stop)) {
+        $absolute = [System.IO.Path]::GetFullPath($entry.FullName)
+        if (-not $absolute.StartsWith($OutputDirectory + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw 'Build artifact inventory escaped OutputDirectory.'
+        }
+        if (($entry.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw "Build artifact inventory refuses reparse entry: $absolute"
+        }
+        if ($entry.PSIsContainer) { continue }
+        $relative = $absolute.Substring($OutputDirectory.Length).TrimStart('\').Replace('\', '/')
+        Assert-SafeRelativePosixPath -Value $relative -Label 'build artifact inventory path'
+        [void]$paths.Add($relative)
+    }
+    $result = $paths.ToArray()
+    [System.Array]::Sort($result, [System.StringComparer]::Ordinal)
+    return $result
+}
+
+function Lock-ExactBuildArtifactInventory {
+    param([object]$ArtifactHashes)
+    if ($null -eq $ArtifactHashes -or $ArtifactHashes -isnot [pscustomobject]) {
+        throw 'Build audit artifact_hashes must be one JSON object.'
+    }
+    $properties = @($ArtifactHashes.PSObject.Properties)
+    if ($properties.Count -lt 1) { throw 'Build audit artifact_hashes must not be empty.' }
+    $declared = @($properties | ForEach-Object { [string]$_.Name })
+    $sortedDeclared = @($declared)
+    [System.Array]::Sort($sortedDeclared, [System.StringComparer]::Ordinal)
+    if (($declared -join "`n") -cne ($sortedDeclared -join "`n")) {
+        throw 'Build audit artifact_hashes keys are not sorted with ordinal semantics.'
+    }
+    $folded = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase
+    )
+    foreach ($property in $properties) {
+        $relative = [string]$property.Name
+        Assert-SafeRelativePosixPath -Value $relative -Label 'build artifact hash key'
+        if (-not $folded.Add($relative)) { throw 'Build artifact hashes have a case-colliding path.' }
+        if ([string]$property.Value -cnotmatch '^[0-9a-f]{64}$') {
+            throw "Build artifact hash is not lowercase SHA-256: $relative"
+        }
+    }
+    $actual = @(Get-BuildRegularFileInventory)
+    if (
+        $actual.Count -ne $sortedDeclared.Count -or
+        (Compare-Object -ReferenceObject $sortedDeclared -DifferenceObject $actual -SyncWindow 0)
+    ) { throw 'Build directory regular-file set does not exactly equal audit artifact_hashes.' }
+    $receiptArtifacts = [ordered]@{}
+    foreach ($property in $properties) {
+        $relative = [string]$property.Name
+        $path = [System.IO.Path]::GetFullPath((Join-Path $OutputDirectory $relative.Replace('/', '\')))
+        $entry = Add-RetainedOutputLock -Path $path -Name "Build artifact $relative"
+        if ([string]$entry.M0.sha256 -cne [string]$property.Value) {
+            throw "Build artifact does not equal audit artifact_hashes: $relative"
+        }
+        $receiptArtifacts[$relative] = New-IdentityRecord -Snapshot $entry.M0
+    }
+    $script:BuildArtifactPathsM0 = @($actual)
+    $OutputRecords['artifact_hashes'] = $receiptArtifacts
+}
+
+function Assert-ExactSuccessReport {
+    param([object]$Report, [object]$ResultSnapshot)
+    Assert-ExactJsonProperties -Value $Report -Expected @(
+        'ok', 'result_path', 'source_revision', 'input_sha256_before',
+        'input_sha256_after', 'input_unchanged', 'transaction_receipt_id',
+        'published_result_sha256', 'semantic_payload_digest',
+        'manifest_path_count', 'check_count', 'protocol_profile',
+        'head_revision', 'python_executable', 'python_executable_sha256',
+        'git_executable', 'git_executable_sha256', 'issues'
+    ) -Label 'Verification success report'
+    if (
+        $Report.ok -isnot [bool] -or -not $Report.ok -or
+        $Report.input_unchanged -isnot [bool] -or -not $Report.input_unchanged -or
+        [string]$Report.protocol_profile -cne $Profile -or
+        [string]$Report.source_revision -cne $SourceRevision -or
+        [string]$Report.result_path -cne $VerificationResult -or
+        @($Report.issues).Count -ne 0
+    ) { throw 'Verification success report has invalid exact scalar bindings.' }
+    foreach ($field in @(
+        'input_sha256_before', 'input_sha256_after', 'published_result_sha256'
+    )) {
+        if ([string]$Report.$field -cne [string]$ResultSnapshot.sha256) {
+            throw "Verification success report $field does not bind the retained result bytes."
+        }
+    }
+    foreach ($field in @(
+        'semantic_payload_digest', 'python_executable_sha256', 'git_executable_sha256'
+    )) {
+        if ([string]$Report.$field -cnotmatch '^[0-9a-f]{64}$') {
+            throw "Verification success report $field is not lowercase SHA-256."
+        }
+    }
+    if (
+        [string]$Report.head_revision -cnotmatch '^[0-9a-f]{40}$' -or
+        ($Report.manifest_path_count -isnot [int] -and $Report.manifest_path_count -isnot [long]) -or
+        [int64]$Report.manifest_path_count -lt 1 -or
+        ($Report.check_count -isnot [int] -and $Report.check_count -isnot [long]) -or
+        [int64]$Report.check_count -lt 1
+    ) { throw 'Verification success report has invalid revision or positive-count fields.' }
+    $receiptId = [string]$Report.transaction_receipt_id
+    if (
+        $receiptId -cnotmatch '^[0-9a-f]{32}$' -or
+        $receiptId[12] -cne '4' -or
+        '89ab'.IndexOf($receiptId[16]) -lt 0
+    ) { throw 'Verification success report transaction_receipt_id is not lowercase UUID4 hex.' }
+    $script:TransactionReceiptId = $receiptId
+}
+
+function Get-GitArguments {
+    param([string[]]$Arguments)
+    return @(
+        '--no-replace-objects', '--literal-pathspecs', '--no-optional-locks',
+        '-c', 'protocol.file.allow=never', '-c', 'core.hooksPath=NUL',
+        '-C', $RepositoryRoot
+    ) + @($Arguments)
+}
+
+function Invoke-GitText {
+    param([string[]]$Arguments, [string]$Label)
+    if ($null -ne $MetadataM0) {
+        Assert-GitMetadataRootBinding
+        Assert-MetadataEqual -Expected $MetadataM0 -Actual (Get-MetadataSnapshot) -Label "$Label preflight"
+    }
+    $result = Invoke-ClosedProcess -Executable $GitPath -Arguments (Get-GitArguments $Arguments) -WorkingDirectory $RepositoryRoot -Environment (Get-ClosedEnvironment -Executable $GitPath -TempDirectory $TemporaryDirectory)
+    if ($null -ne $MetadataM0) {
+        Assert-GitMetadataRootBinding
+        Assert-MetadataEqual -Expected $MetadataM0 -Actual (Get-MetadataSnapshot) -Label "$Label postflight"
+    }
+    if ($result.exit_code -ne 0) {
+        throw "$Label failed with Git exit $($result.exit_code): $($result.stderr)"
+    }
+    return ([string]$result.stdout).Trim()
+}
+
+function Invoke-RawGitRootLookup {
+    param([string[]]$Arguments, [string]$Label)
+    $result = Invoke-ClosedProcess `
+        -Executable $GitPath `
+        -Arguments (Get-GitArguments $Arguments) `
+        -WorkingDirectory $RepositoryRoot `
+        -Environment (Get-ClosedEnvironment -Executable $GitPath -TempDirectory $TemporaryDirectory)
+    if ($result.exit_code -ne 0) {
+        throw "$Label failed with Git exit $($result.exit_code): $($result.stderr)"
+    }
+    return ([string]$result.stdout).Trim()
+}
+
+function Get-RawGitMetadataRootBinding {
+    $topLevel = Get-AbsolutePath `
+        -Value (Invoke-RawGitRootLookup -Arguments @('rev-parse', '--show-toplevel') -Label 'Git top-level lookup') `
+        -Label 'Git top level'
+    if (-not $topLevel.Equals($RepositoryRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Fixed Git top-level lookup does not equal lexical RepositoryRoot.'
+    }
+    $gitDirectory = Get-AbsolutePath `
+        -Value (Invoke-RawGitRootLookup -Arguments @('rev-parse', '--path-format=absolute', '--git-dir') -Label 'Git directory lookup') `
+        -Label 'Git directory'
+    $commonDirectory = Get-AbsolutePath `
+        -Value (Invoke-RawGitRootLookup -Arguments @('rev-parse', '--path-format=absolute', '--git-common-dir') -Label 'Git common-directory lookup') `
+        -Label 'Git common directory'
+    foreach ($root in @($gitDirectory, $commonDirectory)) {
+        Assert-NoReparseComponents -Path $root -Label 'Git metadata root'
+        if (-not (Test-Path -LiteralPath $root -PathType Container)) {
+            throw "Git metadata root is not a directory: $root"
+        }
+    }
+    return [ordered]@{
+        repository_root = $topLevel
+        git_directory = $gitDirectory
+        common_directory = $commonDirectory
+    }
+}
+
+function Assert-GitMetadataRootBinding {
+    if ($null -eq $script:MetadataRootBinding) { return }
+    $actual = Get-RawGitMetadataRootBinding
+    if (
+        (ConvertTo-Json $actual -Compress) -cne
+        (ConvertTo-Json $script:MetadataRootBinding -Compress)
+    ) { throw 'Fixed Git metadata-root binding changed during bootstrap.' }
+}
+
+function Get-MetadataRoots {
+    if ($null -ne $script:MetadataRoots) { return @($script:MetadataRoots) }
+    $script:MetadataRootBinding = Get-RawGitMetadataRootBinding
+    $roots = @(@(
+        $script:MetadataRootBinding.git_directory,
+        $script:MetadataRootBinding.common_directory
+    ) | Select-Object -Unique)
+    foreach ($root in $roots) {
+        $absolute = Get-AbsolutePath -Value $root -Label 'Git metadata root'
+        Assert-NoReparseComponents -Path $absolute -Label 'Git metadata root'
+        if (-not (Test-Path -LiteralPath $absolute -PathType Container)) {
+            throw "Git metadata root is not a directory: $absolute"
+        }
+    }
+    $script:MetadataRoots = @($roots)
+    return @($script:MetadataRoots)
+}
+
+function Get-MetadataSnapshot {
+    $records = New-Object System.Collections.Generic.List[object]
+    $worktreeLink = [System.IO.Path]::GetFullPath((Join-Path $RepositoryRoot '.git'))
+    Assert-NoReparseComponents -Path $worktreeLink -Label 'worktree Git link'
+    $worktreeItem = Get-Item -LiteralPath $worktreeLink -Force -ErrorAction Stop
+    if ($worktreeItem.PSIsContainer) {
+        $worktreeHandle = [GaugeVfeBootstrapNative]::OpenDirectoryDenyDelete($worktreeLink)
+        try {
+            [void]$records.Add([ordered]@{
+                path = $worktreeLink
+                kind = 'directory'
+                final_path = [GaugeVfeBootstrapNative]::FinalPath($worktreeHandle)
+                stable_handle_identity = @([GaugeVfeBootstrapNative]::Identity($worktreeHandle))[0..1]
+            })
+        }
+        finally { $worktreeHandle.Dispose() }
+    }
+    else {
+        $worktreeStream = Open-ReadLock -Path $worktreeLink
+        try {
+            $snapshot = Get-HandleSnapshot -Path $worktreeLink -Stream $worktreeStream
+            [void]$records.Add([ordered]@{
+                path = $worktreeLink
+                kind = 'link-file'
+                final_path = [string]$snapshot.final_path
+                sha256 = [string]$snapshot.sha256
+                byte_count = [int64]$snapshot.byte_count
+                stable_handle_identity = @($snapshot.handle_identity)[0..1]
+            })
+        }
+        finally { $worktreeStream.Dispose() }
+    }
+    foreach ($root in @(Get-MetadataRoots)) {
+        foreach ($relative in @('info\grafts', 'shallow', 'objects\info\alternates', 'objects\info\http-alternates', 'refs\replace')) {
+            $candidate = [System.IO.Path]::GetFullPath((Join-Path $root $relative))
+            if (-not (Test-Path -LiteralPath $candidate)) {
+                [void]$records.Add([ordered]@{ path = $candidate; kind = 'absent' })
+                continue
+            }
+            Assert-NoReparseComponents -Path $candidate -Label 'Git identity metadata'
+            $item = Get-Item -LiteralPath $candidate -Force
+            if ($item.PSIsContainer) {
+                $entries = @(Get-ChildItem -LiteralPath $candidate -Force -Recurse -ErrorAction Stop)
+                if ($entries.Count -ne 0) { throw "Unsupported nonempty Git identity metadata: $candidate" }
+                [void]$records.Add([ordered]@{
+                    path = $candidate
+                    kind = 'empty-directory'
+                    attributes = [int64]$item.Attributes
+                    creation_time_utc_ticks = [int64]$item.CreationTimeUtc.Ticks
+                    last_write_time_utc_ticks = [int64]$item.LastWriteTimeUtc.Ticks
+                })
+            }
+            else {
+                if ($item.Length -ne 0) { throw "Unsupported nonempty Git identity metadata: $candidate" }
+                [void]$records.Add([ordered]@{
+                    path = $candidate
+                    kind = 'empty-file'
+                    attributes = [int64]$item.Attributes
+                    byte_count = 0
+                    creation_time_utc_ticks = [int64]$item.CreationTimeUtc.Ticks
+                    last_write_time_utc_ticks = [int64]$item.LastWriteTimeUtc.Ticks
+                })
+            }
+        }
+    }
+    return $records.ToArray()
+}
+
+function Assert-MetadataEqual {
+    param([object[]]$Expected, [object[]]$Actual, [string]$Label)
+    $before = ConvertTo-Json -InputObject @($Expected) -Compress -Depth 6
+    $after = ConvertTo-Json -InputObject @($Actual) -Compress -Depth 6
+    if ($before -cne $after) { throw "$Label detected Git metadata drift." }
+}
+
+function Copy-GitBlobToRetainedHandle {
+    param([string]$ObjectId, [System.IO.FileStream]$Destination)
+    $arguments = Get-GitArguments @('cat-file', 'blob', $ObjectId)
+    $start = New-Object System.Diagnostics.ProcessStartInfo
+    $start.FileName = $GitPath
+    $start.Arguments = (@($arguments | ForEach-Object { ConvertTo-Argument ([string]$_) }) -join ' ')
+    $start.WorkingDirectory = $RepositoryRoot
+    $start.UseShellExecute = $false
+    $start.CreateNoWindow = $true
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+    $start.EnvironmentVariables.Clear()
+    foreach ($entry in (Get-ClosedEnvironment -Executable $GitPath -TempDirectory $TemporaryDirectory).GetEnumerator()) {
+        $start.EnvironmentVariables[[string]$entry.Key] = [string]$entry.Value
+    }
+    Assert-GitMetadataRootBinding
+    Assert-MetadataEqual -Expected $MetadataM0 -Actual (Get-MetadataSnapshot) -Label 'Git blob materialization preflight'
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $start
+    if (-not $process.Start()) { throw 'Could not start fixed Git for blob materialization.' }
+    $stderr = $process.StandardError.ReadToEndAsync()
+    $process.StandardOutput.BaseStream.CopyTo($Destination)
+    $Destination.Flush($true)
+    $process.WaitForExit()
+    $exitCode = $process.ExitCode
+    $errorText = [string]$stderr.Result
+    $process.Dispose()
+    Assert-GitMetadataRootBinding
+    Assert-MetadataEqual -Expected $MetadataM0 -Actual (Get-MetadataSnapshot) -Label 'Git blob materialization postflight'
+    if ($exitCode -ne 0) {
+        throw "Git blob materialization failed with exit $($exitCode): $errorText"
+    }
+}
+
+function New-RandomTemporaryDirectory {
+    Assert-NoReparseComponents -Path $TemporaryBase -Label 'fixed bootstrap temporary base'
+    if (-not (Test-Path -LiteralPath $TemporaryBase -PathType Container)) {
+        throw 'Fixed bootstrap temporary base is not a directory.'
+    }
+    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    try {
+        for ($attempt = 0; $attempt -lt 32; $attempt++) {
+            $random = New-Object byte[] 32
+            $rng.GetBytes($random)
+            $token = ([System.BitConverter]::ToString($random)).Replace('-', '').ToLowerInvariant()
+            $candidate = Join-Path $TemporaryBase "gauge-vfe-bootstrap-$token"
+            if ([GaugeVfeBootstrapNative]::CreateFreshDirectory($candidate)) {
+                Assert-NoReparseComponents -Path $candidate -Label 'fresh bootstrap temporary directory'
+                return [System.IO.Path]::GetFullPath($candidate)
+            }
+        }
+    }
+    finally { $rng.Dispose() }
+    throw 'Could not allocate a fresh cryptorandom bootstrap temporary directory.'
+}
+
+function Assert-SafeTemporaryTreeForCleanup {
+    param([string]$Path)
+    $absolute = [System.IO.Path]::GetFullPath($Path)
+    if (
+        [System.IO.Path]::GetDirectoryName($absolute) -cne $TemporaryBase -or
+        -not [System.IO.Path]::GetFileName($absolute).StartsWith(
+            'gauge-vfe-bootstrap-',
+            [System.StringComparison]::Ordinal
+        )
+    ) { throw 'Temporary cleanup root is outside the exact fixed bootstrap namespace.' }
+    Assert-NoReparseComponents -Path $absolute -Label 'temporary cleanup root'
+    foreach ($entry in @(Get-ChildItem -LiteralPath $absolute -Force -Recurse -ErrorAction Stop)) {
+        $entryPath = [System.IO.Path]::GetFullPath($entry.FullName)
+        if (-not $entryPath.StartsWith($absolute + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw 'Temporary cleanup inventory escaped its exact root.'
+        }
+        if (($entry.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw "Temporary cleanup refuses reparse entry: $entryPath"
+        }
+    }
+}
+
+function New-IdentityRecord {
+    param([object]$Snapshot)
+    return [ordered]@{
+        path = [string]$Snapshot.path
+        final_path = [string]$Snapshot.final_path
+        sha256 = [string]$Snapshot.sha256
+        byte_count = [int64]$Snapshot.byte_count
+        handle_identity = @($Snapshot.handle_identity)
+    }
+}
+
+function Get-FreshReceiptTarget {
+    $script:ReceiptPath = Get-AbsolutePath -Value $ReceiptPath -Label 'ReceiptPath'
+    Assert-NoReparseComponents -Path ([System.IO.Path]::GetDirectoryName($ReceiptPath)) -Label 'receipt parent'
+    if (Test-Path -LiteralPath $ReceiptPath) { throw 'ReceiptPath must be fresh and absent.' }
+    $script:ReceiptTargetValidated = $true
+}
+
+function Assert-ExactBootstrapEnvironment {
+    $expectedBootstrap = @(
+        'GAUGE_VFE_BOOTSTRAP_MODE',
+        'GAUGE_VFE_BOOTSTRAP_REPOSITORY_ROOT',
+        'GAUGE_VFE_BOOTSTRAP_SOURCE_REVISION',
+        'GAUGE_VFE_BOOTSTRAP_RECEIPT_PATH',
+        'GAUGE_VFE_BOOTSTRAP_SOURCE_DIRECTORY',
+        'GAUGE_VFE_BOOTSTRAP_OUTPUT_DIRECTORY',
+        'GAUGE_VFE_BOOTSTRAP_AUDIT_PATH',
+        'GAUGE_VFE_BOOTSTRAP_VERIFICATION_RESULT',
+        'GAUGE_VFE_BOOTSTRAP_VERIFICATION_REPORT',
+        'GAUGE_VFE_BOOTSTRAP_PDFLATEX_PATH',
+        'GAUGE_VFE_BOOTSTRAP_BIBTEX_PATH',
+        'GAUGE_VFE_BOOTSTRAP_BIBTEX_STYLE_PATH',
+        'GAUGE_VFE_BOOTSTRAP_TRANSPORT_SHA256',
+        'GAUGE_VFE_BOOTSTRAP_TRANSPORT_BYTE_COUNT'
+    )
+    $expectedBase = @(
+        'SystemRoot', 'WINDIR', 'SystemDrive', 'COMSPEC', 'PATHEXT', 'PATH',
+        'TEMP', 'TMP', 'PSModulePath'
+    )
+    $expected = @($expectedBase) + @($expectedBootstrap)
+    $seen = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase
+    )
+    foreach ($entry in [System.Environment]::GetEnvironmentVariables().GetEnumerator()) {
+        $name = [string]$entry.Key
+        if (-not (@($expected) -icontains $name)) {
+            throw "Unexpected outer bootstrap environment variable: $name"
+        }
+        if (-not $seen.Add($name)) {
+            throw "Case-colliding bootstrap-prefixed environment variable: $name"
+        }
+    }
+    foreach ($name in $expected) {
+        if (-not $seen.Contains($name)) {
+            throw "Missing required bootstrap environment variable: $name"
+        }
+    }
+    $fixedEnvironment = [ordered]@{
+        SystemRoot = 'C:\WINDOWS'
+        WINDIR = 'C:\WINDOWS'
+        SystemDrive = 'C:'
+        COMSPEC = 'C:\WINDOWS\System32\cmd.exe'
+        PATHEXT = '.COM;.EXE;.BAT;.CMD;.CPL'
+        PSModulePath = 'C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\System32\WindowsPowerShell\v1.0\Modules'
+    }
+    foreach ($entry in $fixedEnvironment.GetEnumerator()) {
+        if ([string][System.Environment]::GetEnvironmentVariable([string]$entry.Key) -cne [string]$entry.Value) {
+            throw "Outer bootstrap environment value is not exact for $($entry.Key)."
+        }
+    }
+    $outerTemp = Get-AbsolutePath `
+        -Value ([System.Environment]::GetEnvironmentVariable('TEMP')) `
+        -Label 'outer TEMP'
+    $outerTmp = Get-AbsolutePath `
+        -Value ([System.Environment]::GetEnvironmentVariable('TMP')) `
+        -Label 'outer TMP'
+    if (-not $outerTemp.Equals($outerTmp, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Outer TEMP and TMP must name the same explicit directory.'
+    }
+    Assert-NoReparseComponents -Path $outerTemp -Label 'outer TEMP'
+    if ($ApprovedTransportSha256 -cnotmatch '^[0-9a-f]{64}$') {
+        throw 'Externally asserted approved transport digest must be lowercase SHA-256.'
+    }
+    if ($ApprovedTransportByteCount -cnotmatch '^[1-9][0-9]*$') {
+        throw 'Externally asserted approved transport byte count must be positive decimal.'
+    }
+}
+
+try {
+    Assert-ExactBootstrapEnvironment
+    $expectedOuterArgv = @(
+        $PowerShellPath,
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        '-'
+    )
+    if (
+        $OuterArgv.Count -ne $expectedOuterArgv.Count -or
+        (Compare-Object -ReferenceObject $expectedOuterArgv -DifferenceObject $OuterArgv -SyncWindow 0)
+    ) {
+        throw 'Outer bootstrap argv must be exactly fixed PowerShell -NoProfile -NonInteractive -Command -.'
+    }
+    if ($SourceRevision -cnotmatch '^[0-9a-f]{40}$') {
+        throw 'SourceRevision must be one full lowercase 40-hex commit.'
+    }
+    $RepositoryRoot = Get-AbsolutePath -Value $RepositoryRoot -Label 'RepositoryRoot'
+    $SourceDirectory = Get-AbsolutePath -Value $SourceDirectory -Label 'SourceDirectory'
+    $expectedSourceDirectory = [System.IO.Path]::GetFullPath((Join-Path $RepositoryRoot 'manuscripts\gauge_vfe_rg'))
+    if ($SourceDirectory -cne $expectedSourceDirectory) {
+        throw 'SourceDirectory must be the exact gauge_vfe_rg directory under RepositoryRoot.'
+    }
+    Assert-NoReparseComponents -Path $RepositoryRoot -Label 'RepositoryRoot'
+    Assert-NoReparseComponents -Path $SourceDirectory -Label 'SourceDirectory'
+    Get-FreshReceiptTarget
+    $VerificationResult = Get-AbsolutePath -Value $VerificationResult -Label 'VerificationResult'
+    $VerificationReport = Get-AbsolutePath -Value $VerificationReport -Label 'VerificationReport'
+    if ($VerificationResult.Equals($VerificationReport, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw 'VerificationResult and VerificationReport must be distinct.'
+    }
+    Assert-NoReparseComponents -Path ([System.IO.Path]::GetDirectoryName($VerificationResult)) -Label 'VerificationResult parent'
+    Assert-NoReparseComponents -Path ([System.IO.Path]::GetDirectoryName($VerificationReport)) -Label 'VerificationReport parent'
+    if (Test-Path -LiteralPath $VerificationReport) { throw 'VerificationReport must be fresh and absent.' }
+    $FreshTargets['verification_report'] = [ordered]@{
+        path = $VerificationReport
+        initial_state = 'absent'
+        created = $false
+    }
+    if ($ReceiptPath.Equals($VerificationReport, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw 'ReceiptPath and VerificationReport must be distinct.'
+    }
+
+    $hostPath = [System.IO.Path]::GetFullPath((Join-Path $PSHOME 'powershell.exe'))
+    if (-not $hostPath.Equals($PowerShellPath, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Bootstrap must run in fixed PowerShell host $PowerShellPath."
+    }
+    foreach ($fixedPath in @($PowerShellPath, $GitPath, $PythonPath)) {
+        Assert-NoReparseComponents -Path $fixedPath -Label 'fixed bootstrap executable'
+        if (-not (Test-Path -LiteralPath $fixedPath -PathType Leaf)) {
+            throw "Missing fixed bootstrap executable: $fixedPath"
+        }
+    }
+    $TemporaryDirectory = New-RandomTemporaryDirectory
+    $DirectoryHandle = [GaugeVfeBootstrapNative]::OpenDirectoryDenyDelete($TemporaryDirectory)
+    $DirectoryM0 = [ordered]@{
+        final_path = [GaugeVfeBootstrapNative]::FinalPath($DirectoryHandle)
+        handle_identity = @([GaugeVfeBootstrapNative]::Identity($DirectoryHandle))
+    }
+    if ([string]$DirectoryM0.final_path -cne $TemporaryDirectory) {
+        throw 'Fresh temporary-directory handle does not equal its lexical path.'
+    }
+    foreach ($entry in @(
+        [ordered]@{ name = 'powershell'; path = $PowerShellPath },
+        [ordered]@{ name = 'git'; path = $GitPath },
+        [ordered]@{ name = 'python'; path = $PythonPath }
+    )) {
+        $stream = Open-ReadLock -Path $entry.path
+        [void]$AcquiredLocks.Add([pscustomobject]@{
+            Name = $entry.name
+            Path = $entry.path
+            Stream = $stream
+            M0 = (Get-HandleSnapshot -Path $entry.path -Stream $stream)
+        })
+    }
+
+    $MetadataM0 = Get-MetadataSnapshot
+    $resolvedRevision = Invoke-GitText -Arguments @('rev-parse', '--verify', "$($SourceRevision)^{commit}") -Label 'source revision resolution'
+    if ($resolvedRevision -cne $SourceRevision) { throw 'SourceRevision did not resolve to itself.' }
+    $objectFormat = Invoke-GitText -Arguments @('rev-parse', '--show-object-format') -Label 'Git object-format lookup'
+    if ($objectFormat -cne 'sha1') { throw "Bootstrap requires Git object format sha1, found $objectFormat." }
+
+    $sourceRelative = if ($Mode -ceq 'Build') {
+        'manuscripts/gauge_vfe_rg/build.ps1'
+    }
+    else {
+        'manuscripts/gauge_vfe_rg/verification/run_checks.py'
+    }
+    $repositorySourcePath = [System.IO.Path]::GetFullPath((Join-Path $RepositoryRoot $sourceRelative.Replace('/', '\')))
+    if ($Mode -ceq 'Build') {
+        if (-not $OutputDirectory -or -not $AuditPath -or -not $PdflatexPath -or -not $BibtexPath -or -not $BibtexStylePath) {
+            throw 'Build mode requires every build, audit, and TeX path.'
+        }
+        $OutputDirectory = Get-AbsolutePath -Value $OutputDirectory -Label 'OutputDirectory'
+        $AuditPath = Get-AbsolutePath -Value $AuditPath -Label 'AuditPath'
+        if (
+            $OutputDirectory.Equals($RepositoryRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
+            $OutputDirectory.StartsWith($RepositoryRoot + '\', [System.StringComparison]::OrdinalIgnoreCase)
+        ) {
+            throw 'Build OutputDirectory must be outside RepositoryRoot.'
+        }
+        foreach ($target in @($OutputDirectory, $AuditPath)) {
+            Assert-NoReparseComponents -Path ([System.IO.Path]::GetDirectoryName($target)) -Label 'build target parent'
+        }
+        if (
+            $AuditPath.Equals($VerificationReport, [System.StringComparison]::OrdinalIgnoreCase) -or
+            $AuditPath.Equals($ReceiptPath, [System.StringComparison]::OrdinalIgnoreCase) -or
+            $AuditPath.Equals($VerificationResult, [System.StringComparison]::OrdinalIgnoreCase)
+        ) { throw 'AuditPath must be distinct from every bootstrap evidence target.' }
+        foreach ($evidenceTarget in @(
+            $AuditPath,
+            $VerificationResult,
+            $VerificationReport,
+            $ReceiptPath
+        )) {
+            if (
+                $evidenceTarget.Equals($OutputDirectory, [System.StringComparison]::OrdinalIgnoreCase) -or
+                $evidenceTarget.StartsWith($OutputDirectory + '\', [System.StringComparison]::OrdinalIgnoreCase) -or
+                $OutputDirectory.StartsWith($evidenceTarget + '\', [System.StringComparison]::OrdinalIgnoreCase)
+            ) { throw 'OutputDirectory must be disjoint from every bootstrap evidence target.' }
+        }
+        if (
+            $OutputDirectory.Equals($TemporaryDirectory, [System.StringComparison]::OrdinalIgnoreCase) -or
+            $OutputDirectory.StartsWith($TemporaryDirectory + '\', [System.StringComparison]::OrdinalIgnoreCase) -or
+            $TemporaryDirectory.StartsWith($OutputDirectory + '\', [System.StringComparison]::OrdinalIgnoreCase)
+        ) { throw 'OutputDirectory must be disjoint from the bootstrap materialization directory.' }
+        if (Test-Path -LiteralPath $AuditPath) { throw 'AuditPath must be fresh and absent.' }
+        $FreshTargets['audit_path'] = [ordered]@{
+            path = $AuditPath
+            initial_state = 'absent'
+            created = $false
+        }
+        $outputInitialState = 'absent'
+        if (Test-Path -LiteralPath $OutputDirectory) {
+            Assert-NoReparseComponents -Path $OutputDirectory -Label 'OutputDirectory'
+            if (-not (Test-Path -LiteralPath $OutputDirectory -PathType Container)) {
+                throw 'OutputDirectory must be absent or an existing empty directory.'
+            }
+            if (@(Get-ChildItem -LiteralPath $OutputDirectory -Force).Count -ne 0) {
+                throw 'OutputDirectory must be fresh empty before authenticated child launch.'
+            }
+            $outputInitialState = 'empty-directory'
+        }
+        else {
+            if (-not [GaugeVfeBootstrapNative]::CreateFreshDirectory($OutputDirectory)) {
+                throw 'OutputDirectory creation lost a freshness race.'
+            }
+            Assert-NoReparseComponents -Path $OutputDirectory -Label 'fresh OutputDirectory'
+        }
+        $OutputDirectoryHandle = [GaugeVfeBootstrapNative]::OpenDirectoryDenyDelete($OutputDirectory)
+        $OutputDirectoryM0 = [ordered]@{
+            path = $OutputDirectory
+            final_path = [GaugeVfeBootstrapNative]::FinalPath($OutputDirectoryHandle)
+            handle_identity = @([GaugeVfeBootstrapNative]::Identity($OutputDirectoryHandle))
+        }
+        if (
+            [string]$OutputDirectoryM0.final_path -cne $OutputDirectory -or
+            @(Get-ChildItem -LiteralPath $OutputDirectory -Force).Count -ne 0
+        ) { throw 'Retained OutputDirectory is not the exact empty lexical directory.' }
+        $FreshTargets['output_directory'] = [ordered]@{
+            path = $OutputDirectory
+            initial_state = $outputInitialState
+            created = ($outputInitialState -ceq 'absent')
+        }
+        $OutputRecords['output_directory'] = $OutputDirectoryM0
+        foreach ($toolSpec in @(
+            [ordered]@{ name = 'pdflatex'; value = $PdflatexPath },
+            [ordered]@{ name = 'bibtex'; value = $BibtexPath },
+            [ordered]@{ name = 'plainnat'; value = $BibtexStylePath }
+        )) {
+            $absoluteTool = Get-AbsolutePath -Value $toolSpec.value -Label $toolSpec.name
+            Assert-NoReparseComponents -Path $absoluteTool -Label $toolSpec.name
+            if (-not (Test-Path -LiteralPath $absoluteTool -PathType Leaf)) {
+                throw "$($toolSpec.name) must be an existing regular file."
+            }
+            if ($toolSpec.name -ceq 'plainnat' -and [System.IO.Path]::GetFileName($absoluteTool) -cne 'plainnat.bst') {
+                throw 'BibtexStylePath must name exactly plainnat.bst.'
+            }
+            if ($toolSpec.name -ceq 'pdflatex') { $PdflatexPath = $absoluteTool }
+            elseif ($toolSpec.name -ceq 'bibtex') { $BibtexPath = $absoluteTool }
+            else { $BibtexStylePath = $absoluteTool }
+            $stream = Open-ReadLock -Path $absoluteTool
+            [void]$AcquiredLocks.Add([pscustomobject]@{
+                Name = $toolSpec.name
+                Path = $absoluteTool
+                Stream = $stream
+                M0 = (Get-HandleSnapshot -Path $absoluteTool -Stream $stream)
+            })
+        }
+    }
+    else {
+        if ($OutputDirectory -or $AuditPath -or $PdflatexPath -or $BibtexPath -or $BibtexStylePath) {
+            throw 'Numerical modes require every build-only positional field to be exactly empty.'
+        }
+        if ($Mode -ceq 'NumericalVerify' -and -not (Test-Path -LiteralPath $VerificationResult -PathType Leaf)) {
+            throw 'NumericalVerify requires an existing regular VerificationResult.'
+        }
+    }
+
+    if ($Mode -ceq 'Build' -and -not (Test-Path -LiteralPath $VerificationResult -PathType Leaf)) {
+        throw 'Build requires an existing regular VerificationResult input.'
+    }
+    if ($Mode -ceq 'Build' -or $Mode -ceq 'NumericalVerify') {
+        $VerificationResultLock = Add-RetainedOutputLock `
+            -Path $VerificationResult `
+            -Name 'Verification result evidence'
+        $OutputRecords['verification_result'] = New-IdentityRecord -Snapshot $VerificationResultLock.M0
+    }
+
+    $objectSpec = "$($SourceRevision):$sourceRelative"
+    $sourceType = Invoke-GitText -Arguments @('cat-file', '-t', $objectSpec) -Label 'source blob type lookup'
+    if ($sourceType -cne 'blob') { throw 'Authenticated source object is not a Git blob.' }
+    $sourceBlobOid = Invoke-GitText -Arguments @('rev-parse', '--verify', $objectSpec) -Label 'source blob oid lookup'
+    if ($sourceBlobOid -cnotmatch '^[0-9a-f]{40}$') { throw 'Git returned an invalid source blob OID.' }
+    $blobSizeText = Invoke-GitText -Arguments @('cat-file', '-s', $sourceBlobOid) -Label 'source blob size lookup'
+    if ($blobSizeText -cnotmatch '^[0-9]+$') { throw 'Git returned an invalid source blob byte count.' }
+    $blobSize = [int64]$blobSizeText
+    $RepositorySourceRecord = [ordered]@{
+        path = $repositorySourcePath
+        relative_path = $sourceRelative
+        git_blob_oid = $sourceBlobOid
+        git_blob_byte_count = $blobSize
+    }
+
+    if ($Mode -ceq 'Build') {
+        $materializedPath = Join-Path $TemporaryDirectory 'build.ps1'
+        $MaterializedSourceLock = [System.IO.FileStream]::new(
+            $materializedPath, [System.IO.FileMode]::CreateNew,
+            [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::Read,
+            4096, [System.IO.FileOptions]::SequentialScan
+        )
+        Copy-GitBlobToRetainedHandle -ObjectId $sourceBlobOid -Destination $MaterializedSourceLock
+        if ($MaterializedSourceLock.Length -ne $blobSize) {
+            throw "Materialized source byte count mismatch: expected $blobSize, found $($MaterializedSourceLock.Length)."
+        }
+        $materializedOid = Get-GitBlobOid -Stream $MaterializedSourceLock
+        if ($materializedOid -cne $sourceBlobOid) {
+            throw "Materialized source blob OID mismatch: expected $sourceBlobOid, found $materializedOid."
+        }
+        $materializedM0 = Get-HandleSnapshot -Path $materializedPath -Stream $MaterializedSourceLock
+        $ExecutedSourceRecord = New-IdentityRecord -Snapshot $materializedM0
+        $ExecutedSourceRecord['git_blob_oid'] = $materializedOid
+        $attestationPath = Join-Path $TemporaryDirectory 'bootstrap-attestation.json'
+        $attestation = [ordered]@{
+            protocol_profile = $Profile
+            source_revision = $SourceRevision
+            repository_root = $RepositoryRoot
+            source_directory = $SourceDirectory
+            repository_build_script = $repositorySourcePath
+            executed_build_script = $materializedPath
+            source_blob_oid = $sourceBlobOid
+            source_blob_byte_count = $blobSize
+            source_sha256 = [string]$materializedM0.sha256
+            bootstrap_temporary_directory = $TemporaryDirectory
+            bootstrap_parent_pid = [int]$PID
+            powershell_path = $PowerShellPath
+            git_path = $GitPath
+        }
+        [System.IO.File]::WriteAllText($attestationPath, (ConvertTo-Json $attestation -Compress -Depth 8), $Utf8NoBom)
+        $AttestationLock = Open-ReadLock -Path $attestationPath
+        $attestationM0 = Get-HandleSnapshot -Path $attestationPath -Stream $AttestationLock
+        $AttestationRecord = New-IdentityRecord -Snapshot $attestationM0
+        [byte[]]$executedBuildBytes = Get-RetainedStreamBytes -Stream $MaterializedSourceLock
+        $executedBuildBase64 = [Convert]::ToBase64String($executedBuildBytes)
+        $childTransportText = (
+            "& ([ScriptBlock]::Create([Text.UTF8Encoding]::new(`$false,`$true).GetString([Convert]::FromBase64String('$executedBuildBase64')))) " +
+            '$env:GAUGE_VFE_BUILD_REPOSITORY_ROOT $env:GAUGE_VFE_BUILD_SOURCE_DIRECTORY ' +
+            '$env:GAUGE_VFE_BUILD_REPOSITORY_BUILD_SCRIPT $env:GAUGE_VFE_BUILD_EXECUTED_BUILD_SCRIPT ' +
+            '$env:GAUGE_VFE_BUILD_BOOTSTRAP_ATTESTATION_PATH $env:GAUGE_VFE_BUILD_OUTPUT_DIRECTORY ' +
+            '$env:GAUGE_VFE_BUILD_AUDIT_PATH $env:GAUGE_VFE_BUILD_SOURCE_REVISION ' +
+            '$env:GAUGE_VFE_BUILD_VERIFICATION_RESULT $env:GAUGE_VFE_BUILD_VERIFICATION_REPORT ' +
+            '$env:GAUGE_VFE_BUILD_PDFLATEX_PATH $env:GAUGE_VFE_BUILD_BIBTEX_PATH ' +
+            '$env:GAUGE_VFE_BUILD_BIBTEX_STYLE_PATH' + "`n"
+        )
+        $childTransportBytes = [System.Text.Encoding]::ASCII.GetBytes($childTransportText)
+        $buildEnvironment = [ordered]@{
+            GAUGE_VFE_BUILD_REPOSITORY_ROOT = $RepositoryRoot
+            GAUGE_VFE_BUILD_SOURCE_DIRECTORY = $SourceDirectory
+            GAUGE_VFE_BUILD_REPOSITORY_BUILD_SCRIPT = $repositorySourcePath
+            GAUGE_VFE_BUILD_EXECUTED_BUILD_SCRIPT = $materializedPath
+            GAUGE_VFE_BUILD_BOOTSTRAP_ATTESTATION_PATH = $attestationPath
+            GAUGE_VFE_BUILD_OUTPUT_DIRECTORY = $OutputDirectory
+            GAUGE_VFE_BUILD_AUDIT_PATH = $AuditPath
+            GAUGE_VFE_BUILD_SOURCE_REVISION = $SourceRevision
+            GAUGE_VFE_BUILD_VERIFICATION_RESULT = $VerificationResult
+            GAUGE_VFE_BUILD_VERIFICATION_REPORT = $VerificationReport
+            GAUGE_VFE_BUILD_PDFLATEX_PATH = $PdflatexPath
+            GAUGE_VFE_BUILD_BIBTEX_PATH = $BibtexPath
+            GAUGE_VFE_BUILD_BIBTEX_STYLE_PATH = $BibtexStylePath
+        }
+        $childArguments = @('-NoProfile', '-NonInteractive', '-Command', '-')
+        $ChildRecord = Invoke-ClosedProcess `
+            -Executable $PowerShellPath `
+            -Arguments $childArguments `
+            -WorkingDirectory $RepositoryRoot `
+            -Environment (Get-ClosedEnvironment -Executable $PowerShellPath -TempDirectory $TemporaryDirectory -Additional $buildEnvironment) `
+            -StandardInputBytes $childTransportBytes
+        if ($ChildRecord.exit_code -ne 0) {
+            throw "Authenticated build child failed with exit $($ChildRecord.exit_code): $($ChildRecord.stderr)"
+        }
+    }
+    else {
+        Assert-NoReparseComponents -Path $repositorySourcePath -Label 'repository numerical runner'
+        if (-not (Test-Path -LiteralPath $repositorySourcePath -PathType Leaf)) {
+            throw 'Repository numerical runner is missing.'
+        }
+        $SourceLock = Open-ReadLock -Path $repositorySourcePath
+        $sourceM0 = Get-HandleSnapshot -Path $repositorySourcePath -Stream $SourceLock
+        $rawOid = Get-GitBlobOid -Stream $SourceLock
+        if ($rawOid -cne $sourceBlobOid) {
+            throw "Repository numerical runner raw bytes are not bound to source revision $SourceRevision."
+        }
+        $RepositorySourceRecord['worktree_sha256'] = [string]$sourceM0.sha256
+        $RepositorySourceRecord['worktree_byte_count'] = [int64]$sourceM0.byte_count
+        $RepositorySourceRecord['worktree_binding'] = 'raw'
+        $ExecutedSourceRecord = New-IdentityRecord -Snapshot $sourceM0
+        $ExecutedSourceRecord['git_blob_oid'] = $sourceBlobOid
+        $arguments = @('-I', '-S', $repositorySourcePath)
+        if ($Mode -ceq 'NumericalUpdate') {
+            $arguments += @('--update', $VerificationResult, '--source-revision', $SourceRevision, '--report', $VerificationReport)
+        }
+        else {
+            $arguments += @('--verify', $VerificationResult, '--report', $VerificationReport)
+        }
+        $ChildRecord = Invoke-ClosedProcess -Executable $PythonPath -Arguments $arguments -WorkingDirectory $RepositoryRoot -Environment (Get-ClosedEnvironment -Executable $PythonPath -TempDirectory $TemporaryDirectory)
+        if ($ChildRecord.exit_code -ne 0) {
+            throw "Authenticated numerical child failed with exit $($ChildRecord.exit_code): $($ChildRecord.stderr)"
+        }
+    }
+
+    if ($null -eq $VerificationResultLock) {
+        $VerificationResultLock = Add-RetainedOutputLock `
+            -Path $VerificationResult `
+            -Name 'Published verification result'
+        $OutputRecords['verification_result'] = New-IdentityRecord -Snapshot $VerificationResultLock.M0
+    }
+    $VerificationReportLock = Add-RetainedOutputLock `
+        -Path $VerificationReport `
+        -Name 'Verification report'
+    $FreshTargets.verification_report.created = $true
+    $OutputRecords['verification_report'] = New-IdentityRecord -Snapshot $VerificationReportLock.M0
+    [byte[]]$reportBytes = Get-RetainedStreamBytes -Stream $VerificationReportLock.Stream
+    Assert-CanonicalJsonBytes -Bytes $reportBytes -Label 'Verification report'
+    $reportDocument = ConvertFrom-RetainedJsonObject `
+        -Stream $VerificationReportLock.Stream `
+        -Label 'Verification report'
+    Assert-ExactSuccessReport `
+        -Report $reportDocument `
+        -ResultSnapshot $VerificationResultLock.M0
+
+    if ($Mode -ne 'Build') {
+        $expectedNumericalStdout = New-Object byte[] ($reportBytes.Length + 1)
+        [System.Array]::Copy($reportBytes, 0, $expectedNumericalStdout, 0, $reportBytes.Length)
+        $expectedNumericalStdout[$reportBytes.Length] = 10
+        if (
+            [string]$ChildRecord.stdout_base64 -cne [Convert]::ToBase64String($expectedNumericalStdout) -or
+            [int64]$ChildRecord.stderr_byte_count -ne 0
+        ) { throw 'Authenticated numerical child canonical stdout does not equal retained report bytes plus one LF.' }
+    }
+    else {
+        $AuditLock = Add-RetainedOutputLock -Path $AuditPath -Name 'Build audit'
+        $FreshTargets.audit_path.created = $true
+        $OutputRecords['audit_path'] = New-IdentityRecord -Snapshot $AuditLock.M0
+        if (
+            [int64]$ChildRecord.stderr_byte_count -ne 0 -or
+            [string]$ChildRecord.stdout -cnotmatch ('\ABUILD_AUDIT_SHA256=(?<audit>[0-9a-f]{64})\r?\n' +
+                'BUILD_VERIFICATION_REPORT_SHA256=(?<report>[0-9a-f]{64})\r?\n\z')
+        ) { throw 'Authenticated build child digest handoff has invalid exact stdout.' }
+        if (
+            [string]$Matches.audit -cne [string]$AuditLock.M0.sha256 -or
+            [string]$Matches.report -cne [string]$VerificationReportLock.M0.sha256
+        ) { throw 'Authenticated build child digest handoff does not bind retained output bytes.' }
+        $auditDocument = ConvertFrom-RetainedJsonObject -Stream $AuditLock.Stream -Label 'Build audit'
+        if (
+            $auditDocument.ok -isnot [bool] -or -not $auditDocument.ok -or
+            [string]$auditDocument.protocol_profile -cne $Profile -or
+            [string]$auditDocument.source_revision -cne $SourceRevision
+        ) { throw 'Authenticated build audit did not report exact production ok=true.' }
+        foreach ($field in @(
+            'repository_build_script', 'executed_build_script', 'bootstrap_attestation'
+        )) {
+            Assert-ExactJsonProperties `
+                -Value $auditDocument.build_context.$field `
+                -Expected @('path', 'sha256', 'byte_count') `
+                -Label "Build audit $field identity"
+        }
+        if (
+            [string]$auditDocument.build_context.repository_build_script.path -cne $repositorySourcePath -or
+            [string]$auditDocument.build_context.repository_build_script.sha256 -cne [string]$materializedM0.sha256 -or
+            [int64]$auditDocument.build_context.repository_build_script.byte_count -ne $blobSize -or
+            [string]$auditDocument.build_context.executed_build_script.path -cne $materializedPath -or
+            [string]$auditDocument.build_context.executed_build_script.sha256 -cne [string]$materializedM0.sha256 -or
+            [int64]$auditDocument.build_context.executed_build_script.byte_count -ne $blobSize -or
+            [string]$auditDocument.build_context.bootstrap_attestation.path -cne $attestationPath -or
+            [string]$auditDocument.build_context.bootstrap_attestation.sha256 -cne [string]$attestationM0.sha256 -or
+            [int64]$auditDocument.build_context.bootstrap_attestation.byte_count -ne [int64]$attestationM0.byte_count
+        ) { throw 'Typed build report does not bind repository source, executed materialization, and bootstrap attestation identities.' }
+        $fixedPoint = $auditDocument.build_context.external_input_fixed_point
+        Assert-ExactJsonProperties `
+            -Value $fixedPoint `
+            -Expected @('max_iterations', 'converged_iteration', 'inputs') `
+            -Label 'Build audit external-input fixed point'
+        if (
+            $fixedPoint.max_iterations -isnot [int] -or
+            [int]$fixedPoint.max_iterations -ne 8 -or
+            $fixedPoint.converged_iteration -isnot [int] -or
+            [int]$fixedPoint.converged_iteration -lt 2 -or
+            [int]$fixedPoint.converged_iteration -gt 8
+        ) { throw 'Build audit external-input fixed point has invalid convergence bounds.' }
+        Assert-SortedIdentityMap `
+            -Map $fixedPoint.inputs `
+            -Domain external `
+            -Label 'Build audit fixed external inputs'
+
+        $recorderSnapshots = $auditDocument.build_context.recorder_snapshots
+        Assert-ExactJsonProperties `
+            -Value $recorderSnapshots `
+            -Expected @('pass_1', 'pass_3', 'pass_4') `
+            -Label 'Build audit recorder snapshots'
+        foreach ($pass in @('pass_1', 'pass_3', 'pass_4')) {
+            $record = $recorderSnapshots.$pass
+            Assert-ExactJsonProperties `
+                -Value $record `
+                -Expected @('path', 'sha256', 'byte_count') `
+                -Label "Build audit recorder snapshot $pass"
+            $recorderPath = Get-AbsolutePath -Value ([string]$record.path) -Label "Recorder snapshot $pass"
+            if (
+                -not $recorderPath.StartsWith($OutputDirectory + '\', [System.StringComparison]::OrdinalIgnoreCase)
+            ) { throw "Build audit recorder snapshot $pass is outside OutputDirectory." }
+            Add-RetainedEvidenceBinding `
+                -Path $recorderPath `
+                -Record ([pscustomobject][ordered]@{
+                    sha256 = [string]$record.sha256
+                    byte_count = [int64]$record.byte_count
+                }) `
+                -Label "Build audit recorder snapshot $pass"
+        }
+
+        $evidenceInventory = $auditDocument.build_context.evidence_input_inventory
+        Assert-ExactJsonProperties `
+            -Value $evidenceInventory `
+            -Expected @('repository', 'build', 'external') `
+            -Label 'Build audit evidence input inventory'
+        Assert-SortedIdentityMap -Map $evidenceInventory.repository -Domain repository -Label 'Build audit repository evidence'
+        Assert-SortedIdentityMap -Map $evidenceInventory.build -Domain build -Label 'Build audit build evidence'
+        Assert-SortedIdentityMap -Map $evidenceInventory.external -Domain external -Label 'Build audit external evidence'
+        if (
+            (ConvertTo-Json $fixedPoint.inputs -Compress -Depth 8) -cne
+            (ConvertTo-Json $evidenceInventory.external -Compress -Depth 8)
+        ) { throw 'Build audit fixed external inputs do not equal the external evidence inventory.' }
+        $OutputRecords['build_evidence'] = [ordered]@{
+            external_input_fixed_point = $fixedPoint
+            recorder_snapshots = $recorderSnapshots
+            evidence_input_inventory = $evidenceInventory
+        }
+        Assert-NoReparseComponents -Path $OutputDirectory -Label 'OutputDirectory after build'
+        if (-not (Test-Path -LiteralPath $OutputDirectory -PathType Container)) {
+            throw 'Authenticated build child removed the retained OutputDirectory.'
+        }
+        Lock-ExactBuildArtifactInventory -ArtifactHashes $auditDocument.artifact_hashes
+    }
+    $Accepted = $true
+}
+catch {
+    $Failure = $_.Exception.Message
+}
+finally {
+    try {
+        if ($null -ne $DirectoryHandle) {
+            $DirectoryM1 = [ordered]@{
+                final_path = [GaugeVfeBootstrapNative]::FinalPath($DirectoryHandle)
+                handle_identity = @([GaugeVfeBootstrapNative]::Identity($DirectoryHandle))
+            }
+            if (
+                [string]$DirectoryM1.final_path -cne [string]$DirectoryM0.final_path -or
+                (@($DirectoryM1.handle_identity)[0..1] -join ',') -cne (@($DirectoryM0.handle_identity)[0..1] -join ',')
+            ) {
+                throw 'Fresh temporary-directory held identity changed at M1.'
+            }
+        }
+        if ($null -ne $MetadataM0) {
+            Assert-GitMetadataRootBinding
+            $MetadataM1 = Get-MetadataSnapshot
+            Assert-MetadataEqual -Expected $MetadataM0 -Actual $MetadataM1 -Label 'bootstrap M1'
+        }
+        foreach ($entry in $AcquiredLocks) {
+            $current = Get-HandleSnapshot -Path $entry.Path -Stream $entry.Stream
+            Assert-SnapshotEqual -Expected $entry.M0 -Actual $current -Label $entry.Name
+            Assert-PathNamesHandle -Path $entry.Path -HeldSnapshot $entry.M0 -Label $entry.Name
+        }
+        if ($null -ne $SourceLock) {
+            $sourceNow = Get-HandleSnapshot -Path $repositorySourcePath -Stream $SourceLock
+            Assert-SnapshotEqual -Expected $sourceM0 -Actual $sourceNow -Label 'numerical source'
+            Assert-PathNamesHandle -Path $repositorySourcePath -HeldSnapshot $sourceM0 -Label 'numerical source'
+        }
+        if ($null -ne $MaterializedSourceLock) {
+            $materializedNow = Get-HandleSnapshot -Path $materializedPath -Stream $MaterializedSourceLock
+            Assert-SnapshotEqual -Expected $materializedM0 -Actual $materializedNow -Label 'materialized build source'
+            Assert-PathNamesRetainedWritableHandle -Path $materializedPath -HeldSnapshot $materializedM0 -Label 'materialized build source'
+            if ((Get-GitBlobOid -Stream $MaterializedSourceLock) -cne $sourceBlobOid) {
+                throw 'Materialized build source blob OID changed at M1.'
+            }
+        }
+        if ($null -ne $AttestationLock) {
+            $attestationNow = Get-HandleSnapshot -Path $attestationPath -Stream $AttestationLock
+            Assert-SnapshotEqual -Expected $attestationM0 -Actual $attestationNow -Label 'bootstrap attestation'
+            Assert-PathNamesHandle -Path $attestationPath -HeldSnapshot $attestationM0 -Label 'bootstrap attestation'
+        }
+        foreach ($entry in $OutputLocks) {
+            $outputNow = Get-HandleSnapshot -Path $entry.Path -Stream $entry.Stream
+            Assert-SnapshotEqual -Expected $entry.M0 -Actual $outputNow -Label $entry.Name
+            Assert-PathNamesHandle -Path $entry.Path -HeldSnapshot $entry.M0 -Label $entry.Name
+        }
+        if ($null -ne $OutputDirectoryHandle) {
+            $OutputDirectoryM1 = [ordered]@{
+                path = $OutputDirectory
+                final_path = [GaugeVfeBootstrapNative]::FinalPath($OutputDirectoryHandle)
+                handle_identity = @([GaugeVfeBootstrapNative]::Identity($OutputDirectoryHandle))
+            }
+            if (
+                [string]$OutputDirectoryM1.final_path -cne [string]$OutputDirectoryM0.final_path -or
+                (@($OutputDirectoryM1.handle_identity)[0..1] -join ',') -cne (@($OutputDirectoryM0.handle_identity)[0..1] -join ',')
+            ) { throw 'OutputDirectory retained identity changed at M1.' }
+            $artifactPathsM1 = @(Get-BuildRegularFileInventory)
+            if (
+                $artifactPathsM1.Count -ne @($script:BuildArtifactPathsM0).Count -or
+                (Compare-Object -ReferenceObject @($script:BuildArtifactPathsM0) -DifferenceObject $artifactPathsM1 -SyncWindow 0)
+            ) { throw 'Build directory regular-file set changed between retained output M0 and M1.' }
+        }
+        $M1Record = [ordered]@{
+            completed = $true
+            error = $null
+            git_metadata = $MetadataM1
+            temporary_directory_m0 = $DirectoryM0
+            temporary_directory_m1 = $DirectoryM1
+            output_directory_m0 = $OutputDirectoryM0
+            output_directory_m1 = $OutputDirectoryM1
+        }
+    }
+    catch {
+        $M1Record = [ordered]@{
+            completed = $false
+            error = $_.Exception.Message
+            git_metadata = $MetadataM1
+            temporary_directory_m0 = $DirectoryM0
+            temporary_directory_m1 = $DirectoryM1
+            output_directory_m0 = $OutputDirectoryM0
+            output_directory_m1 = $OutputDirectoryM1
+        }
+        if ($null -eq $Failure) { $Failure = "M1 failure: $($_.Exception.Message)" }
+        else { $Failure = "$Failure | M1 failure: $($_.Exception.Message)" }
+        $Accepted = $false
+    }
+    foreach ($handle in @($AttestationLock, $MaterializedSourceLock, $SourceLock)) {
+        if ($null -ne $handle) { try { $handle.Dispose() } catch { } }
+    }
+    foreach ($entry in $AcquiredLocks) { try { $entry.Stream.Dispose() } catch { } }
+    if ($TemporaryDirectory) {
+        try {
+            if (Test-Path -LiteralPath $TemporaryDirectory) {
+                Assert-SafeTemporaryTreeForCleanup -Path $TemporaryDirectory
+                if ($null -ne $DirectoryHandle) {
+                    $DirectoryHandle.Dispose()
+                    $DirectoryHandle = $null
+                }
+                [System.IO.Directory]::Delete($TemporaryDirectory, $true)
+            }
+            if (Test-Path -LiteralPath $TemporaryDirectory) {
+                throw 'Temporary directory still exists after recursive cleanup.'
+            }
+            $CleanupRecord = [ordered]@{ completed = $true; error = $null }
+        }
+        catch {
+            $CleanupRecord = [ordered]@{ completed = $false; error = $_.Exception.Message }
+            if ($null -eq $Failure) { $Failure = "Cleanup failure: $($_.Exception.Message)" }
+            else { $Failure = "$Failure | Cleanup failure: $($_.Exception.Message)" }
+            $Accepted = $false
+        }
+    }
+    else { $CleanupRecord = [ordered]@{ completed = $true; error = $null } }
+    if ($null -ne $DirectoryHandle) {
+        try { $DirectoryHandle.Dispose() } catch { }
+        $DirectoryHandle = $null
+    }
+}
+
+$toolRecords = [ordered]@{}
+foreach ($entry in $AcquiredLocks) {
+    $toolRecords[$entry.Name] = New-IdentityRecord -Snapshot $entry.M0
+}
+$receipt = [ordered]@{
+    schema_version = 'gauge-vfe-bootstrap-receipt-v1'
+    protocol_profile = $Profile
+    approved_transport_sha256 = $ApprovedTransportSha256
+    approved_transport_byte_count = [int64]$ApprovedTransportByteCount
+    outer_argv = $OuterArgv
+    mode = $Mode
+    accepted = [bool]($Accepted -and $M1Record.completed -and $CleanupRecord.completed)
+    source_revision = $SourceRevision
+    repository_root = $RepositoryRoot
+    source_directory = $SourceDirectory
+    temporary_directory = $TemporaryDirectory
+    repository_source = $RepositorySourceRecord
+    executed_source = $ExecutedSourceRecord
+    bootstrap_attestation = $AttestationRecord
+    tool_identities = $toolRecords
+    git_metadata_root_binding = $script:MetadataRootBinding
+    git_metadata_m0 = $MetadataM0
+    child = $ChildRecord
+    m1 = $M1Record
+    cleanup = $CleanupRecord
+    fresh_targets = $FreshTargets
+    outputs = $OutputRecords
+    error = $Failure
+}
+$receipt.outputs['transaction_receipt_id'] = $script:TransactionReceiptId
+if (-not $script:ReceiptTargetValidated) {
+    [Console]::Error.WriteLine("Bootstrap rejected before ReceiptPath validation: $Failure")
+    [Environment]::Exit(1)
+}
+$receiptWriteFailure = $null
+try {
+    $receiptBytes = $Utf8NoBom.GetBytes((ConvertTo-Json $receipt -Compress -Depth 16))
+    $receiptStream = [System.IO.FileStream]::new(
+        $ReceiptPath, [System.IO.FileMode]::CreateNew,
+        [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::Read,
+        4096, [System.IO.FileOptions]::WriteThrough
+    )
+    try {
+        $receiptStream.Write($receiptBytes, 0, $receiptBytes.Length)
+        $receiptStream.Flush($true)
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            $receiptStream.Position = 0
+            $receiptDigest = ([System.BitConverter]::ToString($sha256.ComputeHash($receiptStream))).Replace('-', '').ToLowerInvariant()
+        }
+        finally { $sha256.Dispose() }
+        [Console]::Out.WriteLine("BOOTSTRAP_RECEIPT_SHA256=$receiptDigest")
+    }
+    finally { $receiptStream.Dispose() }
+}
+catch {
+    $receiptWriteFailure = $_.Exception.Message
+}
+finally {
+    foreach ($entry in $OutputLocks) {
+        if ($null -ne $entry.Stream) {
+            try { $entry.Stream.Dispose() } catch { }
+        }
+    }
+    if ($null -ne $OutputDirectoryHandle) {
+        try { $OutputDirectoryHandle.Dispose() } catch { }
+    }
+}
+if ($null -ne $receiptWriteFailure) {
+    [Console]::Error.WriteLine("Bootstrap receipt write failed: $receiptWriteFailure")
+    [Environment]::Exit(1)
+}
+if (-not $receipt.accepted) {
+    [Console]::Error.WriteLine("Bootstrap rejected: $Failure")
+    [Environment]::Exit(1)
+}

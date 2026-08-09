@@ -1,0 +1,25 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.pytest-tmp/
+.pytest-*/
+.package-check/
+*.egg-info/
+build/
+dist/
+
+# TeX build products
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.lot
+*.out
+*.synctex.gz
+*.toc
+
+artifacts/
+.superpowers/
+.verification/active.json

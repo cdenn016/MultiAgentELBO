@@ -1,0 +1,7 @@
+* text=auto
+
+# The supplied Windows snapshot must retain its checked-out line endings.
+Theory/** text eol=crlf
+references.bib -text whitespace=-cr-at-eol
+
+*.npz binary
