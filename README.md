@@ -138,6 +138,10 @@ Run the complete test suite with:
 C:\Python314\python.exe -m pytest -q -p no:cacheprovider
 ```
 
+The foundation JUnit record contains 198 collected tests: 197 passed, zero
+failed, zero errored, and one was skipped for the Windows symlink privilege
+described below.
+
 One Windows-only symlink regression is skipped when the current account lacks
 the privilege needed to create a test symlink. The executed hard-link tests and
 the static reparse-point checks still protect the artifact ownership boundary;
