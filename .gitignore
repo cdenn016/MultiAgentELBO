@@ -22,4 +22,4 @@ dist/
 
 artifacts/
 .superpowers/
-.verification/active.json
+.verification/
