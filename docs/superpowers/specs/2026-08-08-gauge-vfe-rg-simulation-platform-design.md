@@ -177,21 +177,23 @@ NUMERICS = {
 OUTPUT = {"root": "artifacts", "collect_diagnostics": True, "render_figures": True}
 ```
 
-The guard calls a thin `main()` that resolves configuration, invokes `run_experiment(config)`, atomically publishes the run bundle, and returns the typed result. Tests and future sweep launchers import `run_experiment` directly. Figure rendering can be replayed independently and a rendering failure cannot invalidate numerical results.
+Each repository-root launcher bootstraps its adjacent `src/` directory before package imports, so `C:\Python314\python.exe run_finite_lab.py`, `run_gaussian_lab.py`, and `make_figures.py` work from a fresh checkout without editable installation or `PYTHONPATH`. The guard calls a thin `main()` that resolves configuration, invokes `run_experiment(config)`, atomically publishes the run bundle, and returns the typed result. Tests and future sweep launchers import `run_experiment` directly. A sanitized subprocess test, rather than pytest's configured `pythonpath`, establishes direct clickability.
+
+`metrics.json` and `arrays.npz` are core semantic results and are always persisted. `collect_diagnostics=True` additionally writes `diagnostics.npz` with declared intermediate matrices; `False` omits that artifact. `render_figures=True` invokes the pure saved-artifact renderer only after numerical finalization, publishing figures and a separate figure manifest in a sibling directory; `False` creates none. A rendering failure is recorded in that separate manifest, leaves numerical status and metric bytes unchanged, and never replaces an existing valid image. All four toggle combinations have integration tests.
 
 Replay figures use local Matplotlib style contexts and the noninteractive Agg backend, never module-import side effects. They export vector PDF and 300-DPI PNG at a 3.5-inch publication width with readable sans-serif typography, hidden top/right spines, Okabe-Ito colors, and redundant markers or line styles for grayscale accessibility. Signed residual panels retain a visible zero and configured tolerance boundaries. Because the first fixtures are deterministic exact enumerations rather than repeated samples, their captions say `n=1 exact fixture`; uncertainty bars and significance annotations are intentionally absent rather than fabricated.
 
 ## 8. Artifacts and reproducibility
 
-Every run owns `artifacts/<run-name>/<config-hash>-<seed>/`. Existing completed runs are never silently overwritten. The run bundle contains:
+Every run owns `artifacts/<run-name>/<config-hash>-<seed>/`. Existing completed runs are never silently overwritten. The numerical run bundle contains:
 
 - `config.json` with the resolved immutable configuration and its own hash;
 - `manifest.json` with Git commit, dirty-tree digest, theory snapshot digest, input hashes, Python/NumPy/SciPy versions, platform, seed streams, and artifact completeness states;
 - `metrics.json` with values, residuals, tolerances, and pass/fail/inconclusive dispositions;
-- `arrays.npz` for exact numerical arrays;
-- optional figures created from saved metrics rather than hidden simulator state.
+- `arrays.npz` for core exact numerical arrays required by replay and verification;
+- optional `diagnostics.npz`, controlled only by `collect_diagnostics`, for declared intermediate tensors and conditioning details.
 
-JSON and NPZ publication uses sibling temporary files, flush/fsync where available, and `os.replace`. One provenance object is reused across all files. Diagnostics collection and figure rendering are independent toggles.
+Figures are created only from finalized saved artifacts and live outside the immutable numerical bundle with their own manifest. JSON, NPZ, and image publication uses sibling temporary files, flush/fsync where available, and `os.replace`. One provenance object is reused across all numerical files. Diagnostics collection and figure rendering are independent, behaviorally tested toggles.
 
 ## 9. Pre-registered claim and experiment registry
 
