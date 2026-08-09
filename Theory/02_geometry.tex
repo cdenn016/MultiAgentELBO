@@ -1,0 +1,772 @@
+\chapter{The Geometric Setting}
+\label{ch:geometry}
+
+The ambient geometry has one principal gauge bundle over the contextual base and two associated
+statistical bundles, one for belief laws and one for model laws.  The two associated actions of
+the same group may be inequivalent and may act on fibers of different dimensions.  Belief and
+model frames may nevertheless be chosen separately as local sections of the common principal
+bundle, and the two channels may carry different connections.  Cross-channel maps are additional
+associated-bundle morphisms; neither a relative frame nor a shared structure group supplies such a
+map by itself.  A product-gauge theory with two independent principal bundles is recorded only as
+the optional extension in \Cref{sec:geo-product-extension}.
+
+\section{The contextual base}
+\label{sec:geo-base}
+
+\definitionheading{Contextual base}{def:geo-context-base}
+Let $\mathcal C$ be a finite-dimensional smooth, second countable, Hausdorff manifold whose points
+$c$ are called \emph{contexts}. \status{DEFINITION}
+
+This declaration fixes a type and proves nothing.  The base is neither the population index set
+$V=\{1,\dots,N\}$ nor its interaction graph, neither latent sample space, and not physical
+spacetime.  Its smooth structure supports curves and differential forms.  A connection on a
+bundle over $\mathcal C$ defines transport in that bundle along curves in $\mathcal C$; it does
+not, unless separately specified as a connection on $T\mathcal C$, define parallel transport of
+tangent vectors of the base.  The finite design $D=\{c_a\}_{a=1}^{M}$ used later is a finite
+subset of $\mathcal C$, not a continuum limit or a discretization theorem.
+
+Throughout this development, $\mathcal C$ is fixed and timeless.  A curve in $\mathcal C$
+orders contexts and does not by itself represent an agent's evolution.  Belief or model change
+at a fixed context is a curve inside one associated-bundle fiber, while simultaneous change over
+all contexts is a curve in a declared space of sections.  A trajectory whose projection moves in
+$\mathcal C$ is a different construction and requires the horizontal--vertical distinction made
+by a chosen connection.  These are typing declarations rather than physical conclusions.
+\status{DEFINITION}
+
+\section{One principal bundle and two associated statistical bundles}
+\label{sec:geo-bundle}
+\label{sec:geo-associated}
+
+\definitionheading{Common principal gauge bundle}{def:geo-principal-systems}
+Let
+\begin{equation}
+\pi:P\longrightarrow\mathcal C
+\label{eq:geo-principal-bundle}
+\end{equation}
+be a smooth principal right $G$-bundle for a Lie group $G$.  For each agent $i$, choose an open
+support $\mathcal C_i\subseteq\mathcal C$ and two local principal-frame sections
+\begin{equation}
+u_i^b:\mathcal C_i\longrightarrow P,
+\qquad
+u_i^m:\mathcal C_i\longrightarrow P.
+\label{eq:geo-frame-sections}
+\end{equation}
+\status{DEFINITION}
+
+The superscripts distinguish two choices of local section, not two principal bundles.  They may
+be unequal.  Because each principal fiber is a right $G$-torsor, there is a unique smooth map
+\begin{equation}
+h_i:\mathcal C_i\longrightarrow G,
+\qquad
+u_i^m=u_i^b\cdot h_i,
+\label{eq:geo-relative-frame}
+\end{equation}
+called the \emph{relative principal-frame field}.  Its existence uses only the common principal
+bundle and is independent of all associated representations. \status{ESTABLISHED}
+
+Let $(\mathsf K,\mathscr K)$ and $(\mathsf M,\mathscr M)$ be the belief and model sample fibers in
+local coordinates, and declare normalized-law fibers
+\begin{equation}
+\mathcal B_b\subseteq\mathcal P(\mathsf K),
+\qquad
+\mathcal B_m\subseteq\mathcal P(\mathsf M).
+\label{eq:geo-law-fibers}
+\end{equation}
+A law fiber is not a kernel fiber.  A generative transition belongs to a separately declared
+collection of normalized Markov kernels between specified measurable spaces.  No density chart,
+common dominating measure, affine structure, or Fisher metric follows from
+\eqref{eq:geo-law-fibers}.
+
+Suppose the same group acts measurably on the two sample fibers through representations
+\begin{equation}
+\rho_b:G\longrightarrow\operatorname{Aut}(\mathsf K),
+\qquad
+\rho_m:G\longrightarrow\operatorname{Aut}(\mathsf M).
+\label{eq:geo-representations}
+\end{equation}
+The representations need not be equivalent, faithful, or of equal dimension.  Denote their
+induced actions on laws by
+\begin{equation}
+\widehat\rho_b(g)q=(\rho_b(g))_\#q,
+\qquad
+\widehat\rho_m(g)s=(\rho_m(g))_\#s.
+\label{eq:geo-pushforward-actions}
+\end{equation}
+\status{DEFINITION}
+
+Thus $(\widehat\rho_b(g)q)(A)=q(\rho_b(g)^{-1}A)$, and similarly in the model channel.  The hats
+distinguish actions on laws from actions on samples.  Multiplying a matrix into a
+density is not the pushforward in \eqref{eq:geo-pushforward-actions}.
+\status{ESTABLISHED}
+
+\medskip
+\hypothesisheading{Selected smooth tier}{hyp:geo-smooth-tier}
+When differential statements are made, $\mathcal B_b$ and $\mathcal B_m$ are finite-dimensional
+smooth parametrized-measure models, each is closed under its $G$-action, and
+\begin{equation}
+(g,q)\longmapsto(\rho_b(g))_\#q,
+\qquad
+(g,s)\longmapsto(\rho_m(g))_\#s
+\label{eq:geo-smooth-actions}
+\end{equation}
+are smooth. \status{HYPOTHESIS}
+\medskip
+
+A finite-dimensional statistical interpretation additionally requires differentiability in
+quadratic mean, square-integrable scores, and the integrability required by each tensor.  The
+Fisher tensor is a Riemannian metric only when it is nondegenerate.  Stratified and
+infinite-dimensional fibers require their own categories and are not included silently.
+
+\definitionheading{Belief and model associated bundles}{def:geo-associated-bundles}
+On invariant law fibers define
+\begin{equation}
+\mathcal E_b=P\times_{\widehat\rho_b}\mathcal B_b,
+\qquad
+\mathcal E_m=P\times_{\widehat\rho_m}\mathcal B_m,
+\label{eq:geo-associated-bundles}
+\end{equation}
+using the quotient convention
+\begin{equation}
+(u\cdot g,\beta)\sim(u,g\cdot\beta).
+\label{eq:geo-quotient-convention}
+\end{equation}
+\status{DEFINITION}
+
+At the general tier these are associated measurable bundles.  Under
+\Cref{hyp:geo-smooth-tier} they are smooth associated bundles.  Smoothness of $P$ alone does not
+upgrade an arbitrary law fiber.
+
+The field $h_i$ compares the two principal sections, even when $\rho_b$ and $\rho_m$ are
+inequivalent.  It then produces two different represented operators,
+$\widehat\rho_b(h_i)$ on $\mathcal B_b$ and $\widehat\rho_m(h_i)$ on $\mathcal B_m$.  It does not
+canonically produce an operator from $\mathcal B_b$ to $\mathcal B_m$.  If ``frame'' instead means
+an arbitrary basis of an associated vector fiber that is not induced from a section of this same
+$P$, the existence of a $G$-valued relative field is not guaranteed.  Moreover, when a
+representation is nonfaithful, represented frame data alone determine at most a coset modulo its
+kernel; the principal sections, rather than their represented images, are what make $h_i$ unique.
+
+\section{Frame choices, gauge symmetry, and relative frames}
+\label{sec:geo-frame-gauge}
+
+Independent changes of the two local trivializations may be written
+\begin{equation}
+u_i^{b\prime}=u_i^b\cdot a_i,
+\qquad
+u_i^{m\prime}=u_i^m\cdot b_i,
+\qquad a_i,b_i:\mathcal C_i\to G.
+\label{eq:geo-local-reframing}
+\end{equation}
+They change associated coordinates by
+$\beta_b'=\widehat\rho_b(a_i)^{-1}\beta_b$ and
+$\beta_m'=\widehat\rho_m(b_i)^{-1}\beta_m$.  The unique relative field becomes
+\begin{equation}
+h_i'=a_i^{-1}h_i b_i.
+\label{eq:geo-relative-frame-law}
+\end{equation}
+\status{ESTABLISHED}
+
+These two passive coordinate choices must not be confused with a product gauge symmetry.  The
+principal gauge group of the ambient theory is the single group of $G$-equivariant automorphisms
+of $P$ over $\operatorname{id}_{\mathcal C}$, and each such automorphism acts simultaneously on
+both associated bundles.  For such an automorphism $F$, define its local functions by
+$F(u_i^b)=u_i^b\cdot k_i^b$ and $F(u_i^m)=u_i^m\cdot k_i^m$.  Equivariance and
+\eqref{eq:geo-relative-frame} imply
+\begin{equation}
+k_i^m=h_i^{-1}k_i^b h_i.
+\label{eq:geo-diagonal-gauge-functions}
+\end{equation}
+Thus the two local descriptions of one gauge transformation are related, not independent.  By
+contrast, \eqref{eq:geo-local-reframing} simply permits two atlases to be replaced independently.
+Applying one principal gauge automorphism to both sections leaves their relative principal element
+unchanged, since equivariance gives $F(u_i^m)=F(u_i^b\cdot h_i)=F(u_i^b)\cdot h_i$.
+
+\section{Cross-associated-bundle morphisms}
+\label{sec:geo-cross-morphisms}
+
+\definitionheading{Cross morphisms}{def:geo-cross-morphisms}
+At the general measurable tier, declare fiber-preserving measurable maps
+\begin{equation}
+\Phi:\mathcal E_b\longrightarrow\mathcal E_m,
+\qquad
+\widetilde\Phi:\mathcal E_m\longrightarrow\mathcal E_b,
+\qquad
+\varpi_m\circ\Phi=\varpi_b,
+\quad
+\varpi_b\circ\widetilde\Phi=\varpi_m,
+\label{eq:geo-cross-channel-map}
+\end{equation}
+where $\varpi_b$ and $\varpi_m$ are the associated-bundle projections.  Both maps cover
+$\operatorname{id}_{\mathcal C}$. \status{DEFINITION}
+
+These maps are extra structure.  They are not principal-bundle morphisms, gauge automorphisms,
+same-channel transports, or assumed inverses.  Under \Cref{hyp:geo-smooth-tier}, differential
+statements additionally assume that they are smooth.  In the frames $u_i^b,u_i^m$, let
+$\phi_i$ and $\widetilde\phi_i$ denote their local fiber representatives.  The rechoices in
+\eqref{eq:geo-local-reframing} give
+\begin{align}
+\phi_i'
+&=\widehat\rho_m(b_i)^{-1}\circ\phi_i\circ\widehat\rho_b(a_i),
+\label{eq:geo-phi-gauge-law}\\
+\widetilde\phi_i'
+&=\widehat\rho_b(a_i)^{-1}\circ\widetilde\phi_i\circ\widehat\rho_m(b_i).
+\label{eq:geo-tildephi-gauge-law}
+\end{align}
+\status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+Write $\beta_m=\phi_i(\beta_b)$ and substitute
+$\beta_b=\widehat\rho_b(a_i)\beta_b'$ and
+$\beta_m'=\widehat\rho_m(b_i)^{-1}\beta_m$.  The second law follows by interchanging the
+channels. \hfill$\square$
+
+\propositionheading{Equivariant fiber maps induce cross morphisms}{prop:geo-intertwining-cross-map}
+Suppose maps $\phi:\mathcal B_b\to\mathcal B_m$ and
+$\widetilde\phi:\mathcal B_m\to\mathcal B_b$ satisfy, for every $g\in G$,
+\begin{align}
+\phi\circ\widehat\rho_b(g)&=\widehat\rho_m(g)\circ\phi,
+\qquad
+\widetilde\phi\circ\widehat\rho_m(g)=\widehat\rho_b(g)\circ\widetilde\phi.
+\label{eq:geo-intertwining}
+\end{align}
+Then
+\begin{equation}
+[p,\beta_b]\longmapsto[p,\phi(\beta_b)],
+\qquad
+[p,\beta_m]\longmapsto[p,\widetilde\phi(\beta_m)]
+\label{eq:geo-induced-cross-morphisms}
+\end{equation}
+are well-defined cross morphisms. \status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+The quotient representatives $(p\cdot g,\beta)$ and $(p,g\cdot\beta)$ have the same image under
+\eqref{eq:geo-induced-cross-morphisms} exactly when the corresponding equality in
+\eqref{eq:geo-intertwining} holds. \hfill$\square$
+
+Equivariance is sufficient for the representative-independent construction
+\eqref{eq:geo-induced-cross-morphisms}.  A general bundle morphism is instead characterized by
+local maps satisfying the overlap laws
+\begin{equation}
+\begin{aligned}
+\phi_i\circ\widehat\rho_b(T_{ij}^b)
+&=\widehat\rho_m(T_{ij}^m)\circ\phi_j,\\
+\widetilde\phi_i\circ\widehat\rho_m(T_{ij}^m)
+&=\widehat\rho_b(T_{ij}^b)\circ\widetilde\phi_j.
+\end{aligned}
+\label{eq:geo-cross-map-gluing}
+\end{equation}
+In any selected regularity category admitting the two mapping objects and the composition actions
+displayed below, their local representatives first require conversion to one principal-frame
+atlas.  In the belief atlas define
+\begin{equation}
+f_i:=\widehat\rho_m(h_i)\circ\phi_i,
+\qquad
+\widetilde f_i:=\widetilde\phi_i\circ\widehat\rho_m(h_i^{-1}).
+\label{eq:geo-map-bundle-frame-conversion}
+\end{equation}
+Then $f_i$ is the local representative of a section of the associated map bundle with action
+$f\mapsto\widehat\rho_m(g)\circ f\circ\widehat\rho_b(g)^{-1}$, and
+$\widetilde f_i$ obeys the analogous law with the two channels interchanged.  Indeed,
+\eqref{eq:geo-cross-map-gluing} and
+$T_{ij}^m=h_i^{-1}T_{ij}^b h_j$ give
+$f_i\widehat\rho_b(T_{ij}^b)=\widehat\rho_m(T_{ij}^b)f_j$ and
+$\widetilde f_i\widehat\rho_m(T_{ij}^b)=\widehat\rho_b(T_{ij}^b)\widetilde f_j$.
+Thus the compatible family is a map-bundle section only after the displayed conversion, and
+$h_i$ does not replace the cross-fiber map.  For example, if $\Phi$ is induced by the first map in
+\eqref{eq:geo-induced-cross-morphisms}, then
+$\phi_i=\widehat\rho_m(h_i^{-1})\circ\phi$ and hence $f_i=\phi$.
+\status{ESTABLISHED}
+
+\section{Chosen connections, parallel transport, and covariant defects}
+\label{sec:geo-three-transports}
+
+\definitionheading{Two connections on the common principal bundle}{def:geo-connections}
+Under \Cref{hyp:geo-smooth-tier}, choose
+\begin{equation}
+\omega_b,\omega_m\in\Omega^1(P,\mathfrak g)
+\label{eq:geo-principal-connections}
+\end{equation}
+as principal connections on $P$.  They induce horizontal distributions $H^b,H^m$ on the two
+associated bundles and, for every piecewise-smooth $\gamma:[0,1]\to\mathcal C$, parallel
+transports
+\begin{equation}
+\Omega_\gamma:
+(\mathcal E_b)_{\gamma(0)}\longrightarrow(\mathcal E_b)_{\gamma(1)},
+\qquad
+\widetilde\Omega_\gamma:
+(\mathcal E_m)_{\gamma(0)}\longrightarrow(\mathcal E_m)_{\gamma(1)}.
+\label{eq:geo-base-parallel-transports}
+\end{equation}
+\status{DEFINITION}
+
+Explicitly, $\omega_x$ selects the unique horizontal lift of $\gamma$ through a chosen point of
+$P_{\gamma(0)}$; carrying the associated-law coordinate along that lift defines the corresponding
+map in \eqref{eq:geo-base-parallel-transports}.  This is transport \emph{over} the base curve, not
+transport of vectors in $T\mathcal C$.  A tangent-vector transport would require a separately
+chosen affine connection on $T\mathcal C$, unless $P$ and its representation have explicitly been
+identified with the frame bundle of $\mathcal C$.
+
+The two connections need not agree.  Their difference $\omega_m-\omega_b$ is horizontal and
+$\operatorname{Ad}$-equivariant, hence descends to an
+$\operatorname{Ad}(P)$-valued one-form on $\mathcal C$.  In an associated vector-bundle
+realization, the induced horizontal distributions also define covariant derivatives
+$\nabla^b,\nabla^m$.  No linear covariant derivative is assumed on a merely measurable law fiber.
+
+Let $A_i^b=(u_i^b)^*\omega_b$ and $A_i^m=(u_i^m)^*\omega_m$.  Under
+\eqref{eq:geo-local-reframing},
+\begin{align}
+A_i^{b\prime}
+&=\operatorname{Ad}_{a_i^{-1}}A_i^b+a_i^{-1}da_i,
+\label{eq:geo-local-connection-b}\\
+A_i^{m\prime}
+&=\operatorname{Ad}_{b_i^{-1}}A_i^m+b_i^{-1}db_i.
+\label{eq:geo-local-connection-m}
+\end{align}
+If endpoint coordinates are changed by $a_0,a_1$ in the belief frame and $b_0,b_1$ in the model
+frame, the represented transports obey
+\begin{align}
+\Omega_\gamma'
+&=\widehat\rho_b(a_1)^{-1}\circ\Omega_\gamma\circ\widehat\rho_b(a_0),
+\label{eq:geo-pt-gauge-b}\\
+\widetilde\Omega_\gamma'
+&=\widehat\rho_m(b_1)^{-1}\circ\widetilde\Omega_\gamma\circ\widehat\rho_m(b_0).
+\label{eq:geo-pt-gauge-m}
+\end{align}
+\status{ESTABLISHED}
+
+These are the standard connection and endpoint laws for the quotient convention
+\eqref{eq:geo-quotient-convention} \citep{Kobayashi1963,Nakahara2003}.  They also show why a
+same-point frame comparison and transport along a nonconstant curve are different objects.
+
+\definitionheading{Covariant defects}{def:geo-covariant-defects}
+Let $e\in\mathcal E_b$ and $f\in\mathcal E_m$ lie over $c\in\mathcal C$, and let
+$X\in T_c\mathcal C$.  For smooth associated fibers, define the vertical-valued tensors
+\begin{align}
+(\mathcal D\Phi)_e(X)
+&=T_e\Phi\bigl(H_e^bX\bigr)-H_{\Phi(e)}^mX,
+\label{eq:geo-nonlinear-defect-phi}\\
+(\mathcal D\widetilde\Phi)_f(X)
+&=T_f\widetilde\Phi\bigl(H_f^mX\bigr)-H_{\widetilde\Phi(f)}^bX.
+\label{eq:geo-nonlinear-defect-tildephi}
+\end{align}
+\status{DEFINITION}
+
+Each difference is vertical because its two terms project to the same $X$.  The maps are parallel
+exactly when these defects vanish, equivalently when every base curve satisfies
+\begin{align}
+\widetilde\Omega_\gamma\circ\Phi_{\gamma(0)}
+&=\Phi_{\gamma(1)}\circ\Omega_\gamma,
+\label{eq:geo-phi-parallelness}\\
+\Omega_\gamma\circ\widetilde\Phi_{\gamma(0)}
+&=\widetilde\Phi_{\gamma(1)}\circ\widetilde\Omega_\gamma.
+\label{eq:geo-tildephi-parallelness}
+\end{align}
+\status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+Vanishing defect says that the image of every horizontal lift is horizontal.  Integration along
+$\gamma$ gives the two commutative squares, and differentiation at the initial point gives the
+converse. \hfill$\square$
+
+Only in a fiberwise-linear associated-vector-bundle specialization do the defects reduce to
+\begin{equation}
+D\Phi=\nabla^m\circ\Phi-\Phi\circ\nabla^b,
+\qquad
+D\widetilde\Phi=\nabla^b\circ\widetilde\Phi-\widetilde\Phi\circ\nabla^m.
+\label{eq:geo-linear-covariant-defects}
+\end{equation}
+Write $V_b,V_m$ for the two representation spaces in this linear specialization.  The
+old-to-new coordinate maps induced by \eqref{eq:geo-local-reframing} are, by definition,
+\begin{equation}
+R_i^b:=\rho_b(a_i)^{-1}:V_b\longrightarrow V_b,
+\qquad
+R_i^m:=\rho_m(b_i)^{-1}:V_m\longrightarrow V_m,
+\label{eq:geo-linear-coordinate-maps}
+\end{equation}
+so that $v_b'=R_i^bv_b$ and $v_m'=R_i^mv_m$.  These are invertible coordinate maps, not
+cross-channel morphisms or coarse restriction operators.  In these coordinates the defect
+matrices obey
+\begin{equation}
+(D\Phi)_i'=R_i^m(D\Phi)_i(R_i^b)^{-1},
+\qquad
+(D\widetilde\Phi)_i'=R_i^b(D\widetilde\Phi)_i(R_i^m)^{-1}.
+\label{eq:geo-defect-gauge-laws}
+\end{equation}
+\status{ESTABLISHED}
+
+The matrix laws are not asserted for nonlinear law manifolds. The connections
+in \eqref{eq:geo-principal-connections} are chosen data; no curvature or
+transport is inferred from the agent frames. \status{NOT-CLAIMED}
+
+\section{Agents and finite-moment pushforward}
+\label{sec:geo-agents}
+
+\definitionheading{Agent}{def:geo-agent}
+Agent $i$ is the section-bearing object
+\begin{equation}
+\mathcal A^i=\bigl(\mathcal C_i;q_i,s_i,u_i^b,u_i^m\bigr),
+\label{eq:geo-agent-object}
+\end{equation}
+where
+\begin{equation}
+q_i\in\Gamma(\mathcal C_i,\mathcal E_b|_{\mathcal C_i}),
+\qquad
+s_i\in\Gamma(\mathcal C_i,\mathcal E_m|_{\mathcal C_i}).
+\label{eq:geo-agent-sections}
+\end{equation}
+\status{DEFINITION}
+
+The sections are smooth only in the selected smooth tier.  A sample
+\begin{equation}
+Y(c)=\bigl((k_1(c),m_1(c)),\ldots,(k_N(c),m_N(c))\bigr)
+\label{eq:geo-population-sample}
+\end{equation}
+is a random element of a product of sample fibers, not a tuple of agents.  The continuum sections
+above and the finite recognition law introduced later are separately declared objects; their
+compatibility is a hypothesis in the probability chapter.
+
+\propositionheading{Finite-second-moment congruence}{prop:geo-moment-pushforward}
+Let a belief law $q$ on $\R^K$ have finite mean $\mu$ and covariance $\Sigma$, and let
+$R=\rho_b(g)$ be invertible and linear for $g\in G$. Then
+\begin{equation}
+\mu'=R\mu,
+\qquad
+\Sigma'=R\Sigma R^\top.
+\label{eq:geo-moment-pushforward}
+\end{equation}
+If $\Sigma\succ0$ and $J=\Sigma^{-1}$, the pushed law has precision
+\begin{equation}
+J'=(\Sigma')^{-1}=R^{-\top}JR^{-1}.
+\label{eq:geo-precision-inverse-congruence}
+\end{equation}
+The model channel has the same statement in its own dimension. \status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+For $X\sim q$, linearity gives $\mathbb E[RX]=R\mu$ and
+$\mathbb E[(RX-R\mu)(RX-R\mu)^\top]=R\Sigma R^\top$.  Inverting the latter identity gives
+\eqref{eq:geo-precision-inverse-congruence}. \hfill$\square$
+
+\section{Pointwise frame comparisons}
+\label{sec:geo-regime-one}
+
+Fix $c\in\mathcal C_i\cap\mathcal C_j$.  Freeness and transitivity give unique elements of the
+same group $G$ such that
+\begin{equation}
+u_j^b(c)=u_i^b(c)\cdot T_{ij}^b(c),
+\qquad
+u_j^m(c)=u_i^m(c)\cdot T_{ij}^m(c).
+\label{eq:geo-frame-comparison}
+\end{equation}
+They act through $\rho_b(T_{ij}^b)$ and $\rho_m(T_{ij}^m)$ in the two associated fibers.  Under
+\eqref{eq:geo-local-reframing},
+\begin{equation}
+T_{ij}^{b\prime}=a_i^{-1}T_{ij}^b a_j,
+\qquad
+T_{ij}^{m\prime}=b_i^{-1}T_{ij}^m b_j.
+\label{eq:geo-regime-one-gauge-law}
+\end{equation}
+Moreover, the relative fields force
+\begin{equation}
+T_{ij}^m=h_i^{-1}T_{ij}^b h_j.
+\label{eq:geo-frame-comparison-relation}
+\end{equation}
+\status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+The transformation law follows by substitution and uniqueness in the principal fiber.  The two
+expressions
+$u_j^m=u_j^b h_j=u_i^bT_{ij}^b h_j$ and
+$u_j^m=u_i^mT_{ij}^m=u_i^b h_iT_{ij}^m$ give
+\eqref{eq:geo-frame-comparison-relation}. \hfill$\square$
+
+The comparisons are same-point changes of coordinates.  They involve no curve and no connection.
+The two group elements are related by \eqref{eq:geo-frame-comparison-relation}, while their
+represented actions can be inequivalent.
+
+\section{The \v{C}ech picture and bundle topology}
+\label{sec:geo-cech}
+
+Let $\mathcal C_0=\bigcup_i\mathcal C_i$, and let $\mathcal N$ be the nerve of this open cover:
+\begin{equation}
+\{i_0,\ldots,i_r\}\in\mathcal N
+\quad\Longleftrightarrow\quad
+\mathcal C_{i_0\cdots i_r}=\bigcap_{a=0}^r\mathcal C_{i_a}\neq\varnothing.
+\label{eq:geo-nerve}
+\end{equation}
+For either frame atlas $x\in\{b,m\}$, the maps $T_{ij}^x:\mathcal C_{ij}\to G$ obey
+\begin{equation}
+T_{ii}^x=e_G,
+\qquad
+T_{ji}^x=(T_{ij}^x)^{-1},
+\qquad
+T_{ij}^xT_{jl}^x=T_{il}^x.
+\label{eq:geo-cech-cocycle}
+\end{equation}
+\status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+On a triple overlap, composing the unique change from $l$ to $j$ with the unique change from $j$
+to $i$ gives the unique change from $l$ to $i$. \hfill$\square$
+
+Let $\mathcal G$ be the sheaf of smooth $G$-valued maps.  There is one principal bundle and hence
+one nonabelian \v{C}ech class:
+\begin{equation}
+[T^b]=[T^m]=[P|_{\mathcal C_0}]
+\in\check H^1(\{\mathcal C_i\};\mathcal G).
+\label{eq:geo-cech-class}
+\end{equation}
+Indeed, \eqref{eq:geo-frame-comparison-relation} is exactly the coboundary equivalence between
+the two cocycles.  The class is distinguished exactly when $P|_{\mathcal C_0}$ is trivial,
+equivalently when, for either atlas, there are smooth $U_i^x:\mathcal C_i\to G$ such that
+\begin{equation}
+T_{ij}^x=U_i^x(U_j^x)^{-1}.
+\label{eq:geo-coboundary-form}
+\end{equation}
+\status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+If \eqref{eq:geo-coboundary-form} holds, the rechoice $u_i^{x\prime}=u_i^xU_i^x$ makes all
+transitions identity, so the sections glue to a global section.  A global section trivializes a
+principal bundle.  Conversely, a global trivialization supplies the $U_i^x$.  This is the standard
+global-section characterization of a trivial principal bundle
+\citep{Steenrod1951,Husemoller1994,Kobayashi1963}. \hfill$\square$
+
+The single principal class does not make the two associated bundles isomorphic.  Inequivalent
+representations can send the same principal cocycle to nonisomorphic associated bundles and to
+different induced characteristic data.
+
+\medskip
+\hypothesisheading{Common principal trivialization}{hyp:geo-common-trivializations}
+Whenever global principal-frame coordinates are used, declare $P|_{\mathcal C_0}$ trivial and
+choose one reference section $\sigma_0$ such that
+\begin{equation}
+u_i^b=\sigma_0\cdot(U_i^b)^{-1},
+\qquad
+u_i^m=\sigma_0\cdot(U_i^m)^{-1},
+\qquad
+h_i=U_i^b(U_i^m)^{-1}.
+\label{eq:geo-frame-field}
+\end{equation}
+\status{HYPOTHESIS}
+\medskip
+
+This is one topological hypothesis, not two channelwise hypotheses.  The general theory retains
+local frames and their common \v{C}ech class.  A global section of an associated bundle does not
+in general trivialize $P$: if an associated fiber contains a $G$-fixed point $\beta_0$, then
+$c\mapsto[p,\beta_0]$ is well defined for any $P$. \status{ESTABLISHED}
+
+\section{Channel-specific graph links and trivializing subfamilies}
+\label{sec:geo-regime-two}
+\label{sec:geo-trivializing}
+
+\definitionheading{Typed graph links}{def:geo-graph-links}
+Let $\mathfrak I=(V,E,\bar{\ })$ be a finite interaction multigraph declared independently of
+$\mathcal C$.  Its oriented edge copies have a fixed-point-free reversal involution, and parallel
+copies are allowed.  For $e:j\to i$, declare
+\begin{equation}
+\Theta_e^b,\Theta_e^m\in G,
+\qquad
+\Theta_{\bar e}^x=(\Theta_e^x)^{-1}.
+\label{eq:geo-regime-two-links}
+\end{equation}
+Under independently changed channel coordinates at the vertices,
+\begin{equation}
+\Theta_e^{b\prime}=(a_i^b)^{-1}\Theta_e^b a_j^b,
+\qquad
+\Theta_e^{m\prime}=(a_i^m)^{-1}\Theta_e^m a_j^m.
+\label{eq:geo-regime-two-gauge-law}
+\end{equation}
+Here the $a_i^x\in G$ are passive vertex-coordinate choices.  They are induced by smooth frame
+rechoices only after vertices are anchored at contexts $c_i\in\mathcal C_i$, in which case
+$a_i^b=a_i(c_i)$ and $a_i^m=b_i(c_i)$.  Allowing two coordinate descriptions of two graph-link
+data sets does not enlarge the principal gauge group to $G\times G$.  In the old-to-new
+sample-coordinate convention of \Cref{sec:gen-gauge}, the contextual elements denoted there by
+$h_i^x$ satisfy $h_i^x=(a_i^x)^{-1}$.  The superscripted $h_i^x$ is a discrete contextual
+coordinate re-expression and is unrelated to the relative principal-frame field $h_i$ of
+\eqref{eq:geo-relative-frame}. \status{DEFINITION}
+
+The links are channel-specific data.  Neither is determined by the other, by $h_i$, by $\Phi$ or
+$\widetilde\Phi$, by pointwise frame comparison, or by a principal connection.  For a closed
+edge-labeled walk $\gamma=(e_0,\ldots,e_{r-1})$, where $e_a:i_{a+1}\to i_a$ and $i_r=i_0$, define
+\begin{equation}
+H^x(\gamma)=\prod_{a=0}^{r-1}\Theta_{e_a}^x.
+\label{eq:geo-link-holonomy}
+\end{equation}
+Its conjugacy class and the condition $H^x(\gamma)=e_G$ are invariant under the corresponding
+coordinate changes. \status{ESTABLISHED}
+
+\propositionheading{Trivializing criterion}{prop:geo-trivializing-criterion}
+Fix a channel $x$, a subfamily $F\subseteq V$, and a $G$-valued comparison assignment $\Xi_e^x$
+on its internal oriented edge copies.  The following are equivalent:
+\begin{equation}
+\begin{gathered}
+\exists V_i^x\in G\ (i\in F)
+\quad
+\Xi_e^x=V_i^x(V_j^x)^{-1}
+\quad\text{for every internal }e:j\to i,\\
+\prod_{a=0}^{r-1}\Xi_{e_a}^x=e_G
+\quad\text{for every closed internal walk}.
+\end{gathered}
+\label{eq:geo-trivializing-criterion}
+\end{equation}
+\status{ESTABLISHED}
+
+\noindent\emph{Proof.}
+The first condition telescopes around every closed walk.  Conversely, choose a base vertex in each
+connected component and define $V_i^x$ by an ordered path product.  Two choices differ by a closed
+walk and hence agree.  Appending $e:j\to i$ gives the required edge factorization. \hfill$\square$
+
+A subfamily is \emph{jointly trivializing} when the criterion holds separately for both link data
+sets.  For $T^x$ evaluated at one common context the criterion is automatic by the \v{C}ech
+cocycle law.  Its nontrivial graph content concerns the independently declared $\Theta^x$.
+Pointwise graph triviality is weaker than triviality of $P$, which requires smooth overlap data on
+the entire cover.
+
+\medskip
+\hypothesisheading{Graph links realized by base transport}{hyp:geo-graph-base-transport}
+Choose contexts $c_i\in\mathcal C_i$ and, for every $e:j\to i$, a piecewise-smooth curve
+$\gamma_e$ from $c_j$ to $c_i$.  In the chosen endpoint frames impose
+\begin{equation}
+\widehat\rho_b(\Theta_e^b)=\Omega_{\gamma_e},
+\qquad
+\widehat\rho_m(\Theta_e^m)=\widetilde\Omega_{\gamma_e}.
+\label{eq:geo-link-pt-hypothesis}
+\end{equation}
+\status{HYPOTHESIS}
+\medskip
+
+Without the curve assignment and these equalities, graph holonomy and base-connection holonomy are
+unrelated.  Under the hypothesis, represented graph-loop products equal the corresponding
+parallel transports around concatenated base loops.  This is a connection-holonomy statement, not
+a claim of nontrivial principal-bundle topology.
+
+\section{Flat graph links and residuals}
+\label{sec:geo-flatness}
+
+\medskip
+\hypothesisheading{Pointwise flat-link specialization}{hyp:geo-flat-links}
+At one common context, declare separately for the two link data sets that
+\begin{equation}
+\Theta_e^b=T_{ij}^b=U_i^b(U_j^b)^{-1},
+\qquad
+\Theta_e^m=T_{ij}^m=U_i^m(U_j^m)^{-1},
+\qquad e:j\to i.
+\label{eq:geo-flat-regime}
+\end{equation}
+\status{HYPOTHESIS}
+\medskip
+
+This excludes represented graph holonomy in either channel.  It does not assert that either
+principal connection is flat or that the two channel frames coincide.  Let $\mu_i$ be a
+belief-channel vector coordinate, set $z_i=\rho_b(U_i^b)^{-1}\mu_i$, and suppress $\rho_b$ only in
+the defining representation.  Then
+\begin{equation}
+\mu_i-\rho_b(\Theta_e^b)\mu_j
+=\rho_b(U_i^b)(z_i-z_j).
+\label{eq:geo-trivialized-residual}
+\end{equation}
+For an independent graph link,
+\begin{equation}
+\mu_i-\rho_b(\Theta_e^b)\mu_j
+=\rho_b(U_i^b)(z_i-H_e^bz_j),
+\qquad
+H_e^b=\rho_b(U_i^b)^{-1}\rho_b(\Theta_e^b)\rho_b(U_j^b).
+\label{eq:geo-regime-two-residual}
+\end{equation}
+More generally, if $\Theta_e^b=V_i^b(V_j^b)^{-1}$ on a belief-trivializing subfamily and
+$z_i=\rho_b(V_i^b)^{-1}\mu_i$, then
+\begin{equation}
+\mu_i-\rho_b(\Theta_e^b)\mu_j
+=\rho_b(V_i^b)(z_i-z_j).
+\label{eq:geo-subfamily-trivialized-residual}
+\end{equation}
+\status{ESTABLISHED}
+
+These identities follow by substitution.  Belief-link trivialization says nothing about model
+links, either cross morphism, or equality of the belief and model frames.
+
+\section{Common-frame and common-connection specializations}
+\label{sec:geo-diagonal}
+
+The one-principal-bundle construction is already the ambient theory.  A \emph{common-frame}
+specialization makes the stronger declaration
+\begin{equation}
+u_i^b=u_i^m=u_i,
+\qquad h_i=e_G,
+\qquad T_{ij}^b=T_{ij}^m=T_{ij}.
+\label{eq:geo-diagonal-principal}
+\end{equation}
+Even then the represented frame changes generally differ:
+choose a common old-to-new sample-coordinate re-expression $g_i:\mathcal C_i\to G$, so that the
+corresponding principal-section rechoice is $u_i'=u_i\cdot g_i^{-1}$.  Then
+\begin{equation}
+R_i^b=\rho_b(g_i),
+\qquad
+R_i^m=\rho_m(g_i).
+\label{eq:geo-represented-frame-change}
+\end{equation}
+Thus $R_i^b$ and $R_i^m$ have the same principal source $g_i$ but act within different
+representation spaces; neither is a map between the belief and model fibers.
+An independent \emph{equal-connection} specialization declares $\omega_b=\omega_m=\omega$.  The
+underlying principal holonomy is then common, while its actions on belief and model laws remain
+$\widehat\rho_b$ and $\widehat\rho_m$.  A further common-link specialization declares
+$\Theta_e^b=\Theta_e^m=\Theta_e\in G$.  None of these three stronger hypotheses follows from the
+others. \status{HYPOTHESIS}
+
+The cross maps remain extra equivariant structure governed by
+\eqref{eq:geo-intertwining}; they are not forced to be inverses or parallel.  Thus
+inequivalent representations do not obstruct a common principal frame.  In a linear
+associated-vector-bundle specialization they may obstruct a nonzero sample-fiber intertwiner.
+Law-level equivariance is weaker: an equivariant Markov kernel may induce an equivariant map on
+laws without supplying a linear map between the sample fibers.
+\status{ESTABLISHED}
+
+\section{Optional product-gauge extension}
+\label{sec:geo-product-extension}
+
+If the application genuinely requires independently nonisomorphic principal bundles or two
+independent gauge symmetries, replace the ambient $P$ by
+\begin{equation}
+\pi_b:P_b\to\mathcal C,
+\qquad
+\pi_m:P_m\to\mathcal C,
+\qquad
+Q=P_b\times_{\mathcal C}P_m,
+\label{eq:geo-product-principal-extension}
+\end{equation}
+where $Q$ is a principal $G_b\times G_m$-bundle.  The belief and model associated bundles are then
+formed using the two projections. \status{DEFINITION}
+
+There is no canonical relative field valued in one common group between frames in
+$P_b$ and $P_m$ without additional comparison data.  When $G_b=G_m=G$, sufficient principal-level
+data are a chosen principal $G$-bundle isomorphism
+$B:P_b\to P_m$ over $\operatorname{id}_{\mathcal C}$ satisfying
+$B(p\cdot g)=B(p)\cdot g$.  For possibly different groups, the corresponding declared data are a
+homomorphism $\kappa:G_b\to G_m$ and a bundle map $B:P_b\to P_m$ over
+$\operatorname{id}_{\mathcal C}$ satisfying
+$B(p\cdot g_b)=B(p)\cdot\kappa(g_b)$.  The latter data alone do not create a canonical relative
+field valued in one common group: no such common group or inverse identification has been declared.
+\status{ESTABLISHED}
+
+In a category with the required mapping object, a belief-to-model morphism is a section of
+\begin{equation}
+Q\times_{G_b\times G_m}\operatorname{Map}(\mathcal B_b,\mathcal B_m),
+\qquad
+(g_b,g_m)\cdot f
+=\widehat\rho_m(g_m)\circ f\circ\widehat\rho_b(g_b)^{-1}.
+\label{eq:geo-product-cross-map-bundle}
+\end{equation}
+\status{DEFINITION}
+
+A constant fiber map descends only if it is fixed by every independent pair.  Given the
+$\kappa$-equivariant map $B$ above, a fiber map
+$\phi:\mathcal B_b\to\mathcal B_m$ satisfying
+$\phi\circ\widehat\rho_b(g_b)
+=\widehat\rho_m(\kappa(g_b))\circ\phi$ induces a compatible cross morphism.
+These principal and fiber data are sufficient, but a general mapping-bundle section need not arise
+that way.  Thus the product bundle supplies neither a relative field nor either cross morphism
+automatically.
+\status{ESTABLISHED}
+
+This extension carries additional topology and an independent product gauge freedom.  It should
+therefore be invoked only when those degrees of freedom are intended, not merely because belief
+and model use different associated representations of one group.

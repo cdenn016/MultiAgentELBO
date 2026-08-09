@@ -1,0 +1,2011 @@
+{
+  "schema_version": "2.1",
+  "overall_status": "PASS",
+  "interpretation": "PASS is numerical corroboration under the current declared protocol. It is not a proof of an analytic claim and does not retroactively reproduce omitted historical inputs.",
+  "environment": {
+    "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+    "python_executable": "C:\\Python314\\python.exe",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "machine": "AMD64",
+    "numpy": "2.4.4",
+    "scipy": "1.17.1",
+    "sympy": "1.14.0",
+    "float_info": {
+      "mantissa_bits": 53,
+      "epsilon": 2.220446049250313e-16
+    }
+  },
+  "inventory_manifest": {
+    "hash_algorithm": "SHA-256",
+    "hash_domain": "raw file bytes",
+    "path_semantics": "repository-relative POSIX paths",
+    "binding_scope": "Every recursively discovered TeX file under source_root, including files with zero NUMERICAL occurrences, and the core verification protocol files; generated current-results.json is excluded.",
+    "source_root": "manuscripts/gauge_vfe_rg",
+    "tex_sources": {
+      "01_introduction.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/01_introduction.tex",
+        "byte_count": 11224,
+        "sha256": "2237a4294736138d4307e4d69f1870effd473dd429df3cc40198df327f16ab05"
+      },
+      "02_geometry.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/02_geometry.tex",
+        "byte_count": 31289,
+        "sha256": "43a9bab3155d967f639bca48fbb1a36f0caaa6b4979a7afee7d4ea8344a8d063"
+      },
+      "03_probability.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/03_probability.tex",
+        "byte_count": 32995,
+        "sha256": "080d0e49e2b1b2a13cc8da3c86de256933f656a3a0c3427a4fde818d98ee8f1b"
+      },
+      "04_generative.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/04_generative.tex",
+        "byte_count": 17910,
+        "sha256": "486dfb84e8a33ff99a6313b88a8a6ee02b3dabc54f1475bd821dd9260449b2a4"
+      },
+      "05_elbo.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/05_elbo.tex",
+        "byte_count": 41185,
+        "sha256": "b8de3e6a330be80f37ff6e86f07d7cfd05741172be94f3ba6d98075052f4d81d"
+      },
+      "05a_expfamily.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/05a_expfamily.tex",
+        "byte_count": 16407,
+        "sha256": "3ecaea8c72786dba413eea7bed9ab766966657a1db6e3c2b35a70de27dc6b9f5"
+      },
+      "05b_local_collective_elbo.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/05b_local_collective_elbo.tex",
+        "byte_count": 22601,
+        "sha256": "8c1afa61acc1081d581e75223c0164211f1f225baeddc2b9ce98b81885dc3487"
+      },
+      "05c_pullback_geometry.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/05c_pullback_geometry.tex",
+        "byte_count": 37884,
+        "sha256": "a87bc2b3d7d8d76412a299fbd3220464802bd1cc2d853f1f6c287f96e5a73279"
+      },
+      "05d_relational_inference.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/05d_relational_inference.tex",
+        "byte_count": 36841,
+        "sha256": "138e4f86f107f5bd0307e049dc5368a6c36584a827bf98bf4eb396e30016d0a1"
+      },
+      "06_gaussian.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/06_gaussian.tex",
+        "byte_count": 37704,
+        "sha256": "7a8b07ed60154b52fba6bcdc057a81e454e5b6859e585b001bf16fa974ced15d"
+      },
+      "06_general_coarsegraining.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/06_general_coarsegraining.tex",
+        "byte_count": 28966,
+        "sha256": "24327b486ecb1b7a85fee41176f57a7cb7b565c381f57ac05ec1d9fe91c2c80c"
+      },
+      "06a_generative_gaussian.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/06a_generative_gaussian.tex",
+        "byte_count": 12436,
+        "sha256": "311288e4fc38e8313646569b3609e790501eac2e4b4627707fdd55ff01d9ffde"
+      },
+      "07_general_renormalization.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/07_general_renormalization.tex",
+        "byte_count": 26906,
+        "sha256": "35b41bbef5d28f79d3e9700b7edb43ad8002dd86ae9976da928be902714c10e7"
+      },
+      "07_restrictions.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/07_restrictions.tex",
+        "byte_count": 28629,
+        "sha256": "179901f1057d9fd5639f449bce4b5a397240de8d081519de7cc6913d19bf940d"
+      },
+      "07b_agent_network_rg.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/07b_agent_network_rg.tex",
+        "byte_count": 41612,
+        "sha256": "cbab29dbbd639fa3fc4e971fa69d198b87fd9a7f5b05e8cd029c1203b6a4cd27"
+      },
+      "08_infogeometry.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/08_infogeometry.tex",
+        "byte_count": 35098,
+        "sha256": "26c748a541e573417017f1d3c8972071c0bea1be31613f5176a54c7c2f33d1ba"
+      },
+      "09_coarsegraining.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/09_coarsegraining.tex",
+        "byte_count": 39505,
+        "sha256": "54ffd179a4063bf989a98e243bd60dabde42ab58d07bdde66772fa36d8ed4b50"
+      },
+      "10_renormalization.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/10_renormalization.tex",
+        "byte_count": 26982,
+        "sha256": "bec04e82fd104c842b6da146af3df33a2b88ef5d080ac52eb15da2bdb1f3592b"
+      },
+      "11_obstructions.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/11_obstructions.tex",
+        "byte_count": 35745,
+        "sha256": "937b2889eb4fa9272c1ca77b74ad3631c272e7779c49435dfc0f219fac329d6a"
+      },
+      "12_philosophy.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/12_philosophy.tex",
+        "byte_count": 13280,
+        "sha256": "f2fc877912f9e2adfde8d85e595d5dec813cf506c3b6f80f622c0bad555597fb"
+      },
+      "appendix_claim_ledger.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/appendix_claim_ledger.tex",
+        "byte_count": 9470,
+        "sha256": "d52a28838d8832b0f38fa49a209b921848840007d772a3e0894d8f7c672e140d"
+      },
+      "appendix_notation.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/appendix_notation.tex",
+        "byte_count": 12282,
+        "sha256": "f19a8605285d2749b992875ce94df08f2382853723edb16acbf5cd382d70749e"
+      },
+      "appendix_numerical_provenance.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/appendix_numerical_provenance.tex",
+        "byte_count": 2089,
+        "sha256": "e0154212838a73fecb58a649aae2d4faaec03061b230a19dc1ef2dfb62954c2c"
+      },
+      "main.tex": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/main.tex",
+        "byte_count": 6287,
+        "sha256": "2f810af586b17ae3df3e87af648e5a7fd11bced8cb790e6d015d44f261a0dd9e"
+      }
+    },
+    "protocol_files": {
+      "claims.json": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/verification/claims.json",
+        "byte_count": 8883,
+        "sha256": "54d7f642e028043b46e42e7427d949e2a132e3e1c8b4fc4a80c06df74b1addee"
+      },
+      "run_checks.py": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/verification/run_checks.py",
+        "byte_count": 101898,
+        "sha256": "8ae9fd424759de42b1043e94065d2123fc7e3642541cf29d83ff42fadb2d1ced"
+      },
+      "requirements.txt": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/verification/requirements.txt",
+        "byte_count": 38,
+        "sha256": "f6bcb2ee2c97ad396e7b40093cb101d66566187d3d9c5b16d5b9015619bef129"
+      },
+      "VERIFICATION.md": {
+        "repository_relative_path": "manuscripts/gauge_vfe_rg/verification/VERIFICATION.md",
+        "byte_count": 3185,
+        "sha256": "de13e1817f6a3b373b9ce83f1869a7ef9b51d5bd58777732235114b911d0e797"
+      }
+    }
+  },
+  "inventory": {
+    "status": "PASS",
+    "scan_scope": {
+      "source_root": "manuscripts/gauge_vfe_rg",
+      "recursive_glob": "**/*.tex",
+      "discovered_tex_files": 24
+    },
+    "expected_total": 11,
+    "observed_total": 11,
+    "bare_status_table_entries": {
+      "count": 0,
+      "required_count": 0,
+      "role": "forbidden unwrapped status cells; every semantic NUMERICAL status must use the macro and appear in the claim inventory",
+      "entries": []
+    },
+    "file_counts": {
+      "01_introduction.tex": {
+        "expected": 2,
+        "observed": 2
+      },
+      "02_geometry.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "03_probability.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "04_generative.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "05_elbo.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "05a_expfamily.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "05b_local_collective_elbo.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "05c_pullback_geometry.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "05d_relational_inference.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "06_gaussian.tex": {
+        "expected": 3,
+        "observed": 3
+      },
+      "06_general_coarsegraining.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "06a_generative_gaussian.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "07_general_renormalization.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "07_restrictions.tex": {
+        "expected": 1,
+        "observed": 1
+      },
+      "07b_agent_network_rg.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "08_infogeometry.tex": {
+        "expected": 3,
+        "observed": 3
+      },
+      "09_coarsegraining.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "10_renormalization.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "11_obstructions.tex": {
+        "expected": 2,
+        "observed": 2
+      },
+      "12_philosophy.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "appendix_claim_ledger.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "appendix_notation.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "appendix_numerical_provenance.tex": {
+        "expected": 0,
+        "observed": 0
+      },
+      "main.tex": {
+        "expected": 0,
+        "observed": 0
+      }
+    },
+    "failures": []
+  },
+  "checks": [
+    {
+      "check_id": "CHK-GAUSS-PROJECTION",
+      "title": "Generic gains against exact projection controls",
+      "claim_ids": [
+        "NUM-GAUSS-PROJECTION"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": "4000 generic gains plus ranks 0,1,2,3",
+      "expected": {
+        "generic_admissible_count": 0,
+        "projection_admissible_count": 4
+      },
+      "tolerances": {
+        "matrix_feasibility": 1e-10,
+        "idempotency": 1e-10
+      },
+      "observed": {
+        "generic_admissible_count": 0,
+        "projection_admissible_count": 4,
+        "max_projection_idempotency_residual": 4.38085515576797e-16,
+        "max_lambda_t_minus_w_residual": 3.1401849173675503e-16
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "A deterministic rerun corroborates the projection characterization; it does not prove generic measure zero."
+    },
+    {
+      "check_id": "CHK-GAUSS-TRIVIALIZATION",
+      "title": "Asymmetric raw transported block versus symmetric trivialized weight",
+      "claim_ids": [
+        "NUM-GAUSS-TRIVIALIZATION"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": 1,
+      "expected": {
+        "raw_asymmetry": "> 1e-6",
+        "trivialized_symmetry": "<= tolerance",
+        "minimum_eigenvalue": "> 0"
+      },
+      "tolerances": {
+        "symmetry": 1e-10
+      },
+      "observed": {
+        "raw_asymmetry_frobenius": 1.1060329946538672,
+        "trivialized_asymmetry_frobenius": 1.7554167342883506e-16,
+        "trivialized_minimum_eigenvalue": 0.15344886412692313
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The current matrices are fully emitted by the deterministic code; the manuscript's historical magnitudes used different omitted matrices."
+    },
+    {
+      "check_id": "CHK-GAUSS-CONDITIONING",
+      "title": "Interaction-family conditioning under a fully specified current sampler",
+      "claim_ids": [
+        "NUM-GAUSS-CONDITIONING"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": {
+        "interaction_draws": 200,
+        "unstructured_controls": 200
+      },
+      "expected": {
+        "all_interaction_precisions_positive_definite": true,
+        "complete_graph_zero_self_nullity": 3,
+        "unstructured_controls_in_family": 0
+      },
+      "tolerances": {
+        "rank_relative": 1e-10,
+        "offdiagonal_symmetry": 1e-10
+      },
+      "observed": {
+        "positive_definite_count": 200,
+        "smallest_eigenvalue": 0.010628739429822988,
+        "median_condition_number": 96.05579694920351,
+        "maximum_condition_number": 2743.4510147247674,
+        "zero_self_control_nullity": 3,
+        "consensus_residual_frobenius": 4.189161449891433e-15,
+        "unstructured_controls_with_all_symmetric_offdiagonal_blocks": 0
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "This replaces, rather than recreates, the manuscript's incompletely specified conditioning run."
+    },
+    {
+      "check_id": "CHK-KRON-EXACT-WITNESS",
+      "title": "Exact rational matrix-Kron nonclosure witness and commuting control",
+      "claim_ids": [
+        "REVIEW-R07-KRON-NONCLOSURE"
+      ],
+      "status": "PASS",
+      "seed": null,
+      "sample_count": "one exact counterexample and one exact commuting control",
+      "expected": {
+        "counterexample_product_symmetric": false,
+        "commuting_control_symmetric": true
+      },
+      "tolerances": {
+        "arithmetic": "exact rational"
+      },
+      "observed": {
+        "counterexample_product": [
+          [
+            "2/3",
+            "1/2"
+          ],
+          [
+            "1/3",
+            "1/2"
+          ]
+        ],
+        "counterexample_asymmetry": [
+          [
+            "0",
+            "1/6"
+          ],
+          [
+            "-1/6",
+            "0"
+          ]
+        ],
+        "commuting_control_product": [
+          [
+            "22/5",
+            "0"
+          ],
+          [
+            "0",
+            "39/7"
+          ]
+        ]
+      },
+      "evidence_kind": "exact_symbolic_witness",
+      "interpretation": "This exact finite witness closes nonclosure of the unrestricted matrix family, not a genericity theorem."
+    },
+    {
+      "check_id": "CHK-KRON-MONTE-CARLO",
+      "title": "Current matrix-Kron genericity sweep with scalar control",
+      "claim_ids": [
+        "REVIEW-R07-KRON-NONCLOSURE"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": {
+        "K=3": 200,
+        "K=1": 200
+      },
+      "expected": {
+        "K3_symmetric_count": 0,
+        "K1_symmetric_count": 200
+      },
+      "tolerances": {
+        "relative_asymmetry": 1e-10,
+        "scalar_equality": 1e-15
+      },
+      "observed": {
+        "K3_symmetric_count": 0,
+        "K1_symmetric_count": 200,
+        "K3_minimum_relative_asymmetry": 0.07297532988807527,
+        "K3_maximum_relative_asymmetry": 1.464204724284599
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The sweep is controlled numerical evidence only; the exact witness is the load-bearing nonclosure evidence."
+    },
+    {
+      "check_id": "CHK-RESTRICTION-SCHUR",
+      "title": "Marginal precision, restricted precision, and constrained mean cost",
+      "claim_ids": [
+        "NUM-RESTRICTION-SCHUR",
+        "NUM-CG-MEAN-TIE"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": 1,
+      "expected": {
+        "schur_identity": true,
+        "gap_positive_semidefinite": true,
+        "gap_rank_at_most": 4,
+        "closed_cost_equals_direct_cost": true,
+        "orthogonal_control_gap": 0
+      },
+      "tolerances": {
+        "relative_identity": 1e-11,
+        "spectral": 1e-10,
+        "cost": 1e-10
+      },
+      "observed": {
+        "schur_identity_relative_residual": 7.434129713437167e-16,
+        "gap_minimum_eigenvalue": 4.031878729377927e-16,
+        "gap_rank": 4,
+        "closed_cost": 4.964532195333737,
+        "direct_cost": 4.964532195333735,
+        "constraint_residual": 4.86305071761293e-16,
+        "orthogonal_control_residual": 1.0819696418669412e-13
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The check independently reconstructs the block-inversion and KKT endpoints."
+    },
+    {
+      "check_id": "CHK-IG-EXPECTATION-METRIC",
+      "title": "Expectation-chart Fisher metric from finite-difference KL",
+      "claim_ids": [
+        "NUM-IG-EXPECTATION-METRIC",
+        "NUM-IG-REGISTER-CHART"
+      ],
+      "status": "PASS",
+      "seed": 7,
+      "sample_count": {
+        "directions": 6,
+        "epsilon_values": [
+          0.001,
+          0.0005,
+          0.00025
+        ]
+      },
+      "expected": {
+        "expectation_chart_matches_closed_form": true,
+        "moment_chart_matches_precision": true,
+        "generalized_spectrum_matches_formula": true
+      },
+      "tolerances": {
+        "relative_quadratic_form": 2e-05,
+        "spectrum_absolute": 1e-10
+      },
+      "observed": {
+        "worst_expectation_chart_relative_error": 7.071342942610791e-07,
+        "worst_moment_chart_relative_error": 4.428687216605148e-09,
+        "mahalanobis_squared": 0.5130401645224648,
+        "observed_generalized_spectrum": [
+          1.5130401645224643,
+          1.513040164522465,
+          1.5130401645224654,
+          2.0260803290449294
+        ],
+        "predicted_generalized_spectrum": [
+          1.5130401645224647,
+          1.5130401645224647,
+          1.5130401645224647,
+          2.0260803290449294
+        ],
+        "spectrum_max_absolute_error": 6.661338147750939e-16
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "This reproduces the finite-difference route under a fully specified current base point; it does not recreate the omitted 2,000,000-sample score run."
+    },
+    {
+      "check_id": "CHK-IG-PULLBACK-PUSHFORWARD",
+      "title": "Pullback versus pushforward Fisher metric",
+      "claim_ids": [
+        "NUM-IG-PULLBACK-PUSHFORWARD"
+      ],
+      "status": "PASS",
+      "seed": 99,
+      "sample_count": 200,
+      "expected": {
+        "all_gaps_positive_semidefinite": true,
+        "schur_identity": true,
+        "orthogonal_control_gap": 0
+      },
+      "tolerances": {
+        "spectral": 1e-10,
+        "relative_identity": 1e-11
+      },
+      "observed": {
+        "minimum_gap_eigenvalue": 0.016632799175926808,
+        "maximum_identity_relative_error": 5.74369764354067e-15,
+        "orthogonal_control_residual": 1.8510977407975313e-14
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The numerical check corroborates the proved Schur identity and Loewner order."
+    },
+    {
+      "check_id": "CHK-GENERALIZED-SPECTRUM",
+      "title": "Generalized spectrum under block congruence",
+      "claim_ids": [
+        "NUM-IG-GAUGE-INVARIANTS",
+        "NUM-IG-REGISTER-GAUGE",
+        "NUM-RG-GENERALIZED-SPECTRUM"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": 12,
+      "expected": {
+        "generalized_spectrum_invariant": true,
+        "ordinary_spectrum_not_invariant": true
+      },
+      "tolerances": {
+        "generalized_eigenvalue_absolute": 1e-09
+      },
+      "observed": {
+        "maximum_generalized_eigenvalue_error": 1.305454609601425e-13,
+        "ordinary_largest_eigenvalue_spread": 1.9720845931438455,
+        "ordinary_smallest_eigenvalue_spread": 1.3412759490616744,
+        "transform_condition_numbers": [
+          22.000000000000032,
+          22.000000000000068,
+          22.00000000000004,
+          22.000000000000043,
+          22.00000000000001,
+          22.00000000000006,
+          22.000000000000036,
+          22.000000000000014,
+          22.000000000000014,
+          22.00000000000002,
+          22.00000000000003,
+          22.00000000000001
+        ],
+        "baseline_ordinary_condition_number": 23.450460828122882
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "Congruence invariance is a property of the pencil; ordinary eigenvalues provide the negative control."
+    },
+    {
+      "check_id": "CHK-CG-AGGREGATION",
+      "title": "Coarse block identity and internal-edge annihilation",
+      "claim_ids": [
+        "NUM-CG-AGGREGATION"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": 1,
+      "expected": {
+        "coarse_formula": true,
+        "fine_consensus_null": true,
+        "internal_edge_effect_on_coarse_operator": 0
+      },
+      "tolerances": {
+        "relative_formula": 1e-11,
+        "absolute_residual": 1e-09
+      },
+      "observed": {
+        "coarse_formula_relative_error": 1.3942473627469264e-16,
+        "fine_consensus_residual": 8.317971391278198e-15,
+        "internal_edge_perturbation_norm": 262.25854988129737,
+        "coarse_operator_change": 3.316130428493564e-14
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The check evaluates the exact congruence and independently assembled coarse parameters."
+    },
+    {
+      "check_id": "CHK-GRAPH-HOLONOMY",
+      "title": "Graph holonomy, twisted-Laplacian kernels, and conditioned-similarity control",
+      "claim_ids": [
+        "NUM-CG-HOLONOMY",
+        "NUM-RG-HOLONOMY"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": "one coboundary triangle, one retwisted triangle, one condition-1e4 similarity stress case, and cut-pair controls",
+      "expected": {
+        "flat_loop": "identity",
+        "flat_laplacian_nullity": 3,
+        "retwisted_laplacian_nullity": "dim ker(H-I)",
+        "conditioned_similarity_nullity": "dim ker(S H S^-1-I)",
+        "two_cut_edge_walk_identity_iff_equal": true
+      },
+      "tolerances": {
+        "identity_and_conjugacy_absolute": 1e-10,
+        "rank_relative_singular_value": 1e-09,
+        "nontrivial_cut_defect": 0.001
+      },
+      "observed": {
+        "flat_loop_defect": 4.879300577059624e-16,
+        "trivialization_residual": 4.556997617929572e-16,
+        "flat_laplacian": {
+          "nullity": 3,
+          "rank_tolerance": 3.101883889464272e-08,
+          "singular_values": [
+            31.01883889464272,
+            19.236473372048472,
+            11.346048622963977,
+            5.883911150607357,
+            5.020568291766939,
+            3.6095408326927827,
+            1.5328223589460758e-15,
+            5.905994950031113e-16,
+            2.1362042737687805e-16
+          ]
+        },
+        "retwisted": {
+          "laplacian_nullity": 1,
+          "fixed_space_dimension": 1,
+          "laplacian_rank_tolerance": 2.0103285182214098e-08,
+          "fixed_space_rank_tolerance": 1e-09,
+          "laplacian_singular_values": [
+            20.103285182214098,
+            15.262137575111046,
+            9.351658111231483,
+            5.39961851294505,
+            4.728561984116251,
+            3.435571660691286,
+            0.15685128750840055,
+            0.08058883781422355,
+            1.088547681026332e-16
+          ],
+          "H_minus_I_singular_values": [
+            0.6857956149109027,
+            0.6857956149109027,
+            0.0
+          ]
+        },
+        "conditioned_similarity_stress": {
+          "condition_number": 9999.999999999314,
+          "laplacian_nullity": 1,
+          "fixed_space_dimension": 1,
+          "laplacian_rank_tolerance": 0.003162742429126708,
+          "fixed_space_rank_tolerance": 1.5390132210236053e-06,
+          "laplacian_singular_values": [
+            3162742.429126708,
+            41.83197789462659,
+            16.527020480893537,
+            7.057382927530524,
+            4.582709562041581,
+            2.0288140194711595,
+            1.3255620619695632,
+            0.21888081585211505,
+            4.5283658216539214e-13
+          ],
+          "H_minus_I_singular_values": [
+            1539.0132210236052,
+            1.1106433946597007,
+            1.0879479223177503e-15
+          ]
+        },
+        "conjugacy_residual": 8.4350438565768655e-16,
+        "equal_cut_walk_defect": 7.006636459621261e-17,
+        "distinct_cut_walk_defect": 0.6106827203462031
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The weighted graph-Laplacian nullity is compared directly with the loop fixed space. The conditioned-similarity case is a numerical stress test, not a substitute for the exact kernel proof."
+    },
+    {
+      "check_id": "CHK-CG-MAXIMAL-CLUSTERS",
+      "title": "Algorithmic non-flat triangle holonomy and partition enumeration",
+      "claim_ids": [
+        "REVIEW-CG-MAXIMAL-CLUSTERS"
+      ],
+      "status": "PASS",
+      "seed": null,
+      "sample_count": "all seven induced nonempty subgraphs and all five algorithmically generated set partitions",
+      "expected": {
+        "full_triangle_cycle_nonidentity": true,
+        "admissible_nonempty_subsets": 6,
+        "maximal_admissible_subsets": 3,
+        "generated_set_partitions": 5,
+        "admissible_partitions": 4
+      },
+      "tolerances": {
+        "transport_identity_absolute": 1e-10,
+        "nonidentity_cycle_defect": 0.001,
+        "enumeration": "exact integer counts"
+      },
+      "observed": {
+        "triangle_loop_defect": 1.0096050666575116,
+        "subset_results": {
+          "0": {
+            "vertices": [
+              0
+            ],
+            "trivializable": true,
+            "maximum_transport_residual": 0.0
+          },
+          "1": {
+            "vertices": [
+              1
+            ],
+            "trivializable": true,
+            "maximum_transport_residual": 0.0
+          },
+          "01": {
+            "vertices": [
+              0,
+              1
+            ],
+            "trivializable": true,
+            "maximum_transport_residual": 0.0
+          },
+          "2": {
+            "vertices": [
+              2
+            ],
+            "trivializable": true,
+            "maximum_transport_residual": 0.0
+          },
+          "02": {
+            "vertices": [
+              0,
+              2
+            ],
+            "trivializable": true,
+            "maximum_transport_residual": 1.1102230246251565e-16
+          },
+          "12": {
+            "vertices": [
+              1,
+              2
+            ],
+            "trivializable": true,
+            "maximum_transport_residual": 0.0
+          },
+          "012": {
+            "vertices": [
+              0,
+              1,
+              2
+            ],
+            "trivializable": false,
+            "maximum_transport_residual": 1.0096050666575116
+          }
+        },
+        "admissible_nonempty_subsets": 6,
+        "maximal_admissible_subsets": 3,
+        "generated_set_partitions": 5,
+        "admissible_partitions": 4,
+        "maximal_sets": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "admissible_partition_blocks": [
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2
+            ]
+          ],
+          [
+            [
+              0,
+              2
+            ],
+            [
+              1
+            ]
+          ],
+          [
+            [
+              0
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        ]
+      },
+      "evidence_kind": "algorithmic_exact_enumeration_with_floating_transport_witness",
+      "interpretation": "Admissibility is computed from restricted transport consistency. No subset is classified by cardinality, and no partition list is supplied by hand."
+    },
+    {
+      "check_id": "CHK-CG-LAMBDA-CONTINUUM",
+      "title": "Positive-semidefinite lambda interval and translation-invariance control",
+      "claim_ids": [
+        "NUM-CG-LAMBDA-CONTINUUM",
+        "NUM-CG-TRANSLATION"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": "six in-interval values and two exact two-node controls",
+      "expected": {
+        "inside_interval_positive_semidefinite": true,
+        "outside_controls_indefinite": true,
+        "aggregated_operator": "independently assembled coarse self/coupling form",
+        "consensus_residual_proportional_to_1_minus_lambda": true,
+        "two_node_exact_eigenvalues": [
+          "1-lambda",
+          "1+lambda"
+        ]
+      },
+      "tolerances": {
+        "spectral": 1e-09,
+        "coarse_formula_relative": 1e-11,
+        "relative_identity": 1e-12,
+        "symbolic": "exact"
+      },
+      "observed": {
+        "inside_minimum_eigenvalues": {
+          "-1.0": 0.04169481462456226,
+          "-0.5": 0.1317092870040269,
+          "0.0": 0.15046950910154075,
+          "0.5": 0.13170418237044337,
+          "0.9": 0.07855088163940517,
+          "1.0": -2.3479574522862582e-15
+        },
+        "coarse_formula_relative_errors": {
+          "-1.0": 1.0441412308771669e-16,
+          "-0.5": 6.12574021374137e-17,
+          "0.0": 7.240199777507553e-17,
+          "0.5": 1.3505904785867594e-16,
+          "0.9": 1.135490525412024e-16,
+          "1.0": 1.0521212064356234e-16
+        },
+        "coarse_minimum_eigenvalues": {
+          "-1.0": 6.7804732365278575,
+          "-0.5": 7.383664779400265,
+          "0.0": 7.589434302242339,
+          "0.5": 7.2134009066372675,
+          "0.9": 5.37994380476623,
+          "1.0": 4.2876513317240095
+        },
+        "outside_two_node_minimum_eigenvalues": {
+          "-1.2": -0.1999999999999999,
+          "1.2": -0.1999999999999999
+        },
+        "two_node_symbolic_characteristic_polynomial": "(_lambda - lambda - 1)*(_lambda + lambda - 1)",
+        "two_node_symbolic_eigenvalues": {
+          "lambda + 1": 1,
+          "1 - lambda": 1
+        },
+        "consensus_residuals": {
+          "-1.0": 93.22906566015531,
+          "-0.5": 69.9217992451165,
+          "0.0": 46.61453283007765,
+          "0.5": 23.307266415038825,
+          "0.9": 4.6614532830077655,
+          "1.0": 4.473816531111877e-15
+        },
+        "scaled_residual_spread": 2.1316282072803006e-14,
+        "convex_decomposition_max_relative_error": 7.897729643690566e-17
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "For every tested lambda, the coarse parameters are assembled independently from block sums and compared with the congruence. The exact two-node symbolic witness establishes sharp failure outside the interval."
+    },
+    {
+      "check_id": "CHK-CG-PAIR-MERGE",
+      "title": "Pair-merge factorization of a partition congruence",
+      "claim_ids": [
+        "NUM-CG-PAIR-MERGE"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": "one matrix and four pair merges",
+      "expected": {
+        "sequential_minus_one_shot_residual": "<= declared tolerance",
+        "incidence_product_residual": "<= declared tolerance",
+        "pair_merge_count": 4
+      },
+      "tolerances": {
+        "absolute_matrix_residual": 1e-12
+      },
+      "observed": {
+        "matrix_residual": 6.933340566559918e-16,
+        "incidence_product_residual": 0.0
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The check is a floating-point evaluation of matrix associativity already proved in the text."
+    },
+    {
+      "check_id": "CHK-CG-BIADDITIVE",
+      "title": "Bi-additive coupling and additive self closure",
+      "claim_ids": [
+        "NUM-CG-BIADDITIVE"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": 1,
+      "expected": {
+        "coarse_parameters_equal_block-summed_form": true
+      },
+      "tolerances": {
+        "relative_matrix": 1e-12
+      },
+      "observed": {
+        "relative_matrix_error": 1.5649697293485103e-16,
+        "coarse_node_weights": [
+          1.9663424105729344,
+          2.6976471662449573,
+          2.7452662250835544
+        ]
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The equality is checked directly from the fine and coarse assembled operators."
+    },
+    {
+      "check_id": "CHK-CG-EPSILON-DIVERGENCE",
+      "title": "Regularized identification divergence",
+      "claim_ids": [
+        "NUM-CG-EPS-DIVERGENCE"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": {
+        "epsilon_values": [
+          0.001,
+          0.0001,
+          1e-06,
+          1e-08
+        ]
+      },
+      "expected": {
+        "leading_slope": "(m/2) log(1/epsilon)",
+        "remainder": "(epsilon/2) trace(B_perp^T Lambda B_perp)"
+      },
+      "tolerances": {
+        "absolute_identity": 1e-08
+      },
+      "observed": {
+        "m": 6,
+        "measured_costs": {
+          "0.001": 13.161885293053642,
+          "0.0001": 20.035216606093517,
+          "1e-06": 33.846940527787766,
+          "1e-08": 47.662413218598715
+        },
+        "leading_predictions": {
+          "0.001": 13.123636442006795,
+          "0.0001": 20.031391720988935,
+          "1e-06": 33.84690227895321,
+          "1e-08": 47.66241283691748
+        },
+        "measured_remainders": {
+          "0.001": 0.03824885104684661,
+          "0.0001": 0.0038248851045814547,
+          "1e-06": 3.824883455649797e-05,
+          "1e-08": 3.8168123239756824e-07
+        },
+        "expected_remainders": {
+          "0.001": 0.03824885104684159,
+          "0.0001": 0.003824885104684159,
+          "1e-06": 3.8248851046841584e-05,
+          "1e-08": 3.8248851046841586e-07
+        },
+        "maximum_remainder_error": 8.072780708476269e-10,
+        "two_decade_increment": 13.81547269081095,
+        "predicted_leading_two_decade_increment": 13.815510557964275
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The current check evaluates the full Gaussian KL and the analytic asymptotic expression independently."
+    },
+    {
+      "check_id": "CHK-CG-FACTOR-GAP",
+      "title": "Gaussian factorization optimum, perturbation control, monotonicity, and scale laws",
+      "claim_ids": [
+        "NUM-CG-FACTOR-GAP",
+        "NUM-CG-GAP-MONOTONE",
+        "NUM-CG-SCALE"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": {
+        "analytic_optimum_instances": 1,
+        "seeded_symmetric_block_perturbations": 5000,
+        "nested_partitions": 6,
+        "scale_values": [
+          1.0,
+          10.0,
+          100.0
+        ]
+      },
+      "expected": {
+        "direct_KL_at_analytic_optimum": "closed-form factorization gap",
+        "perturbations_improving_beyond_tolerance": 0,
+        "nested_gap_nonincreasing": true,
+        "single_block_gap": 0,
+        "factor_gap_scale_invariance": true,
+        "mean_tie_cost": "linear in c",
+        "volume_shift": "-(m/2) log c"
+      },
+      "tolerances": {
+        "analytic_optimum_absolute": 1e-11,
+        "perturbation_improvement": 1e-10,
+        "monotonicity_absolute": 1e-12,
+        "scale_identity_absolute": 1e-10
+      },
+      "observed": {
+        "analytic_optimum": {
+          "closed_form_gap": 1.264105436940091,
+          "direct_KL": 1.264105436940091,
+          "absolute_residual": 0.0
+        },
+        "perturbation_control": {
+          "draws": 5000,
+          "improving_beyond_tolerance": 0,
+          "minimum_KL_minus_optimum": 0.0031149344815419866,
+          "median_KL_minus_optimum": 0.023135979327624234
+        },
+        "monotonicity": {
+          "nested_partition_gaps": [
+            1.3084680619708822,
+            1.2940098298085418,
+            1.2792555568950261,
+            1.1634391922331195,
+            1.1482890722781862,
+            0.0
+          ],
+          "nonincreasing": true,
+          "single_block_gap": 0.0
+        },
+        "scale": {
+          "factorization_gaps": {
+            "1.0": 1.264105436940091,
+            "10.0": 1.264105436940092,
+            "100.0": 1.2641054369400884
+          },
+          "factorization_gap_spread": 3.552713678800501e-15,
+          "mean_tie_costs": {
+            "1.0": 7.129374954661266,
+            "10.0": 71.29374954661267,
+            "100.0": 712.9374954661264
+          },
+          "mean_tie_linear_scaling_errors": {
+            "1.0": 0.0,
+            "10.0": 1.4210854715202004e-14,
+            "100.0": 2.2737367544323206e-13
+          },
+          "volume_terms": {
+            "1.0": -3.363245665256246,
+            "10.0": -7.9684158512443375,
+            "100.0": -12.57358603723243
+          },
+          "volume_shift_errors": {
+            "1.0": 0.0,
+            "10.0": 0.0,
+            "100.0": 0.0
+          },
+          "transverse_dimension_m": 4
+        }
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The KL optimum is evaluated independently from the determinant formula. Seeded SPD-preserving block perturbations are a control, while universal monotonicity and scaling remain algebraic statements proved in the manuscript."
+    },
+    {
+      "check_id": "CHK-CG-FRAME-CANCELLATION",
+      "title": "Canonical-frame Gaussian parameters under common reframing",
+      "claim_ids": [
+        "NUM-CG-FRAME-CANCELLATION"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": 1,
+      "expected": {
+        "canonical_mean_unchanged": true,
+        "canonical_covariance_unchanged": true
+      },
+      "tolerances": {
+        "absolute": 1e-10
+      },
+      "observed": {
+        "mean_error": 1.1188630228279524e-16,
+        "covariance_error": 2.0137621733714643e-15
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The check is a direct substitution into the orbit-invariant parameter pair."
+    },
+    {
+      "check_id": "CHK-CG-EQUIVARIANCE",
+      "title": "Finite-order GL+ witnesses for the equivariance obstruction",
+      "claim_ids": [
+        "NUM-CG-EQUIVARIANCE"
+      ],
+      "status": "PASS",
+      "seed": null,
+      "sample_count": 5,
+      "expected": {
+        "determinant_positive": true,
+        "v_power_n": "identity",
+        "rank_I_minus_v": 2
+      },
+      "tolerances": {
+        "order_residual": 1e-10,
+        "rank": 1e-10
+      },
+      "observed": {
+        "cases": [
+          {
+            "K": 2,
+            "n": 3,
+            "determinant": 1.0,
+            "order_residual": 9.235218158431266e-16,
+            "rank_I_minus_v": 2
+          },
+          {
+            "K": 3,
+            "n": 4,
+            "determinant": 1.0,
+            "order_residual": 3.463824224941973e-16,
+            "rank_I_minus_v": 2
+          },
+          {
+            "K": 4,
+            "n": 5,
+            "determinant": 0.9999999999999999,
+            "order_residual": 2.477094201870629e-16,
+            "rank_I_minus_v": 2
+          },
+          {
+            "K": 5,
+            "n": 6,
+            "determinant": 1.0,
+            "order_residual": 1.2238433710539657e-15,
+            "rank_I_minus_v": 2
+          },
+          {
+            "K": 5,
+            "n": 3,
+            "determinant": 1.0,
+            "order_residual": 9.235218158431266e-16,
+            "rank_I_minus_v": 2
+          }
+        ]
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "Plane rotations give deterministic witnesses; no random draw is required."
+    },
+    {
+      "check_id": "CHK-RG-RAY-KERNEL",
+      "title": "Kernel of the bi-additive matrix ray",
+      "claim_ids": [
+        "NUM-RG-RAY-KERNEL"
+      ],
+      "status": "PASS",
+      "seed": 20260729,
+      "sample_count": "five full-rank draws and one rank-two control",
+      "expected": {
+        "full_rank_nullity": "K",
+        "rank_two_control_nullity": 7
+      },
+      "tolerances": {
+        "rank_relative": 1e-10,
+        "consensus_absolute": 1e-09
+      },
+      "observed": {
+        "full_rank_cases": [
+          {
+            "N": 5,
+            "K": 2,
+            "nullity": 2,
+            "consensus_residual": 2.7976050664811232e-15
+          },
+          {
+            "N": 6,
+            "K": 3,
+            "nullity": 3,
+            "consensus_residual": 8.785111032162233e-15
+          },
+          {
+            "N": 7,
+            "K": 4,
+            "nullity": 4,
+            "consensus_residual": 4.584703585664504e-14
+          },
+          {
+            "N": 5,
+            "K": 3,
+            "nullity": 3,
+            "consensus_residual": 7.452798453072293e-15
+          },
+          {
+            "N": 6,
+            "K": 2,
+            "nullity": 2,
+            "consensus_residual": 4.572178254219406e-15
+          }
+        ],
+        "rank_two_control_nullity": 7
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The rank-deficient control checks the full kernel formula, not only the consensus subspace."
+    },
+    {
+      "check_id": "CHK-RG-SECTOR-SPLIT",
+      "title": "Independent self and coupling sectors under declared aggregation",
+      "claim_ids": [
+        "NUM-RG-SECTOR-SPLIT"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": "one system and two perturbation controls",
+      "expected": {
+        "self_to_coarse_coupling_residual": "<= declared tolerance",
+        "internal_edge_to_coarse_self_residual": "<= declared tolerance"
+      },
+      "tolerances": {
+        "absolute": 1e-09
+      },
+      "observed": {
+        "maximum_coarse_offdiagonal_change_from_self": 0.0,
+        "maximum_coarse_diagonal_change_from_internal_edge": 1.4716985089938802e-13
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The test isolates blocks of the exact parameter map; it does not assert attraction."
+    },
+    {
+      "check_id": "CHK-RG-INVARIANT-FACES",
+      "title": "Common-range invariant face and unbounded projective diameter",
+      "claim_ids": [
+        "NUM-RG-INVARIANT-FACES"
+      ],
+      "status": "PASS",
+      "seed": 20260729,
+      "sample_count": "three pair-aggregation levels and 21 t values over four decades",
+      "expected": {
+        "common_range_rank": 1,
+        "full_range_rank": 3,
+        "hilbert_distance": "abs(log t)"
+      },
+      "tolerances": {
+        "rank": 1e-10,
+        "distance_absolute": 1e-12
+      },
+      "observed": {
+        "common_range_rank_sets_by_level": [
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "full_range_rank_sets_by_level": [
+          [
+            3
+          ],
+          [
+            3
+          ],
+          [
+            3
+          ]
+        ],
+        "maximum_projective_distance_error": 8.881784197001252e-16
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "Persistent rank-one ranges exhibit an invariant proper face, while the distance family has no finite diameter bound."
+    },
+    {
+      "check_id": "CHK-RG-HOMOGENEOUS-GATE",
+      "title": "Exact homogeneous gate spectrum and sector ratio",
+      "claim_ids": [
+        "RG-HOMOGENEOUS-EXACT"
+      ],
+      "status": "PASS",
+      "seed": null,
+      "sample_count": "one exact 6x6 Sym(2) coupling-plus-self endomorphism at b=2",
+      "expected": {
+        "spectrum": [
+          4,
+          4,
+          4,
+          2,
+          2,
+          2
+        ],
+        "naive_top_two_ratio": 1,
+        "outside_dominant_ratio": 0.5
+      },
+      "tolerances": {
+        "arithmetic": "exact integers"
+      },
+      "observed": {
+        "symmetric_basis": [
+          [
+            [
+              "1",
+              "0"
+            ],
+            [
+              "0",
+              "0"
+            ]
+          ],
+          [
+            [
+              "0",
+              "0"
+            ],
+            [
+              "0",
+              "1"
+            ]
+          ],
+          [
+            [
+              "0",
+              "1"
+            ],
+            [
+              "1",
+              "0"
+            ]
+          ]
+        ],
+        "endomorphism_matrix": [
+          [
+            "4",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "4",
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "4",
+            "0",
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "0",
+            "2",
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "0",
+            "0",
+            "2",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "2"
+          ]
+        ],
+        "characteristic_polynomial": "(x - 4)**3*(x - 2)**3",
+        "eigenvalue_multiplicities": {
+          "4": 3,
+          "2": 3
+        },
+        "distinct_numeric_eigenvalues": [
+          4.0,
+          2.0
+        ],
+        "spectrum_with_multiplicity": [
+          4.0,
+          4.0,
+          4.0,
+          2.0,
+          2.0,
+          2.0
+        ],
+        "naive_top_two_ratio": 1.0,
+        "outside_dominant_ratio": 0.5,
+        "normalized_self_sector_ratios_by_level": [
+          1.0,
+          0.5,
+          0.25,
+          0.125,
+          0.0625,
+          0.03125,
+          0.015625,
+          0.0078125,
+          0.00390625
+        ]
+      },
+      "evidence_kind": "exact_algebraic_evaluation",
+      "interpretation": "The actual endomorphism is built on an explicit Sym(2) basis and diagonalized exactly. It does not reproduce the heterogeneous matched-null table or establish a physical fixed law."
+    },
+    {
+      "check_id": "CHK-RG-NONCOMMUTING-LIMITS",
+      "title": "Exact symbolic singular pencils and noncommuting mass/spectral limits",
+      "claim_ids": [
+        "NUM-RG-NONCOMMUTING"
+      ],
+      "status": "PASS",
+      "seed": null,
+      "sample_count": "one exact symbolic two-node pencil, one symbolic three-agent bi-additive ray, and two iterated limits",
+      "expected": {
+        "symbolic_determinant": "d*eps*(d*eps + 2*d - 2)",
+        "three_agent_ray_determinant": 0,
+        "three_agent_ray_pencil_determinant": 0,
+        "a_to_zero_at_fixed_lambda": 1,
+        "lambda_to_zero_at_fixed_a": 0
+      },
+      "tolerances": {
+        "symbolic": "exact"
+      },
+      "observed": {
+        "two_node_symbolic_determinant": "d*eps*(d*eps + 2*d - 2)",
+        "three_agent_ray_determinant": "0",
+        "three_agent_ray_pencil_determinant": "0",
+        "mass_then_infrared_limit": "1",
+        "infrared_then_mass_limit": "0"
+      },
+      "evidence_kind": "exact_symbolic_witness",
+      "interpretation": "Only this exact symbolic check supports the manuscript's keep-exact disposition for the noncommuting-limit numerical tag."
+    },
+    {
+      "check_id": "CHK-RG-NONCOMMUTING-FLOATING",
+      "title": "Seeded six-agent floating quotient-pencil control",
+      "claim_ids": [
+        "SUPPLEMENT-RG-NONCOMMUTING-FLOATING"
+      ],
+      "status": "PASS",
+      "seed": 20260729,
+      "sample_count": "one six-agent K=2 graph-Laplacian quotient pencil",
+      "expected": {
+        "quotient_generalized_eigenvalues": "within tolerance of one"
+      },
+      "tolerances": {
+        "absolute_generalized_eigenvalue": 1e-10
+      },
+      "observed": {
+        "quotient_eigenvalues": [
+          0.9999999999999991,
+          0.9999999999999997,
+          0.9999999999999997,
+          0.9999999999999998,
+          0.9999999999999999,
+          0.9999999999999999,
+          1.0,
+          1.0000000000000002,
+          1.0000000000000002,
+          1.0000000000000004
+        ],
+        "quotient_eigenvalue_max_error": 8.881784197001252e-16,
+        "positive_quotient_dimension": 10
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "This separately seeded floating check is current corroboration only and is not classified as keep-exact evidence."
+    },
+    {
+      "check_id": "CHK-RG-MASS-PENCIL",
+      "title": "Mass-pencil eigenvalue transfer",
+      "claim_ids": [
+        "NUM-RG-MASS-TRANSFER"
+      ],
+      "status": "PASS",
+      "seed": 20260729,
+      "sample_count": "one 12x12 pencil at three masses plus a three-mass identity control",
+      "expected": {
+        "d_k": "lambda_k/(lambda_k+a)",
+        "smaller_mass_moves_nonzero_d_toward_one": true
+      },
+      "tolerances": {
+        "eigenvalue_absolute": 1e-10
+      },
+      "observed": {
+        "maximum_transfer_errors": {
+          "0.5": 1.3322676295501878e-15,
+          "1.0": 8.604228440844963e-16,
+          "3.0": 3.5388358909926865e-16
+        },
+        "smallest_nonzero_d_by_mass": {
+          "1.0": 0.7250298066498646,
+          "0.01": 0.9962217925881787,
+          "0.0001": 0.9999620760742696
+        },
+        "positive_laplacian_eigenvalue_count": 10
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "The check uses a regular positive-definite reference form and treats zero modes separately."
+    },
+    {
+      "check_id": "CHK-OBS-STAR-FOLD-NEW-PROTOCOL",
+      "title": "New declared-seed star-versus-reciprocal-fold protocol",
+      "claim_ids": [
+        "NUM-OBS-STAR-FOLD"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": 300,
+      "expected": {
+        "all_stars_positive_definite": true,
+        "cocycle_fold_nullity": 3,
+        "apex_precision_addition": true
+      },
+      "tolerances": {
+        "fold_rank_relative": 1e-09,
+        "precision_block_absolute": 1e-10
+      },
+      "observed": {
+        "minimum_star_eigenvalue": 0.03727634561734873,
+        "fold_nullities_observed": [
+          3
+        ],
+        "maximum_apex_precision_block_error": 4.38502959679432e-15
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "This is a replacement run. The manuscript's historical 300-draw extrema remain unrecoverable because their seed and matrices were lost."
+    },
+    {
+      "check_id": "CHK-OBS-HOLONOMY-DET-KERNEL",
+      "title": "Reciprocal-pair determinant and fixed-space kernel",
+      "claim_ids": [
+        "NUM-OBS-HOLONOMY-DET-KERNEL"
+      ],
+      "status": "PASS",
+      "seed": 20260728,
+      "sample_count": {
+        "determinant_draws": 1000,
+        "prescribed_kernel_cases": 18
+      },
+      "expected": {
+        "logdet_J": "2 log|det(I-H)| - logdet(R_uv) - logdet(R_vu)",
+        "J_nullity": "dim ker(H-I)"
+      },
+      "tolerances": {
+        "logdet_absolute": 1e-07,
+        "rank_relative": 1e-09
+      },
+      "observed": {
+        "usable_determinant_draws": 1000,
+        "maximum_logdet_identity_error": 1.7408297026122455e-13,
+        "all_kernel_cases_match": true,
+        "kernel_cases": [
+          {
+            "K": 2,
+            "prescribed_multiplicity": 0,
+            "J_nullity": 0,
+            "fixed_space_dimension": 0
+          },
+          {
+            "K": 2,
+            "prescribed_multiplicity": 1,
+            "J_nullity": 1,
+            "fixed_space_dimension": 1
+          },
+          {
+            "K": 2,
+            "prescribed_multiplicity": 2,
+            "J_nullity": 2,
+            "fixed_space_dimension": 2
+          },
+          {
+            "K": 3,
+            "prescribed_multiplicity": 0,
+            "J_nullity": 0,
+            "fixed_space_dimension": 0
+          },
+          {
+            "K": 3,
+            "prescribed_multiplicity": 1,
+            "J_nullity": 1,
+            "fixed_space_dimension": 1
+          },
+          {
+            "K": 3,
+            "prescribed_multiplicity": 2,
+            "J_nullity": 2,
+            "fixed_space_dimension": 2
+          },
+          {
+            "K": 3,
+            "prescribed_multiplicity": 3,
+            "J_nullity": 3,
+            "fixed_space_dimension": 3
+          },
+          {
+            "K": 4,
+            "prescribed_multiplicity": 0,
+            "J_nullity": 0,
+            "fixed_space_dimension": 0
+          },
+          {
+            "K": 4,
+            "prescribed_multiplicity": 1,
+            "J_nullity": 1,
+            "fixed_space_dimension": 1
+          },
+          {
+            "K": 4,
+            "prescribed_multiplicity": 2,
+            "J_nullity": 2,
+            "fixed_space_dimension": 2
+          },
+          {
+            "K": 4,
+            "prescribed_multiplicity": 3,
+            "J_nullity": 3,
+            "fixed_space_dimension": 3
+          },
+          {
+            "K": 4,
+            "prescribed_multiplicity": 4,
+            "J_nullity": 4,
+            "fixed_space_dimension": 4
+          },
+          {
+            "K": 5,
+            "prescribed_multiplicity": 0,
+            "J_nullity": 0,
+            "fixed_space_dimension": 0
+          },
+          {
+            "K": 5,
+            "prescribed_multiplicity": 1,
+            "J_nullity": 1,
+            "fixed_space_dimension": 1
+          },
+          {
+            "K": 5,
+            "prescribed_multiplicity": 2,
+            "J_nullity": 2,
+            "fixed_space_dimension": 2
+          },
+          {
+            "K": 5,
+            "prescribed_multiplicity": 3,
+            "J_nullity": 3,
+            "fixed_space_dimension": 3
+          },
+          {
+            "K": 5,
+            "prescribed_multiplicity": 4,
+            "J_nullity": 4,
+            "fixed_space_dimension": 4
+          },
+          {
+            "K": 5,
+            "prescribed_multiplicity": 5,
+            "J_nullity": 5,
+            "fixed_space_dimension": 5
+          }
+        ]
+      },
+      "evidence_kind": "reproduced_output",
+      "interpretation": "Orthogonal similarities control rank conditioning in the prescribed-multiplicity cases."
+    },
+    {
+      "check_id": "CHK-OBS-NORMALIZER-WITNESS",
+      "title": "Exact scalar reciprocal-pair normalizer witness",
+      "claim_ids": [
+        "NUM-OBS-HOLONOMY-DET-KERNEL"
+      ],
+      "status": "PASS",
+      "seed": null,
+      "sample_count": "one exact symbolic family and three evaluation points",
+      "expected": {
+        "determinant": "p0^2 + p0(a+a^-1)^2",
+        "nonconstant": true
+      },
+      "tolerances": {
+        "arithmetic": "exact symbolic"
+      },
+      "observed": {
+        "determinant": "p0*(a**4 + a**2*p0 + 2*a**2 + 1)/a**2",
+        "derivative": "2*p0*(a - 1)*(a + 1)*(a**2 + 1)/a**3",
+        "p0_equals_1_values": {
+          "1": 5.0,
+          "2": 7.25,
+          "3": 12.11111111111111
+        }
+      },
+      "evidence_kind": "exact_symbolic_witness",
+      "interpretation": "The determinant varies with transport. The sign of the induced log-normalizer force must be read from the chosen optimization objective, not inferred from determinant minimization alone."
+    }
+  ],
+  "claim_dispositions": [
+    {
+      "claim_id": "NUM-INTRO-SCOPE-SUMMARY",
+      "source_file": "01_introduction.tex",
+      "current_source_line": 136,
+      "load_bearing": false,
+      "role": "duplicate_reference",
+      "current_protocol_status": "NOT_APPLICABLE",
+      "endpoint_mapping_status": "PASS",
+      "recommended_disposition": "keep_exact",
+      "replacement_check_ids": [],
+      "declared_check_ids": [],
+      "unknown_check_ids": [],
+      "missing_obligation": null
+    },
+    {
+      "claim_id": "NUM-STATUS-DEFINITION",
+      "source_file": "01_introduction.tex",
+      "current_source_line": 159,
+      "load_bearing": false,
+      "role": "taxonomy",
+      "current_protocol_status": "NOT_APPLICABLE",
+      "endpoint_mapping_status": "PASS",
+      "recommended_disposition": "keep_exact",
+      "replacement_check_ids": [],
+      "declared_check_ids": [],
+      "unknown_check_ids": [],
+      "missing_obligation": null
+    },
+    {
+      "claim_id": "NUM-GAUSS-PROJECTION",
+      "source_file": "06_gaussian.tex",
+      "current_source_line": 294,
+      "load_bearing": false,
+      "role": "current_corroboration",
+      "current_protocol_status": "PASS",
+      "endpoint_mapping_status": "PASS",
+      "recommended_disposition": "keep_exact",
+      "replacement_check_ids": [
+        "CHK-GAUSS-PROJECTION"
+      ],
+      "declared_check_ids": [
+        "CHK-GAUSS-PROJECTION"
+      ],
+      "unknown_check_ids": [],
+      "missing_obligation": null
+    },
+    {
+      "claim_id": "NUM-GAUSS-TRIVIALIZATION",
+      "source_file": "06_gaussian.tex",
+      "current_source_line": 321,
+      "load_bearing": false,
+      "role": "current_corroboration",
+      "current_protocol_status": "PASS",
+      "endpoint_mapping_status": "PASS",
+      "recommended_disposition": "keep_exact",
+      "replacement_check_ids": [
+        "CHK-GAUSS-TRIVIALIZATION"
+      ],
+      "declared_check_ids": [
+        "CHK-GAUSS-TRIVIALIZATION"
+      ],
+      "unknown_check_ids": [],
+      "missing_obligation": null
+    },
+    {
+      "claim_id": "NUM-GAUSS-CONDITIONING",
+      "source_file": "06_gaussian.tex",
+      "current_source_line": 323,
+      "load_bearing": true,
+      "role": "current_protocol_specific",
+      "current_protocol_status": "PASS",
+      "endpoint_mapping_status": "PASS",
+      "recommended_disposition": "keep_exact",
+      "replacement_check_ids": [
+        "CHK-GAUSS-CONDITIONING"
+      ],
+      "declared_check_ids": [
+        "CHK-GAUSS-CONDITIONING"
+      ],
+      "unknown_check_ids": [],
+      "missing_obligation": null
+    },
+    {
+      "claim_id": "NUM-RESTRICTION-SCHUR",
+      "source_file": "07_restrictions.tex",
+      "current_source_line": 200,
+      "load_bearing": false,
+      "role": "current_corroboration",
+      "current_protocol_status": "PASS",
+      "endpoint_mapping_status": "PASS",
+      "recommended_disposition": "keep_exact",
+      "replacement_check_ids": [
+        "CHK-RESTRICTION-SCHUR"
+      ],
+      "declared_check_ids": [
+        "CHK-RESTRICTION-SCHUR"
+      ],
+      "unknown_check_ids": [],
+      "missing_obligation": null
+    },
+    {
+      "claim_id": "NUM-IG-EXPECTATION-METRIC",
+      "source_file": "08_infogeometry.tex",
+      "current_source_line": 165,
+      "load_bearing": false,
+      "role": "current_corroboration",
+      "current_protocol_status": "PASS",
+      "endpoint_mapping_status": "PASS",
+      "recommended_disposition": "keep_exact",
+      "replacement_check_ids": [
+        "CHK-IG-EXPECTATION-METRIC"
+      ],
+      "declared_check_ids": [
+        "CHK-IG-EXPECTATION-METRIC"
+      ],
+      "unknown_check_ids": [],
+      "missing_obligation": null
+    },
+    {
+      "claim_id": "NUM-IG-PULLBACK-PUSHFORWARD",
+      "source_file": "08_infogeometry.tex",
+      "current_source_line": 236,
+      "load_bearing": false,
+      "role": "current_corroboration",
+      "current_protocol_status": "PASS",
+      "endpoint_mapping_status": "PASS",
+      "recommended_disposition": "keep_exact",
+      "replacement_check_ids": [
+        "CHK-IG-PULLBACK-PUSHFORWARD"
+      ],
+      "declared_check_ids": [
+        "CHK-IG-PULLBACK-PUSHFORWARD"
+      ],
+      "unknown_check_ids": [],
+      "missing_obligation": null
+    },
+    {
+      "claim_id": "NUM-IG-GAUGE-INVARIANTS",
+      "source_file": "08_infogeometry.tex",
+      "current_source_line": 310,
+      "load_bearing": false,
+      "role": "current_corroboration",
+      "current_protocol_status": "PASS",
+      "endpoint_mapping_status": "PASS",
+      "recommended_disposition": "keep_exact",
+      "replacement_check_ids": [
+        "CHK-GENERALIZED-SPECTRUM"
+      ],
+      "declared_check_ids": [
+        "CHK-GENERALIZED-SPECTRUM"
+      ],
+      "unknown_check_ids": [],
+      "missing_obligation": null
+    },
+    {
+      "claim_id": "NUM-OBS-STAR-FOLD",
+      "source_file": "11_obstructions.tex",
+      "current_source_line": 230,
+      "load_bearing": false,
+      "role": "current_corroboration",
+      "current_protocol_status": "PASS",
+      "endpoint_mapping_status": "PASS",
+      "recommended_disposition": "keep_exact",
+      "replacement_check_ids": [
+        "CHK-OBS-STAR-FOLD-NEW-PROTOCOL"
+      ],
+      "declared_check_ids": [
+        "CHK-OBS-STAR-FOLD-NEW-PROTOCOL"
+      ],
+      "unknown_check_ids": [],
+      "missing_obligation": null
+    },
+    {
+      "claim_id": "NUM-OBS-HOLONOMY-DET-KERNEL",
+      "source_file": "11_obstructions.tex",
+      "current_source_line": 413,
+      "load_bearing": false,
+      "role": "current_corroboration",
+      "current_protocol_status": "PASS",
+      "endpoint_mapping_status": "PASS",
+      "recommended_disposition": "keep_exact",
+      "replacement_check_ids": [
+        "CHK-OBS-HOLONOMY-DET-KERNEL",
+        "CHK-OBS-NORMALIZER-WITNESS"
+      ],
+      "declared_check_ids": [
+        "CHK-OBS-HOLONOMY-DET-KERNEL",
+        "CHK-OBS-NORMALIZER-WITNESS"
+      ],
+      "unknown_check_ids": [],
+      "missing_obligation": null
+    }
+  ],
+  "mapping_validation": {
+    "status": "PASS",
+    "claim_failures": [],
+    "supplemental_checks": {
+      "declared_ids": [
+        "CHK-KRON-EXACT-WITNESS",
+        "CHK-KRON-MONTE-CARLO",
+        "CHK-CG-AGGREGATION",
+        "CHK-GRAPH-HOLONOMY",
+        "CHK-CG-MAXIMAL-CLUSTERS",
+        "CHK-CG-LAMBDA-CONTINUUM",
+        "CHK-CG-PAIR-MERGE",
+        "CHK-CG-BIADDITIVE",
+        "CHK-CG-EPSILON-DIVERGENCE",
+        "CHK-CG-FACTOR-GAP",
+        "CHK-CG-FRAME-CANCELLATION",
+        "CHK-CG-EQUIVARIANCE",
+        "CHK-RG-RAY-KERNEL",
+        "CHK-RG-SECTOR-SPLIT",
+        "CHK-RG-INVARIANT-FACES",
+        "CHK-RG-HOMOGENEOUS-GATE",
+        "CHK-RG-NONCOMMUTING-LIMITS",
+        "CHK-RG-NONCOMMUTING-FLOATING",
+        "CHK-RG-MASS-PENCIL"
+      ],
+      "unknown_ids": [],
+      "nonpassing_ids": []
+    }
+  },
+  "summary": {
+    "total_NUMERICAL_occurrences": 11,
+    "literal_status_macro_occurrences": 11,
+    "bare_status_table_entries": 0,
+    "substantive_claims": 9,
+    "taxonomy_entries": 1,
+    "duplicate_register_entries": 1,
+    "checks": {
+      "PASS": 29,
+      "FAIL": 0,
+      "INCONCLUSIVE": 0
+    },
+    "dispositions_for_substantive_claims": {
+      "keep_exact": 9,
+      "rewrite_to_current_check": 0,
+      "remove": 0,
+      "retain_as_inconclusive": 0
+    },
+    "current_protocol_claims_inconclusive": 0,
+    "current_protocol_claims_pass": 9
+  }
+}

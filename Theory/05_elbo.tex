@@ -1,0 +1,660 @@
+\chapter[The Exact Single Evidence Bound]{The Exact Single\\Evidence Bound}
+\label{ch:elbo}
+
+The previous chapter fixed one normalized joint. This chapter introduces one recognition law for the entire population and derives the exact measure-level identity that relates the two. Its primary form is an extended-real lower bound defined for every probability law; the familiar difference of expected log densities is a finite-domain representation of that functional. Conditional and local bounds used later are disintegrations or restrictions of this same construction, not competing definitions of evidence.
+
+The chapter is organized around three things that are easy to get wrong. The recognition law is a joint law and is not recoverable from its coordinate marginals, so a calculation that substitutes marginals into an entropy is computing something else and the difference has a name and a sign. The identity holds under stated hypotheses, one of which, absolute continuity with respect to the posterior, is a genuine restriction and is exactly what later forbids degenerate recognition laws. And the exact coordinates of the alternating scheme are two specific objects; an optimizer direction is a proposal that must pass an acceptance test before it is entitled to the conclusions that attach to a coordinate.
+
+There is also a measure-theoretic qualification that applies to every fixed-observation formula in this chapter. For fixed $(\theta,X)$, let $P_{\theta,X}^{O}$, $\Pi_{\theta,X}$, and the marginal-full set $\mathsf O_{\theta,X}^{\mathrm{reg}}$ be the observation marginal, regular conditional probability, and regular-observation set of \Cref{ch:probability}. Unless an everywhere-defined density and conditional version has been declared as part of the model data, every posterior and ELBO statement below is a $P_{\theta,X}^{O}$-almost-everywhere statement, represented by selecting $o\in\mathsf O_{\theta,X}^{\mathrm{reg}}$. Changing a density on a null slice can change exceptional point values but cannot change these almost-everywhere statements.
+
+\section{The correlated population recognition kernel}
+\label{sec:elbo-recognition}
+
+\definitionheading{Correlated population recognition kernel}{def:elbo-recognition-kernel}
+Fix the finite design \(D\), the observed value \(o\in\mathsf O_D\), and the structural value \(X\in\mathsf X\) of \Cref{ch:probability}. Recognition is represented by one normalized Markov kernel
+\begin{equation}
+Q:\left(\mathsf O_D\times\mathsf X,\mathscr O_D\otimes\mathscr X\right)
+\longrightarrow
+\mathcal P\left(\mathsf Y_D,\mathscr Y_D\right),
+\qquad
+(o,X)\longmapsto Q_X(dY\given o),
+\label{eq:elbo-recognition-kernel}
+\end{equation}
+so that \(Q_X(\mathsf Y_D\given o)=1\) and, for every \(B\in\mathscr Y_D\), the map \((o,X)\mapsto Q_X(B\given o)\) is \(\mathscr O_D\otimes\mathscr X\)-measurable. \status{DEFINITION}
+
+The law is permitted to correlate agents with one another, the state channel
+with the model channel, and one design point with another. No factorization is
+imposed here; the restrictions that impose one are the subject of
+\Cref{ch:restrictions}, and they are restrictions on this object rather than
+replacements for it. \status{DEFINITION}
+
+Write \(q^{o,X}_{i,a}\) and \(s^{o,X}_{i,a}\) for the coordinate
+marginals defined in \Cref{def:prob-recognition-marginals}. By
+\Cref{prop:prob-marginals-do-not-determine-joint}, these marginals do not
+reconstruct \(Q_X(\cdot\given o)\) whenever the latent space contains at
+least two nondegenerate real coordinates.
+
+The proposition is a statement about a single pair of coordinates, and the general situation is worse in a specific way. The set of joint laws with a prescribed family of marginals is the Fr\'{e}chet class of those marginals; it is convex, it contains the product law, and in continuous Euclidean coordinates it is parameterized by the dependence structure, the copula, which the marginals leave entirely free \citep{Nelsen2006}. When second moments exist, every cross-agent, cross-channel, and cross-design covariance block is unspecified by the marginals. The consequence for this chapter is not stylistic. Marginal recognition laws cannot be substituted for the population law in an exact entropy or evidence calculation, and the following makes the error exact rather than merely warning against it.
+
+\theoremheading{Extended total-correlation chain identity}{thm:elbo-total-correlation-chain}
+Let $Y=(Y_b)_{b=1}^{B}$ take values in a finite product of standard Borel spaces, let $Q$ be any joint probability law with marginals $Q_b$, let $(\rho_b)_{b=1}^{B}$ be arbitrary probability laws, and put $R=\bigotimes_b\rho_b$. With
+\[
+\mathrm{TC}(Q):=\KL\left(Q\middle\Vert\bigotimes_bQ_b\right)\in[0,+\infty],
+\]
+the identity
+\begin{equation}
+\KL\left(Q\middle\Vert\bigotimes_b\rho_b\right)
+=\mathrm{TC}(Q)+\sum_b\KL(Q_b\Vert\rho_b)
+\label{eq:elbo-total-correlation-chain}
+\end{equation}
+holds in $[0,+\infty]$. It includes both singular branches and never subtracts infinities. \status{ESTABLISHED}
+\medskip
+
+\emph{Proof.} For each block choose finite refining partitions $\mathcal P_{b,n}$ that generate its sigma-algebra, and let $\pi_n$ be the resulting finite product quantization. On the finite product alphabet, direct summation gives
+\[
+\KL(\pi_{n\#}Q\Vert\textstyle\bigotimes_b\pi_{b,n\#}\rho_b)
+=\KL(\pi_{n\#}Q\Vert\textstyle\bigotimes_b\pi_{b,n\#}Q_b)
+ +\sum_b\KL(\pi_{b,n\#}Q_b\Vert\pi_{b,n\#}\rho_b).
+\]
+All displayed terms are nonnegative extended numbers, so this finite identity uses no signed-log cancellation. The refining-partition characterization of relative entropy, \eqref{eq:prob-kernel-kl-partitions} applied to constant kernels, makes the left side increase to $\KL(Q\Vert\bigotimes_b\rho_b)$, the first term on the right increase to $\mathrm{TC}(Q)$, and each of the finitely many remaining terms increase to $\KL(Q_b\Vert\rho_b)$. Passing to the monotone limits proves \eqref{eq:elbo-total-correlation-chain} in $[0,+\infty]$.
+
+For an explicit branch audit, if $Q\not\ll R$ then the left side is $+\infty$. If some $Q_b\not\ll\rho_b$, the corresponding marginal term is $+\infty$. Otherwise $\bigotimes_bQ_b\ll R$; transitivity shows that $Q\ll\bigotimes_bQ_b$ would contradict $Q\not\ll R$, so $\mathrm{TC}(Q)=+\infty$. Thus the right side is also $+\infty$ in every singular branch. \hfill$\square$
+
+The infinite branch is realized by a continuous diagonal, not merely by a defective density calculation. If $U\sim\operatorname{Unif}[0,1]$ and $Q=\operatorname{law}(U,U)$, then both marginals are uniform but $Q$ is singular with respect to $Q_1\otimes Q_2$, so $\mathrm{TC}(Q)=+\infty$. Taking $\rho_b=Q_b$ makes \eqref{eq:elbo-total-correlation-chain} read $+\infty=+\infty+0+0$ in the extended nonnegative reals.
+
+\medskip
+\propositionheading{Finite-density total correlation and the two signs}{prop:elbo-total-correlation-signs}
+Partition the coordinates of \(Y\) into blocks indexed by \(b\), let \(Q_X\) have density \(q_X\) with respect to \(\nu_D^Y\) and block marginal densities \(q_b\), and suppose the joint and all block differential entropies are finite. Let
+\begin{equation}
+\mathrm{TC}(Q_X)
+=\KL\left(Q_X\middle\Vert\bigotimes_{b}Q_{X,b}\right)
+\geq0
+\label{eq:elbo-total-correlation}
+\end{equation}
+be the total correlation of the blocks. Then
+\begin{equation}
+\E_{Q_X}\left[\log q_X(Y\given o)\right]
+=\sum_{b}\E_{Q_X}\left[\log q_b(Y_b\given o)\right]
++\mathrm{TC}(Q_X),
+\label{eq:elbo-entropy-defect}
+\end{equation}
+with equality of the two log-density expectations exactly when the blocks are independent under \(Q_X\). For the following free-energy and pseudo-ELBO identities, assume in addition
+\[
+\E_{Q_X}\bigl|\log p_\theta(o,Y\given X)\bigr|<\infty,
+\]
+so the common expected negative-log-joint term and both finite entropy terms define finite real quantities. Define the substituted free energy and its negative pseudo-ELBO by
+\begin{align}
+\widetilde{\Fenergy}
+&:=\E_{Q_X}\left[-\log p_\theta(o,Y\given X)
++\sum_b\log q_b(Y_b\given o)\right],
+\label{eq:elbo-substituted-free-energy}\\
+\widetilde{\Lelbo}&:=-\widetilde{\Fenergy}.
+\label{eq:elbo-pseudo-elbo}
+\end{align}
+Then
+\begin{equation}
+\widetilde{\Fenergy}
+=\Fenergy-\mathrm{TC}(Q_X),
+\qquad
+\widetilde{\Lelbo}
+=\Lelbo(Q_X;X)+\mathrm{TC}(Q_X).
+\label{eq:elbo-total-correlation-signs}
+\end{equation}
+Thus it is the \emph{substituted free energy} that is smaller by total correlation, while its negative \emph{pseudo-ELBO} is larger by total correlation and need not be a lower bound on the log evidence. In the Gaussian case with joint covariance \(C\) and diagonal blocks \(C_{bb}\),
+\begin{equation}
+\mathrm{TC}(Q_X)
+=\tfrac12\left(\sum_{b}\log\det C_{bb}-\log\det C\right).
+\label{eq:elbo-total-correlation-gaussian}
+\end{equation}
+\status{ESTABLISHED}
+
+\emph{Proof.} This is the finite-density corollary of \Cref{thm:elbo-total-correlation-chain} with $\rho_b=Q_b$, after the stated entropy hypotheses permit the logarithms to be split. Expanding gives \(\mathrm{TC}(Q_X)=\E_{Q_X}[\log q_X]-\sum_b\E_{Q_X}[\log q_b]\), which is \eqref{eq:elbo-entropy-defect}. Subtracting \eqref{eq:elbo-substituted-free-energy} from \(\Fenergy=\E_{Q_X}[-\log p_\theta+\log q_X]\) gives \(\mathrm{TC}(Q_X)\), and negation gives the second identity in \eqref{eq:elbo-total-correlation-signs}. For \eqref{eq:elbo-total-correlation-gaussian}, substitute the Gaussian differential entropy \(\tfrac12\log\det(2\pi e C)\) for the joint and for each block; the dimensional constants cancel because the block dimensions sum to \(d\). \hfill\(\square\)
+
+The sign in \Cref{prop:elbo-total-correlation-signs} matters and is the reason the point is made here rather than in a remark. Substituting marginal entropies produces a smaller free-energy functional and, after negation, a larger pseudo-ELBO that is not a bound at all. A scheme that reports the latter as an evidence lower bound is reporting a quantity that can exceed the log evidence, and by an amount that grows with exactly the correlation the recognition law was introduced to represent.
+
+\section{Hypotheses}
+\label{sec:elbo-hypotheses}
+
+\hypothesisheading{Evidence-domain hypotheses}{hyp:elbo-evidence-domain}
+The extended identity of \Cref{sec:elbo-identity} uses (H1)--(H2); its classical split into two expected log densities additionally uses (H3)--(H4). The selection is subject to the standing qualification \(o\in\mathsf O_{\theta,X}^{\mathrm{reg}}\); equivalently, the measure-level theorem holds for \(P_{\theta,X}^{O}\)-almost every observation. Together (H1)--(H4) are the consolidated classical evidence domain and reproduce \Cref{hyp:prob-regular-observation,hyp:prob-classical-split-elbo}. \status{HYPOTHESIS}
+
+\textbf{(H1) Types and conditional version.} The joint kernel \(P_\theta(\cdot\given X)\) of \Cref{ch:generative} and the recognition kernel \(Q_X(\cdot\given o)\) of \Cref{def:elbo-recognition-kernel} are normalized and measurable as declared. The generative density \(p_\theta(o,y\given X)\) exists relative to the declared reference, and $P_\theta(\cdot\given o,X)$ denotes the regular conditional probability $\Pi_{\theta,X}(o,\cdot)$ represented by \eqref{eq:prob-rcp-density} on $\mathsf O_{\theta,X}^{\mathrm{reg}}$. No density of $Q_X$ is required at the extended tier. An everywhere pointwise version may replace the almost-everywhere convention only when that version is declared as model data.
+
+\textbf{(H2) Positive finite evidence.} \(0<p_\theta(o\given X)<\infty\). This excludes observed values that the model assigns zero density, at which the conditional posterior is undefined and there is nothing to approximate. It is used to divide by the evidence in \eqref{eq:elbo-posterior-density}.
+
+\textbf{(H3) Absolute continuity and recognition density for the classical split.} \(Q_X(\cdot\given o)\ll \Pi_{\theta,X}(o,\cdot)=P_\theta(\cdot\given o,X)\). Since the selected posterior slice is dominated by $\nu_D^Y$, this implies $Q_X\ll\nu_D^Y$; write its RN density as $q_X(y\given o)$. For parameterized recognition kernels, \Cref{thm:prob-kernel-rn-measurable-version,cor:prob-common-reference-joint-density} supplies a jointly measurable version under their stated hypotheses. This is a genuine restriction on the finite classical representation, but not on the extended functional, which assigns value $-\infty$ to the singular branch. \Cref{prop:elbo-subspace-support-singular} below makes the exclusion precise.
+
+\textbf{(H4) Log-integrability.}
+\begin{equation}
+\E_{Q_X}\left[
+\left|\log p_\theta(o,Y\given X)\right|
++\left|\log q_X(Y\given o)\right|
+\right]<\infty.
+\label{eq:elbo-log-integrability}
+\end{equation}
+This is not implied by (H1) through (H3), and a witness settles the point rather than leaving it asserted: take \(d=1\) with a standard Gaussian conditional posterior and a standard Cauchy recognition law. Both have strictly positive Lebesgue densities, so (H1) through (H3) hold; but \(\log p_\theta(o,y\given X)\) differs from \(-y^{2}/2\) by a constant, and the Cauchy law has no second moment, so \eqref{eq:elbo-log-integrability} fails. Relative entropy and the extended ELBO remain well defined without (H4). What fails is only the split into two separately finite expectations: the formal difference can be an undefined \(\infty-\infty\).
+
+Hypothesis (H3) deserves its own statement, because it is the one with consequences later.
+
+\propositionheading{Subspace support violates absolute continuity}{prop:elbo-subspace-support-singular}
+Suppose the conditional posterior \(P_\theta(\cdot\given o,X)\) is dominated by Lebesgue measure on \(\R^{d}\), as it is in the linear-Gaussian realization of \Cref{ch:generative} with the positive definite covariances \eqref{eq:gen-lg-spd}, and suppose \(Q_X(\cdot\given o)\) is supported on a proper affine subspace \(\mathcal S\subsetneq\R^{d}\), meaning \(Q_X(\mathcal S\given o)=1\) with \(\dim\mathcal S<d\). Then (H3) fails and
+\begin{equation}
+\KL\left(Q_X(\cdot\given o)\middle\Vert P_\theta(\cdot\given o,X)\right)=+\infty.
+\label{eq:elbo-degenerate-infinite}
+\end{equation}
+\status{ESTABLISHED}
+
+\emph{Proof.} A proper affine subspace of \(\R^{d}\) is Lebesgue null, so \(P_\theta(\mathcal S\given o,X)=0\) while \(Q_X(\mathcal S\given o)=1\). Absolute continuity fails on the set \(\mathcal S\). By the definition of relative entropy for measures that are not absolutely continuous, the divergence is \(+\infty\) \citep{Kullback1951,Csiszar1967}. \hfill\(\square\)
+
+This is the exact mechanism that forbids subspace-supported recognition laws, and its scope should be stated exactly. It does not say that constraining the recognition law is illegitimate; it says that a constraint which collapses the support onto a lower-dimensional set puts the law outside the family for which the bound is finite, so the resulting cost is not a large finite number to be traded against something else but an infinite one. \Cref{ch:restrictions} takes this up in the case that matters, where a coarse-graining is expressed by tying groups of coordinates to a common value: the tied law is supported on the range of an aggregation matrix, hence exactly of the form excluded here, and the admissible finite operation constrains the recognition mean instead, with a cost that the same chapter computes exactly. The forward reference is deliberate; the present chapter supplies the reason, not the application.
+
+\section{The exact evidence identity}
+\label{sec:elbo-identity}
+
+\definitionheading{Slice measure and extended ELBO}{def:elbo-extended}
+Assume (H1)--(H2), fix $o\in\mathsf O_{\theta,X}^{\mathrm{reg}}$, and abbreviate the finite latent slice measure, its mass, and its normalization by
+\begin{equation}
+M_o(B):=\int_Bp_\theta(o,y\given X)\nu_D^Y(dy)
+=z \Pi_{\theta,X}(o,B),
+\qquad
+z:=M_o(\mathsf Y_D)=p_\theta(o\given X)\in(0,\infty).
+\label{eq:elbo-slice-measure}
+\end{equation}
+For \emph{every} probability law $Q$ on $(\mathsf Y_D,\mathscr Y_D)$, define
+\begin{equation}
+\Lelbo^{\mathrm{ext}}(Q;X,o)
+:=\log z-\KL\bigl(Q\Vert\Pi_{\theta,X}(o,\cdot)\bigr)
+\in[-\infty,\log z]
+\label{eq:elbo-extended-definition}
+\end{equation}
+and
+\begin{equation}
+\Fenergy^{\mathrm{ext}}[Q;X,o]
+:=-\Lelbo^{\mathrm{ext}}(Q;X,o)
+=-\log z+\KL\bigl(Q\Vert\Pi_{\theta,X}(o,\cdot)\bigr).
+\label{eq:elbo-extended-free-energy}
+\end{equation}
+These are well-defined extended-real quantities because $\log z$ is finite and relative entropy lies in $[0,+\infty]$. \status{DEFINITION}
+
+\medskip
+\theoremheading{Extended ELBO gap identity}{thm:elbo-extended-gap}
+For every probability law $Q$ on the latent space,
+\begin{equation}
+\log z-\Lelbo^{\mathrm{ext}}(Q;X,o)
+=\Fenergy^{\mathrm{ext}}[Q;X,o]+\log z
+=\KL\bigl(Q\Vert\Pi_{\theta,X}(o,\cdot)\bigr).
+\label{eq:elbo-extended-gap}
+\end{equation}
+Consequently $\Lelbo^{\mathrm{ext}}\leq\log z$, with equality exactly at $Q=\Pi_{\theta,X}(o,\cdot)$. No unconditional formula of the form $\log z=\Lelbo^{\mathrm{ext}}+\KL$ is asserted, because its right side is undefined when $\Lelbo^{\mathrm{ext}}=-\infty$ and $\KL=+\infty$. \status{ESTABLISHED}
+
+\emph{Proof.} Both equalities are direct substitutions from \eqref{eq:elbo-extended-definition}--\eqref{eq:elbo-extended-free-energy}; they only add or subtract the finite number $\log z$. Nonnegativity and the zero condition for relative entropy give the bound and equality case. \hfill$\square$
+
+\medskip
+\propositionheading{Relative-log representation}{prop:elbo-relative-log-representation}
+If $Q\ll M_o$ and $r=dQ/dM_o$, then
+\begin{equation}
+\Lelbo^{\mathrm{ext}}(Q;X,o)
+=-\int_{\mathsf Y_D}\log r(y)Q(dy),
+\qquad
+\int_{\{r<1\}}-\log r dQ
+=\int_{\{r<1\}}-r\log r dM_o\leq\frac{z}{e}.
+\label{eq:elbo-relative-log}
+\end{equation}
+Thus the integral is well defined in $(-\infty,+\infty]$ and its negative lies in $[-\infty,+\infty)$. If $Q\not\ll M_o$, then $\Lelbo^{\mathrm{ext}}(Q;X,o)=-\infty$. \status{ESTABLISHED}
+
+\emph{Proof.} Because $\Pi_{\theta,X}(o,\cdot)=M_o/z$, the RN chain rule gives $dQ/d\Pi=z r$ when $Q\ll M_o$. The negative part of $\log r$ is $Q$-integrable by \eqref{eq:elbo-relative-log}, since $-u\log u\leq1/e$ on $0\leq u\leq1$ and $M_o(\mathsf Y_D)=z$. Hence
+\[
+\KL(Q\Vert\Pi)=\int\log(zr) dQ
+=\log z+\int\log r dQ
+\]
+is a legitimate extended identity, and substitution into \eqref{eq:elbo-extended-definition} proves the first branch. Since $M_o$ and $\Pi$ have the same null sets, $Q\not\ll M_o$ implies $\KL(Q\Vert\Pi)=+\infty$, proving the second. \hfill$\square$
+
+Under the full classical domain \Cref{hyp:elbo-evidence-domain}, the relative-log functional has the separately integrable density representation
+\begin{equation}
+\Lelbo(Q_X;X)
+=\E_{Q_X}\left[
+\log p_\theta(o,Y\given X)-\log q_X(Y\given o)
+\right].
+\label{eq:elbo-definition}
+\end{equation}
+The notation suppresses the fixed observation \(o\) and the generative parameter \(\theta\); the parameter subscript is restored as \(\Lelbo_{\vartheta}\) whenever two parameter values are compared. The variational free energy is the opposite sign,
+\begin{equation}
+\Fenergy[Q_X;X,o]=-\Lelbo(Q_X;X).
+\label{eq:elbo-free-energy}
+\end{equation}
+In this domain $\Lelbo(Q_X;X)=\Lelbo^{\mathrm{ext}}(Q_X;X,o)$ and $\Fenergy=\Fenergy^{\mathrm{ext}}$; outside it only the extended definitions are available.
+
+\theoremheading{Classical finite exact evidence identity}{thm:elbo-exact-identity}
+Under \Cref{hyp:elbo-evidence-domain}, for $P_{\theta,X}^{O}$-almost every observation $o$ (equivalently, for the selected $o\in\mathsf O_{\theta,X}^{\mathrm{reg}}$),
+\begin{equation}
+\log p_\theta(o\given X)
+=\Lelbo(Q_X;X)
++\KL\left(
+Q_X(\cdot\given o)
+\middle\Vert
+P_\theta(\cdot\given o,X)
+\right).
+\label{eq:elbo-identity}
+\end{equation}
+\status{ESTABLISHED}
+
+\emph{Proof.} For \(B\in\mathscr Y_D\), the regular-observation construction \eqref{eq:prob-rcp-density}, together with (H1) and (H2), gives the dominated conditional posterior
+\begin{equation}
+P_\theta(B\given o,X)
+=\frac{1}{p_\theta(o\given X)}
+\int_{B}p_\theta(o,y\given X)\nu_D^Y(dy),
+\qquad
+\frac{dP_\theta(\cdot\given o,X)}{d\nu_D^Y}(y)
+=\frac{p_\theta(o,y\given X)}{p_\theta(o\given X)},
+\label{eq:elbo-posterior-density}
+\end{equation}
+which is normalized because the denominator is the evidence. Writing \(q_X(y\given o)=dQ_X(\cdot\given o)/d\nu_D^Y\) and using (H3) with the Radon--Nikodym chain rule gives, \(Q_X\)-almost surely,
+\begin{equation}
+\frac{dQ_X(\cdot\given o)}{dP_\theta(\cdot\given o,X)}(y)
+=\frac{q_X(y\given o)p_\theta(o\given X)}{p_\theta(o,y\given X)}.
+\label{eq:elbo-rn-ratio}
+\end{equation}
+Hypothesis (H4) permits integration of its logarithm term by term, so
+\begin{align}
+\KL\left(
+Q_X(\cdot\given o)
+\middle\Vert
+P_\theta(\cdot\given o,X)
+\right)
+&=\int_{\mathsf Y_D}
+Q_X(dy\given o)
+\log\frac{dQ_X(\cdot\given o)}{dP_\theta(\cdot\given o,X)}(y)
+\label{eq:elbo-kl-expansion}\\
+&=\E_{Q_X}\left[
+\log q_X(Y\given o)-\log p_\theta(o,Y\given X)
+\right]
++\log p_\theta(o\given X)\notag\\
+&=-\Lelbo(Q_X;X)+\log p_\theta(o\given X).\notag
+\end{align}
+Rearranging gives \eqref{eq:elbo-identity}. \hfill\(\square\)
+
+The almost-everywhere qualifier is part of the theorem, not a regularity detail suppressed by notation. If $\widetilde p_\theta$ is another joint-density version, Fubini's theorem gives equality of the two slices for $\nu_D^Y$-almost every $y$ outside a $\nu_D^O$-null set of observations, and the two evidence and posterior versions therefore agree outside a $P_{\theta,X}^{O}$-null set. At an exceptional observation, the values of \eqref{eq:elbo-posterior-density} and \eqref{eq:elbo-definition} can be changed without changing the joint measure. The theorem consequently makes no version-independent claim there.
+
+Every corollary and coordinate statement below inherits this regular-observation qualification. For a comparison of finitely many parameter values, the observation must lie in the intersection of their marginal-full regular sets. An optimization over an uncountable parameter space requires either a common full-measure set proved for that family or jointly measurable pointwise density and conditional versions declared as part of the parameterized model; separate almost-everywhere versions for each parameter do not by themselves define a pointwise objective on the whole parameter space.
+
+\corollaryheading{Lower bound and exact equality condition}{cor:elbo-bound-tightness}
+Under \Cref{hyp:elbo-evidence-domain}, \(\Lelbo(Q_X;X)\leq\log p_\theta(o\given X)\), and equality holds if and only if
+\begin{equation}
+Q_X(\cdot\given o)=P_\theta(\cdot\given o,X)
+\qquad\text{as probability measures on }(\mathsf Y_D,\mathscr Y_D).
+\label{eq:elbo-equality-condition}
+\end{equation}
+Equality of all coordinate marginals is not sufficient. \status{ESTABLISHED}
+
+\emph{Proof.} The inequality is nonnegativity of relative entropy. For the equality case, strict convexity of \(u\mapsto u\log u\) gives that the divergence vanishes exactly when the Radon--Nikodym derivative \eqref{eq:elbo-rn-ratio} equals one \(P_\theta(\cdot\given o,X)\)-almost surely, which is equality of the two measures \citep{Kullback1951,Csiszar1967}. Insufficiency of marginal agreement is \Cref{prop:prob-marginals-do-not-determine-joint}, whose Gaussian witnesses have the same coordinate marginals but are distinct measures. \hfill\(\square\)
+
+\section{The general restriction principle}
+\label{sec:restrict-principle}
+
+Fix \((\theta,X)\), select
+\(o\in\mathsf O_{\theta,X}^{\mathrm{reg}}\) with
+\(0<p_\theta(o\given X)<\infty\), and write
+\(P^\star=P_\theta(\cdot\given o,X)\). For every probability law \(Q\) on the latent space,
+\begin{equation}
+\Lelbo^{\mathrm{ext}}(Q;X,o)
+=\log p_\theta(o\given X)-\KL(Q\Vert P^\star).
+\label{eq:restrict-exact-identity}
+\end{equation}
+
+\propositionheading{Restriction principle}{prop:restrict-principle}
+Let \(\mathcal Q'\subseteq\mathcal Q\) be arbitrary sets of probability laws. Then
+\begin{equation}
+\sup_{Q\in\mathcal Q'}\Lelbo^{\mathrm{ext}}(Q;X,o)
+=\log p_\theta(o\given X)
+-\inf_{Q\in\mathcal Q'}\KL(Q\Vert P^\star),
+\label{eq:restrict-sup-identity}
+\end{equation}
+and set inclusion gives
+\[
+\sup_{Q\in\mathcal Q'}\Lelbo^{\mathrm{ext}}(Q;X,o)
+\leq\sup_{Q\in\mathcal Q}\Lelbo^{\mathrm{ext}}(Q;X,o).
+\]
+If both divergence infima below are finite, their optimized loss is the finite identity
+\begin{equation}
+\sup_{\mathcal Q}\Lelbo^{\mathrm{ext}}-\sup_{\mathcal Q'}\Lelbo^{\mathrm{ext}}
+=\inf_{\mathcal Q'}\KL(Q\Vert P^\star)
+-\inf_{\mathcal Q}\KL(Q\Vert P^\star)\geq0.
+\label{eq:restrict-loss}
+\end{equation}
+The identities do not require attainment of the suprema or infima.
+\status{ESTABLISHED}
+
+\emph{Proof.} Equation~\eqref{eq:restrict-exact-identity} holds pointwise in \(Q\). Taking suprema converts a finite constant minus a nonnegative extended divergence into that constant minus its infimum, including the value $-\infty$ when the infimum is $+\infty$. Set inclusion proves monotonicity. Only when both infima are finite is subtraction of the two supremum identities legitimate, and it gives \eqref{eq:restrict-loss}. \(\square\)
+
+Constancy of the evidence is load bearing: the generative kernel is fixed
+once \((\theta,X)\) is fixed and does not read \(Q\). If a proposed model
+changes with the recognition law, \Cref{prop:gen-no-distinguished-target}
+and \Cref{prop:gen-moving-target-witness} show that no common evidence
+comparison follows. Thus every later closed-form ``restriction cost''
+inherits its meaning from the fixed-target hypothesis.
+
+\paragraph{Infinite-cost restrictions.}
+Equation~\eqref{eq:restrict-loss} is written only on its finite domain. If
+each \(Q\in\mathcal Q'\) has a measurable set \(S_Q\) with
+\begin{equation}
+Q(S_Q)=1,\qquad P^\star(S_Q)=0,
+\label{eq:restrict-posterior-null}
+\end{equation}
+then \(Q\not\ll P^\star\) and \(\KL(Q\Vert P^\star)=+\infty\). A proper
+closed support subset alone is insufficient: the uniform law on
+\([0,\tfrac12]\) is absolutely continuous with respect to the uniform law
+on \([0,1]\) and has divergence \(\log2\). The null-set condition, not
+proper closedness, is the obstruction. \status{ESTABLISHED}
+
+\paragraph{Orientation, separation, and attainment.}
+The infimum is a reverse information projection because \(Q\) is the first
+argument of the divergence. Excluding \(P^\star\) does not ensure a positive
+or attained optimum: the family
+\(\{\mathcal N(\mu,1):\mu>0\}\) excludes \(\mathcal N(0,1)\), but its gaps
+\(\mu^2/2\) have unattained infimum zero. A positive optimized gap requires
+\(\inf_{Q\in\mathcal Q}\KL(Q\Vert P^\star)>0\). Nor does uniqueness follow
+from convexity of a product family, because mixtures of product laws need
+not be products. The Gaussian restrictions of \Cref{ch:restrictions}
+instead prove convexity and coercivity in the moment parameters they
+optimize. \status{ESTABLISHED}
+
+\corollaryheading{Independent channel-frame invariance}{cor:elbo-independent-frame-invariance}
+Let \(T(o,y)=(o,Ry)\) be an independent belief--model
+frame re-expression as in \Cref{ch:generative}, where
+\(R=\bigoplus_{a,i}(R_{a,i}^b\oplus R_{a,i}^m)\) is the assembled
+represented bimeasurable bijection of \(\mathsf Y_D\). Transport the entire slice by
+\[
+M'_o=R_{\#}M_o,
+\qquad P'_{\theta'}(\cdot\given o,X')=R_{\#}P_{\theta}(\cdot\given o,X),
+\qquad Q'_{X'}(\cdot\given o)=R_{\#}Q_X(\cdot\given o).
+\]
+Then $M'_o(\mathsf Y_D)=M_o(\mathsf Y_D)=z$ and
+\begin{equation}
+\KL\left(Q'_{X'}\middle\Vert P_{\theta'}(\cdot\given o,X')\right)
+=\KL\left(Q_X\middle\Vert P_{\theta}(\cdot\given o,X)\right),
+\qquad
+\Lelbo'^{\mathrm{ext}}(Q'_{X'};X',o)=\Lelbo^{\mathrm{ext}}(Q_X;X,o).
+\label{eq:elbo-gauge-invariance}
+\end{equation}
+This includes the singular branch. Whenever both sides satisfy the classical split hypothesis, the same equality holds for $\Lelbo'$ and $\Lelbo$.
+\status{ESTABLISHED}
+
+\emph{Proof.} By the joint pushforward identity of
+\Cref{ch:generative} and the fact that \(T\) acts as the identity on the
+observation coordinate, the conditional posterior transforms as
+\(P_{\theta'}(\cdot\given o,X')=R_{\#}P_\theta(\cdot\given o,X)\).
+Relative entropy is invariant under a common bimeasurable bijection. In the absolutely continuous branch, the RN derivative of the pushforwards is the original derivative composed with \(R^{-1}\), and change of variables preserves its integral. In the singular branch, a posterior-null set carrying positive $Q_X$-mass maps to a pushed-posterior-null set carrying the same positive pushed-$Q_X$ mass, so both divergences equal $+\infty$. The slice mass is invariant under pushforward, and substitution in \eqref{eq:elbo-extended-definition} proves the second identity without subtracting infinities. The classical claim follows from its equality with the extended functional on the split domain. \hfill\(\square\)
+
+\Cref{cor:elbo-independent-frame-invariance} is the statement that the bound is a bound on a frame-independent quantity, computed by a frame-independent procedure. It is used in \Cref{ch:coarsegraining} to rule out selection criteria that change under reframing, and it is the reason that any invariant offered later is stated in generalized-eigenvalue form rather than in terms of absolute eigenvalues.
+
+\section{The factorwise decomposition}
+\label{sec:elbo-factorization}
+
+\hypothesisheading{Factorwise log-integrability}{hyp:elbo-factorwise-integrability}
+Restore the design index \(a\) suppressed in \Cref{ch:generative} and let \(\mathcal R\subseteq V\) be the root set. To display the factor expectations separately, assume in this section that the absolute logarithm of every component density in the finite directed factorization is \(Q_X\)-integrable. \status{HYPOTHESIS}
+
+This is strictly stronger than (H4), which controls only the complete log
+joint, and it excludes cancellation between individually undefined
+extended-real summands; a decomposition displayed without it can be a formal
+rearrangement of divergent quantities. \status{ESTABLISHED}
+
+\propositionheading{Exact factorwise decomposition}{prop:elbo-factorwise-decomposition}
+Under \Cref{hyp:elbo-evidence-domain,hyp:elbo-factorwise-integrability}, substituting the normalized directed density \eqref{eq:gen-design-density} into \eqref{eq:elbo-free-energy} yields exactly one decomposition,
+\begin{align}
+\Fenergy[Q_X;X,o]
+={}&
+\sum_{a=1}^{M}\sum_{r\in\mathcal R}
+\E_{Q_X}\left[
+-\log p_{\theta,r,a}^{m}(m_{r,a}\given X)
+\right]
+\label{eq:elbo-factorization}\\
+&+\sum_{a=1}^{M}\sum_{r\in\mathcal R}
+\E_{Q_X}\left[
+-\log p_{\theta,r,a}^{k}(k_{r,a}\given m_{r,a},X)
+\right]\notag\\
+&+\sum_{a=1}^{M}\sum_{i\in V\setminus\mathcal R}
+\E_{Q_X}\left[
+-\log p_{\theta,i,a}^{m}
+\left(m_{i,a}\given m_{\operatorname{pa}(i),a},X\right)
+\right]\notag\\
+&+\sum_{a=1}^{M}\sum_{i\in V\setminus\mathcal R}
+\E_{Q_X}\left[
+-\log p_{\theta,i,a}^{k}
+\left(k_{i,a}\given k_{\operatorname{pa}(i),a},m_{i,a},X\right)
+\right]\notag\\
+&+\sum_{a=1}^{M}\sum_{i\in V}
+\E_{Q_X}\left[
+-\log p_{\theta,i,a}^{o}
+\left(o_{i,a}\given k_{i,a},m_{i,a},X\right)
+\right]\notag\\
+&+\E_{Q_X}\left[\log q_X(Y\given o)\right].\notag
+\end{align}
+The generative sectors contain \(3MN\) factors in total, and the final line is one joint recognition log-density, equivalently the negative joint differential entropy relative to \(\nu_D^Y\) when that entropy is finite. It is not a sum of marginal entropies. \status{ESTABLISHED}
+
+\emph{Proof.} Write \(\ell_{\theta,a}\) for the one-design-point log density obtained by taking the logarithm of \eqref{eq:gen-density}, which is legitimate factor by factor under \Cref{hyp:elbo-factorwise-integrability}, and note that \eqref{eq:gen-design-density} gives \(\log p_\theta(o,y\given X)=\sum_{a=1}^{M}\ell_{\theta,a}(y_a;o_a,X)\). Taking \(\E_{Q_X}\) of the negative of this and adding \(\E_{Q_X}[\log q_X]\) reproduces the right side of \eqref{eq:elbo-factorization} term by term. Denoting that right side by \(\Fenergy^{\mathrm{fact}}\), the residual is
+\begin{align}
+\Fenergy[Q_X;X,o]-\Fenergy^{\mathrm{fact}}
+&=\E_{Q_X}\left[\log q_X(Y\given o)-\log p_\theta(o,Y\given X)\right]\notag\\
+&\quad-\left\{
+\E_{Q_X}\left[\log q_X(Y\given o)\right]
+-\E_{Q_X}\left[\sum_{a=1}^{M}\ell_{\theta,a}(Y_a;o_a,X)\right]
+\right\}
+=0,
+\label{eq:elbo-audit}
+\end{align}
+where the same joint recognition term appears once on each side and cancels as a whole, and no step replaces it by marginal entropies. For the count, the root sector contributes \(2M|\mathcal R|\) latent factors, the nonroot sector \(2M(N-|\mathcal R|)\), and the observation sector \(MN\), summing to \(2MN+MN=3MN\). Root state bridges replace nonroot state transitions at roots; they are not additional factors. \hfill\(\square\)
+
+Two readings of \eqref{eq:elbo-factorization} must be resisted. The first is the substitution warned against in \Cref{prop:elbo-total-correlation-signs}: the last line is a single number determined by the joint law, and replacing it by \(\sum_{b}\E_{Q_X}[\log q_b]\) inflates the bound by the total correlation. The second is that the decomposition licenses independent optimization of its terms. Every expectation is taken under the same joint \(Q_X\), so the terms are coupled through their common measure; the decomposition is an exact rewriting of one functional, not a decoupling of it into separately minimizable pieces.
+
+\section{Exact coordinates and accepted proposals}
+\label{sec:elbo-coordinates}
+
+All coordinate statements below refer to the same normalized family \(P_\theta\) of \Cref{ch:generative}. Because \(\mathsf Y_D\) is a finite product of Euclidean and discrete spaces it is a standard Borel space, so regular conditional distributions of the posterior exist and the relative entropy chain rule is available \citep{Klenke2020}.
+
+\propositionheading{Exact E-coordinate in the extended domain}{prop:elbo-exact-e-coordinate}
+Let \(\mathcal B\) be a block of latent coordinates with complement \(-\mathcal B\), put
+\[
+P:=P_\theta(\cdot\given o,X),
+\qquad
+P_-:=P_{\theta,-\mathcal B}(\cdot\given o,X),
+\qquad
+R:=Q_{X,-\mathcal B}(\cdot\given o),
+\]
+with $R$ an arbitrary probability law. Choose a Markov-kernel version $C(dY_{\mathcal B}\given Y_{-\mathcal B})$ that agrees $P_-$-almost everywhere with a regular conditional law of $P$, completing it arbitrarily off that full set. Then among \emph{all} probability laws with complement marginal \(R\), the extended-real divergence from \(P\) has minimum \(\KL(R\Vert P_-)\in[0,+\infty]\), attained by
+\begin{equation}
+Q_X^{\mathrm{new}}\left(dY_{\mathcal B},dY_{-\mathcal B}\given o\right)
+=C\left(dY_{\mathcal B}\given Y_{-\mathcal B}\right)
+R\left(dY_{-\mathcal B}\right).
+\label{eq:elbo-e-coordinate}
+\end{equation}
+It therefore maximizes $\Lelbo^{\mathrm{ext}}$ on that marginal class. The minimizer is unique as a joint measure when $\KL(R\Vert P_-)<\infty$; when this divergence is $+\infty$, every law in the class has divergence $+\infty$ and extended ELBO $-\infty$, so uniqueness is not asserted. If, in addition, the minimum is finite and the new law satisfies the log-integrability condition
+\begin{equation}
+\E_{Q_X^{\mathrm{new}}}\left[
+\left|\log p_\theta(o,Y\given X)\right|
++\left|\log q_X^{\mathrm{new}}(Y\given o)\right|
+\right]<\infty,
+\label{eq:elbo-e-coordinate-h4}
+\end{equation}
+then it satisfies (H3)--(H4) and maximizes the classical \(\Lelbo\) among the laws with complement marginal \(R\) that satisfy \Cref{hyp:elbo-evidence-domain}. Finite complement relative entropy by itself does not imply \eqref{eq:elbo-e-coordinate-h4}.
+\status{ESTABLISHED}
+
+\emph{Proof.} Projection onto $Y_{-\mathcal B}$ and the extended data-processing inequality give
+\[
+\KL(Q_X\Vert P)\geq\KL(R\Vert P_-)
+\]
+for every law in the marginal class. If $\KL(R\Vert P_-)<\infty$, then $R\ll P_-$, the completion of $C$ is irrelevant $R$-almost everywhere, and the relative-entropy chain rule on a standard Borel product gives
+\begin{equation}
+\KL\left(Q_X\middle\Vert P\right)
+=\KL\left(R\middle\Vert P_-\right)
++\E_{R}
+\left[
+\KL\left(
+Q_{X,\mathcal B\given-\mathcal B}
+\middle\Vert
+P_\theta(\cdot\given Y_{-\mathcal B},o,X)
+\right)
+\right].
+\label{eq:elbo-kl-chain-rule}
+\end{equation}
+The second term is an integral of nonnegative extended-real quantities and is zero exactly when the two conditional laws agree for \(R\)-almost every \(Y_{-\mathcal B}\). For \eqref{eq:elbo-e-coordinate} it vanishes, giving the minimum and uniqueness. Moreover, if \(r=dR/dP_-\), direct disintegration gives
+\[
+\frac{dQ_X^{\mathrm{new}}}{dP}
+=r(Y_{-\mathcal B})
+\quad P\text{-almost everywhere},
+\]
+so \(Q_X^{\mathrm{new}}\ll P\) and its relative entropy is exactly \(\KL(R\Vert P_-)\). If instead $\KL(R\Vert P_-)=+\infty$, data processing makes every candidate divergence $+\infty$, including the constructed law, so the extended optimum is attained but is nonunique. In both cases \eqref{eq:elbo-extended-definition} converts divergence minimization into extended-ELBO maximization. Under the separate finite and log-integrability assumptions, \Cref{thm:elbo-exact-identity} gives the classical statement. \hfill\(\square\)
+
+The classical extra obligation cannot be recovered from complement absolute continuity. First take \(P_-\) to be standard Gaussian and \(R\) standard Cauchy on \(\R\). Then \(R\ll P_-\), but \(\log(dR/dP_-)(x)\) contains \(x^2/2\) up to logarithmic and constant terms, and the Cauchy second moment is infinite; hence the extended coordinate is well defined but has value $-\infty$. Second, finite relative entropy still does not imply (H4). On the countable space \(\{2,3,\ldots\}\), let
+\[
+P_-(\{n\})=R(\{n\})
+=\frac{c}{n(\log n)^2},
+\]
+where \(c\) normalizes the series. Then \(\KL(R\Vert P_-)=0\), but for all sufficiently large \(n\), \(\left|\log P_-(\{n\})\right|\geq\tfrac12\log n\), and therefore
+\[
+\sum_{n\geq2}P_-(\{n\})
+\left|\log P_-(\{n\})\right|
+\geq
+\frac{c}{2}\sum_{n\ \mathrm{large}}\frac{1}{n\log n}
+=+\infty.
+\]
+With a trivial observation and conditional block this is precisely a \(Q_X^{\mathrm{new}}=P\) of zero relative entropy for which the separate log expectations in (H4) are not integrable. Equation~\eqref{eq:elbo-e-coordinate-h4} is therefore an independent hypothesis, not a consequence of the KL chain rule.
+
+The exact full E-step is the special case \(\mathcal B\) equal to all coordinates, giving \(Q_X^{\mathrm{new}}=P_\theta(\cdot\given o,X)\) and a zero extended gap by \Cref{thm:elbo-extended-gap}; (H4) is needed only for its classical split. A product-family coordinate is a different object entirely: it optimizes within a restricted family, is not given by \eqref{eq:elbo-e-coordinate}, and leaves a gap that \Cref{ch:restrictions} quantifies.
+
+\propositionheading{Exact M-coordinate}{prop:elbo-exact-m-coordinate}
+Hold \(Q_X\) fixed. Suppose the parameterized family supplies the common regular-observation set or the jointly measurable pointwise versions required above, and suppose \Cref{hyp:elbo-evidence-domain} holds for \(Q_X\) at every candidate parameter being compared. Specifically,
+\[
+\E_{Q_X}\left[\left|\log q_X(Y\given o)\right|\right]<\infty,
+\qquad
+\E_{Q_X}\left[\left|\log p_{\vartheta}(o,Y\given X)\right|\right]<\infty
+\]
+for every such \(\vartheta\). If a maximizer exists in the declared parameter space, then any
+\begin{equation}
+\theta^{\mathrm{new}}
+\in\operatorname*{argmax}_{\vartheta}
+\E_{Q_X}\left[\log p_{\vartheta}(o,Y\given X)\right]
+\label{eq:elbo-m-coordinate}
+\end{equation}
+also maximizes \(\Lelbo_{\vartheta}(Q_X;X)\) over the same space, because \(\E_{Q_X}[\log q_X(Y\given o)]\) does not depend on \(\vartheta\). \status{ESTABLISHED}
+
+The finiteness assumption is load-bearing. On \(\{2,3,\ldots\}\), let
+\[
+q_n=\frac{c}{n(\log n)^2},
+\qquad
+h_n=\mathbf 1_{\{n=2\}}-q_2,
+\qquad
+r_n=1+\varepsilon h_n,
+\]
+where \(c\) normalizes \(q\) and \(0<\varepsilon<1/q_2\). Then \(r\) is bounded, strictly positive, nonconstant, and \(\sum_n q_nr_n=1\). With a trivial observation, set \(p_0=q\) and \(p_1=qr\). The entropy of \(q\) is infinite, so
+\[
+\E_q[\log p_0]=\E_q[\log p_1]=-\infty.
+\]
+An extended-real argmax of the expected complete log-likelihood therefore treats both candidates as maximizers. The separately integrated ELBO of \eqref{eq:elbo-definition} is undefined because (H4) fails, while its canonical relative-log extension distinguishes them:
+\[
+\E_q\left[\log\frac{p_0}{q}\right]=0,
+\qquad
+\E_q\left[\log\frac{p_1}{q}\right]
+=\E_q[\log r]
+=-\KL(q\Vert p_1)<0.
+\]
+Thus cancellation of a parameter-independent infinite entropy does not justify the M-coordinate claim.
+
+The existence proviso in \eqref{eq:elbo-m-coordinate} is a hypothesis and not a formality. \status{HYPOTHESIS}
+
+The covariance parameters of \Cref{ch:generative} range over an open cone, and
+the expected complete log-likelihood is unbounded above along sequences that
+drive a conditional covariance to the boundary whenever the corresponding
+expected residual second moment is singular. In that situation the supremum
+is not attained and \eqref{eq:elbo-m-coordinate} defines nothing. Under a
+nondegenerate \(Q_X\) the expected residual second moments are positive
+definite and the maximizer exists, so the hypothesis is mild in the Gaussian
+realization; it is stated because it is a hypothesis, not because it usually
+fails. \status{ESTABLISHED}
+
+\definitionheading{Generalized M-coordinate acceptance}{def:elbo-generalized-m-acceptance}
+A generalized M-coordinate need not attain the maximum, but it must pass an acceptance condition:
+\begin{equation}
+\Lelbo^{\mathrm{ext}}_{\theta^{\mathrm{new}}}(Q_X;X,o)
+\geq
+\Lelbo^{\mathrm{ext}}_{\theta^{\mathrm{old}}}(Q_X;X,o).
+\label{eq:elbo-acceptance}
+\end{equation}
+The condition is a declaration about what counts as a step; it is checkable
+for arbitrary $Q_X$ whenever each candidate has a selected positive-finite
+slice as in (H1)--(H2). No recognition density or (H4) is required. On the
+classical split domain it reduces to the same inequality for
+\eqref{eq:elbo-definition}; in particular, the expected-complete-log-likelihood
+update of \Cref{prop:elbo-exact-m-coordinate} is a finite-domain sufficient
+condition. \status{DEFINITION}
+
+\propositionheading{Evidence monotonicity}{prop:elbo-evidence-monotonicity}
+Suppose (H1)--(H2) hold for the fixed \(Q_X\) at both \(\theta^{\mathrm{old}}\) and \(\theta^{\mathrm{new}}\); thus \(o\) lies in both regular-observation sets, or common pointwise density, slice, and conditional versions have been declared as model data. If the E-coordinate is exact at the old parameter, so that \(Q_X=P_{\theta^{\mathrm{old}}}(\cdot\given o,X)\), and the M-coordinate satisfies \eqref{eq:elbo-acceptance}, then
+\begin{equation}
+\log p_{\theta^{\mathrm{new}}}(o\given X)
+\geq
+\Lelbo^{\mathrm{ext}}_{\theta^{\mathrm{new}}}(Q_X;X,o)
+\geq
+\Lelbo^{\mathrm{ext}}_{\theta^{\mathrm{old}}}(Q_X;X,o)
+=\log p_{\theta^{\mathrm{old}}}(o\given X).
+\label{eq:elbo-monotonicity}
+\end{equation}
+The first inequality is \Cref{thm:elbo-extended-gap} at \(\theta^{\mathrm{new}}\),
+the second is \eqref{eq:elbo-acceptance}, and the final equality is the zero-gap
+case at \(\theta^{\mathrm{old}}\). This proof never writes the undefined
+singular-branch sum $\Lelbo^{\mathrm{ext}}+\KL$. Under (H3)--(H4) at both
+candidates it reduces to the classical conclusion
+\citep{Dempster1977,Neal1998}. \status{ESTABLISHED}
+
+A natural-gradient direction and an ordinary optimizer direction are proposals, not accepted coordinates. The distinction is not pedantic, and the following states exactly what is and is not guaranteed.
+
+\propositionheading{Finite natural-gradient steps need not be monotone}{prop:elbo-finite-step-nonmonotonicity}
+Let \(\mathsf G\succ0\) be a preconditioner, write \(\nabla\Lelbo\) for the gradient of \(\vartheta\mapsto\Lelbo_{\vartheta}(Q_X;X)\), and consider the step \(\vartheta^{+}=\vartheta+\alpha\mathsf G^{-1}\nabla\Lelbo\). Define \(\varphi(\alpha)=\Lelbo_{\vartheta^{+}}(Q_X;X)\). At a nonstationary point the direction is an ascent direction, since
+\begin{equation}
+\varphi'(0)=\nabla\Lelbo^{\top}\mathsf G^{-1}\nabla\Lelbo>0.
+\label{eq:elbo-ascent-direction}
+\end{equation}
+This is an infinitesimal statement and does not extend to finite \(\alpha\). Suppose \(\Lelbo_{\xi}=\Lelbo^{\star}-\tfrac12(\xi-\theta^{\star})^\top H(\xi-\theta^{\star})\) with \(H\succ0\) throughout a neighborhood \(\mathcal U\), let \(d_{\max}\) be the largest generalized eigenvalue of the pair \((H,\mathsf G)\), and let \(v\) be a corresponding generalized eigenvector normalized so that \(v^{\top}\mathsf Gv=1\). Then at any \(\vartheta=\theta^{\star}+cv\in\mathcal U\) with \(c\neq0\), for every step whose endpoint \(\vartheta^+\) also lies in \(\mathcal U\),
+\begin{equation}
+\Lelbo_{\vartheta^{+}}-\Lelbo_{\vartheta}
+=\tfrac12d_{\max}c^{2}
+\left[1-\left(1-\alpha d_{\max}\right)^{2}\right]<0
+\qquad\text{whenever}\qquad
+\alpha>\frac{2}{d_{\max}}.
+\label{eq:elbo-step-size-failure}
+\end{equation}
+\status{ESTABLISHED}
+
+\emph{Proof.} Equation \eqref{eq:elbo-ascent-direction} is the chain rule with \(\mathsf G^{-1}\) positive definite. For the second part write \(e=\vartheta-\theta^{\star}\), so \(\nabla\Lelbo=-He\) and \(e^{+}=(I-\alpha\mathsf G^{-1}H)e\). With \(Hv=d_{\max}\mathsf Gv\), \(v^{\top}\mathsf Gv=1\), and \(e=cv\) one gets \(e^{+}=(1-\alpha d_{\max})cv\) and \(\Lelbo_{\vartheta}=\Lelbo^{\star}-\tfrac12d_{\max}c^{2}\). The endpoint hypothesis permits the same quadratic formula to be evaluated at \(\vartheta^+\). Substituting gives \eqref{eq:elbo-step-size-failure}, and the bracket is negative exactly when \(|1-\alpha d_{\max}|>1\), that is when \(\alpha d_{\max}>2\). \hfill\(\square\)
+
+The content of \Cref{prop:elbo-finite-step-nonmonotonicity} is that monotonicity at finite step size is an additional requirement, supplied by a line search satisfying a sufficient-increase condition, by a trust region with an acceptance test, or by any other rule that verifies \eqref{eq:elbo-acceptance} on the same functional. Absent such a test the proposal is not entitled to \eqref{eq:elbo-monotonicity}, and the failure is not exotic: it occurs for a quadratic objective at any step length exceeding twice the reciprocal of the largest preconditioned curvature. Nor is the difficulty removed by improving the preconditioner, since \eqref{eq:elbo-step-size-failure} is stated in the preconditioned spectrum. Separately, optimizing a different objective, for instance a population energy that is not \eqref{eq:elbo-definition}, supplies no guarantee for the fixed-joint evidence at all: two functionals with different stationary points can move in opposite directions under the same update, and only a bound with matched stationarity would transfer the conclusion.
+
+\section{What this chapter does not settle}
+\label{sec:elbo-open}
+
+Three limits of the development are recorded so that later chapters do not inherit more than was proved. Existence of a maximizer of \eqref{eq:elbo-definition} over a restricted recognition family is not established here and is not implied by \Cref{thm:elbo-exact-identity}; the theorem is an identity at a fixed pair of measures and says nothing about the attainability of any optimum. Tightness of the bound for any particular family is likewise not claimed, and the gap for the restrictions this document uses is computed in \Cref{ch:restrictions} rather than bounded here.
+
+The third limit is a genuine open problem.
+\openproblemheading{Convergence of the alternating scheme}{open:elbo-alternating-convergence}
+Whether the alternating scheme built from block E-coordinates \eqref{eq:elbo-e-coordinate} and accepted M-coordinates \eqref{eq:elbo-acceptance} converges to a stationary point of the common extended ELBO under the present hypotheses is not settled. \status{OPEN}
+
+Block E-coordinates at fixed target and accepted parameter proposals make the
+compared objective values nondecreasing when their acceptance tests are
+evaluated on that same functional. They do not by themselves make the evidence
+nondecreasing. The evidence chain \eqref{eq:elbo-monotonicity} additionally
+requires a full exact E phase,
+$Q_X=P_{\theta^{\mathrm{old}}}(\cdot\given o,X)$, before each accepted M phase.
+Under that stronger schedule the evidence values are nondecreasing and converge
+when bounded above; convergence of the parameter sequence is a separate
+question requiring regularity conditions of the type identified for the
+classical algorithm \citep{Wu1983}, and global optimality does not follow even
+when they hold. \status{ESTABLISHED}
+
+Closing the problem in the present setting requires either verifying those
+conditions for the declared parameter space, which is an open cone so that
+compactness of the relevant level sets must be checked rather than assumed, or
+exhibiting a counterexample within the declared family. \status{OPEN}
+
+Nothing in \Cref{ch:coarsegraining} or \Cref{ch:renormalization} depends on the
+answer, because those chapters analyze the structure of the objective and its
+transformation under aggregation rather than the trajectory of any optimizer.
+\status{ESTABLISHED}

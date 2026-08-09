@@ -1,0 +1,438 @@
+\chapter{Gaussian Recognition Restrictions}
+\label{ch:restrictions}
+
+Fix the general restriction principle of \Cref{prop:restrict-principle}.
+This chapter specializes it to nondegenerate multivariate-Gaussian laws,
+computes the exact costs of block factorization and mean restriction, and
+states when comparisons between recognition structures are meaningful.
+
+\section{The block restriction and its exact optimum}
+\label{sec:restrict-block}
+
+For the rest of this chapter the exact conditional is Gaussian and nondegenerate,
+\begin{equation}
+P^\star=\mathcal N\left(\mu,J^{-1}\right),
+\qquad
+J=J^\top\succ0,
+\qquad
+\mu=J^{-1}h,
+\label{eq:restrict-gaussian-target}
+\end{equation}
+on $\R^{n}$ with $n=NK$ in the state sector of the previous chapter. A partition $\mathfrak B$ of the $n$ coordinates into blocks of dimensions $n_b$ is declared, and the restricted family is
+\begin{equation}
+\mathcal Q_{\mathfrak B}
+=\left\{\mathcal N\left(\mu_Q,C_Q\right):
+\mu_Q\in\R^{n},
+\quad
+C_Q=\operatorname{blockdiag}_{b\in\mathfrak B}\left(C_b\right),
+\quad
+C_b\in\Sym_{++}^{n_b}\right\}.
+\label{eq:restrict-block-family}
+\end{equation}
+The blocks are whatever the declared partition says they are. A block may collect one agent's coordinates, may split one agent's state and model channels, or may collect several agents; nothing below identifies a matrix block with an agent, and every statement is relative to $\mathfrak B$.
+
+\propositionheading{Gaussian reverse relative entropy}{prop:restrict-gaussian-reverse-kl}
+For $Q=\mathcal N(\mu_Q,C_Q)$ with $C_Q\succ0$ and $P^\star$ as in Equation~\eqref{eq:restrict-gaussian-target},
+\begin{equation}
+\KL\left(Q\Vert P^\star\right)
+=\frac12\left[
+\Tr\left(JC_Q\right)
++\left(\mu_Q-\mu\right)^\top J\left(\mu_Q-\mu\right)
+-n
+-\log\det J
+-\log\det C_Q
+\right].
+\label{eq:restrict-gaussian-kl}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Write $\KL(Q\Vert P^\star)=\E_Q[\log q]-\E_Q[\log p^\star]$. The first term is the negative differential entropy of a Gaussian, $-\tfrac12\log\det(2\pi eC_Q)$. For the second, $-\log p^\star(y)=\tfrac12(y-\mu)^\top J(y-\mu)+\tfrac n2\log2\pi-\tfrac12\log\det J$, and taking the expectation under $Q$ uses $\E_Q[(Y-\mu)^\top J(Y-\mu)]=\Tr(JC_Q)+(\mu_Q-\mu)^\top J(\mu_Q-\mu)$, which is the standard expansion of a quadratic form about a shifted center. Adding the two and canceling the $\tfrac n2\log2\pi$ terms gives Equation~\eqref{eq:restrict-gaussian-kl}. $\square$
+
+Equation~\eqref{eq:restrict-gaussian-kl} separates: the mean enters only through the quadratic term and the covariance only through the trace and the log determinant, with no cross term. That separation is used repeatedly below and is the reason the two kinds of restriction studied in this chapter have exactly the costs they have.
+
+\theoremheading{Exact block optimum}{thm:restrict-exact-block-optimum}
+Over the family of Equation~\eqref{eq:restrict-block-family} the objective of Equation~\eqref{eq:restrict-gaussian-kl} has a unique minimizer, given by
+\begin{equation}
+\mu_Q^\star=\mu,
+\qquad
+C_b^\star=J_{bb}^{-1}
+\quad\text{for every }b\in\mathfrak B.
+\label{eq:restrict-block-optimum}
+\end{equation}
+The optimal recognition mean is exact even though the recognition covariance is restricted. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+On the block-diagonal set, $\Tr(JC_Q)=\sum_b\Tr(J_{bb}C_b)$, because only the diagonal blocks of $J$ meet a block-diagonal $C_Q$ under the trace, and $\log\det C_Q=\sum_b\log\det C_b$. The objective is therefore
+\begin{equation}
+\KL=\frac12\left(\mu_Q-\mu\right)^\top J\left(\mu_Q-\mu\right)
++\frac12\sum_{b\in\mathfrak B}\left[\Tr\left(J_{bb}C_b\right)-\log\det C_b\right]
++\text{const},
+\label{eq:restrict-separated-objective}
+\end{equation}
+a sum of a strictly convex quadratic in $\mu_Q$, since $J\succ0$, and one term per block. Each block term is strictly convex on $\Sym_{++}^{n_b}$, since $C_b\mapsto\Tr(J_{bb}C_b)$ is linear and $C_b\mapsto-\log\det C_b$ is strictly convex on the positive definite cone \citep[\S3.1.5]{Boyd2004}. The parameter set is convex, being $\R^{n}$ times a product of positive definite cones, so the minimizer is unique if it exists. Differentiating on the open cone gives
+\begin{equation}
+\nabla_{\mu_Q}\KL=J\left(\mu_Q-\mu\right),
+\qquad
+\nabla_{C_b}\KL=\tfrac12\left(J_{bb}-C_b^{-1}\right),
+\label{eq:restrict-derivatives}
+\end{equation}
+whose simultaneous zero is Equation~\eqref{eq:restrict-block-optimum}, admissible because $J_{bb}\succ0$ as a principal submatrix of a positive definite matrix. $\square$
+
+The same optimum arrives from coordinate ascent, which is worth recording because the two derivations fail in different ways and agreeing is informative. Holding all factors but $b$ fixed, the exact coordinate maximizer of the bound is Gaussian with covariance $J_{bb}^{-1}$ and mean
+\begin{equation}
+\mu_b^{\mathrm{new}}
+=J_{bb}^{-1}\left(h_b-\sum_{c\neq b}J_{bc}\mu_c\right),
+\label{eq:restrict-cavi-mean}
+\end{equation}
+which is Equation~\eqref{eq:gauss-conditional} read as an update rule. Any fixed point of the full sweep satisfies $J\mu_Q=h$, hence $\mu_Q=\mu$ \citep{Bishop2006,Blei2017}. The covariance is pinned in one step and the mean only at a fixed point, which is the standard asymmetry of Gaussian coordinate ascent.
+
+\theoremheading{Determinant gap}{thm:restrict-determinant-gap}
+Let $\Lelbo^\star_{\mathfrak B}$ denote the bound at the optimum of \Cref{thm:restrict-exact-block-optimum}. Then
+\begin{equation}
+\log p_\theta(o\given X)-\Lelbo^\star_{\mathfrak B}
+=\frac12\left[\sum_{b\in\mathfrak B}\log\det J_{bb}-\log\det J\right]
+\geq0,
+\label{eq:restrict-determinant-gap}
+\end{equation}
+with equality if and only if $J_{bc}=0$ for every pair of distinct blocks of $\mathfrak B$. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+At the optimum, $\Tr(JC_Q^\star)=\sum_b\Tr(J_{bb}J_{bb}^{-1})=\sum_bn_b=n$ and $\log\det C_Q^\star=-\sum_b\log\det J_{bb}$, while the quadratic mean term vanishes. Substituting into Equation~\eqref{eq:restrict-gaussian-kl} leaves
+\begin{equation}
+\inf_{Q\in\mathcal Q_{\mathfrak B}}\KL\left(Q\Vert P^\star\right)
+=\frac12\left[\sum_{b\in\mathfrak B}\log\det J_{bb}-\log\det J\right],
+\label{eq:restrict-block-min-kl}
+\end{equation}
+and Equation~\eqref{eq:restrict-exact-identity} converts this into Equation~\eqref{eq:restrict-determinant-gap}.
+
+For nonnegativity and the equality condition, two lemmas suffice. The first is that $0\prec S\preceq T$ implies $\det S\leq\det T$, with equality only when $S=T$. To see it, set $R:=T^{-1/2}ST^{-1/2}$, which is symmetric with eigenvalues in $(0,1]$ and with $\det R=\det S/\det T$. That ratio is a product of numbers in $(0,1]$, hence at most one, and it equals one only when every eigenvalue equals one, which for a symmetric matrix forces $R=I$ and so $S=T$. The second lemma is that, for $J\succ0$ partitioned into a first block and its complement,
+\begin{equation}
+\det J=\det J_{11}\cdot\det\left(J_{22}-J_{21}J_{11}^{-1}J_{12}\right),
+\label{eq:restrict-schur-determinant}
+\end{equation}
+with the Schur complement positive definite \citep{Zhang2005Schur}. Since $J_{21}J_{11}^{-1}J_{12}\succeq0$, that Schur complement is $\preceq J_{22}$, so the first lemma gives $\det J\leq\det J_{11}\det J_{22}$, with equality if and only if $J_{21}J_{11}^{-1}J_{12}=0$, which since $J_{11}^{-1}\succ0$ holds if and only if $J_{11}^{-1/2}J_{12}=0$, that is if and only if $J_{12}=0$. Applying this with the first block of $\mathfrak B$ against the union of the rest, and then inducting on the number of blocks, gives Equation~\eqref{eq:restrict-determinant-gap} and the stated equality condition. This is Fischer's determinant inequality for positive definite matrices \citep[\S7.8]{HornJohnson2013}. $\square$
+
+\paragraph{Canonical-correlation form and telescoping identity.}
+For a two-block precision, let $A\in\Sym_{++}^{p}$,
+$D\in\Sym_{++}^{q}$, and $C\in\R^{p\times q}$, and write
+\begin{equation}
+J=\begin{pmatrix}A&C\\C^\top&D\end{pmatrix},
+\qquad
+A=L_A L_A^\top,
+\qquad
+D=L_D L_D^\top,
+\qquad
+R:=L_A^{-1}C L_D^{-\top}.
+\label{eq:restrict-canonical-correlation-factor}
+\end{equation}
+Both diagonal blocks are positive definite.  The Schur complement factorizes as
+\begin{equation}
+D-C^\top A^{-1}C
+=L_D\left(I_q-R^\top R\right)L_D^\top,
+\qquad
+\det J=(\det A)(\det D)\det\left(I_q-R^\top R\right).
+\label{eq:restrict-stable-schur-factor}
+\end{equation}
+If $\rho_a$ are the singular values of $R$, positive definiteness of the
+Schur complement gives $0\leq\rho_a<1$, and the two-block increment is exactly
+\begin{equation}
+\Delta(A,D;C)
+=-\frac12\log\det\left(I_q-R^\top R\right)
+=-\frac12\sum_{a=1}^{\min(p,q)}\log\left(1-\rho_a^2\right).
+\label{eq:restrict-canonical-correlation-gap}
+\end{equation}
+For ordered blocks $B_1,\ldots,B_m$, define the cumulative coordinate sets
+$U_k:=\bigcup_{j=1}^{k}B_j$.  The left-fold increment at step $k\geq2$ is
+\begin{equation}
+\delta_k
+=\frac12\left[
+\log\det J_{U_{k-1}U_{k-1}}
++\log\det J_{B_kB_k}
+-\log\det J_{U_kU_k}
+\right].
+\label{eq:restrict-cumulative-gap-increment}
+\end{equation}
+Consequently the intermediate cumulative determinants cancel exactly:
+\begin{equation}
+\sum_{k=2}^{m}\delta_k
+=\frac12\left[
+\sum_{k=1}^{m}\log\det J_{B_kB_k}-\log\det J
+\right].
+\label{eq:restrict-cumulative-gap-telescope}
+\end{equation}
+The total is order independent in exact arithmetic; the increments and the
+finite-precision trajectory can depend on the declared order.
+\status{ESTABLISHED}
+
+\paragraph{Operational stable realization.}
+The ordinary numerical path computes $L_A$ and $L_D$ by Cholesky
+factorization, obtains $R$ by triangular solves, computes its singular values,
+and evaluates each summand as
+\texttt{-0.5*log1p(-rho**2)}.  It forms neither $A^{-1}$ nor $D^{-1}$ and does
+not subtract large floating-point log determinants.  Validation and ordinary
+linear algebra use exact power-of-two normalization and range-safe residuals.
+If that scaling loses a nonzero entry, or a binary64 Cholesky, solve, SVD, or
+condition estimate is unusable, an adaptive-precision exact-dyadic Cholesky
+calculation certifies positive definiteness and supplies the log-determinant
+gap.  A separate boundary policy handles a squared singular value within an
+operational $64n\epsilon_{\rm mach}$ neighborhood of one.  There the exact
+stored binary64 entries are reevaluated at a minimum of 200 decimal digits,
+including the determinant-gap value; a second binary64 solve backend makes the
+diagnostic the maximum excursion observed across the two declared binary64
+backends.
+The code rejects an exact-input value outside the Schur domain and rejects a
+raw binary64 excursion above one when its discrepancy exceeds that operational
+guard.  It also uses the exact-input value path when
+$\kappa_2(J)\epsilon_{\rm mach}\geq10^{-4}$, an explicitly operational
+conditioning trigger selected for the frozen protocol rather than asserted as
+a universal error threshold.  A nonfinite binary64 condition estimate is also
+a fallback trigger, not a rejection criterion.  An ill-conditioned but
+in-domain value is reevaluated rather than rejected merely for triggering that
+path.  An early high-precision fallback selected before residual evaluation
+records the Cholesky residual, solve residual, residual tolerance, and
+backward-error diagnostics as \texttt{null} because they were not evaluated.
+If the residual-health gate is reached, every finite measurement is retained.
+A field is \texttt{null} only when it has no finite usable numeric value,
+either because an attempted measurement is nonfinite or because a derived
+diagnostic requires an unavailable constituent; finite sibling fields remain
+numeric.  The evaluation method distinguishes a finite threshold
+excursion from nonfinite Cholesky, solve, or tolerance diagnostics and lists
+multiple nonfinite causes in that fixed order.  Thus \texttt{null} denotes
+neither failure nor zero, and the zero-step one-block case retains its exact
+zero diagnostics.  The \texttt{GapStep} API retains this fieldwise quartet;
+the \texttt{FactorizationCaseRecord} protocol surface stores only the aggregate
+backward diagnostic, maximum Cholesky residual, and ordered evaluation-method
+tuple, not per-step solve or tolerance values.  Despite the compatibility name
+\texttt{backward\_error\_bound}, the numeric quantity is a one-ULP-up summary
+of already rounded local residual measurements, not a certified perturbation
+or forward-error bound.  These guarded fallbacks are declared
+finite-precision procedures, not theorems that
+Cholesky or solve residuals universally control canonical-correlation or gap
+forward error. \status{DEFINITION}
+
+\propositionheading{The optimum is dominated by the exact marginal}{prop:restrict-optimum-vs-marginal}
+For every block $b$,
+\begin{equation}
+C_b^\star=J_{bb}^{-1}\preceq\left(J^{-1}\right)_{bb},
+\label{eq:restrict-underdispersion}
+\end{equation}
+with equality if and only if $J_{b,-b}=0$. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+By Equation~\eqref{eq:gauss-marginal-block}, $(J^{-1})_{bb}=S_b^{-1}$ with $S_b=J_{bb}-J_{b,-b}J_{-b,-b}^{-1}J_{-b,b}$, and $S_b\preceq J_{bb}$ because the subtracted matrix is positive semidefinite. Inversion reverses the Loewner order on positive definite matrices: if $0\prec S\preceq T$ then $T^{-1/2}ST^{-1/2}\preceq I$, so the eigenvalues of $T^{1/2}S^{-1}T^{1/2}$ are at least one, giving $S^{-1}\succeq T^{-1}$ \citep[\S7.7]{HornJohnson2013}, \citep[Ch.~V]{Bhatia2007}. Applying this to $S_b\preceq J_{bb}$ gives Equation~\eqref{eq:restrict-underdispersion}. Equality forces $S_b=J_{bb}$, hence $J_{b,-b}J_{-b,-b}^{-1}J_{-b,b}=0$, hence $J_{b,-b}=0$ as in the proof of \Cref{thm:restrict-determinant-gap}. $\square$
+
+\Cref{prop:restrict-optimum-vs-marginal} is the exact form of a statement usually made loosely, that a factorized reverse-relative-entropy approximation understates posterior uncertainty \citep{Bishop2006,Blei2017,TurnerSahani2011}. Here it is a Loewner inequality with a proof and an equality condition, and it holds blockwise rather than merely in some scalar summary. It also fixes what the restriction is and is not.
+
+\paragraph{Conditional dependence, not marginal covariance.}
+The family of Equation~\eqref{eq:restrict-block-family} constrains the recognition covariance, hence the recognition precision, to be block diagonal. By \Cref{prop:gauss-conditional-precision} that is a statement that the recognition law makes distinct blocks conditionally independent given the rest. It is not, and does not imply, the assertion that the target's marginal covariance blocks $(J^{-1})_{bc}$ vanish; \eqref{eq:gauss-precision-not-covariance} shows that those can be nonzero while $J_{bc}=0$. The reverse-relative-entropy projection changes only the candidate \(Q\): it sets \(C^\star_{bc}=0\) for \(b\neq c\) and \(C^\star_{bb}=J_{bb}^{-1}\preceq(J^{-1})_{bb}\). It neither leaves nor replaces any covariance block of the fixed target \(P=\mathcal N(\mu,J^{-1})\). Reading the block restriction as a claim about the target's marginal correlation is a category error, and it is the error that makes the determinant gap look like a correlation-strength measurement rather than what \Cref{thm:restrict-determinant-gap} says it is, a coupling-structure measurement. \status{ESTABLISHED}
+
+\section{Observation independence, and its exact scope}
+\label{sec:restrict-observation}
+
+\Cref{thm:restrict-determinant-gap} expresses the cost as a pure log-determinant functional of $J$. Whether that makes the cost independent of the realized observation depends on where $J$ comes from, and the answer differs for the two kinds of restriction this document uses. Getting the difference right matters because a later chapter compares recognition structures across data and would draw the wrong conclusion from the wrong version.
+
+\propositionheading{Conditional precision is observation free}{prop:restrict-conditional-precision-observation-free}
+Suppose the joint law of $(o,Y)$ given $X$ is Gaussian with precision $\mathcal J$ and information vector $\eta$, both functions of $(\theta,X)$ alone. Then the exact conditional law of $Y$ given $o$ has precision and mean
+\begin{equation}
+J=\mathcal J_{YY},
+\qquad
+\mu=J^{-1}\left(\eta_Y-\mathcal J_{Yo}o\right),
+\label{eq:restrict-conditional-from-joint}
+\end{equation}
+so $J$ does not depend on the realized value of $o$ while $\mu$ is an affine function of it. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Read the exponent of the joint density as a function of $y$ at fixed $o$. The quadratic part is $-\tfrac12y^\top\mathcal J_{YY}y$ and the linear part is $(\eta_Y-\mathcal J_{Yo}o)^\top y$, so by Equation~\eqref{eq:gauss-density} the conditional law is Gaussian in information form with the displayed natural parameters, and $\mu=J^{-1}h$. $\square$
+
+\corollaryheading{Observation independence of the determinant gap}{cor:restrict-gap-observation-free}
+Under the hypothesis of \Cref{prop:restrict-conditional-precision-observation-free}, the gap of \Cref{thm:restrict-determinant-gap} is a function of $(\theta,X)$ and the declared partition alone, and does not depend on the realized observation. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+The gap depends on $Q$ and $o$ only through $J$, by \Cref{thm:restrict-determinant-gap}, and through nothing else, because the mean sector contributes exactly zero at the optimum by \Cref{thm:restrict-exact-block-optimum}. \Cref{prop:restrict-conditional-precision-observation-free} makes $J$ observation free. $\square$
+
+Two hypotheses are doing the work in \Cref{cor:restrict-gap-observation-free} and both are load bearing. The first is joint Gaussianity with an observation-independent joint precision, which excludes, for instance, a model whose observation noise covariance is itself a function of the realized observation; without it Equation~\eqref{eq:restrict-conditional-from-joint} fails and $J$ carries data. The second, and the one more easily overlooked, is that the restriction is a \emph{factorization}, so that the optimal recognition mean coincides with the target mean and the quadratic term in Equation~\eqref{eq:restrict-gaussian-kl} vanishes identically at the optimum. A restriction that constrains the mean does not have that property, and the next proposition computes exactly what survives.
+
+\propositionheading{Cost of a mean restriction}{prop:restrict-mean-cost}
+Let $[B\ B_\perp]$ be an orthogonal matrix with $B\in\R^{n\times r}$, and restrict the recognition family to
+\begin{equation}
+\mathcal Q_{B}=\left\{\mathcal N\left(\mu_Q,C_Q\right):
+\mu_Q\in\operatorname{range}(B),
+\quad
+C_Q\in\Sym_{++}^{n}\right\},
+\label{eq:restrict-mean-family}
+\end{equation}
+with the covariance unrestricted. Writing $\mu_\perp:=B_\perp^\top\mu$ for the component of the target mean orthogonal to the retained subspace, the exact minimum of the relative entropy over $\mathcal Q_B$ is
+\begin{equation}
+\inf_{Q\in\mathcal Q_B}\KL\left(Q\Vert P^\star\right)
+=\frac12\mu_\perp^\top\left(B_\perp^\top J^{-1}B_\perp\right)^{-1}\mu_\perp,
+\label{eq:restrict-mean-cost}
+\end{equation}
+attained at $C_Q^\star=J^{-1}$ and $\mu_Q^\star=\mu-J^{-1}B_\perp(B_\perp^\top J^{-1}B_\perp)^{-1}\mu_\perp$. The matrix $(B_\perp^\top J^{-1}B_\perp)^{-1}$ is the \emph{marginal} precision of the restricted directions, that is the inverse of their exact marginal covariance. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+By the separation noted after Equation~\eqref{eq:restrict-gaussian-kl}, the covariance sector is unconstrained and its minimum is attained at $C_Q^\star=J^{-1}$, where it contributes zero. What remains is to minimize $\tfrac12(\mu_Q-\mu)^\top J(\mu_Q-\mu)$ subject to $B_\perp^\top\mu_Q=0$. Put $v=\mu_Q-\mu$, so the constraint reads $B_\perp^\top v=-\mu_\perp$. Stationarity of the Lagrangian gives $Jv=B_\perp\lambda$, hence $v=J^{-1}B_\perp\lambda$; imposing the constraint gives $\lambda=-(B_\perp^\top J^{-1}B_\perp)^{-1}\mu_\perp$, which is well defined because $B_\perp$ has full column rank and $J^{-1}\succ0$. The objective at that point is $\tfrac12v^\top Jv=\tfrac12\lambda^\top(B_\perp^\top J^{-1}B_\perp)\lambda$, which is Equation~\eqref{eq:restrict-mean-cost}, and the minimizer is as displayed. The final identification holds because $\operatorname{Cov}(B_\perp^\top Y)=B_\perp^\top J^{-1}B_\perp$ under $P^\star$. $\square$
+
+\corollaryheading{A mean restriction carries the data}{cor:restrict-mean-cost-data}
+Under the hypothesis of \Cref{prop:restrict-conditional-precision-observation-free}, the cost in Equation~\eqref{eq:restrict-mean-cost} is a quadratic function of the realized observation, since $\mu_\perp=B_\perp^\top J^{-1}(\eta_Y-\mathcal J_{Yo}o)$ is affine in $o$. It is observation free if and only if $B_\perp^\top J^{-1}\mathcal J_{Yo}=0$. Thus the observation independence of \Cref{cor:restrict-gap-observation-free} does not extend to restrictions of the mean, and a construction that reports one cost as though it were the other is reporting a data-dependent quantity as a structural one. \status{ESTABLISHED}
+
+\propositionheading{Marginal precision against restricted precision}{prop:restrict-marginal-vs-restricted-precision}
+With $[B\ B_\perp]$ as above,
+\begin{equation}
+B_\perp^\top JB_\perp-\left(B_\perp^\top J^{-1}B_\perp\right)^{-1}
+=B_\perp^\top JB\left(B^\top JB\right)^{-1}B^\top JB_\perp
+\succeq0,
+\label{eq:restrict-marginal-vs-restricted}
+\end{equation}
+so the marginal precision of the restricted directions is dominated in the Loewner order by the restriction $B_\perp^\top JB_\perp$ of the precision to those directions, the difference has rank at most $r$, and the two coincide if and only if $B^\top JB_\perp=0$, that is if and only if the retained and restricted subspaces are $J$-orthogonal. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Since $[B\ B_\perp]$ is orthogonal, conjugating by it gives $\widetilde J:=[B\ B_\perp]^\top J[B\ B_\perp]$ and also $[B\ B_\perp]^\top J^{-1}[B\ B_\perp]=\widetilde J^{-1}$. Hence $B_\perp^\top J^{-1}B_\perp$ is the lower right block of $\widetilde J^{-1}$, and by the block inversion formula its inverse is the Schur complement
+\begin{equation}
+\widetilde J_{\perp\perp}
+-\widetilde J_{\perp\parallel}\widetilde J_{\parallel\parallel}^{-1}\widetilde J_{\parallel\perp},
+\label{eq:restrict-schur-in-basis}
+\end{equation}
+where $\parallel$ and $\perp$ index the two groups of columns \citep{Zhang2005Schur}. Subtracting Equation~\eqref{eq:restrict-schur-in-basis} from $\widetilde J_{\perp\perp}=B_\perp^\top JB_\perp$ leaves exactly the displayed product, which is positive semidefinite and of rank at most $\operatorname{rank}(B^\top JB_\perp)\leq r$. It vanishes if and only if $(B^\top JB)^{-1/2}B^\top JB_\perp=0$, that is if and only if $B^\top JB_\perp=0$. $\square$
+
+\Cref{prop:restrict-marginal-vs-restricted-precision} is the reason Equation~\eqref{eq:restrict-mean-cost} must be written with the marginal precision and not with the restriction of the precision. The two are different matrices, ordered but not equal, and substituting one for the other overstates the cost of a mean restriction by the rank-$r$ correction of Equation~\eqref{eq:restrict-marginal-vs-restricted} except in the $J$-orthogonal case. The deterministic replacement check \texttt{CHK-RESTRICTION-SCHUR} independently reconstructs the block-inversion and constrained-optimization endpoints and includes the orthogonal equality control. It corroborates the proved identities and is not evidence for them. \status{NUMERICAL}
+
+\corollaryheading{Costs of combined restrictions add}{cor:restrict-combined-costs-add}
+Restricting the mean to $\operatorname{range}(B)$ and the covariance to the block-diagonal set of Equation~\eqref{eq:restrict-block-family} simultaneously has exact cost
+\begin{equation}
+\frac12\left[\sum_{b\in\mathfrak B}\log\det J_{bb}-\log\det J\right]
++\frac12\mu_\perp^\top\left(B_\perp^\top J^{-1}B_\perp\right)^{-1}\mu_\perp,
+\label{eq:restrict-combined-cost}
+\end{equation}
+the first term structural and the second data dependent. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Equation~\eqref{eq:restrict-gaussian-kl} has no term coupling $\mu_Q$ to $C_Q$, and the two constraint sets act on disjoint parameter blocks, so the minimizations are independent and their values add. Each value is supplied by \Cref{thm:restrict-determinant-gap} and \Cref{prop:restrict-mean-cost} respectively. $\square$
+
+\section{Comparing recognition structures at fixed model}
+\label{sec:restrict-comparison}
+
+Equation~\eqref{eq:restrict-determinant-gap} assigns a number to a partition, which invites the question of whether one recognition structure is better than another. The question is well posed only under conditions that are easy to violate, and this section states both the affirmative result and its boundary.
+
+\propositionheading{Refinement monotonicity for every comparable pair}{prop:restrict-refinement-monotonicity}
+Let \(\mathfrak B\) and \(\mathfrak B'\) be any two partitions such that
+\(\mathfrak B'\) refines \(\mathfrak B\), meaning every block of
+\(\mathfrak B'\) is contained in a block of \(\mathfrak B\). Then
+\(\mathcal Q_{\mathfrak B'}\subseteq\mathcal Q_{\mathfrak B}\) and
+\begin{equation}
+\Lelbo^\star_{\mathfrak B}-\Lelbo^\star_{\mathfrak B'}
+=\sum_{b\in\mathfrak B}\frac12\left[
+\sum_{b'\in\mathfrak B'\colon b'\subseteq b}\log\det J_{b'b'}
+-\log\det J_{bb}\right]
+\geq0,
+\label{eq:restrict-refinement}
+\end{equation}
+each summand being the determinant gap of the positive definite matrix $J_{bb}$ under the partition induced on $b$, and vanishing exactly when $J_{bb}$ is block diagonal under that induced partition. Thus the coarser structure dominates the finer one for every comparable pair in the refinement partial order. The mechanism is the Loewner ordering of \Cref{thm:restrict-determinant-gap}: within each coarse block, a Schur complement is dominated by the corresponding diagonal block. \status{ESTABLISHED}
+
+The selected hierarchy invokes this proposition only on its declared edges or,
+by composition, on comparable nodes of its declared chain or rooted tree. It
+imposes no ordering on nonnested partitions. \status{DEFINITION}
+
+\paragraph{Proof.}
+A block-diagonal matrix under $\mathfrak B'$ is block diagonal under $\mathfrak B$ whenever $\mathfrak B'$ refines $\mathfrak B$, giving the inclusion of families. Subtracting two instances of Equation~\eqref{eq:restrict-determinant-gap} cancels $\log\det J$ and regroups the remaining terms by coarse block, giving Equation~\eqref{eq:restrict-refinement}. Each bracket is \Cref{thm:restrict-determinant-gap} applied to $J_{bb}\succ0$ with the induced partition, hence nonnegative with the stated equality condition. $\square$
+
+\propositionheading{Non-nested structures are not ordered}{prop:restrict-nonnested-unordered}
+Refinement is a partial order, and outside it the bounds are not ordered by any structural feature such as the number or the sizes of the blocks. For $n=3$ take
+\begin{equation}
+J(a,b)=\begin{pmatrix}1&a&0\\a&1&b\\0&b&1\end{pmatrix},
+\qquad
+a^2+b^2<1,
+\label{eq:restrict-nonnested-witness}
+\end{equation}
+which is positive definite, and compare the two partitions $\mathfrak B_1=\{\{1,2\},\{3\}\}$ and $\mathfrak B_2=\{\{1\},\{2,3\}\}$, which have identical block-size multisets and neither of which refines the other. Their gaps are $\tfrac12\log\frac{1-a^2}{1-a^2-b^2}$ and $\tfrac12\log\frac{1-b^2}{1-a^2-b^2}$, so the ordering is decided by whether $\lvert a\rvert$ exceeds $\lvert b\rvert$ and reverses when they are exchanged. At $(a,b)=(0.8,0.2)$ the values are $0.0589$ and $0.5493$; at $(0.2,0.8)$ they are exchanged. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Positive definiteness follows from the leading minors $1$, $1-a^2$ and $1-a^2-b^2$. The gaps follow from Equation~\eqref{eq:restrict-determinant-gap} with $\det J=1-a^2-b^2$, $\det J_{\{1,2\}\{1,2\}}=1-a^2$, $\det J_{\{2,3\}\{2,3\}}=1-b^2$ and the remaining diagonal entries equal to one. The numerical values are $\tfrac12\log(0.36/0.32)$ and $\tfrac12\log(0.96/0.32)$. $\square$
+
+\Cref{prop:restrict-nonnested-unordered} says that a recognition structure is well chosen relative to a given coupling matrix, not well chosen in the abstract, and it is what makes any partition-selection rule an optimization over structures rather than a reading off of a scalar. It also disposes of the temptation to treat block count as a proxy for quality.
+
+\propositionheading{The gap does not select a structure}{prop:restrict-gap-no-selection}
+Along any declared nested refinement chain containing the one-block partition,
+the gap of Equation~\eqref{eq:restrict-determinant-gap} is nonincreasing
+under coarsening by \Cref{prop:restrict-refinement-monotonicity}, and it
+attains its minimum value zero at that one-block partition for every
+$J\succ0$. This monotonicity supplies no ordering of nonnested partitions.
+Minimizing the gap therefore selects the unrestricted family and returns no
+information about structure. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+For the one-block partition, $\sum_b\log\det J_{bb}=\log\det J$ and the gap is zero; nonnegativity is \Cref{thm:restrict-determinant-gap}, while monotonicity holds along the declared chain by \Cref{prop:restrict-refinement-monotonicity}. \Cref{prop:restrict-nonnested-unordered} supplies the nonnested boundary. $\square$
+
+\propositionheading{ELBO values do not order unrelated joints}{prop:restrict-unrelated-joint-elbo}
+Let $P_\theta$ and $P_{\theta'}$ be normalized joints over the same observation
+but possibly different latent inventories, with recognition families
+$\mathcal Q$ and $\mathcal Q'$ on their respective latent spaces. Assume the
+selected $o$ belongs to the regular-observation set of each joint, or that
+pointwise versions have been declared for both. If no evidence-preserving
+channel relating the two joints is given, then
+\begin{equation}
+\Lelbo^\star-\Lelbo'^\star
+=\left[\log p_\theta(o\given X)-\log p_{\theta'}(o\given X)\right]
+-\left[\inf_{\mathcal Q}\KL-\inf_{\mathcal Q'}\KL\right],
+\label{eq:restrict-cross-model}
+\end{equation}
+which combines an evidence difference, a model-comparison quantity, with a tightness difference, a recognition-quality quantity. Neither bracket is identifiable from the value of the left side, so the sign of that value orders neither the models nor the recognition families. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Apply Equation~\eqref{eq:restrict-sup-identity} to each model and subtract. To show that both failures occur within normalized models, let \(\ell\leq0\), \(g\geq0\), take \(O\in\{o,\bar o\}\), \(Y\in\{0,1\}\), and define a normalized joint by
+\[
+P_{\ell,g}(O=o,Y=1)=e^{\ell-g},
+\qquad
+P_{\ell,g}(O=o,Y=0)=e^\ell(1-e^{-g}),
+\qquad
+P_{\ell,g}(O=\bar o,Y=0)=1-e^\ell,
+\]
+with the remaining atom assigned mass zero. Then
+\[
+\log P_{\ell,g}(O=o)=\ell,
+\qquad
+P_{\ell,g}(Y=1\given O=o)=e^{-g}.
+\]
+For the singleton recognition family \(\mathcal Q=\{\delta_1\}\), the minimized gap is \(g\), so the optimized bound is \(\ell-g\). To make the two latent inventories literally different, append an unused deterministic binary coordinate \(Z=0\) to either second model and replace its recognition law by \(\delta_1\otimes\delta_0\); taking a product with this point mass changes neither normalization, evidence, relative entropy, nor the optimized ELBO. The pairs
+\[
+(\ell_1,g_1)=(-1,0),\quad(\ell_2,g_2)=(0,2)
+\]
+give \(\Lelbo_1^\star=-1>\Lelbo_2^\star=-2\) although the evidence ordering is \(\ell_1<\ell_2\). The pairs
+\[
+(\ell_1,g_1)=(0,1),\quad(\ell_2,g_2)=(-2,0)
+\]
+again give \(\Lelbo_1^\star=-1>\Lelbo_2^\star=-2\), although the first recognition family has the larger gap and hence the less tight bound. Thus a bound ordering determines neither bracket in Equation~\eqref{eq:restrict-cross-model}. $\square$
+
+\Cref{prop:restrict-unrelated-joint-elbo} is a statement about unrelated joints, not about latent
+inventory by itself. If a normalized Markov kernel \(K:x\rightsquigarrow z\)
+defines the coarse joint
+\(\bar P=(\operatorname{id}_{O}\otimes K)_{\#}P\) and the coarse recognition
+law is \(\bar Q=QK\), then the observation marginal and evidence are unchanged
+and data processing gives
+\[
+\bar{\mathcal L}(\bar Q;o)
+=\log p(o)-\KL(QK\Vert P_oK)
+\geq\log p(o)-\KL(Q\Vert P_o)
+=\mathcal L(Q;o).
+\]
+Thus different latent spaces can carry ordered bounds when both laws are
+related by the same evidence-preserving channel. Absent such a relation, an
+ELBO difference mixes the evidence difference with the tightness difference
+as in \eqref{eq:restrict-cross-model}. The general hypotheses and equality
+conditions are stated in \Cref{ch:coarsegraining}. \status{ESTABLISHED}
+
+\openproblemheading{An intrinsic criterion}{open:restrict-intrinsic-criterion}
+\Cref{prop:restrict-gap-no-selection,prop:restrict-unrelated-joint-elbo} leave a gap that this document does not close.
+There is no criterion here, internal to a single evidence bound at a fixed
+model, that selects a nondegenerate recognition structure: the determinant
+gap is minimized at the trivial partition, the mean-restriction cost of
+Equation~\eqref{eq:restrict-mean-cost} is a cost at fixed structure, and an
+arbitrary replacement joint supplies no common evidence. Evidence-preserving
+Markov pushforwards are the important exception, but their data-processing
+order still does not select a nondegenerate partition. What would settle the
+problem positively is a functional on admissible channels or partitions,
+expressible relative to one fixed joint and not monotone to an endpoint, whose
+optimizer is nondegenerate. A negative result would have to prove endpoint
+degeneracy for a precisely stated class of functionals. Absent either, the
+choice of structure remains a model-selection or RG-scheme declaration.
+\status{OPEN}

@@ -1,0 +1,150 @@
+\chapter{Numerical Provenance}
+\label{app:numerical-provenance}
+
+The reproducibility package is part of the manuscript record:
+\begin{center}
+\footnotesize
+\begin{tabularx}{0.94\textwidth}{@{}>{\raggedright\arraybackslash}p{0.40\textwidth}X@{}}
+\toprule
+\path{verification/claims.json} &
+claim inventory, seeds, sample counts, tolerances, mappings, and open
+obligations \\
+\path{verification/run_checks.py} &
+single deterministic CPU runner \\
+\path{verification/current-results.json} &
+current environment, source and protocol hashes, individual outcomes,
+residuals, and overall result \\
+\path{verification/VERIFICATION.md} &
+human-readable protocol and interpretation \\
+\bottomrule
+\end{tabularx}
+\normalsize
+\end{center}
+
+From the repository root, the declared run is
+\begin{verbatim}
+& "C:\Python314\python.exe" manuscripts/gauge_vfe_rg/verification/run_checks.py
+\end{verbatim}
+The generated JSON record is the authority for exact counts and numerical
+values; this appendix intentionally does not duplicate seed lists or result
+tables that can drift.
+
+\paragraph{Frozen factorization-gap stress protocol.}
+The check \texttt{CHK-CG-FACTOR-GAP-STRESS-3138} is a new deterministic
+protocol, not a reconstruction of an undocumented historical run.  Seed
+\texttt{20260803} fixes exactly $3{,}138$ case identities: $2{,}400$ general,
+$200$ exactly block diagonal, $200$ nearly decoupled, $120$ scale, $120$
+permutation, $80$ nested-refinement, and $18$ 100-decimal-digit control cases.
+Every stratum covers dimensions 2 through 16 and condition-number tiers
+$1,10^2,\ldots,10^{14}$ as nominal pre-transform generator labels.  The
+legacy field \texttt{condition\_number} stores that nominal label, while every
+digest-bound record also stores \texttt{achieved\_condition\_number}, defined
+as \texttt{numpy.linalg.cond} of the regenerated matrix.  The observed global
+range is $[1,1.015265553314175\times10^{14}]$, but this is only a global
+coverage claim.  The achieved ranges are:
+\begin{center}
+\footnotesize
+\begin{tabularx}{0.94\textwidth}{@{}>{\raggedright\arraybackslash}X>{\raggedleft\arraybackslash}X>{\raggedleft\arraybackslash}X@{}}
+\toprule
+Stratum & Minimum & Maximum \\
+\midrule
+Global & $1$ & $1.015265553314175\times10^{14}$ \\
+General & $1$ & $1.015265553314175\times10^{14}$ \\
+Exactly block diagonal & $1$ & $1.0075938532153164\times10^{14}$ \\
+Nearly decoupled & $1.0000000000000002$ & $9.273791153286738\times10^8$ \\
+Scale & $1$ & $1.0036120669923527\times10^{14}$ \\
+Permutation & $1$ & $1.0071935024197442\times10^{14}$ \\
+Nested refinement & $1$ & $1.0077056571347422\times10^{14}$ \\
+100-digit controls & $1.0000000000000004$ & $1.0048132000124055\times10^{14}$ \\
+\bottomrule
+\end{tabularx}
+\normalsize
+\end{center}
+The two scalar blocks in the dimension-two exactly-block-diagonal cases cannot
+realize their nominal targets, and the nearly-decoupled transformation does
+not attain its high nominal tiers.  Each record binds the regenerated binary64
+matrix and partition by SHA-256, and repeated executions must agree exactly.
+The named runtime check separately records all $3{,}138$ attempted schedule
+cases, successfully evaluated 100-decimal-digit exact-binary64 references, and
+completed production-reference comparisons.  PASS requires $3{,}138$ in each
+category and zero failures; the $18$ designated controls remain a named stratum
+rather than the sole accuracy evidence. \status{NUMERICAL}
+
+The ordinary value path uses Cholesky triangular solves, canonical-correlation
+singular values, and \texttt{log1p(-rho**2)}.  Near the floating-point boundary,
+including a raw excursion above one, the runner compares two binary64 solve
+backends, applies a $64n\epsilon_{\rm mach}$ operational rejection guard, and
+uses a 200-decimal-digit evaluation of the exact stored binary64 input for the
+reported gap.  The value path also falls back when
+$\kappa_2(J)\epsilon_{\rm mach}\geq10^{-4}$; this is a frozen-protocol
+conditioning trigger, not a proved perturbation radius.  A nonfinite binary64
+condition estimate also triggers exact-input evaluation, rather than
+rejection, after high-precision Cholesky certification of positive
+definiteness.  The
+public diagnostic name
+\texttt{residual\_derived\_clip\_bound} is retained for protocol compatibility,
+but on this boundary path its value is the outward-rounded discrepancy between
+the maximum raw binary64 $\rho^2$ and the high-precision exact-input $\rho^2$.
+It is not presented as a general residual perturbation bound.  The positive
+excursion witness is a separate focused regression fixture, not an outcome of
+the ordinary $3{,}138$-case schedule.  Its matrix digest is
+\texttt{45310a74550d3759fed0f83f71a6cf3b0f45942499361d723a2248bbe243e2e3},
+its 200-digit exact-input gap rounds to $22.777105858844084$, its raw excursion
+is $4.440892098500626\times10^{-16}$, and its outward allowance is
+$9.432369402326953\times10^{-16}$.  The check mechanically recomputes all four
+quantities and requires PASS.  Its value comes from the exact-input fallback
+rather than from clipping $\rho^2$ below one.  The compatibility
+fields \texttt{clipping\_applied} and \texttt{clipping\_amount} record that a
+positive cross-backend excursion was admitted and its maximum excess above
+one; they do not say that this amount was substituted into the returned value.
+Exact-input domain violations and raw excursions whose discrepancies exceed
+the guard are rejected.  Cholesky and solve residuals remain local backward
+diagnostics; the protocol does not promote them to canonical-correlation or
+gap, relative-entropy, monotonicity, scale, or oracle-comparison forward-error
+bounds, and no forward tolerance includes them.  Forward comparisons instead
+use independent exact-binary64 high-precision references plus separately
+declared endpoint-roundoff or protocol-acceptance policies.  Their
+finite-health gate is $64\gamma_n$, with
+$\gamma_n=n u/(1-n u)$ and binary64 unit roundoff
+$u=\epsilon_{\rm mach}/2$.  Early high-precision fallbacks selected before
+residual evaluation serialize the residual, tolerance, and backward-error
+diagnostics as \texttt{null} because they were not evaluated.  A
+residual-health fallback instead retains each finite binary64 measurement,
+including finite values that exceed the health gate.  A field is
+\texttt{null} only when it has no finite usable numeric value, either because
+an attempted measurement is nonfinite or because a derived diagnostic requires
+an unavailable constituent; finite sibling fields remain numeric.  The
+evaluation method distinguishes the finite threshold case from nonfinite
+Cholesky, solve, or tolerance causes and lists multiple causes in that fixed
+order.  These retained measurements remain local backward diagnostics and do
+not enter a forward-error tolerance.  In every branch, \texttt{null} denotes
+neither failure nor zero.  The exact zero diagnostics for a one-block,
+zero-step result remain numeric zero.  The \texttt{GapStep} API retains the
+fieldwise residual quartet.  A \texttt{FactorizationCaseRecord} serializes only
+the aggregate backward diagnostic, maximum Cholesky residual, and ordered
+evaluation-method tuple, not per-step solve or tolerance values.  The
+compatibility field \texttt{backward\_error\_bound} is a sum of one-ULP-up
+summaries of already rounded local residual measurements; it is not a
+certified perturbation or forward-error bound. \status{NUMERICAL}
+
+\paragraph{What a passing run means.}
+It means that the current deterministic, double-precision CPU
+implementations satisfy their declared finite checks and controls within
+their recorded tolerances.  Those checks corroborate algebraic identities,
+exercise finite witnesses, and detect regressions in the encoded endpoints.
+They do not prove a theorem, genericity, an asymptotic limit, universality,
+or a physical interpretation.  Analytic claims rest on derivations or
+eligible cited results, not on numerical agreement.
+
+\paragraph{Freshness and scope.}
+The result artifact records interpreter and dependency versions and binds
+the discovered manuscript sources and verification protocol by SHA-256.
+Any source, protocol, input, dependency, or environment change requires a
+new run before the numerical evidence is current.  The suite uses no GPU and
+makes no GPU claim.  A missing protocol for an empirical statement remains
+inconclusive even when every implemented check passes.
+
+The checked-in \path{verification/current-results.json} is the older
+29-check artifact.  It is not evidence for this 30-check package.  A governed
+30-check regeneration remains required before that evidence is current.  This
+appendix does not claim that deferred artifact is current.

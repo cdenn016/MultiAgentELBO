@@ -1,0 +1,205 @@
+\chapter{Scope, Claims, and Reading Map}
+\label{ch:introduction}
+
+This document develops a gauge-covariant variational theory from typed
+probability objects and then asks which parts survive coarse description.  Its
+ambient geometry consists of one principal gauge bundle
+\(P\to\mathcal C\) with structure group \(G\), and two associated law bundles
+\(\mathcal E_b=P\times_{\widehat\rho_b}\mathcal B_b\) and
+\(\mathcal E_m=P\times_{\widehat\rho_m}\mathcal B_m\).  The representations
+\(\rho_b\) and \(\rho_m\) may be inequivalent and may act on fibers of
+different dimensions; the hats denote their induced actions on probability
+laws.  Belief and model coordinates may use different local sections of
+\(P\).  Their unique relative principal-frame field is a \(G\)-valued
+comparison, not a map between the two associated fibers.  The declared
+cross-channel
+morphisms
+\[
+\Phi:\mathcal E_b\longrightarrow\mathcal E_m,
+\qquad
+\widetilde\Phi:\mathcal E_m\longrightarrow\mathcal E_b
+\]
+cover \(\operatorname{id}_{\mathcal C}\); they are neither principal-bundle
+morphisms nor assumed inverses.  Separate connections induce same-channel
+parallel transports \(\Omega_\gamma\) on \(\mathcal E_b\) and
+\(\widetilde\Omega_\gamma\) on \(\mathcal E_m\).  Parallelness of either cross
+map is an additional hypothesis, measured otherwise by its covariant defect.
+The two channels may use different connections on the same \(P\); neither a
+common local frame nor an equal connection is assumed.
+Independently declared graph links are denoted
+\(\Theta^b_e,\Theta^m_e\) on oriented edge copies (abbreviated by endpoints
+when the copy is unique), and are identified with base parallel transport
+only after a curve assignment and an equality hypothesis. These
+distinctions are the type contract of \Cref{ch:geometry}. \status{DEFINITION}
+
+On a finite design the theory fixes one normalized generative joint
+\(P_\theta(do,dY\mid X)\) and one correlated recognition law
+\(Q_X(dY\mid o)\).  Under the stated absolute-continuity and integrability
+hypotheses, there is one exact identity,
+\begin{equation}
+\log p_\theta(o\mid X)
+=\mathcal L(Q_X;X)
++\KL\left(Q_X\middle\Vert
+P_\theta(\cdot\mid o,X)\right).
+\label{eq:elbo-intro-identity}
+\end{equation}
+It is invariant under independent belief- and model-coordinate pushforwards.
+These passive re-expressions form a product of frame-coordinate changes; they
+must not be confused with replacing the ambient diagonal \(G\)-gauge symmetry
+by a principal \(G\times G\)-bundle.  Equality
+holds exactly when the recognition law is the posterior as a measure; matching
+coordinate marginals is insufficient.  Excluding the posterior makes every
+pointwise gap positive, but does not by itself make the optimized infimum
+positive or attained. \status{ESTABLISHED}
+
+The logical order is therefore
+\[
+\begin{aligned}
+\text{typed bundles and kernels}
+&\longrightarrow \text{normalized joint}\\
+&\longrightarrow \text{local and collective ELBOs}\\
+&\longrightarrow \text{covariant informational pullbacks}\\
+&\longrightarrow \text{relational inference histories}\\
+&\longrightarrow \text{general coarse maps}
+\longrightarrow \text{exact effective RG}\\
+&\longrightarrow \text{Gaussian realization}.
+\end{aligned}
+\]
+The general coarse layer distinguishes three operations that are often
+conflated.  A normalized Markov kernel pushes laws forward, preserves the
+observation evidence when it acts only on latent variables, and contracts
+relative entropy.  Energy precomposition restricts an unnormalized energy
+along a sample-space map and requires a separately declared coarse reference
+measure and finite normalizer.  Parameter aggregation is a conditional
+closure statement inside a selected graph-exponential family.  A
+renormalization further requires comparison or rescaling maps that type
+different scales; without them there is only a changing-space coarse diagram,
+not a fixed point problem. \status{ESTABLISHED}
+
+For an arbitrary finite agent hypergraph, normalized interaction-record
+kernels give one collective VFE and, by disintegration, a conditional VFE for
+every agent or block.  A unilateral local change equals the corresponding
+change of the collective VFE, so local evolution is a blockwise collective
+descent.  The local objectives do not sum symmetrically because shared factors
+occur in every incident coordinate objective.  A categorical source label
+places attention inside the fixed joint, and a standard-Borel observation
+kernel is equivalent to a message from an operational environment node.
+These results are proved in \Cref{ch:local-collective-elbo}.
+\status{ESTABLISHED}
+
+A chosen connection turns the derivative of a smooth statistical section into
+a vertical first jet.  Pulling the vertical Fisher and Amari tensors back by
+that jet gives gauge-invariant, connection-relative tensors on the contextual
+base; the Fisher tensor may be degenerate.  This tensor pullback is distinct
+both from restricting a parameter manifold to a submodel and from a
+dynamical-systems pullback attractor.  The subsequent relational construction
+quotients regular natural-gradient solution curves by
+orientation-preserving reparameterization and measures them by Fisher length.
+The resulting histories and durations are information-geometric objects on a
+declared configuration space. These distinctions are developed in
+\Cref{ch:pullback-geometry,ch:relational-inference}.
+\status{ESTABLISHED}
+
+The construction does not identify those histories or durations with a
+physical clock.
+\status{NOT-CLAIMED}
+
+The exact law-level RG of \Cref{ch:agent-network-rg} pushes the baseline,
+evidence submeasure, recognition law, posterior, and joint attention-event law
+through the same structural channel. Exact closure retains induced hyperedges,
+simultaneous root-framed holonomy and boundary data, and path memory.
+Cross-scale agent--meta kernels follow from posterior bridges, while differential beta
+functions and fixed points are typed only after an explicit rescaling returns
+the changing scale spaces to one common space.
+\status{ESTABLISHED}
+
+The ordered path coordinate is neither a relational inference history nor a
+physical-time coordinate, and RG depth is a scale index.
+\status{NOT-CLAIMED}
+
+The multivariate Gaussian enters only after that general structure.  It
+realizes the smooth statistical tier in information coordinates and supplies
+explicit determinant gaps, Fisher charts, matrix-weighted interaction
+operators, aggregation formulas, Kron counterexamples, and generalized
+spectra.  The Laplacian-plus-self-term interaction cone is a declared
+subfamily, not a consequence of every linear-Gaussian directed model.
+\status{HYPOTHESIS}
+
+Within its exact domain, aggregation is closed, but closure alone does not
+select that cone or a nondegenerate partition. \status{ESTABLISHED}
+
+Unrestricted matrix-weighted Kron closure fails, whereas
+the later Gaussian coarse chapter records the exact closed
+congruence-diagonal domain and its qualified maximality boundary.
+\status{ESTABLISHED}
+
+The RG conclusions are deliberately narrower. Rescaling is declared rather
+than derived. \status{DEFINITION}
+
+Bi-additive Gaussian parameters are closed under additive pushforward, and an
+identified homogeneous hierarchy gives an operator fixed ray, but the ray lies
+on the boundary of the full-space Gaussian probability domain. \status{ESTABLISHED}
+
+Infinite-hierarchy attraction, uniqueness within a basin, and blocking-scheme
+independence remain open. \status{OPEN}
+
+Finite numerical gates test specified diagnostics and controls; they do not
+prove those asymptotic claims. \status{NUMERICAL}
+
+Identifying any repaired limiting object with a physical law remains the
+semantic claim \ref{claim:physical-law-identification}; it requires a complete
+probability repair, a target system, a validation criterion, and
+discriminating evidence. \status{OPEN}
+
+\section*{Epistemic contract}
+
+Every nontrivial statement carries one of the following tags. The central
+open-obligation appendix collects unresolved conjectures and problems once;
+established claims remain with their hypotheses or proofs, and numerical
+claims remain bound to the numerical-provenance appendix.
+
+\begin{sciencetable}{Status taxonomy: tags used throughout.}
+\label{tab:status-taxonomy}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Tag} & \textbf{What it promises the reader} \\
+\midrule
+\status{ESTABLISHED} & Proved here, or a standard result cited to a source that has been checked. \\
+\status{DEFINITION} & A declared type, construction, or convention. Nothing is being proved and the text says so. \\
+\status{HYPOTHESIS} & A restriction the development adopts by choice. What it excludes, and where it is used, are stated. \\
+\status{CONJECTURE} & Believed and precisely stated, but not proved. Stated sharply enough to be attacked. \\
+\status{NUMERICAL} & Supported by computation only, with its measurement, seed, and control reported. Computation is not proof. \\
+\status{OPEN} & Unsettled. What would settle it, and what obstructs it, are named. \\
+\status{NOT-CLAIMED} & A statement the development deliberately declines to make. Declining is not refuting, and the text says which it is doing. \\
+\bottomrule
+\end{tabularx}
+\end{sciencetable}
+
+A gesture is either discharged by proof, calculation, or a checked source, or
+converted into an open obligation with exact hypotheses.  Likewise,
+\texttt{NOT-CLAIMED} is never used for a refuted statement.  The obstruction
+chapter contains exact negative results; the interpretation chapter marks
+readings and empirical commitments without promoting them to theorems.
+
+\section*{A physicist's fast path}
+
+A first reading may take the object and frame-covariance contract from
+\Cref{ch:introduction,ch:geometry}, then read only the normalized-joint and
+ELBO identities in \Cref{ch:probability,ch:generative,ch:elbo}.  The next pass
+should read the local--collective potential theorem and interaction-label
+attention in \Cref{ch:local-collective-elbo}, then the covariant pullback and
+relational-history constructions in
+\Cref{ch:pullback-geometry,ch:relational-inference}.  The next pass should
+take the three-operation distinction, Markov coarse theorem, exact effective
+hypergraph/path-space closure, and typed scale diagram in
+\Cref{ch:coarsegraining,ch:renormalization,ch:agent-network-rg}.  The Gaussian spine then consists of the interaction cone,
+recognition costs and Fisher geometry in
+\Cref{ch:gaussian,ch:restrictions,ch:infogeometry}, followed by Gaussian
+aggregation, congruence-diagonal Kron closure, holonomy, fixed-ray
+qualifications, generalized spectra, and numerical gates in
+\Cref{ch:gaussian-coarsegraining,ch:gaussian-renormalization}.  Finally,
+\Cref{ch:obstructions,ch:philosophy} separate exact no-go results and repairs
+from empirical and interpretive commitments.  Disintegration proofs,
+convex-duality details, long rational witnesses, ledger rows, and protocol
+metadata can be recovered through their semantic cross-references on a second
+reading.

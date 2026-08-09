@@ -1,0 +1,47 @@
+{
+  "explicit_exclusions": [
+    "manuscripts/gauge_vfe_rg/main.pdf",
+    "manuscripts/gauge_vfe_rg/verification/current-results.json",
+    "**/__pycache__/**",
+    "**/*.pyc"
+  ],
+  "governed_namespaces": [
+    "manuscripts/gauge_vfe_rg",
+    "manuscripts/gauge_vfe_rg/verification/tests"
+  ],
+  "hash_algorithm": "SHA-256",
+  "hash_domain": "raw file bytes",
+  "path_semantics": "repository-relative POSIX paths",
+  "protocol_profile": "gauge-vfe-rg-production-v1",
+  "recursive_inclusions": [
+    {
+      "glob": "**/*.tex",
+      "root": "manuscripts/gauge_vfe_rg"
+    },
+    {
+      "glob": "**/test_*.py",
+      "root": "manuscripts/gauge_vfe_rg/verification/tests"
+    }
+  ],
+  "reject_unexpected_governed_paths": true,
+  "required_paths": [
+    "manuscripts/gauge_vfe_rg/SPEC.md",
+    "manuscripts/gauge_vfe_rg/build.ps1",
+    "manuscripts/references.bib",
+    "manuscripts/gauge_vfe_rg/verification/claims.json",
+    "manuscripts/gauge_vfe_rg/verification/run_checks.py",
+    "manuscripts/gauge_vfe_rg/verification/requirements.txt",
+    "manuscripts/gauge_vfe_rg/verification/VERIFICATION.md",
+    "manuscripts/gauge_vfe_rg/verification/result.schema.json",
+    "manuscripts/gauge_vfe_rg/verification/manifest-policy.json",
+    "manuscripts/gauge_vfe_rg/verification/lifecycle_gate.py",
+    "manuscripts/gauge_vfe_rg/verification/build_audit.py",
+    "manuscripts/gauge_vfe_rg/verification/build_bootstrap_reference.ps1.txt",
+    "manuscripts/gauge_vfe_rg/verification/build_bootstrap_transport.txt"
+  ],
+  "schema_version": "1.0",
+  "style_candidates": [
+    "manuscripts/gauge_vfe_rg/scientific_report.sty",
+    "manuscripts/scientific_report.sty"
+  ]
+}

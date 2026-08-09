@@ -1,0 +1,765 @@
+\chapter{General Coarse-Graining}
+\label{ch:coarsegraining}
+
+Coarse-graining is not one operation. A normalized Markov channel pushes
+probability laws forward and obeys data processing. Identification of sample
+variables precomposes an unnormalized energy and requires a new reference
+measure and normalizer. A Galerkin map restricts an operator and becomes a
+propagator only after a reference form and signal maps are supplied. This
+chapter separates these types before any Gaussian matrix formula is used.
+
+\section{Markov coarse maps}
+\label{sec:cg-markov-category}
+
+\definitionheading{Coarse channel}{def:cg-coarse-channel}
+For standard Borel spaces \(\mathsf X,\mathsf Y\), a coarse channel is a
+parameter-independent Markov kernel
+\[
+K:\mathsf X\rightsquigarrow\mathsf Y.
+\]
+It sends \(P\in\mathcal P(\mathsf X)\) to
+\begin{equation}
+(PK)(B)=\int_{\mathsf X}K(x,B)P(dx).
+\label{eq:cg-markov-pushforward}
+\end{equation}
+A measurable statistic \(c:\mathsf X\to\mathsf Y\) is the deterministic
+kernel \(K_c(x,B)=\mathbf 1_B(c(x))\). \status{DEFINITION}
+
+\propositionheading{Markov kernels form a category}{prop:cg-markov-category}
+If \(K:\mathsf X\rightsquigarrow\mathsf Y\) and
+\(L:\mathsf Y\rightsquigarrow\mathsf Z\), then
+\begin{equation}
+(KL)(x,C)=\int_{\mathsf Y}L(y,C)K(x,dy)
+\label{eq:cg-kernel-composition}
+\end{equation}
+is a Markov kernel, composition is associative, the deterministic identity is
+an identity, and
+\begin{equation}
+P(KL)=(PK)L .
+\label{eq:cg-law-functor}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Kernel integration gives measurability, and monotone convergence gives
+countable additivity. Tonelli's theorem gives, for measurable \(C\),
+\[
+[P(KL)](C)
+=\int_{\mathsf X}\int_{\mathsf Y}L(y,C)K(x,dy)P(dx)
+=\int_{\mathsf Y}L(y,C)(PK)(dy),
+\]
+which proves \eqref{eq:cg-law-functor}; applying the identity to a third
+kernel proves associativity. \(\square\)
+
+A statistical experiment
+\(\mathcal E=(\mathsf X,\{P_\theta\}_{\theta\in\Theta})\) is therefore sent
+functorially to
+\(\mathcal EK=(\mathsf Y,\{P_\theta K\}_{\theta\in\Theta})\).
+Parameter independence is load bearing: a family \(K_\theta\) is a
+parameter-dependent model transformation, not one channel between
+experiments. \status{DEFINITION}
+
+\section{KL contraction, equality, and recovery}
+\label{sec:cg-kl-recovery}
+
+\theoremheading{Extended KL data processing}{thm:cg-kl-dpi-extended}
+For arbitrary probability laws $P,Q\in\mathcal P(\mathsf X)$ and every Markov kernel $K:\mathsf X\rightsquigarrow\mathsf Y$,
+\begin{equation}
+\KL(PK\Vert QK)\leq\KL(P\Vert Q)
+\qquad\text{in }[0,+\infty].
+\label{eq:cg-kl-dpi-extended}
+\end{equation}
+No absolute-continuity or finiteness hypothesis is required. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+If $P\not\ll Q$, the right side is $+\infty$ and the inequality is immediate. If $P\ll Q$, put $r=dP/dQ$ and form $\mathbb Q(dx,dy)=Q(dx)K(x,dy)$. The calculation against bounded test functions gives $d(PK)/d(QK)=\bar r$, where $\bar r(Y)=\E_{\mathbb Q}[r(X)\mid Y]$. For the nonnegative convex generator $\phi_0(t)=t\log t-t+1$, conditional Jensen and monotone approximation give
+\[
+\KL(PK\Vert QK)
+=\E_{\mathbb Q}\phi_0(\bar r(Y))
+\leq\E_{\mathbb Q}\phi_0(r(X))
+=\KL(P\Vert Q),
+\]
+including the case in which the last expectation is $+\infty$. No signed integral is rearranged. \(\square\)
+
+\medskip
+\theoremheading{Data processing with its exact equality condition}{thm:cg-dpi-equality}
+Let \(P,Q\in\mathcal P(\mathsf X)\), \(P\ll Q\), and
+\(\KL(P\Vert Q)<\infty\). For a Markov kernel
+\(K:\mathsf X\rightsquigarrow\mathsf Y\), form
+\[
+\mathbb Q(dx,dy)=Q(dx)K(x,dy),\qquad
+r=\frac{dP}{dQ},\qquad
+\bar r(y)=\E_{\mathbb Q}[r(X)\mid Y=y].
+\]
+Then
+\begin{equation}
+\frac{d(PK)}{d(QK)}=\bar r,\qquad
+\KL(PK\Vert QK)\leq\KL(P\Vert Q),
+\label{eq:cg-kl-dpi}
+\end{equation}
+and equality holds exactly when
+\begin{equation}
+r(X)=\bar r(Y)\quad\mathbb Q\text{-almost surely}.
+\label{eq:cg-kl-equality}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+For bounded measurable \(f\),
+\[
+\int f d(PK)
+=\E_{\mathbb Q}[f(Y)r(X)]
+=\E_{\mathbb Q}[f(Y)\bar r(Y)],
+\]
+which proves the Radon--Nikodym formula. Conditional Jensen for the strictly
+convex function \(\phi(t)=t\log t\) gives
+\[
+\E_{\mathbb Q}\phi(\bar r(Y))
+\leq\E_{\mathbb Q}\phi(r(X)).
+\]
+Finite divergence and strict convexity make equality equivalent to
+\eqref{eq:cg-kl-equality}. This is the information-loss theorem of
+\citet{Kullback1951,Csiszar1967} in kernel form. \(\square\)
+
+\corollaryheading{Pairwise Bayes recovery}{cor:cg-pairwise-bayes-recovery}
+Let \(R_Q(y,dx)\) be a regular conditional law of \(X\) given \(Y=y\)
+under \(\mathbb Q\). Then \(QKR_Q=Q\), and under
+\eqref{eq:cg-kl-equality}, \(PKR_Q=P\). Conversely, any one kernel \(R\)
+recovering both \(P\) and \(Q\) forces equality in
+\eqref{eq:cg-kl-dpi}. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Disintegration gives the first identity. Under equality,
+\[
+(PKR_Q)(A)
+=\int\bar r(y)R_Q(y,A)(QK)(dy)
+=\iint\mathbf1_A(x)r(x)\mathbb Q(dx,dy)
+=P(A).
+\]
+The converse follows by applying data processing through \(K\) and then
+\(R\). \(\square\)
+
+\corollaryheading{Infinite equality carries no recovery conclusion}{cor:cg-dpi-infinite-equality-warning}
+The finiteness hypothesis of \Cref{thm:cg-dpi-equality} cannot be removed from its equality characterization. Equality $\KL(PK\Vert QK)=\KL(P\Vert Q)=+\infty$ alone need not imply a common reverse kernel recovering $P$ and $Q$. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Let $\mathsf X=\{a,b,c\}$, $\mathsf Y=\{u,v\}$, and let the deterministic channel send $a$ to $u$ and both $b,c$ to $v$. Set
+\[
+P=\tfrac12\delta_a+\tfrac12\delta_b,
+\qquad
+Q=\tfrac12\delta_b+\tfrac12\delta_c.
+\]
+Both fine and coarse divergences $\KL(P\Vert Q)$ and $\KL(PK\Vert QK)$ are $+\infty$, because $P(a)>0=Q(a)$ and $(PK)(u)>0=(QK)(u)$. If one reverse kernel $R$ recovered both, $QK=\delta_v$ would force $R(v,\cdot)=Q$. But then $(PK)R=\tfrac12R(u,\cdot)+\tfrac12Q$ assigns at least $1/4$ to $c$, contradicting $P(c)=0$. \(\square\)
+
+This recovery is pairwise. It may depend on the chosen reference \(Q\).
+For a dominated experiment, one common dominating probability \(P_0\) and
+simultaneous finite equalities
+\[
+\KL(P_\theta K\Vert P_0K)=\KL(P_\theta\Vert P_0)
+\quad(\theta\in\Theta)
+\]
+make the single Bayes kernel \(R_{P_0}\) recover every \(P_\theta\).
+Without those simultaneous hypotheses, experiment-level sufficiency means
+directly that one parameter-independent \(R\) satisfies
+\(P_\theta KR=P_\theta\) for all \(\theta\). Pairwise equality does not
+prove that stronger statement. \status{ESTABLISHED}
+
+\section{Fisher contraction is local}
+\label{sec:cg-fisher-contraction}
+
+\theoremheading{Score projection and Fisher loss}{thm:cg-fisher-contraction}
+Let \(\{P_\theta\}_{\theta\in\Theta\subseteq\R^d}\) be differentiable in
+quadratic mean at \(\theta_0\), with score
+\(\ell_{\theta_0}\in L^2_0(P_{\theta_0};\R^d)\), and let \(K\) be a
+parameter-independent Markov kernel normalized for every input. Under the
+joint law \(J_{\theta_0}(dx,dy)=P_{\theta_0}(dx)K(x,dy)\), the coarse family
+is differentiable in quadratic mean with score
+\begin{equation}
+\bar\ell_{\theta_0}(Y)
+=\E_{J_{\theta_0}}[\ell_{\theta_0}(X)\mid\sigma(Y)]
+\quad (P_{\theta_0}K)\text{-almost surely},
+\label{eq:cg-score-projection}
+\end{equation}
+Its Fisher information obeys
+\begin{equation}
+I_{\mathsf Y}(\theta_0)\preceq I_{\mathsf X}(\theta_0),\qquad
+I_{\mathsf X}-I_{\mathsf Y}
+=\E\operatorname{Cov}(\ell_{\theta_0}(X)\mid Y)\succeq0.
+\label{eq:cg-fisher-loss}
+\end{equation}
+Equality holds exactly when the score is \(Y\)-measurable.
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Write Pollard's Le Cam DQM decomposition at \(\theta_0\) as
+\(P_{\theta_0+h}=p_hP_{\theta_0}+P_h^\perp\), where
+\(P_h^\perp\perp P_{\theta_0}\),
+\(P_h^\perp(\mathsf X)=o(\lVert h\rVert^2)\), and
+\[
+\int\left(\sqrt{p_h}-1-\tfrac12h^\top\ell_{\theta_0}\right)^2
+dP_{\theta_0}=o(\lVert h\rVert^2).
+\]
+Choose a \(P_{\theta_0}\)-null set \(A_h\) supporting \(P_h^\perp\). The
+lifted joint family has the decomposition
+\[
+J_{\theta_0+h}=p_h(x)J_{\theta_0}+J_h^\perp,
+\qquad J_h^\perp:=P_h^\perp K.
+\]
+The singular term is supported on \(A_h\times\mathsf Y\), which is
+\(J_{\theta_0}\)-null because the kernel is normalized, and its mass is
+\(J_h^\perp(\mathsf X\times\mathsf Y)=P_h^\perp(\mathsf X)
+=o(\lVert h\rVert^2)\). The squared square-root remainder of the absolutely
+continuous term is unchanged by the lift, since integration against
+\(J_{\theta_0}\) integrates the kernel to one. Thus the joint experiment is
+DQM with score \(\ell_{\theta_0}(X)\), without a common dominating measure.
+Applying Pollard's preservation theorem for measurable statistics
+\citep{Pollard2013} to the deterministic statistic \((x,y)\mapsto y\)
+gives DQM of \(P_\theta K\) and the displayed conditional score as an
+\(L^2(P_{\theta_0}K;\R^d)\) equivalence class. Although the projected singular
+term can acquire an absolutely continuous part, its total mass remains
+\(o(\lVert h\rVert^2)\). Taking second moments and using total covariance
+proves \eqref{eq:cg-fisher-loss}.
+Conditional expectation is an orthogonal projection, so equality holds
+precisely when the fine score is \(Y\)-measurable; in a direction \(v\), equality
+holds precisely when \(v^\top\ell_{\theta_0}(X)\) is \(Y\)-measurable. \(\square\)
+
+When the fine and coarse experiments form smooth statistical law bundles, the
+Markov channel is realized by a bundle morphism satisfying the exact isotropy
+criterion \eqref{eq:pb-isotropy-criterion}, and the fine and coarse sections
+satisfy the related-section condition
+\eqref{eq:pb-coarse-related-sections},
+\Cref{thm:pb-pullback-fisher-defect} pulls this same score-variance defect
+back to a positive-semidefinite defect between contextual-base tensors.  Along
+one declared inference path, the corresponding record-level Fisher-clock
+contraction is \Cref{thm:hist-record-clock-contraction}.
+\status{ESTABLISHED}
+
+Neither statement proves that a natural-gradient flow recomputed after
+coarse-graining traces the image of the fine orbit; that stronger comparison
+requires the oriented semiconjugacy conditions of
+\Cref{prop:hist-oriented-semiconjugacy}.
+\status{NOT-CLAIMED}
+
+Fisher equality at one parameter is local score sufficiency, not global
+recovery. Let \(X=(A,B)\) with independent Bernoulli coordinates,
+\[
+\Pr_\theta(A=1)=\tfrac12+\tfrac\theta4,\qquad
+\Pr_\theta(B=1)=\tfrac12+\tfrac{\theta^2}4,
+\]
+and let \(K\) discard \(B\). At \(\theta=0\), the \(B\)-score vanishes, so
+the fine and coarse Fisher informations agree and are nonzero. Yet
+\(\Pr_\theta(B=1\mid A)\) depends on \(\theta\), so no
+parameter-independent reverse kernel can recover the whole experiment.
+\status{ESTABLISHED}
+
+\section{The fixed-evidence ELBO consequence}
+\label{sec:cg-elbo}
+
+\theoremheading{Evidence-preserving coarse channel}{thm:cg-evidence-preserving-channel}
+Let $\mathsf O$, $\mathsf X$, and $\mathsf Y$ be standard Borel.  Fix one
+normalized joint $P(do,dx)$ and fix a measurable regular-conditional kernel
+$o\mapsto P_o$ of $X$ given $O$ under $P$.  Let
+$K:\mathsf X\rightsquigarrow\mathsf Y$ be a Markov channel satisfying
+$K(x,\mathsf Y)=1$ for every $x\in\mathsf X$, and suppose that it does not
+read the arbitrary recognition law $Q_o$.  Define
+\begin{equation}
+\bar P(do,dy)=\int K(x,dy)P(do,dx),\qquad
+\bar P_o:=P_oK\ \text{ for every }o,\qquad
+\bar Q_o:=Q_oK.
+\label{eq:cg-fixed-joint-pushforward}
+\end{equation}
+The declared kernel $o\mapsto\bar P_o$ is a regular conditional law of $Y$
+given $O$ under $\bar P$, including its selected exceptional-point values.
+Fix a selected regular observation $o$ and use the same declared evidence
+density representative $p(o)$ for the fine and coarse slices.  Then
+$\bar P^O=P^O$ and the extended ELBO of \Cref{def:elbo-extended} satisfies
+\begin{equation}
+\bar\Lelbo^{\mathrm{ext}}(Q_oK;o)
+=\log p(o)-\KL(Q_oK\Vert P_oK)
+\geq
+\log p(o)-\KL(Q_o\Vert P_o)
+=\Lelbo^{\mathrm{ext}}(Q_o;o).
+\label{eq:cg-elbo-monotone}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Normalization of $K$ preserves the observation marginal.  Kernel integration
+makes $o\mapsto(P_oK)(B)$ measurable for every measurable $B\subseteq\mathsf Y$.
+Moreover, for measurable $A\subseteq\mathsf O$ and $B\subseteq\mathsf Y$,
+\[
+ \int_A(P_oK)(B) P^O(do)
+ =\int_A\int_{\mathsf X}K(x,B)P_o(dx) P^O(do)
+ =\bar P(A\times B).
+\]
+A $\pi$--$\lambda$ extension proves the regular-conditional identity.  Thus
+the pointwise declaration $\bar P_o:=P_oK$ selects a compatible version rather
+than applying an almost-sure identity at an arbitrarily fixed exceptional
+observation.  Since the same evidence representative is used and
+$\bar P^O=P^O$, Equation~\eqref{eq:cg-elbo-monotone} follows pointwise for the
+selected versions from \Cref{thm:cg-kl-dpi-extended}; when
+$Q_o\not\ll P_o$ its rightmost value is $-\infty$, and the inequality remains
+valid without any undefined sum. \(\square\)
+
+Thus different latent inventories are not by themselves a prohibition.
+ELBOs are comparable under an evidence-preserving common Markov pushforward
+applied to the posterior and recognition law. Absent that relation,
+separately declared models may have different evidences, and an ELBO
+difference mixes evidence with variational tightness. \status{ESTABLISHED}
+
+The increase in \eqref{eq:cg-elbo-monotone} reflects discarded information;
+it is not model improvement or EM evidence ascent. \status{NOT-CLAIMED}
+
+\section{Pushforward, energy precomposition, and identification}
+\label{sec:cg-three-operations}
+
+Let \(\iota:\mathsf Z\to\mathsf X\) be a measurable injection. The formula
+\begin{equation}
+\bar E(z)=E(\iota z),\qquad
+\bar P(dz)
+=\frac{e^{-\bar E(z)}}{\bar Z}\bar\nu(dz)
+\label{eq:cg-energy-precomposition}
+\end{equation}
+defines a new model only after \(\bar\nu\) and a finite \(\bar Z\) are
+declared. It is not a channel from \(\mathsf X\) to \(\mathsf Z\), and its
+pushforward can be supported on a fine-measure-null image. Therefore KL data
+processing, evidence preservation, and \eqref{eq:cg-elbo-monotone} do not
+follow. \status{DEFINITION}
+
+Exact marginalization is a special Markov pushforward. Hard identification is
+energy precomposition. Restricting a recognition family is neither: it keeps
+the fixed joint and optimizes the same ELBO over a subset. A proof about any
+one of these operations cannot be transferred to another by calling all
+three coarse-graining. \status{ESTABLISHED}
+
+\section{Graph-exponential energy closure}
+\label{sec:cg-graph-exponential}
+
+\definitionheading{Graph-exponential energy}{def:cg-graph-exponential-energy}
+Let \(V\) be finite, \(\mathsf Z_0\) standard Borel with sigma-finite
+\(\nu_0\), and let
+\(t:\mathsf Z_0\to\mathsf T_0\) and
+\(u:\mathsf Z_0^2\to\mathsf T_1\) be measurable, with \(u\) symmetric.
+Set
+\begin{equation}
+\mathcal E_\theta(z)
+=\sum_{i\in V}\langle\alpha_i,t(z_i)\rangle
++\sum_{\{i,j\}}\langle\beta_{ij},u(z_i,z_j)\rangle.
+\label{eq:cg-graph-energy}
+\end{equation}
+This is an unnormalized energy until its integral relative to
+\(\nu_0^{\otimes V}\) is finite. \status{DEFINITION}
+
+For a partition \(\mathcal P\), define
+\[
+\iota_{\mathcal P}:\mathsf Z_0^{\mathcal P}\to\mathsf Z_0^V,\qquad
+(\iota_{\mathcal P}\bar z)_i=\bar z_{I(i)}.
+\]
+Assume the diagonal-affinity hypothesis
+\begin{equation}
+u(z,z)=\Upsilon t(z)+u_0
+\label{eq:cg-diagonal-affinity}
+\end{equation}
+for a linear \(\Upsilon:\mathsf T_0\to\mathsf T_1\). \status{HYPOTHESIS}
+
+This excludes pair statistics whose diagonal restriction cannot be represented
+by the declared node statistic. \status{ESTABLISHED}
+
+\theoremheading{Graph-exponential trace closure}{thm:cg-graph-exponential-closure}
+Under \eqref{eq:cg-diagonal-affinity},
+\begin{equation}
+\mathcal E_\theta(\iota_{\mathcal P}\bar z)
+=\sum_I\langle\alpha_I,t(\bar z_I)\rangle
++\sum_{I<J}\langle\beta_{IJ},u(\bar z_I,\bar z_J)\rangle
++c_{\mathcal P}(\theta),
+\label{eq:cg-coarse-energy}
+\end{equation}
+where
+\begin{equation}
+\alpha_I=\sum_{i\in I}\alpha_i
++\Upsilon^\ast\sum_{\{i,j\}\subseteq I}\beta_{ij},
+\qquad
+\beta_{IJ}=\sum_{\substack{i\in I\\j\in J}}\beta_{ij},
+\qquad
+c_{\mathcal P}(\theta)
+=\left\langle\sum_I\sum_{\{i,j\}\subseteq I}\beta_{ij},u_0\right\rangle .
+\label{eq:cg-coarse-parameters}
+\end{equation}
+The induced parameter map is linear. A normalized coarse law exists if and
+only if
+\begin{equation}
+\bar Z_{\mathcal P}(\theta)
+=\int e^{\mathcal E_\theta(\iota_{\mathcal P}\bar z)}
+\nu_0^{\otimes\mathcal P}(d\bar z)<\infty.
+\label{eq:cg-coarse-normalizer}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Substitute the identified variables into \eqref{eq:cg-graph-energy}. Cut
+edges sum into \(\beta_{IJ}\). Internal edges use
+\eqref{eq:cg-diagonal-affinity}; the linear part joins \(\alpha_I\) and the
+constant joins \(c_{\mathcal P}\). This gives
+\eqref{eq:cg-coarse-energy}--\eqref{eq:cg-coarse-parameters}. The proof is
+algebraic and does not prove \eqref{eq:cg-coarse-normalizer}. \(\square\)
+
+If \(u(z,z)\) is constant, one may choose \(\Upsilon=0\), so internal edges
+are annihilated and node parameters add. Translation invariance implies this
+constant-diagonal property, but the converse is false because diagonal data
+do not determine \(u\) off the diagonal. Uniqueness of the coordinate choice
+\(\Upsilon=0\) requires minimal effective node statistics or quotienting
+null parameter directions. \status{ESTABLISHED}
+
+This theorem states conditional energy closure, not normalized-law closure.
+Its reference measure, normalizer, and any gauge action must be propagated
+separately. A compatible normalized family must satisfy
+\[
+P_\theta K=\bar P_{\rho(\theta)}
+\]
+for a declared channel \(K\) and parameter map \(\rho\); energy
+precomposition alone does not prove that equation. \status{HYPOTHESIS}
+
+\section{Galerkin operators and message passing}
+\label{sec:cg-galerkin}
+
+Let \(P:V_c\to V_f\) be injective, let \(R\succ0\) be a fine reference form,
+and let \(L\) be a fine bilinear form. Define
+\begin{equation}
+R_c=P^\top RP,\qquad
+C=R_c^{-1}P^\top R,\qquad
+H=R^{-1}L,\qquad
+H_c=CHP=R_c^{-1}P^\top LP.
+\label{eq:cg-galerkin-data}
+\end{equation}
+Then \(CP=I\). The form \(P^\top LP\) is the Galerkin coarse form, but
+\(H_c\) is the typed coarse propagator. \status{DEFINITION}
+
+\propositionheading{Exact message-passing residual}{prop:cg-message-passing-residual}
+The reduction and propagation obey
+\begin{equation}
+CH-H_cC=CH(I-PC).
+\label{eq:cg-message-residual}
+\end{equation}
+Hence exact coarse message passing holds on all fine signals exactly when the
+right side vanishes. If \(H\) is self-adjoint in the \(R\)-inner product,
+\(\operatorname{range}P\) being \(H\)-invariant is a sufficient and, for
+orthogonal projection \(PC\), equivalent condition. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Substitute \(H_c=CHP\) and use \(CP=I\):
+\[
+CH-H_cC=CH-CHPC=CH(I-PC).
+\]
+For an \(R\)-self-adjoint operator, invariance of a closed subspace is
+equivalent to reduction by its \(R\)-orthogonal projector. \(\square\)
+
+Thus exact quadratic-form restriction, generalized spectral approximation,
+and message-passing preservation are different statements. The first follows
+from Galerkin algebra; the other two require additional invariant-subspace or
+error hypotheses. A neural pooling layer also needs a signal map and a
+partition rule. No GNN or oversmoothing theorem follows from energy closure
+alone. \status{NOT-CLAIMED}
+
+\section{Gauge and permutation equivariance}
+\label{sec:cg-equivariance}
+
+\propositionheading{Equivariant Markov channels}{prop:cg-equivariant-channels}
+Let a group \(G\) act bimeasurably on \(\mathsf X,\mathsf Y\), and assume
+\begin{equation}
+K(gx,B)=K(x,g^{-1}B).
+\label{eq:cg-kernel-equivariance}
+\end{equation}
+Then
+\begin{equation}
+(g_\#P)K=g_\#(PK),
+\label{eq:cg-law-equivariance}
+\end{equation}
+and composites of equivariant kernels are equivariant.
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+For measurable \(B\),
+\[
+[(g_\#P)K](B)
+=\int K(gx,B)P(dx)
+=\int K(x,g^{-1}B)P(dx)
+=[g_\#(PK)](B).
+\]
+Substitution in \eqref{eq:cg-kernel-composition} proves closure under
+composition. \(\square\)
+
+For independently chosen belief and model frame coordinates, the passive
+coordinate group is \(G\times G\), although the underlying principal bundle
+has structure group \(G\). A joint coarse channel must intertwine the two
+represented coordinate actions. Under a genuine principal gauge
+transformation, those actions are the \(\rho_b\)- and \(\rho_m\)-images of the
+same element of \(G\).
+KL equality does not automatically make its Bayes recovery equivariant; an
+equivariant conditional version is an additional hypothesis or theorem,
+especially for noncompact groups. \status{OPEN}
+
+A data-dependent hard partition selector \(S(X)\) must also be natural under
+node relabeling. If \(P\) permutes fine nodes and \(Q\) permutes coarse labels,
+\begin{equation}
+S(P\cdot X)=PS(X)Q^\top
+\label{eq:cg-partition-naturality}
+\end{equation}
+is the required law. Gauge-carrying inputs must be reduced to invariant
+assignment scores, while represented messages transform equivariantly. These
+conditions do not select a unique partition; they only type an admissible
+selector. Constructing a selector satisfying them and the later holonomy
+conditions remains open. \status{OPEN}
+
+\section{Holonomy-conditioned marginal-law modes}
+\label{sec:cg-holonomy-law-modes}
+
+Fix a channel \(x\in\{b,m\}\), a finite connected cluster \(I\), and one
+declared internal path groupoid. The paths may be edge-labeled graph paths
+for typed graph links or base curves for the selected channel connection;
+the two cases are not identified. Let each represented transport
+\(T^x_\gamma:\mathsf Z_i^x\to\mathsf Z_j^x\), for
+\(\gamma:i\to j\), be a bimeasurable bijection satisfying composition and
+inversion. Assume that the parent-law family
+\(\mathscr M_i^x\subseteq\mathcal P(\mathsf Z_i^x)\) is equivariant:
+\((T^x_\gamma)_\#\mathscr M_i^x=\mathscr M_j^x\). Under a passive section
+rechoice \(u_i^{x\prime}=u_i^x a_i^x\), write
+\(R_i^x=\rho_x(a_i^x)^{-1}\) for the old-to-new sample-coordinate map;
+equivalently, the coordinate element is \(g_i^x=(a_i^x)^{-1}\) and
+\(R_i^x=\rho_x(g_i^x)\).  Also assume that
+\(\mathscr M_i^{x\prime}=(R_i^x)_\#\mathscr M_i^x\).
+\status{HYPOTHESIS}
+
+Bimeasurability excludes lossy transports, and family equivariance excludes
+parent classes tied to one root or frame; both hypotheses are used in the
+invariance proof below. \status{ESTABLISHED}
+
+Choose a root \(r\in I\), paths \(\gamma_i:i\to r\), marginal laws
+\(q_i^x\in\mathcal P(\mathsf Z_i^x)\), and weights \(w_i>0\) with
+\(\sum_{i\in I}w_i=1\). Define
+\begin{align}
+P_i^x&=(T^x_{\gamma_i})_\#q_i^x,
+&
+\mathfrak H_I^x(r)
+&=\{T^x_\lambda:\lambda:r\to r\},
+\label{eq:cg-transported-law-holonomy}\\
+\mathscr Q_{I,\mathrm{fix}}^x(r)
+&=\left\{Q\in\mathscr M_r^x:
+(H)_\#Q=Q\ \text{for every }H\in\mathfrak H_I^x(r)\right\},
+\label{eq:cg-holonomy-fixed-parent}
+\end{align}
+and the extended-real forward-KL score
+\begin{equation}
+\mathfrak D_I^x
+=\inf_{Q\in\mathscr Q_{I,\mathrm{fix}}^x(r)}
+\sum_{i\in I}w_i\KL(P_i^x\Vert Q),
+\qquad \inf\varnothing:=+\infty.
+\label{eq:cg-holonomy-kl-score}
+\end{equation}
+Any minimizer, when one exists, is a holonomy-conditioned marginal-law
+mode. These are definitions, not existence assertions. \status{DEFINITION}
+
+\theoremheading{Invariant holonomy-conditioned marginal-law mode}{thm:cg-holonomy-kl-marginal}
+The value in \eqref{eq:cg-holonomy-kl-score} is independent of the chosen
+paths, root, and passive gauge coordinates. If the infimum is attained, then
+\begin{equation}
+\mathfrak D_I^x=0
+\quad\Longleftrightarrow\quad
+\text{there is }Q_\star\in\mathscr Q_{I,\mathrm{fix}}^x(r)
+\text{ such that }(T^x_{\gamma_i})_\#q_i^x=Q_\star
+\text{ for every }i\in I.
+\label{eq:cg-holonomy-parallel-law-section}
+\end{equation}
+The right side is precisely a holonomy-stabilized parallel marginal-law
+section. If \(\mathscr Q_{I,\mathrm{fix}}^x(r)=\varnothing\), then
+\(\mathfrak D_I^x=+\infty\). If \(\mathfrak D_I^x=0\) but the infimum is not
+attained, the conclusion is only forward-KL approximability by admissible
+fixed parent laws; no member \(Q_\star\) of that family has been produced.
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+For a bimeasurable bijection \(A\), if \(P\not\ll Q\), then
+\(A_\#P\not\ll A_\#Q\), so both divergences below are infinite. If
+\(P\ll Q\), then
+\begin{equation}
+\frac{d(A_\#P)}{d(A_\#Q)}
+=\frac{dP}{dQ}\circ A^{-1}
+\quad A_\#Q\text{-almost surely},
+\label{eq:cg-rn-bimeasurable}
+\end{equation}
+and integration gives
+\begin{equation}
+\KL(A_\#P\Vert A_\#Q)=\KL(P\Vert Q),
+\label{eq:cg-kl-bimeasurable-invariance}
+\end{equation}
+as an identity in \([0,+\infty]\). If \(\gamma_i'\) is another path from
+\(i\) to \(r\), then
+\(H_i=T^x_{\gamma_i'}\circ(T^x_{\gamma_i})^{-1}\) belongs to
+\(\mathfrak H_I^x(r)\). Hence, for every fixed parent \(Q\),
+\begin{equation}
+\KL((H_i)_\#P_i^x\Vert Q)
+=\KL((H_i)_\#P_i^x\Vert(H_i)_\#Q)
+=\KL(P_i^x\Vert Q).
+\label{eq:cg-path-kl-invariance}
+\end{equation}
+Thus every objective value, and therefore its infimum, is path independent.
+
+For a new root \(r'\) and a path \(\delta:r\to r'\), transport conjugates
+\(\mathfrak H_I^x(r)\) onto \(\mathfrak H_I^x(r')\). Equivariance of
+\(\mathscr M^x\) therefore makes
+\(Q\mapsto(T^x_\delta)_\#Q\) a bijection between the two fixed parent
+families, while the paths \(\delta\circ\gamma_i\) send every \(P_i^x\) by
+that same bijection. Equation \eqref{eq:cg-kl-bimeasurable-invariance}
+preserves every term. Path independence then covers arbitrary paths to the
+new root.
+
+Under the same passive section rechoices, use the old-to-new represented maps
+\(R_i^x=\rho_x(a_i^x)^{-1}\) declared above.
+Then
+\begin{equation}
+T_{\gamma_i}^{x\prime}
+=R_r^x\circ T_{\gamma_i}^x\circ(R_i^x)^{-1},
+\qquad
+q_i^{x\prime}=(R_i^x)_\#q_i^x.
+\label{eq:cg-law-gauge-rechoice}
+\end{equation}
+Consequently all transported marginals are pushed forward by
+\(R_r^x\), the holonomy group is conjugated by the same map, and
+parent-family equivariance carries the fixed family bijectively. A final
+application of \eqref{eq:cg-kl-bimeasurable-invariance} proves gauge
+invariance.
+
+Relative entropy is nonnegative and vanishes exactly when its two probability
+measures agree. If a minimizer \(Q_\star\) exists, positivity of every \(w_i\)
+makes its weighted sum zero exactly when \(P_i^x=Q_\star\) for all \(i\),
+which proves \eqref{eq:cg-holonomy-parallel-law-section}. Holonomy-fixity
+makes the reconstructed laws
+\(((T^x_{\gamma_i})^{-1})_\#Q_\star\) independent of path, so they form the
+stated parallel section. The empty-family assertion is the convention in
+\eqref{eq:cg-holonomy-kl-score}. Finally, if the zero infimum is not
+attained, its definition supplies, for every \(n\geq1\), some
+\(Q_n\in\mathscr Q_{I,\mathrm{fix}}^x(r)\) with
+\(\sum_iw_i\KL(P_i^x\Vert Q_n)<1/n\), and supplies no minimizer. \(\square\)
+
+The score matches marginal laws after transport. The cluster and its weights
+are inputs, so it does not select a partition. It supplies neither a Markov
+kernel nor a normalized coarse channel, and it does not recover the
+dependence structure of a joint law. These stronger conclusions are not
+claimed. \status{NOT-CLAIMED}
+
+For a statistical experiment
+\(\{P_\theta\}_{\theta\in\Theta}\), exact common recovery instead requires
+parameter-independent Markov kernels \(C\) and \(R\) satisfying
+\begin{equation}
+P_\theta C R=P_\theta
+\qquad\text{for every }\theta\in\Theta.
+\label{eq:cg-holonomy-common-recovery}
+\end{equation}
+Here \(C,R\) are local kernel notation, not the Galerkin reduction and
+reference form in \eqref{eq:cg-galerkin-data}.
+This is the common-recovery condition, not a consequence of
+\eqref{eq:cg-holonomy-kl-score}. \status{DEFINITION}
+
+Under the richness
+hypothesis of \Cref{prop:prob-marginals-do-not-determine-joint}, distinct
+joint laws can have identical coordinate marginals. Identical transported
+marginals therefore do not imply \eqref{eq:cg-holonomy-common-recovery}.
+\status{ESTABLISHED}
+
+\corollaryheading{Parallel cross morphisms preserve fixed marginal-law sections}{cor:cg-holonomy-cross-morphism}
+Let \(\Phi:\mathcal E_b\to\mathcal E_m\) be a cross-associated-bundle
+morphism on law fibers that is parallel for the chosen path system. Writing
+\(\widehat T_\gamma^x=(T_\gamma^x)_\#\), this means
+\begin{equation}
+\widehat T_\gamma^m\circ\Phi_i
+=\Phi_j\circ\widehat T_\gamma^b
+\qquad(\gamma:i\to j).
+\label{eq:cg-cross-morphism-path-intertwining}
+\end{equation}
+For base-connection paths this is ordinary parallelness. For independently
+declared graph paths, \eqref{eq:cg-cross-morphism-path-intertwining} is an
+additional link-intertwining hypothesis and does not follow from smooth
+parallelness. Assume also
+\(\Phi_r(\mathscr M_r^b)\subseteq\mathscr M_r^m\).
+\status{HYPOTHESIS}
+
+Then
+\begin{equation}
+\Phi_r\bigl(\mathscr Q_{I,\mathrm{fix}}^b(r)\bigr)
+\subseteq\mathscr Q_{I,\mathrm{fix}}^m(r).
+\label{eq:cg-phi-holonomy-fixed}
+\end{equation}
+Moreover, applying \(\Phi_i\) fiberwise to a holonomy-stabilized parallel
+belief-law section gives such a model-law section. If
+\(\widetilde\Phi:\mathcal E_m\to\mathcal E_b\) is likewise parallel for the
+chosen path system and
+\(\widetilde\Phi_r(\mathscr M_r^m)\subseteq\mathscr M_r^b\), then
+\begin{equation}
+\widetilde\Phi_r\bigl(\mathscr Q_{I,\mathrm{fix}}^m(r)\bigr)
+\subseteq\mathscr Q_{I,\mathrm{fix}}^b(r),
+\label{eq:cg-tildephi-holonomy-fixed}
+\end{equation}
+and the analogous model-to-belief statement holds. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+If \(Q\in\mathscr Q_{I,\mathrm{fix}}^b(r)\) and \(\lambda:r\to r\), then
+\begin{equation}
+\widehat T_\lambda^m(\Phi_r(Q))
+=\Phi_r(\widehat T_\lambda^b(Q))
+=\Phi_r(Q).
+\label{eq:cg-phi-loop-fixed}
+\end{equation}
+Parent-family compatibility proves \eqref{eq:cg-phi-holonomy-fixed}. If the
+belief marginals transport to \(Q\), the same commutative square shows that
+their \(\Phi_i\)-images transport to \(\Phi_r(Q)\). Interchanging \(b,m\)
+and replacing \(\Phi\) by \(\widetilde\Phi\) proves
+\eqref{eq:cg-tildephi-holonomy-fixed}. \(\square\)
+
+This corollary does not identify \(\mathcal E_b\) with \(\mathcal E_m\),
+does not require equal fiber dimensions or equivalent representations
+\(\rho_b,\rho_m\). No KL-preservation hypothesis is imposed, so no equality
+or ordering between \(\mathfrak D_I^b\) and \(\mathfrak D_I^m\) is claimed.
+Existence, parallelness, and parent-family compatibility of each cross
+morphism are additional structure. \status{NOT-CLAIMED}
+
+\section{Projective systems of laws}
+\label{sec:cg-projective-laws}
+
+\theoremheading{Cylinder-level projective law}{thm:cg-projective-cylinder-law}
+Let \(\mathcal I\) be an index set and each coordinate space
+\(\mathsf Z_i\) standard Borel. For every finite \(D\subset\mathcal I\), let
+\(P_D\) be a probability law on \(\mathsf Z_D=\prod_{i\in D}\mathsf Z_i\).
+If
+\begin{equation}
+(\pi_{E,D})_\#P_E=P_D\qquad(D\subset E),
+\label{eq:cg-projective-consistency}
+\end{equation}
+then there is a unique law on the product cylinder sigma-algebra with
+finite-dimensional marginals \(P_D\). Compatible finite-dimensional gauge
+equivariance passes to the limit. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+This is the Kolmogorov extension theorem for standard Borel coordinate spaces
+\citep{Kallenberg2021}. The transformed and original laws have identical
+finite-dimensional marginals under compatible equivariance, so uniqueness
+gives the last assertion. \(\square\)
+
+Consistency alone does not put the limit on continuous or smooth sections,
+define a continuum reference density, justify an ELBO limit, or produce an RG
+flow. Those conclusions require support regularity, compatible kernels and
+rescalings, convergence or uniform integrability of the functionals, and a
+declared topology. \status{OPEN}
+
+\paragraph{Physicist summary.}
+A general coarse-graining is a noisy detector. Detectors compose, and they
+cannot increase KL distinguishability or Fisher information. Equality in KL
+means that a reverse detector recovers the particular laws; equality in
+Fisher means only that the infinitesimal score survived. Restricting an energy
+to block-constant fields is a different construction: it is a new model until
+its measure and normalizer are supplied. Galerkin restriction is exact for
+the quadratic form, but propagation needs a mass form and has the explicit
+residual \eqref{eq:cg-message-residual}. Holonomy determines the admissible
+parallel marginal-law modes. When the infimum is attained, transported
+forward KL tests whether the actual marginals occupy one; without attainment,
+a zero infimum establishes only approximability. Neither construction selects
+a partition or proves joint-law recovery. These distinctions are the general
+spine that the later multivariate-Gaussian chapters realize.

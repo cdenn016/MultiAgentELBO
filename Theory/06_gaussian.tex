@@ -1,0 +1,372 @@
+\chapter{The Gaussian Information Form and the Interaction Family}
+\label{ch:gaussian}
+
+The preceding chapters first allow general belief-law and model-law fibers, with smooth manifolds selected only at the differential tier, and then identify regular exponential families as a tractable dominated subclass. Nothing in that construction selects the multivariate Gaussian. This chapter makes that additional choice. It develops one finite-dimensional Gaussian realization in information form, where the primitive coordinates are a vector and a matrix of natural parameters rather than a mean and a covariance, and it then isolates the still narrower subfamily of Gaussian precisions on which the renormalization half of this document acts. None of the matrix identities below is asserted for an arbitrary belief fiber.
+
+Two things are worth separating at the outset, because conflating them is the standing hazard of the whole subject. Writing a Gaussian in information form is a change of coordinates and costs nothing. Restricting the precision to the Laplacian-plus-self-terms shape of Section~\ref{sec:gauss-interaction-family} is a substantive restriction that costs a great deal, and it does not follow from the generative constructions of the preceding part. Section~\ref{sec:gauss-hypothesis} proves that it does not, exhibits the exact obstruction, and then states precisely the parameter condition under which the shape is recovered. The restriction is carried forward as a declared hypothesis, and every later result that uses it says so.
+
+Throughout, the development is written for the state sector, with agents $i\in V=\{1,\dots,N\}$, state latents $k_i\in\R^{K}$, and stacked latent $Y$ of dimension $n:=NK$. The model sector, with latents $m_i\in\R^{d_m}$, is identical with $K$ replaced by $d_m$, and a partition mixing the two sectors is admissible wherever a partition is required. The design $D=\{c_a\}_{a=1}^{M}$ plays no role in the algebra below; either fix one design point, or read the index $i$ as ranging over agent-design pairs, and every statement stands unchanged.
+
+\section{The recognition family in information form}
+\label{sec:gauss-information-form}
+
+Let $\nu$ be Lebesgue measure on $\R^{n}$. The Gaussian family in \emph{information form} is parameterized by a vector $h\in\R^{n}$ and a symmetric positive definite matrix $J\in\Sym_{++}^{n}$ through the density
+\begin{equation}
+q(y\given h,J)
+=\exp\left(h^\top y-\tfrac12 y^\top Jy-\mathsf A(h,J)\right),
+\qquad y\in\R^{n}.
+\label{eq:gauss-density}
+\end{equation}
+The pair $(h,J)$ are the natural parameters, $J$ is the precision, and $\mathsf A$ is the log normalizer. The symbol $\mathsf A$ is reserved for the log normalizer and never for a self term; the self terms of Section~\ref{sec:gauss-interaction-family} are written $A_i$ with a subscript and are $K\times K$ matrices.
+
+\propositionheading{Log normalizer, moments, and convexity}{prop:gauss-log-normalizer-moments}
+For every $(h,J)\in\R^{n}\times\Sym_{++}^{n}$ the density in Equation~\eqref{eq:gauss-density} is normalizable, with
+\begin{equation}
+\mathsf A(h,J)
+=\tfrac12 h^\top J^{-1}h-\tfrac12\log\det J+\tfrac n2\log 2\pi.
+\label{eq:gauss-lognorm}
+\end{equation}
+Its differential is
+\begin{equation}
+d\mathsf A=\mu^\top dh-\tfrac12\Tr\left[\left(C+\mu\mu^\top\right)dJ\right],
+\qquad
+\mu=J^{-1}h,
+\qquad
+C=J^{-1},
+\label{eq:gauss-moments}
+\end{equation}
+so the mean and covariance of $q(\cdot\given h,J)$ are $\mu$ and $C$, and the Hessian of $\mathsf A$ in $h$ at fixed $J$ is $C$. Regarded as a function of the natural parameter pair $(h,\Theta)$ with $\Theta=-\tfrac12J$, the log normalizer is strictly convex on the open convex domain $\R^{n}\times\{\Theta\prec0\}$. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Complete the square in the exponent,
+\begin{equation}
+h^\top y-\tfrac12 y^\top Jy
+=-\tfrac12\left(y-J^{-1}h\right)^\top J\left(y-J^{-1}h\right)+\tfrac12 h^\top J^{-1}h,
+\label{eq:gauss-complete-square}
+\end{equation}
+and integrate the Gaussian kernel, whose value is $(2\pi)^{n/2}(\det J)^{-1/2}$ because $J\succ0$. Exponentiating and taking logarithms gives Equation~\eqref{eq:gauss-lognorm}. Differentiating Equation~\eqref{eq:gauss-lognorm} termwise, $d(\tfrac12h^\top J^{-1}h)=h^\top J^{-1}dh-\tfrac12\Tr(J^{-1}hh^\top J^{-1}dJ)$ and $d(-\tfrac12\log\det J)=-\tfrac12\Tr(J^{-1}dJ)$, which is Equation~\eqref{eq:gauss-moments}. The identification of $\nabla_h\mathsf A$ with the mean and $\nabla_h^2\mathsf A$ with the covariance is the standard exponential-family cumulant property, valid here because the family is regular: the domain is open and differentiation under the integral is licensed on the interior of the natural domain \citep{Brown1986}. Convexity is the convexity of a log-Laplace transform, and strictness follows because the family is minimal, the statistics $(y,yy^\top)$ being affinely independent \citep{Brown1986,Wainwright2008}. Since $J\mapsto-\tfrac12J$ is affine, convexity in $(h,\Theta)$ transfers to convexity in $(h,J)$ on $\{J\succ0\}$. $\square$
+
+Two consequences of Equation~\eqref{eq:gauss-moments} organize everything that follows. The first is that $(h,J)$ and $(\mu,C)$ are two coordinate systems on one family, related by the Legendre correspondence of a minimal exponential family, so no information is lost by working in either. The second is that the Fisher information of the family in the natural parameter $h$ is exactly $C=J^{-1}$, while the Fisher information in the mean parameter $\mu$ at fixed covariance is exactly $J$. The precision is therefore simultaneously a coupling matrix and a metric, and the renormalization chapters use both readings.
+
+\section{What an off-diagonal precision block is}
+\label{sec:gauss-conditional-reading}
+
+Let $\mathfrak B$ be a finite partition of the $n$ coordinates into blocks, with block dimensions $n_b$ summing to $n$, and write $J_{bc}$ for the corresponding submatrices. The meaning of $J_{bc}$ for $b\neq c$ is fixed by the following statement, which is standard but is stated here in full because the rest of the document depends on reading it correctly.
+
+\propositionheading{Conditional reading of the precision}{prop:gauss-conditional-precision}
+Let $Y\sim\mathcal N(\mu,J^{-1})$ with $J\succ0$. For any block $b$,
+\begin{equation}
+\E\left[Y_b\given Y_{-b}=y_{-b}\right]
+=\mu_b-J_{bb}^{-1}\sum_{c\neq b}J_{bc}\left(y_c-\mu_c\right),
+\qquad
+\operatorname{Cov}\left(Y_b\given Y_{-b}\right)=J_{bb}^{-1}.
+\label{eq:gauss-conditional}
+\end{equation}
+For any two distinct blocks $b$ and $c$, the variables $Y_b$ and $Y_c$ are conditionally independent given all remaining coordinates if and only if $J_{bc}=0$. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Fix $y_{-b}$ and read the exponent of Equation~\eqref{eq:gauss-density} as a function of $y_b$ alone. It is $-\tfrac12y_b^\top J_{bb}y_b$ plus a linear term, so the conditional law is Gaussian with precision $J_{bb}$, and completing the square in $y_b$ around $\mu$ gives the displayed conditional mean. For the second claim, condition on the coordinates outside $b\cup c$ and repeat the argument: the conditional law of $(Y_b,Y_c)$ is Gaussian with precision $\begin{psmallmatrix}J_{bb}&J_{bc}\\J_{cb}&J_{cc}\end{psmallmatrix}$, and a Gaussian density factorizes into a function of $y_b$ times a function of $y_c$ if and only if the quadratic form has no cross term, that is if and only if $J_{bc}=0$. This is the Gaussian case of the pairwise Markov property \citep[Ch.~5]{Lauritzen1996}; the same statement organizes the Gaussian Markov random field literature \citep[Ch.~2]{RueHeld2005}. $\square$
+
+Equation~\eqref{eq:gauss-conditional} also fixes the sign convention that Section~\ref{sec:gauss-interaction-family} will exploit. A negative semidefinite off-diagonal block $J_{bc}\preceq0$ makes the conditional mean of $Y_b$ move \emph{toward} $y_c$ as $y_c$ departs from its own mean, so negative off-diagonal precision is attractive coupling. The interaction family is the family in which every off-diagonal block is attractive in this sense.
+
+\paragraph{Precision blocks are not covariance values.}
+A zero off-diagonal precision block is a statement about conditional dependence and carries no implication about the marginal covariance. The tridiagonal example
+\begin{equation}
+J=\begin{pmatrix}2&-1&0\\-1&2&-1\\0&-1&2\end{pmatrix},
+\qquad
+J^{-1}=\frac14\begin{pmatrix}3&2&1\\2&4&2\\1&2&3\end{pmatrix},
+\label{eq:gauss-precision-not-covariance}
+\end{equation}
+has $J_{13}=0$ and $(J^{-1})_{13}=\tfrac14\neq0$. In general the marginal covariance of a block is the inverse of a Schur complement,
+\begin{equation}
+\left(J^{-1}\right)_{bb}
+=\left(J_{bb}-J_{b,-b}J_{-b,-b}^{-1}J_{-b,b}\right)^{-1},
+\label{eq:gauss-marginal-block}
+\end{equation}
+so it records the effect of every path through the remaining coordinates, whereas $J_{bb}^{-1}$ records only the conditional dispersion of Equation~\eqref{eq:gauss-conditional} \citep{Zhang2005Schur}. The two coincide exactly when $J_{b,-b}=0$. \status{ESTABLISHED}
+
+The distinction exhibited by \eqref{eq:gauss-precision-not-covariance} is
+the reason this document works in information form. A restriction imposed
+on the recognition family is a restriction on conditional dependence, and
+it is stated cleanly only in coordinates in which conditional dependence is
+a coordinate. The exact price is computed in \Cref{ch:restrictions}.
+
+\section{The declared interaction subfamily}
+\label{sec:gauss-interaction-family}
+
+\definitionheading{Interaction family}{def:gauss-interaction-family}
+Let $\Lambda\in\Sym^{NK}$ be partitioned into $K\times K$ blocks indexed by agents. Say that $\Lambda$ belongs to the \emph{interaction family} $\mathcal I(V)$ when there exist matrices $A_i\in\PSD^{K}$ and $W_{ij}=W_{ji}\in\PSD^{K}$ for $i\neq j$ with
+\begin{equation}
+\Lambda_{ii}=A_i+\sum_{j\neq i}W_{ij},
+\qquad
+\Lambda_{ij}=-W_{ij}\quad(i\neq j).
+\label{eq:gauss-interaction-family}
+\end{equation}
+The $A_i$ are the \emph{self terms}, the $W_{ij}$ the \emph{edge weights}, and $L:=\Lambda-\operatorname{blockdiag}(A_1,\dots,A_N)$ the \emph{Laplacian part}. Nothing is proved by this definition; it declares a type. \status{DEFINITION}
+
+The edge weights are matrices, so $L$ is a matrix-weighted graph Laplacian rather than a scalar-weighted one. That object, and the ways in which it fails to behave like its scalar counterpart, are the subject of the matrix-weighted consensus literature \citep{Trinh2018MatrixWeighted}, and one of those failures appears immediately below.
+
+\propositionheading{Energy and kernel}{prop:gauss-interaction-energy-kernel}
+For $\Lambda\in\mathcal I(V)$ and any $y=(y_1,\dots,y_N)$,
+\begin{equation}
+y^\top\Lambda y
+=\sum_{i\in V}y_i^\top A_iy_i
++\sum_{i<j}\left(y_i-y_j\right)^\top W_{ij}\left(y_i-y_j\right).
+\label{eq:gauss-interaction-energy}
+\end{equation}
+Consequently $\Lambda\succeq0$ for every admissible choice of parameters; the consensus subspace $\mathbf 1\otimes\R^{K}$ lies in $\ker L$; and $\Lambda\succ0$ if and only if the only $y$ satisfying $A_iy_i=0$ for all $i$ together with $W_{ij}(y_i-y_j)=0$ for all $i<j$ is $y=0$. A necessary condition for $\Lambda\succ0$ is $\sum_iA_i\succ0$. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Expand the right-hand side of Equation~\eqref{eq:gauss-interaction-energy}. The self sum contributes $\sum_iy_i^\top A_iy_i$ to the diagonal blocks. Each unordered pair contributes $y_i^\top W_{ij}y_i+y_j^\top W_{ij}y_j-2y_i^\top W_{ij}y_j$, which places $W_{ij}$ on the $ii$ and $jj$ diagonal blocks and $-W_{ij}$ on the $ij$ and $ji$ off-diagonal blocks. Summing reproduces Equation~\eqref{eq:gauss-interaction-family}. Every term of Equation~\eqref{eq:gauss-interaction-energy} is nonnegative because $A_i\succeq0$ and $W_{ij}\succeq0$, so $\Lambda\succeq0$; and a sum of nonnegative terms vanishes only when each vanishes, which for a positive semidefinite matrix $A$ and vector $v$ means $v^\top Av=0$ if and only if $Av=0$. Taking $y=\mathbf 1\otimes v$ makes every difference vanish, so the consensus subspace lies in $\ker L$, and evaluating Equation~\eqref{eq:gauss-interaction-energy} there gives $v^\top(\sum_iA_i)v$, whence the necessary condition. $\square$
+
+The kernel criterion in \Cref{prop:gauss-interaction-energy-kernel} is where the matrix-weighted setting departs from the scalar one. In the scalar case a connected interaction graph forces $\ker L$ to be exactly the consensus subspace. With matrix weights, a singular $W_{ij}$ leaves the difference $y_i-y_j$ free along $\ker W_{ij}$, so $\ker L$ can be strictly larger than the consensus subspace even on a connected graph, and connectivity alone is not a definiteness criterion \citep{Trinh2018MatrixWeighted}. The criterion stated in the proposition is exact and replaces it.
+
+\propositionheading{The interaction family is thin}{prop:gauss-interaction-family-thin}
+For $K\geq2$ and $N\geq2$, $\mathcal I(V)$ is contained in a proper linear subspace of $\Sym^{NK}$ of codimension at least $\binom N2\tfrac{K(K-1)}{2}$, hence has Lebesgue measure zero in $\Sym^{NK}$. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Symmetry of a matrix $\Lambda$ already forces $\Lambda_{ji}=\Lambda_{ij}^\top$ for every ordered pair, so this identity carries no information about the family. Membership additionally requires each off-diagonal block $\Lambda_{ij}$ to be symmetric \emph{as a $K\times K$ matrix}, since $W_{ij}=W_{ji}$ and $W_{ji}=W_{ij}^\top$ together give $W_{ij}=W_{ij}^\top$. That is $\tfrac{K(K-1)}{2}$ independent linear equations per unordered pair, and there are $\binom N2$ pairs. The remaining requirements are conic inequalities, which can only shrink the set further. $\square$
+
+\Cref{prop:gauss-interaction-family-thin} is the quantitative form of the claim that the interaction shape is a restriction in a fixed product chart rather than a normalization. It is not invariant under arbitrary independent block-diagonal coordinate changes, so membership may be created or destroyed by such a change and no coordinate-orbit exclusion follows from thinness. An exact witness starts from the interaction precision with \(N=2\), \(K=2\), \(A_1=A_2=I_2\), and \(W_{12}=I_2\). Congruence by \(G=\operatorname{diag}(I_2,S)\), \(S=\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)\), changes the off-diagonal block from \(-I_2\) to \(-S\), which is not symmetric and hence is outside the family; applying \(G^{-1}\) to that transformed precision creates membership again. The invariant statement is only that a declared trivialization must be fixed before Equation~\eqref{eq:gauss-interaction-family} is imposed. Section~\ref{sec:gauss-hypothesis} asks when the generative construction supplies such a distinguished chart.
+
+\section{The interaction form is a hypothesis and not a consequence}
+\label{sec:gauss-hypothesis}
+
+\subsection{Trivialized coordinates and flat comparison}
+
+In this Gaussian belief-channel subsection, write
+\(\Theta_{ij}:=\rho_b(\Theta_{ij}^b)\in\GL^+(K)\) for the represented
+graph link.  This abbreviation does not identify it with a base-manifold
+parallel transport.
+
+The state latents carry frames. A residual between two agents is not $k_i-k_j$, which compares vectors in different fibers, but $k_i-\Theta_{ij}k_j$, where $\Theta_{ij}$ is the represented belief-channel graph link. The interaction shape of \Cref{def:gauss-interaction-family} involves plain differences, so it can only be a statement in coordinates in which the graph links have been removed. When that removal is possible is settled exactly by the following.
+
+\propositionheading{Simultaneous trivialization is exactly coboundary}{prop:gauss-coboundary-trivialization}
+Let $G=(V,E)$ be a connected graph and let $\{\Theta_{ij}\}_{(i,j)\in E}\subset\GL^{+}(K)$ satisfy $\Theta_{ji}=\Theta_{ij}^{-1}$. There exist frames $\{U_i\}\subset\GL^{+}(K)$ with $U_i^{-1}\Theta_{ij}U_j=I$ for every edge if and only if $\Theta_{ij}=U_iU_j^{-1}$ for those frames, and this holds if and only if the ordered product of graph links around every cycle of $G$ is the identity. When it holds, the frames are unique up to a common right factor $U_i\mapsto U_ig$ with $g\in\GL^{+}(K)$ independent of $i$. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+The condition $U_i^{-1}\Theta_{ij}U_j=I$ is literally $\Theta_{ij}=U_iU_j^{-1}$, which gives the first equivalence. For the second, suppose such frames exist and let $i_0,i_1,\dots,i_r=i_0$ be a cycle. Then $\prod_{t}\Theta_{i_ti_{t+1}}=\prod_t U_{i_t}U_{i_{t+1}}^{-1}=U_{i_0}U_{i_0}^{-1}=I$ by telescoping. Conversely, assume every cycle product is the identity, fix a spanning tree and a root $r$, set $U_r=I$, and define $U_i$ as the ordered product of graph links along the tree path from $r$ to $i$. The relation $\Theta_{ij}=U_iU_j^{-1}$ then holds on every tree edge by construction, and on a non-tree edge it holds precisely because the cycle formed by that edge and the tree path between its endpoints has trivial product. For uniqueness, if $U_iU_j^{-1}=U_i'U_j'^{-1}$ on every edge then $U_i'^{-1}U_i=U_j'^{-1}U_j$ for adjacent $i,j$, so this quantity is constant on a connected graph. $\square$
+
+\hypothesisheading{Flat comparison}{hyp:gauss-flat-comparison}
+The declared graph links are a coboundary, $\Theta_{ij}=U_iU_j^{-1}$, so that the trivialization $z_i=U_i^{-1}\mu_i$ of the means, and the same map $z_i=U_i^{-1}k_i$ applied to the latents themselves, turn every residual into a plain difference,
+\begin{equation}
+\mu_i-\Theta_{ij}\mu_j=U_i\left(z_i-z_j\right).
+\label{eq:gauss-flat-trivialization}
+\end{equation}
+This is a choice, not a derivation. By \Cref{prop:gauss-coboundary-trivialization} it excludes exactly the graph-link assignments with nontrivial holonomy around some cycle, which are permitted in Regime II. It is used in two places: it makes the interaction shape of \Cref{def:gauss-interaction-family} a statement in one fixed coordinate system, and it supplies a clean sufficient domain for closure under aggregation. In the flat chart the represented link
+\(\widehat\Theta_{ij}:=U_i^{-1}\Theta_{ij}U_j\) equals \(I\), so merging two
+agents by \(z_i=z_j=z\) annihilates their internal residual. More generally,
+in an arbitrary common chart the internal edge energy becomes
+\[
+z^\top(I-\widehat\Theta_{ij})^\top
+W_{ij}(I-\widehat\Theta_{ij})z,
+\]
+which vanishes for every \(z\) exactly when
+\(W_{ij}^{1/2}(I-\widehat\Theta_{ij})=0\). Positive-definite \(W_{ij}\), or
+faithfulness of the weight on every represented direction, reduces this
+condition to \(\widehat\Theta_{ij}=I\); with merely positive-semidefinite
+weights, a nontrivial represented link can survive in invisible null
+directions. Thus \Cref{prop:gauss-coboundary-trivialization} remains the exact
+coboundary theorem, while the converse from energy annihilation to a trivial
+represented link requires the stated nondegeneracy. The coarse-graining
+chapter carries out the weighted computation and separates the sufficient
+trivializing domain from degenerate exceptions. \status{HYPOTHESIS}
+
+Two remarks fix the status of Equation~\eqref{eq:gauss-flat-trivialization}. First, the change of variables $y=Uz$ with $U=\operatorname{blockdiag}(U_1,\dots,U_N)$ acts on precisions by congruence, $\Lambda^{(y)}=U^{-\top}\Lambda^{(z)}U^{-1}$, which preserves inertia by Sylvester's law \citep[Ch.~4]{HornJohnson2013} but does not preserve membership in $\mathcal I(V)$, since the transformed off-diagonal block $U_i^{-\top}\Lambda^{(z)}_{ij}U_j^{-1}$ need not be symmetric when $U_i\neq U_j$. Membership in the interaction family is therefore a frame-dependent assertion. Second, that frame dependence is exactly why the invariants of the renormalization chapters are stated as generalized eigenvalues of the pair $(L,\Lambda)$ rather than as eigenvalues of either matrix alone: the pair transforms by the same congruence and the generalized spectrum is unchanged. \status{ESTABLISHED}
+
+\subsection{What a directed linear-Gaussian model actually contributes}
+
+Consider the state sector of a directed linear-Gaussian model of the kind used in the preceding part: each non-root agent $i$ has a single parent $j=\operatorname{pa}(i)$ and receiving kernel
+\begin{equation}
+k_i\given k_j\sim\mathcal N\left(G_i\Theta_{ij}k_j,\Lambda_i^{-1}\right),
+\qquad
+\Lambda_i\in\Sym_{++}^{K},
+\qquad
+G_i\in\R^{K\times K},
+\label{eq:gauss-receiving-kernel}
+\end{equation}
+and each root $r$ carries a proper prior $\mathcal N(0,\Lambda_r^{-1})$, a nonzero prior mean shifting only the information vector $h$ and not the precision. The gain is written $G_i$ rather than $A_i$ because the latter symbol is reserved for the self terms of \Cref{def:gauss-interaction-family}. Unlike the represented graph link \(\Theta_{ij}\), the conditional mean map \(G_i\) need not be invertible: positive definiteness of the innovation covariance normalizes the receiving kernel for every matrix \(G_i\), exactly as \Cref{ch:generative} declares. A single subscript on $\Lambda$ denotes the innovation precision of one receiving kernel; a double subscript denotes a block of the assembled precision. When an invertible-gain submodel is wanted it will be named explicitly.
+
+\propositionheading{Assembled precision blocks}{prop:gauss-assembled-precision-blocks}
+Write $T_i:=G_i\Theta_{i\operatorname{pa}(i)}$ and $\operatorname{ch}(i)=\{\ell:\operatorname{pa}(\ell)=i\}$. The joint precision of the model above has blocks
+\begin{equation}
+\Lambda_{i\operatorname{pa}(i)}=-\Lambda_iT_i,
+\qquad
+\Lambda_{ii}=\Lambda_i+\sum_{\ell\in\operatorname{ch}(i)}T_\ell^\top\Lambda_\ell T_\ell,
+\label{eq:gauss-directed-blocks}
+\end{equation}
+and $\Lambda_{ij}=0$ whenever $i$ and $j$ are not adjacent in the parent graph. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+The negative log joint density is $\tfrac12\sum_i(k_i-T_ik_{\operatorname{pa}(i)})^\top\Lambda_i(k_i-T_ik_{\operatorname{pa}(i)})$ plus terms not depending on $k$, with the parent term absent at a root. Expanding one summand gives $\tfrac12k_i^\top\Lambda_ik_i-k_i^\top\Lambda_iT_ik_{\operatorname{pa}(i)}+\tfrac12k_{\operatorname{pa}(i)}^\top T_i^\top\Lambda_iT_ik_{\operatorname{pa}(i)}$. The precision is the Hessian of this function, and collecting the three contributions of each factor gives Equation~\eqref{eq:gauss-directed-blocks}. $\square$
+
+By Equation~\eqref{eq:gauss-directed-blocks}, membership in the interaction family requires the matrix
+\begin{equation}
+W_{i\operatorname{pa}(i)}:=\Lambda_iT_i=\Lambda_iG_i\Theta_{i\operatorname{pa}(i)}
+\label{eq:gauss-candidate-weight}
+\end{equation}
+to be symmetric and positive semidefinite. Neither property is automatic, and both fail on explicit parameter values.
+
+Two sources of failure must be kept apart, and a convention does it. Under \Cref{hyp:gauss-flat-comparison} the trivialized residual is $z_i-\widetilde T_iz_j$ with
+\begin{equation}
+\widetilde T_i:=U_i^{-1}T_iU_j=U_i^{-1}G_iU_i,
+\qquad
+\widetilde\Lambda_i:=U_i^\top\Lambda_iU_i,
+\label{eq:gauss-trivialized-transition}
+\end{equation}
+the second equality in the first display using $\Theta_{ij}=U_iU_j^{-1}$, so that \eqref{eq:gauss-directed-blocks} holds verbatim in trivialized coordinates with $(\Lambda_i,T_i)$ replaced by $(\widetilde\Lambda_i,\widetilde T_i)$. The graph links have then already been removed and any remaining obstruction is attributable to the gain alone. For the rest of this section the tildes are dropped and $(\Lambda_i,T_i)$ denote the trivialized quantities.
+
+\propositionheading{Two global-condition witnesses}{prop:gauss-global-condition-witnesses}
+There exist admissible parameters for which no interaction-family representation of the assembled precision exists.
+\begin{equation}
+\Lambda_i=\begin{psmallmatrix}2&1\\1&3\end{psmallmatrix}\succ0,
+\qquad
+T_i=\begin{psmallmatrix}0&1\\-1&0\end{psmallmatrix}\in\GL^{+}(2)
+\qquad\Longrightarrow\qquad
+-\Lambda_iT_i=\begin{psmallmatrix}1&-2\\3&-1\end{psmallmatrix},
+\label{eq:gauss-asymmetry-witness}
+\end{equation}
+which differs from its own transpose by a matrix of Frobenius norm $5\sqrt2$, so the off-diagonal block is not symmetric and no $W$ exists at all. Separately, taking $K=1$ with $G_i=-1$ and $\Theta_{ij}=\Lambda_i=1$ gives a symmetric block with $W=-1<0$, so the sign requirement fails; the same construction with $G_i=-I$, $\Theta_{ij}=I$ and $\Lambda_i=I$ gives $W=-I\prec0$ at every $K$. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Direct computation. For the first, $\Lambda_iT_i=\begin{psmallmatrix}-1&2\\-3&1\end{psmallmatrix}$, so $-\Lambda_iT_i$ is as displayed and $-\Lambda_iT_i-(-\Lambda_iT_i)^\top=\begin{psmallmatrix}0&-5\\5&0\end{psmallmatrix}$ with Frobenius norm $\sqrt{50}$. Positive definiteness of $\Lambda_i$ follows from $\det=5>0$ and trace $5>0$; invertibility of $T_i$ from $\det T_i=1>0$. For the second, \eqref{eq:gauss-candidate-weight} evaluates to $\Lambda_iG_i\Theta_{ij}=-I$, and $-I$ is not positive semidefinite for any $K\geq1$. $\square$
+
+\Cref{prop:gauss-global-condition-witnesses} settles the status of the interaction shape. The gain matrix $G_i$ is a free generative parameter in the construction of the preceding part, not required to be symmetric, positive, or even close to the identity, and for the displayed values the assembled precision has no representation of the form of Equation~\eqref{eq:gauss-interaction-family}. Whatever else may be said for the interaction family, it is not a consequence of the general linear-Gaussian directed model.
+
+\subsection{Exactly when the form does hold}
+
+Having shown that the form fails, the obligation is to say when it holds. Two statements are available, one global and one local, and they answer different questions.
+
+\propositionheading{Exact global interaction condition}{prop:gauss-global-interaction-condition}
+The assembled precision of Equation~\eqref{eq:gauss-directed-blocks} lies in $\mathcal I(V)$ with the edge assignment of Equation~\eqref{eq:gauss-candidate-weight} if and only if, for every non-root $i$,
+\begin{equation}
+W_i:=\Lambda_iT_i\in\PSD^{K},
+\label{eq:gauss-global-cond-1}
+\end{equation}
+and, for every agent $i$,
+\begin{equation}
+A_i:=\Lambda_i-W_i+\sum_{\ell\in\operatorname{ch}(i)}\left(W_\ell\Lambda_\ell^{-1}W_\ell-W_\ell\right)\succeq0,
+\label{eq:gauss-global-cond-2}
+\end{equation}
+with the term $-W_i$ omitted at a root. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Condition~\eqref{eq:gauss-global-cond-1} is exactly the requirement that the off-diagonal blocks have the form $-W$ with $W$ symmetric positive semidefinite. Given it, $T_i=\Lambda_i^{-1}W_i$ and $T_\ell^\top\Lambda_\ell T_\ell=W_\ell\Lambda_\ell^{-1}\Lambda_\ell\Lambda_\ell^{-1}W_\ell=W_\ell\Lambda_\ell^{-1}W_\ell$, using symmetry of $W_\ell$. The self term is then the residual $A_i=\Lambda_{ii}-\sum_{j\sim i}W_{ij}$, where the edges at $i$ are the one to its parent, of weight $W_i$, and one to each child $\ell$, of weight $W_\ell$. Substituting Equation~\eqref{eq:gauss-directed-blocks} gives Equation~\eqref{eq:gauss-global-cond-2}, and family membership requires exactly that this residual be positive semidefinite. $\square$
+
+Condition~\eqref{eq:gauss-global-cond-2} is a balance at each node and permits cancellation: a parent deficit $\Lambda_i-W_i\prec0$ may be offset by child surpluses. That freedom disappears if one asks the stronger and more natural question, namely whether each generative factor separately lies in the family, so that the interaction structure can be read off the model factor by factor rather than after a global cancellation. The answer is sharp.
+
+The cancellation is not merely formal. Take one scalar receiving factor \(j\to i\) with
+\(\Lambda_i=1\), \(T_i=\tfrac12\), and root precision \(\Lambda_j=1\). In the block order \((i,j)\), Equation~\eqref{eq:gauss-directed-blocks} gives
+\begin{equation}
+\Lambda_{\mathrm{joint}}
+=
+\begin{pmatrix}
+1&-\tfrac12\\[2pt]
+-\tfrac12&\tfrac54
+\end{pmatrix}
+=
+\begin{pmatrix}
+A_i+W&-W\\[2pt]
+-W&A_j+W
+\end{pmatrix},
+\qquad
+W=\tfrac12,\quad A_i=\tfrac12,\quad A_j=\tfrac34 .
+\label{eq:gauss-global-cancellation-witness}
+\end{equation}
+Thus the assembled precision belongs to \(\mathcal I(\{i,j\})\), although
+\(T_i^2=\tfrac14\neq\tfrac12=T_i\), so the receiving factor does not belong locally: its parent-side residual is \(T_i^2\Lambda_i-W=\tfrac14-\tfrac12=-\tfrac14\), and the root prior offsets it to \(A_j=1-\tfrac14=\tfrac34\). The matrix is positive definite because its leading principal minors are \(1\) and \(1\). This exact witness proves that factorwise membership is sufficient but not necessary for global membership. \status{ESTABLISHED}
+
+\propositionheading{Edge-local characterization with singular gains allowed}{prop:gauss-edge-local-characterization}
+Consider a single receiving factor $j\to i$ in isolation, contributing $\Lambda_i$ to the $ii$ block, $T_i^\top\Lambda_iT_i$ to the $jj$ block, and $-\Lambda_iT_i$ to the $ij$ block. This factor lies in $\mathcal I(\{i,j\})$ if and only if
+\begin{equation}
+X:=\Lambda_i^{-1/2}\left(\Lambda_iT_i\right)\Lambda_i^{-1/2}
+\text{ is an orthogonal projection,}
+\label{eq:gauss-edge-local}
+\end{equation}
+equivalently if and only if $\Lambda_iT_i$ is symmetric and $T_i$ is idempotent, equivalently if and only if $T_i$ is a $\Lambda_i$-orthogonal projection. In that case the self terms are $A_i=\Lambda_i^{1/2}(I-X)\Lambda_i^{1/2}$ and $A_j=0$. The full-rank case $X=I$ is $T_i=I$, in which the factor is the pure agreement factor whose mean is the parent's own value in the trivialized coordinates and whose edge weight is $W=\Lambda_i$. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Membership requires three things: $W:=\Lambda_iT_i\succeq0$ and symmetric; the $i$-side residual $\Lambda_i-W\succeq0$; and the $j$-side residual $T_i^\top\Lambda_iT_i-W\succeq0$. Assume $W$ symmetric and set $X=\Lambda_i^{-1/2}W\Lambda_i^{-1/2}$, which is symmetric. Then $W\succeq0$ reads $X\succeq0$; $\Lambda_i-W\succeq0$ reads $X\preceq I$; and, using $T_i=\Lambda_i^{-1}W$ so that $T_i^\top\Lambda_iT_i=W\Lambda_i^{-1}W=\Lambda_i^{1/2}X^2\Lambda_i^{1/2}$, the third reads $X^2\succeq X$. Now $0\preceq X\preceq I$ implies $X^2\preceq X$, since $X$ and $X^2$ are simultaneously diagonalizable and $\lambda^2\leq\lambda$ for $\lambda\in[0,1]$. Combining, $X^2=X$, so $X$ is a symmetric idempotent, that is an orthogonal projection. Conversely any orthogonal projection satisfies all three conditions, and then $T_i=\Lambda_i^{-1/2}X\Lambda_i^{1/2}$ satisfies $T_i^2=T_i$ and $\Lambda_iT_i=\Lambda_i^{1/2}X\Lambda_i^{1/2}$ is symmetric positive semidefinite. The self terms follow by substitution, the $j$-side residual being $\Lambda_i^{1/2}(X^2-X)\Lambda_i^{1/2}=0$. $\square$
+
+\corollaryheading{Invertible-gain factor}{cor:gauss-invertible-gain-factor}
+If the receiving gain \(T_i\) is required to be invertible, the isolated factor lies in \(\mathcal I(\{i,j\})\) if and only if \(T_i=I\). Indeed, \Cref{prop:gauss-edge-local-characterization} makes \(T_i\) idempotent, and multiplying \(T_i^2=T_i\) by \(T_i^{-1}\) gives \(T_i=I\); the converse is the full-rank case of that proposition. \status{ESTABLISHED}
+
+\Cref{prop:gauss-edge-local-characterization} describes the stronger factor-local requirement, not global family membership. With singular gains allowed, a proper projection constrains only the components of the residual inside \(\operatorname{range}(X)\) and leaves the complement to the receiving-side self term. In the invertible-gain submodel, \Cref{cor:gauss-invertible-gain-factor} removes every proper projection and leaves only pure agreement. The deterministic replacement check \texttt{CHK-GAUSS-PROJECTION} tests $4000$ generic gains and exact controls of ranks $0$ through $3$ under a fully specified protocol; its current output corroborates the characterization but does not prove generic measure zero. \status{NUMERICAL}
+
+\hypothesisheading{Global interaction form}{hyp:gauss-global-interaction}
+The renormalization half of this document acts on recognition precisions that belong globally to Equation~\eqref{eq:gauss-interaction-family}, in trivialized coordinates, and this is adopted as a declared restriction. For a precision assembled from the directed model of Equation~\eqref{eq:gauss-receiving-kernel}, the restriction is exactly \Cref{prop:gauss-global-interaction-condition}; it does \emph{not} require every receiving factor to satisfy \Cref{prop:gauss-edge-local-characterization}, because the balance terms in Equation~\eqref{eq:gauss-global-cond-2} may cancel as Equation~\eqref{eq:gauss-global-cancellation-witness} proves. It is used in the aggregation closure statement, in the definition of the flow, and in the fixed-point analysis; each of those results names it. The document does not claim that it is forced by anything, and \Cref{prop:gauss-interaction-family-thin} records that it is a measure-zero restriction on the space of Gaussian recognition laws. \status{HYPOTHESIS}
+
+\hypothesisheading{Optional factorwise-agreement realization}{hyp:gauss-factorwise-agreement}
+When the interaction parameters are required to be readable from the generative model one factor at a time, every receiving factor is separately assumed to satisfy \Cref{prop:gauss-edge-local-characterization}. This is a strictly stronger hypothesis than global membership: it permits \(\Lambda_i\)-orthogonal projections in the relaxed singular-gain model and only \(T_i=I\) in the invertible-gain model, while it excludes the globally admissible witness \eqref{eq:gauss-global-cancellation-witness}. The operator-level renormalization results require \Cref{hyp:gauss-global-interaction}, not this stronger factorwise realization, unless they explicitly invoke a factor interpretation. \status{HYPOTHESIS}
+
+\section{Nonemptiness, and a note on conditioning}
+\label{sec:gauss-nonempty}
+
+A declared subfamily is worthless if it is empty or numerically degenerate, so both should be checked. Nonemptiness is a construction, not an experiment.
+
+\propositionheading{Constructive nonemptiness and exact kernel}{prop:gauss-interaction-nonempty}
+Under \Cref{hyp:gauss-flat-comparison}, let each edge of a graph
+$G=(V,E)$ carry an agreement factor with residual
+$\mu_i-\Theta_{ij}\mu_j$ and link covariance
+$R_{ij}\in\Sym_{++}^{K}$, and let each vertex carry a quadratic self
+term $A_i\succeq0$ in the trivialized coordinates. A self term is the
+precision of a proper full-dimensional Gaussian prior at vertex $i$ only
+when $A_i\succ0$. The assembled trivialized energy is
+\begin{equation}
+E(z)=\tfrac12\sum_{i}z_i^\top A_iz_i
++\tfrac12\sum_{i<j}\left(z_i-z_j\right)^\top W_{ij}\left(z_i-z_j\right),
+\qquad
+W_{ij}=U_i^\top R_{ij}^{-1}U_i,
+\label{eq:gauss-nonempty-construction}
+\end{equation}
+where the edge sum is over $E$. The associated precision
+$\Lambda$ lies in $\mathcal I(V)\cap\PSD^{NK}$, every represented edge
+weight is positive definite, and
+\begin{equation}
+\ker\Lambda
+=\left\{z:A_iz_i=0\text{ for every }i,
+\quad z_i=z_j\text{ for every }(i,j)\in E\right\}.
+\label{eq:gauss-nonempty-kernel}
+\end{equation}
+If $V_\alpha$ are the connected components of $G$, then equivalently
+\begin{equation}
+\ker\Lambda
+=\bigoplus_\alpha
+\left\{\mathbf1_{V_\alpha}\otimes v:
+v\in\bigcap_{i\in V_\alpha}\ker A_i\right\}.
+\label{eq:gauss-nonempty-component-kernel}
+\end{equation}
+Consequently $\Lambda\succ0$ exactly when
+$\bigcap_{i\in V_\alpha}\ker A_i=\{0\}$ for every connected component.
+In particular, one positive-definite self term in each component suffices;
+taking every $A_i\succ0$ makes every vertex self term a proper prior and
+constructs an element of
+$\mathcal I(V)\cap\Sym_{++}^{NK}$. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+By \eqref{eq:gauss-flat-trivialization} the residual is $U_i(z_i-z_j)$, so the quadratic form $(\mu_i-\Theta_{ij}\mu_j)^\top R_{ij}^{-1}(\mu_i-\Theta_{ij}\mu_j)$ equals $(z_i-z_j)^\top U_i^\top R_{ij}^{-1}U_i(z_i-z_j)$. The matrix $U_i^\top R_{ij}^{-1}U_i$ is symmetric and positive definite because $R_{ij}^{-1}$ is and $U_i$ is invertible. Comparing with \eqref{eq:gauss-interaction-energy} identifies the parameters and proves positive semidefiniteness. Equality in the energy holds exactly when $A_iz_i=0$ at every vertex and, because every $W_{ij}\succ0$, when $z_i=z_j$ on every edge. The latter conditions make $z$ constant on each connected component, which proves \eqref{eq:gauss-nonempty-kernel} and \eqref{eq:gauss-nonempty-component-kernel}. A positive-semidefinite matrix is positive definite exactly when its kernel is trivial, yielding the final criterion and the stated proper witnesses. $\square$
+
+\Cref{prop:gauss-interaction-nonempty} also makes the role of \Cref{hyp:gauss-flat-comparison} concrete by contrast. Without trivialization the same agreement factor contributes the off-diagonal block $-R_{ij}^{-1}\Theta_{ij}$, which is symmetric only in special position. The deterministic replacement check \texttt{CHK-GAUSS-TRIVIALIZATION} emits its matrices and compares that asymmetric raw block with the symmetric positive-definite trivialized weight. It corroborates the proposition and is not part of its proof. \status{NUMERICAL}
+
+Conditioning is a different question and admits only protocol-specific computational evidence. The deterministic replacement check \texttt{CHK-GAUSS-CONDITIONING} specifies and runs a $200$-draw interaction ensemble together with a zero-self consensus control and $200$ unstructured positive-definite controls. Its output concerns only that sampler. Positive semidefiniteness and the general null-space criterion are proved by \Cref{prop:gauss-interaction-energy-kernel}; \Cref{prop:gauss-interaction-nonempty} specializes that criterion to the constructed positive-definite edge weights and supplies explicit proper witnesses. Thinness is proved by \Cref{prop:gauss-interaction-family-thin}; no universal conditioning theorem is claimed. \status{NUMERICAL}
+
+\section{Marginalization belongs to the Gaussian coarse chapter}
+\label{sec:gauss-open}
+
+Aggregation identifies variables, whereas exact Gaussian marginalization
+eliminates them by a Schur complement. The interaction cone is closed under
+the former and not under unrestricted matrix-weighted Kron reduction. The
+exact positive-definite \(N=3,K=2\) rational counterexample, including the
+asymmetric manufactured coupling, is stated and proved once in
+\Cref{ch:gaussian-coarsegraining}. \status{ESTABLISHED}
+
+The same chapter gives the positive result in its sharp current form: every
+fixed congruence-diagonal cone
+\(\mathcal C_H=\{HDH^\top:D\succeq0\text{ diagonal}\}\) is closed under
+every defined node-block Schur elimination. This strictly contains the
+common-orthogonal-eigenbasis case because congruence-diagonal matrices need
+not commute. Maximality is proved only for rich, independently parameterized
+closed convex product cones with an SPD order unit and closure under every
+defined one-node elimination. Correlated, nonconvex, variable-chart,
+rank-changing, and nonflat families remain outside that theorem.
+\status{ESTABLISHED}

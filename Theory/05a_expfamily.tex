@@ -1,0 +1,393 @@
+\chapter{Belief Fibers and Exponential Families}
+\label{ch:expfamily}
+
+The objects carried by the belief and model associated bundles of
+\Cref{ch:geometry} are normalized laws, while generative fibers carry kernels.
+Coordinates, smoothness, domination, and exponential-family structure are
+additional choices. This chapter states that hierarchy before selecting the
+finite-dimensional exponential subclass used by the general coarse theory.
+
+\section{Law fibers before coordinates}
+\label{sec:exp-general-fibers}
+
+\definitionheading{Law and kernel fibers}{def:exp-law-kernel-fibers}
+For a standard Borel space \((\mathsf Z,\mathscr Z)\), let
+\begin{equation}
+\mathcal B(\mathsf Z)\subseteq\mathcal P(\mathsf Z)
+\label{eq:exp-law-fiber}
+\end{equation}
+be a declared collection of normalized probability laws. For standard Borel
+spaces \(\mathsf X,\mathsf Y\), let
+\begin{equation}
+\mathcal K(\mathsf X,\mathsf Y)
+\subseteq\operatorname{Markov}(\mathsf X,\mathsf Y)
+\label{eq:exp-kernel-fiber}
+\end{equation}
+be a declared collection of normalized Markov kernels. A law is not a kernel,
+and neither declaration supplies a common density, affine chart, manifold,
+Fisher metric, or convex cone. \status{DEFINITION}
+
+The belief and model bundles may use different law fibers. Cross-bundle maps
+\(\Phi:\mathcal E_b\to\mathcal E_m\) and
+\(\widetilde\Phi:\mathcal E_m\to\mathcal E_b\) act between those associated
+bundles and are not iterations on either fiber. To prevent collision with
+that reserved notation, a generic endomorphism of a parameter set will be
+written \(\Psi\).
+
+\definitionheading{Partial realization}{def:exp-partial-realization}
+A parametrized model consists of a parameter space \(\Theta\), a domain
+\(\Theta_{\rm law}\subseteq\Theta\), and a map
+\begin{equation}
+\mathfrak r:\Theta_{\rm law}\longrightarrow\mathcal B(\mathsf Z),
+\qquad
+\vartheta\longmapsto Q_\vartheta .
+\label{eq:exp-realization-map}
+\end{equation}
+Outside \(\Theta_{\rm law}\), a parameter may still denote an algebraic
+operator, but it does not denote a law through \(\mathfrak r\).
+\status{DEFINITION}
+
+A bimeasurable gauge action \(g:\mathsf Z\to\mathsf Z\) acts on laws by
+\begin{equation}
+Q\longmapsto g_\#Q ,
+\label{eq:exp-general-pushforward}
+\end{equation}
+and on kernels by
+\begin{equation}
+(g_{\rm out}\cdot K\cdot g_{\rm in}^{-1})(x,B)
+=K(g_{\rm in}^{-1}x,g_{\rm out}^{-1}B).
+\label{eq:exp-kernel-action}
+\end{equation}
+These formulas type the action. \status{DEFINITION}
+
+Closure of a declared fiber under the action is a separate hypothesis.
+\status{HYPOTHESIS}
+
+\section{Dominated and smooth tiers}
+\label{sec:exp-dominated-nondominated}
+
+Domination is not automatic. An uncountable family of Dirac laws on an
+uncountable standard Borel space admits no common sigma-finite dominating
+measure: any such measure would have to assign positive mass to uncountably
+many disjoint atoms, which a sigma-finite measure cannot do.
+\status{ESTABLISHED}
+
+Hence density charts cannot be inferred from the general law fiber.
+\status{ESTABLISHED}
+
+The differential tier used below is a finite-dimensional smooth
+parametrized-measure model. Differentiability in quadratic mean,
+square-integrable scores, and the interchange of differentiation and
+integration are hypotheses. The Fisher form is a Riemannian metric only after
+nondegeneracy is proved. Parametrized-measure models supply an intrinsic
+framework for this tier \citep{AyJostLeSchwachhoefer2018}.
+\status{HYPOTHESIS}
+
+Stratified and infinite-dimensional tiers require their own tangent and
+integration theories; no universal global Fisher metric or natural chart is
+claimed.
+\status{NOT-CLAIMED}
+
+\section{Regular finite-dimensional exponential families}
+\label{sec:exp-family}
+
+\definitionheading{Canonical family}{def:exp-canonical-family}
+Let \(\nu\) be a nonzero sigma-finite measure on
+\((\mathsf Z,\mathscr Z)\), let \(T:\mathsf Z\to\mathsf T\) be measurable
+into a finite-dimensional inner-product space, and define
+\begin{equation}
+\mathsf A(\theta)
+=\log\int_{\mathsf Z}e^{\langle\theta,T(z)\rangle}\nu(dz),
+\qquad
+\mathsf N=\{\theta:\mathsf A(\theta)<\infty\}.
+\label{eq:exp-logpartition}
+\end{equation}
+For \(\theta\in\mathsf N\),
+\begin{equation}
+q_\theta(z)
+=\exp\{\langle\theta,T(z)\rangle-\mathsf A(\theta)\},
+\qquad
+Q_\theta(dz)=q_\theta(z)\nu(dz).
+\label{eq:exp-density}
+\end{equation}
+Nothing is asserted for \(\theta\notin\mathsf N\). \status{DEFINITION}
+
+\propositionheading{Finite-domain interface to ELBO coordinates}{prop:exp-finite-domain-elbo-interface}
+The map $(\theta,z)\mapsto q_\theta(z)$ in \eqref{eq:exp-density} is jointly measurable on $\mathsf N\times\mathsf Z$, and every law, density ratio, Fisher tensor, or ELBO coordinate built from this canonical representation is restricted to parameters in $\mathsf N$. For a comparison of several canonical representations, either the comparison is made intrinsically at the measure level or the representations must have one declared common sigma-finite base measure; its density domain is the intersection of their natural domains. An extended-ELBO update additionally requires a positive-finite selected evidence slice at every compared parameter, while the classical expected-log-density representation separately requires \Cref{hyp:prob-classical-split-elbo}. An algebraic operator that leaves $\mathsf N$ therefore ceases to define a probability or ELBO coordinate even if it remains an element of the operator cone. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Lower semicontinuity makes $\mathsf A$ Borel measurable, and measurability of $T$ makes $(\theta,z)\mapsto\langle\theta,T(z)\rangle$ jointly measurable; exponentiation proves the first claim. Normalization is finite exactly on $\mathsf N$ by \eqref{eq:exp-logpartition}. The remaining statements are direct domain checks against \Cref{def:exp-partial-realization,def:elbo-extended,hyp:prob-classical-split-elbo}: a density comparison needs a fixed reference, the extended functional needs a normalized posterior slice with finite positive mass, and its classical split needs the additional support and log-integrability hypotheses. \(\square\)
+
+\propositionheading{Convexity and lower semicontinuity}{prop:exp-logpartition-convex-lsc}
+\(\mathsf A\) is convex and lower semicontinuous as an extended-real
+function, and \(\mathsf N\) is convex. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+For \(0<t<1\), H\"older's inequality gives
+\begin{equation}
+\int e^{\langle t\theta+(1-t)\vartheta,T\rangle}d\nu
+\leq
+\left(\int e^{\langle\theta,T\rangle}d\nu\right)^t
+\left(\int e^{\langle\vartheta,T\rangle}d\nu\right)^{1-t},
+\label{eq:exp-holder}
+\end{equation}
+and taking logarithms proves convexity and convexity of the effective domain.
+Fatou's lemma applied to a convergent parameter sequence proves lower
+semicontinuity. \(\square\)
+
+\propositionheading{Cumulants and Fisher information}{prop:exp-cumulants-fisher}
+At every interior parameter where local exponential domination permits
+differentiation under the integral,
+\begin{equation}
+\nabla\mathsf A(\theta)=\E_\theta[T],
+\qquad
+\nabla^2\mathsf A(\theta)=\operatorname{Cov}_\theta(T).
+\label{eq:exp-cumulants}
+\end{equation}
+The Hessian is the Fisher information in the natural chart.
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Differentiate the normalizer once and twice. The score is
+\(T-\E_\theta T\), so its second moment is the covariance in
+\eqref{eq:exp-cumulants}. Local exponential domination follows by enclosing
+the parameter in a compact subset of the interior and applying the elementary
+bound
+\begin{equation}
+|x|^r\leq C_{r,\varepsilon}
+\left(e^{\varepsilon x}+e^{-\varepsilon x}\right)
+\label{eq:exp-domination}
+\end{equation}
+to each coordinate of \(T\). \(\square\)
+
+\hypothesisheading{Regularity and minimality}{hyp:exp-regular-minimal}
+The family is regular, so \(\mathsf N\) is open, and minimal, so no nonzero
+\(a\in\mathsf T\) makes \(\langle a,T\rangle\) constant
+\(\nu\)-almost everywhere. Regularity excludes natural-domain boundary
+points; minimality excludes affine redundancy. \status{HYPOTHESIS}
+
+\propositionheading{Minimality and nondegenerate information}{prop:exp-minimal-fisher-nondegenerate}
+Under the preceding hypothesis, \(\nabla^2\mathsf A(\theta)\) is positive
+definite, \(\mathsf A\) is strictly convex, and
+\(\theta\mapsto Q_\theta\) is injective. Failure of minimality makes the
+Hessian singular. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+For every \(a\),
+\[
+a^\top\nabla^2\mathsf A(\theta)a
+=\operatorname{Var}_{Q_\theta}(\langle a,T\rangle).
+\]
+The variance vanishes exactly when the displayed statistic is almost surely
+constant. Since \(q_\theta>0\), \(Q_\theta\) and \(\nu\) have the same null
+sets, so minimality gives positive definiteness. Strict convexity follows.
+Equality of two densities makes
+\(\langle\theta-\vartheta,T\rangle\) constant almost everywhere, and
+minimality then gives \(\theta=\vartheta\). \(\square\)
+
+\section{Operator and probability layers}
+\label{sec:exp-layers}
+
+\definitionheading{Operator layer}{def:exp-operator-layer}
+Let \(\mathcal C\subseteq\mathsf T\) be a separately declared closed convex
+cone preserved by the algebraic maps under study. Its probability layer is
+\(\mathcal C\cap\mathsf N\). The cone is chosen for algebraic closure, not
+normalization, and no such cone is asserted for an arbitrary law fiber.
+\status{DEFINITION}
+
+\propositionheading{A natural-domain boundary carries no law}{prop:exp-domain-boundary-no-law}
+Under regularity, if \(\theta^\star\in\partial\mathsf N\), then
+\begin{equation}
+\int e^{\langle\theta^\star,T(z)\rangle}\nu(dz)=+\infty.
+\label{eq:exp-boundary-diverges}
+\end{equation}
+For \(\theta_\tau=(1-\tau)\theta_0+\tau\theta^\star\), with
+\(\theta_0\in\mathsf N\) and \(w=\theta^\star-\theta_0\),
+\begin{equation}
+\mathsf A(\theta_\tau)\to+\infty,\qquad
+\langle w,\nabla\mathsf A(\theta_\tau)\rangle\to+\infty,\qquad
+\int_0^1\operatorname{Var}_{Q_{\theta_\tau}}(\langle w,T\rangle)d\tau
+=+\infty.
+\label{eq:exp-boundary-blowup}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Regularity puts \(\theta^\star\) outside \(\mathsf N\), proving
+\eqref{eq:exp-boundary-diverges}. Convexity puts every
+\(\theta_\tau\), \(\tau<1\), in \(\mathsf N\), while lower
+semicontinuity forces the first limit. For
+\(g(\tau)=\mathsf A(\theta_\tau)\), convexity makes \(g'\)
+nondecreasing. If \(g'\) were bounded above, then \(g\) would remain bounded,
+a contradiction. The identities
+\[
+g'=\langle w,\nabla\mathsf A\rangle,\qquad
+g''=\operatorname{Var}_{Q_{\theta_\tau}}(\langle w,T\rangle)
+\]
+and integration of \(g''\) prove the remaining assertions. \(\square\)
+
+Thus the declared representation supplies no finite log partition, mean
+parameter, Fisher metric, relative entropy from the nonexistent endpoint
+law, or instance of the exact ELBO at \(\theta^\star\).
+\status{ESTABLISHED}
+
+This does not rule out a quotient, pin, new reference measure, or boundary
+stratum; each is a different declared object. \status{NOT-CLAIMED}
+
+\propositionheading{An operator fixed point need not be a law}{prop:exp-fixed-point-no-law}
+Let \(\Psi:\mathcal C\to\mathcal C\) be continuous. Every iterate may lie in
+\(\mathcal C\cap\mathsf N\) while the unique fixed point lies on
+\(\partial\mathsf N\). For
+\(\mathsf Z=\R\), \(T(z)=-z^2/2\), and Lebesgue \(\nu\),
+\begin{equation}
+\mathsf A(\theta)=-\tfrac12\log\theta+\tfrac12\log2\pi,
+\qquad
+\mathsf N=(0,\infty),
+\qquad
+\mathcal C=[0,\infty),
+\label{eq:exp-scale-witness}
+\end{equation}
+the map \(\Psi(\theta)=\theta/2\) has this property.
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Starting at one gives \(\theta_\ell=2^{-\ell}>0\), while
+\(\theta_\ell\to0\), the unique fixed point, and
+\(\mathsf A(\theta_\ell)\to+\infty\). The constant kernel at zero has
+infinite Lebesgue integral. \(\square\)
+
+\section{Declared repairs}
+\label{sec:exp-repairs}
+
+\definitionheading{Pinning}{def:exp-pinning}
+Choose \(\theta_{\rm m}\in\mathsf N\) and replace
+\(\mathcal C\) by \(\theta_{\rm m}+\mathcal C\); the pin does not flow.
+\status{DEFINITION}
+
+\propositionheading{Pinning under a recession condition}{prop:exp-pinning-recession}
+If \(\theta_{\rm m}\in\operatorname{int}\mathsf N\) and every
+\(\eta\in\mathcal C\) is a recession direction of \(\mathsf N\), then
+\(\theta_{\rm m}+\mathcal C\subseteq\operatorname{int}\mathsf N\).
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Translate an open ball around \(\theta_{\rm m}\) by \(\eta\). The recession
+hypothesis keeps the translated ball inside \(\mathsf N\), so its center is
+interior. \(\square\)
+
+The pin changes the family, may change the fixed set, and introduces a
+parameter whose removal need not commute with the long-scale limit. Whether
+the mass sector is relevant, marginal, or irrelevant is an open spectral
+question for the declared scale map. \status{OPEN}
+
+\definitionheading{Quotienting}{def:exp-quotienting}
+Suppose \(\mathsf Z=\R^n\), \(\nu\) is Lebesgue measure, and the energy is
+invariant along a nonzero linear subspace \(\mathcal V\). Declare the new
+sample space \(\mathcal W=\mathcal V^\perp\), its Lebesgue measure, and the
+restricted statistic. \status{DEFINITION}
+
+\propositionheading{Quotient normalization is not full-space normalization}{prop:exp-quotient-normalization}
+Writing \(z=v+w\) in the orthogonal splitting,
+\begin{equation}
+\int_{\R^n}e^{\langle\theta,T(z)\rangle}dz
+=\lambda_{\mathcal V}(\mathcal V)
+\int_{\mathcal W}e^{\langle\theta,T(w)\rangle}dw
+=+\infty.
+\label{eq:exp-quotient-split}
+\end{equation}
+The quotient law is normalized exactly when the second factor is finite.
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+The change of variables has unit Jacobian and the integrand is independent of
+\(v\). Tonelli's theorem gives \eqref{eq:exp-quotient-split}; the first factor
+is infinite. \(\square\)
+
+\definitionheading{Retaining a mass sector}{def:exp-mass-sector}
+Enlarge the state by a declared coercive parameter that remains in the
+natural domain under the scale map. This is neither pinning nor quotienting:
+the mass is a running coordinate and its scaling law must be stated.
+\status{DEFINITION}
+
+A Moore--Penrose inverse and pseudodeterminant inserted into an interior
+full-space density formula do not repair normalization. They compute the
+finite quotient expression, whose dimension and reference measure differ,
+while the original integral remains infinite by
+\eqref{eq:exp-quotient-split}. \status{ESTABLISHED}
+
+\section{Relative entropy and affine information projection}
+\label{sec:exp-information-projection}
+
+For a regular minimal family, let
+\(\tau_\theta=\nabla\mathsf A(\theta)\) and let
+\(\mathsf A^\ast\) be the convex conjugate. Direct expectation of the
+log-density ratio gives
+\begin{equation}
+\KL(Q_\vartheta\Vert Q_\theta)
+=\mathsf A(\theta)-\mathsf A(\vartheta)
+-\langle\nabla\mathsf A(\vartheta),\theta-\vartheta\rangle
+=D_{\mathsf A}(\theta,\vartheta),
+\label{eq:exp-kl-bregman}
+\end{equation}
+and Legendre duality gives
+\begin{equation}
+\KL(Q_\vartheta\Vert Q_\theta)
+=D_{\mathsf A^\ast}(\tau_\vartheta,\tau_\theta).
+\label{eq:exp-kl-dual-bregman}
+\end{equation}
+This is the exact exponential-family divergence; in general it is not a
+finite-displacement Fisher quadratic
+\citep{Csiszar1967,Brown1986,Amari2016}. \status{ESTABLISHED}
+
+\propositionheading{Affine mean constraints attain a unique projection}{prop:exp-affine-mean-projection}
+Assume the extended \(\mathsf A\) is Legendre, as in a regular minimal
+canonical family, and let
+\(\mathsf M=\operatorname{int}\operatorname{dom}\mathsf A^\ast\).
+If \(C\) is a closed affine subspace with
+\(C\cap\mathsf M\neq\varnothing\), then for every
+\(\tau_\theta\in\mathsf M\) there is a unique
+\(\widehat\tau\in C\cap\mathsf M\) minimizing
+\begin{equation}
+\tau\longmapsto
+D_{\mathsf A^\ast}(\tau,\tau_\theta).
+\label{eq:exp-mean-projection}
+\end{equation}
+The corresponding natural parameter is uniquely
+\(\widehat\vartheta=\nabla\mathsf A^\ast(\widehat\tau)\).
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+The finite-dimensional Legendre Bregman projection theorem gives existence
+\citep{Bauschke2003},
+uniqueness, and interiority on every nonempty closed convex feasible set
+meeting the interior domain. Strict convexity gives uniqueness, and essential
+smoothness excludes boundary attainment. For
+\(C=\{\tau:B\tau=b\}\), the solution equivalently satisfies
+\begin{equation}
+B\widehat\tau=b,\qquad
+\nabla\mathsf A^\ast(\widehat\tau)-\theta+B^\top\lambda=0,
+\label{eq:exp-projection-kkt}
+\end{equation}
+which also proves the stated natural-parameter formula. \(\square\)
+
+Feasibility, closedness, and convexity are load bearing. For a Bernoulli mean
+domain \((0,1)\), \(C=\{0\}\) is infeasible; an open feasible interval may
+have a finite unattained infimum; and a closed nonconvex two-point set can
+have two minimizers. Gauge compatibility and commutation of this projection
+with a coarse parameter map remain open and require an intertwining theorem;
+existence alone does not provide them. \status{OPEN}
+
+\section{Boundary of this chapter}
+\label{sec:exp-downstream-assumptions}
+
+This chapter supplies the general law-fiber hierarchy, the exponential-family
+interior, its operator boundary, and the Bregman projection theorem. It does
+not contain graph aggregation, Gaussian determinants, Schur complements, or
+matrix pencils. Graph-exponential energy closure is developed in
+\Cref{ch:coarsegraining}; the multivariate-Gaussian realization and its
+quadratic boundary rates appear later. An operator RG additionally requires
+a preserved parameter category, scale comparisons, rescaling, and topology.
+A law-level RG additionally requires normalized laws or kernels, compatible
+reference measures, and finite normalizers at every scale. A Fisher or ELBO
+reading additionally requires the hypotheses of the corresponding earlier
+chapters. \status{HYPOTHESIS}

@@ -1,0 +1,1065 @@
+\chapter{Multivariate-Gaussian Coarse-Graining}
+\label{ch:gaussian-coarsegraining}
+
+This chapter realizes the three operations of
+\Cref{ch:coarsegraining} in the multivariate-Gaussian interaction family. It
+does not repeat the Markov or graph-exponential theory. Its claims concern
+hard identification, Gaussian marginalization and recognition restrictions,
+all at finite dimension. Unless a channel index is displayed, the symbols
+\(K,\Theta,\Lambda,L,A,W\) in this chapter denote the belief/recognition
+channel. A model-channel realization is separate and uses its own
+\(K_m,\Theta^m,\Lambda_m,L_m,A_m,W_m\); no equality of the two channels is
+implied. \status{DEFINITION}
+
+Within the connection-Laplacian realization,
+\Cref{prop:cg-kernel-holonomy} applies only to invertible represented
+transports with inverse reverse transports and positive-definite represented
+internal weights. Under those hypotheses, trivial represented internal
+holonomy is the criterion for a connected cluster to retain a full
+\(K\)-dimensional, state-independent structural fixed section; nontrivial
+holonomy may still leave a lower-dimensional fixed sector.
+\status{ESTABLISHED}
+
+Marginal similarity is not identified with this structural criterion.
+\status{NOT-CLAIMED}
+
+\section{Hard aggregation of the interaction precision}
+\label{sec:cg-gaussian-aggregation}
+
+Assume the declared interaction family of \Cref{ch:gaussian},
+\begin{equation}
+\Lambda_{ii}=A_i+\sum_{j\neq i}W_{ij},\qquad
+\Lambda_{ij}=-W_{ij}\quad(i\neq j),
+\qquad
+A_i\succeq0,\quad W_{ij}=W_{ji}\succeq0.
+\label{eq:cg-interaction-family}
+\end{equation}
+In flat trivialized coordinates its energy is
+\begin{equation}
+\mathcal E(z)
+=\sum_i z_i^\top A_i z_i
++\sum_{i<j}(z_i-z_j)^\top W_{ij}(z_i-z_j).
+\label{eq:cg-trivialized-energy}
+\end{equation}
+\status{HYPOTHESIS}
+
+This form is a Gaussian subfamily, not a consequence of an arbitrary
+linear-Gaussian directed model. \status{NOT-CLAIMED}
+
+For a hard partition \(\mathcal P\), let
+\[
+S=\widehat S\otimes I_K,\qquad
+\widehat S_{iI}=\mathbf1_{\{i\in I\}},\qquad
+\Lambda_{\rm c}=S^\top\Lambda S.
+\]
+The columns of \(S\) are orthogonal but not normalized:
+\begin{equation}
+S^\top S=\operatorname{diag}(n_I)\otimes I_K.
+\label{eq:cg-aggregation-matrix}
+\end{equation}
+\status{DEFINITION}
+
+\propositionheading{Exact Gaussian aggregation}{prop:cg-gaussian-aggregation}
+For every hard partition,
+\begin{equation}
+(\Lambda_{\rm c})_{IJ}
+=-\sum_{\substack{i\in I\\j\in J}}W_{ij}\quad(I\neq J),
+\qquad
+(\Lambda_{\rm c})_{II}
+=\sum_{i\in I}A_i
++\sum_{\substack{i\in I\\j\notin I}}W_{ij}.
+\label{eq:cg-coarse-blocks}
+\end{equation}
+Thus \(A_I=\sum_{i\in I}A_i\),
+\(W_{IJ}=\sum_{i\in I,j\in J}W_{ij}\), and every internal edge is
+annihilated. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Substitute one coordinate \(z_I\) for every \(z_i\) in a cluster. An internal
+edge contributes zero. A cut edge contributes its difference energy between
+\(z_I\) and \(z_J\), and self terms add. Finite sums preserve positive
+semidefiniteness; independently,
+\(\Lambda_{\rm c}\succeq0\) follows by congruence. \(\square\)
+
+This is the Galerkin coarse operator with a piecewise-constant prolongator,
+not a new numerical construction \citep{VanekMandelBrezina1996,Lee2024AMGSystems}.
+The parameter map is exact for hard identification. A separately fitted
+coupling is outside that exact trace construction, while learned or soft
+pooling is a different approximate model. \status{NOT-CLAIMED}
+
+\section{Kron reduction: a counterexample and the closed cone}
+\label{sec:cg-kron}
+
+Gaussian marginalization eliminates nodes by a Schur complement. It is not
+the aggregation above and is not closed on the unrestricted matrix-weighted
+interaction family.
+
+\propositionheading{Unrestricted Kron reduction leaves the family}{prop:cg-kron-leaves-family}
+Take \(N=3\), \(K=2\), \(A_1=A_2=A_3=I_2\), and
+\begin{equation}
+W_{12}=0,\qquad
+W_{13}=\begin{pmatrix}1&0\\0&2\end{pmatrix},\qquad
+W_{23}=\begin{pmatrix}2&1\\1&2\end{pmatrix}.
+\label{eq:cg-kron-witness}
+\end{equation}
+Then the assembled \(\Lambda\) is positive definite. Eliminating node \(3\)
+manufactures
+\begin{equation}
+-\left(\Lambda^{\rm Kron}\right)_{12}
+=W_{13}\Lambda_{33}^{-1}W_{23}
+=\frac1{19}\begin{pmatrix}9&3\\4&14\end{pmatrix},
+\label{eq:cg-kron-asymmetric}
+\end{equation}
+which is not symmetric and hence is not a positive-semidefinite interaction
+weight. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+\(\Lambda_{33}=\begin{psmallmatrix}4&1\\1&5\end{psmallmatrix}\) has
+determinant \(19\), and direct multiplication gives
+\eqref{eq:cg-kron-asymmetric}. The leading principal minors of the full
+precision are \(2,6,18,48,102,233\), so Sylvester's criterion gives
+\(\Lambda\succ0\). The full Schur complement is symmetric; its two mirrored
+off-diagonal blocks are transposes. Membership in
+\eqref{eq:cg-interaction-family} additionally requires each individual block
+to be symmetric, which fails. \(\square\)
+
+The scalar loopy-Laplacian family is closed under every defined elimination
+\citep{DorflerBullo2013Kron}. The matrix analog is closed on a larger
+subfamily than common orthogonal diagonalization.
+
+\definitionheading{Congruence-diagonal cone}{def:cg-congruence-diagonal-cone}
+For \(H\in\GL(K)\), define
+\begin{equation}
+\mathcal C_H
+=\{HDH^\top:D=\operatorname{diag}(d_1,\ldots,d_K),\ d_a\geq0\}.
+\label{eq:cg-congruence-diagonal-cone}
+\end{equation}
+\status{DEFINITION}
+
+\theoremheading{Congruence-diagonal Kron closure}{thm:cg-congruence-diagonal-kron}
+If every \(A_i\) and \(W_{ij}\) lies in one fixed \(\mathcal C_H\), then
+every defined node-block Schur complement remains in the interaction family
+with all reduced parameters in \(\mathcal C_H\).
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Factor
+\begin{equation}
+\Lambda=(I_N\otimes H)\Lambda_D(I_N\otimes H^\top),
+\label{eq:cg-kron-congruence-factor}
+\end{equation}
+where, after grouping coordinates by channel, \(\Lambda_D\) is a direct sum
+of \(K\) scalar loopy Laplacians. For retained nodes \(R\) and eliminated
+nodes \(E\),
+\begin{align}
+\operatorname{Sc}_E(\Lambda)
+&=(I_R\otimes H)\Big[
+(\Lambda_D)_{RR}
+-(\Lambda_D)_{RE}(\Lambda_D)_{EE}^{-1}(\Lambda_D)_{ER}
+\Big](I_R\otimes H^\top).
+\label{eq:cg-kron-congruence-schur}
+\end{align}
+The middle operator eliminates channel by channel. Each scalar Schur
+complement is another loopy Laplacian: its off-diagonals remain nonpositive
+because the eliminated block is a nonsingular \(M\)-matrix, and its row sums
+remain nonnegative. Reassembling the channels gives reduced self terms and
+weights in \(\mathcal C_H\). \(\square\)
+
+This family strictly contains the common-orthogonal-eigenbasis family.
+For
+\[
+H=\begin{pmatrix}1&1\\0&1\end{pmatrix},\quad
+X=H\operatorname{diag}(1,2)H^\top,\quad
+Y=H\operatorname{diag}(3,1)H^\top,
+\]
+one has \(XY-YX=\begin{psmallmatrix}0&-5\\5&0\end{psmallmatrix}\neq0\),
+so \(X,Y\) cannot be simultaneously orthogonally diagonalized, while they
+belong to the same \(\mathcal C_H\). \status{ESTABLISHED}
+
+\theoremheading{Qualified maximality}{thm:cg-qualified-maximality}
+Let \(\mathcal C\subseteq\PSD^K\) be a closed convex cone with an SPD order
+unit \(M\in\operatorname{relint}\mathcal C\). Assume that anchors and incident
+edge coefficients range independently over \(\mathcal C\), arbitrary positive
+edge scaling is allowed, every defined one-node elimination must remain in
+the family, and every manufactured off-diagonal block must be minus a
+symmetric member of \(\mathcal C\). Then
+\(\mathcal C\subseteq\mathcal C_H\) for some \(H\), and a maximal cone under
+these assumptions equals \(\mathcal C_H\). \status{ESTABLISHED}
+
+\paragraph{Proof.}
+For \(X,Y\in\mathcal C\), relative interior gives an
+\(\varepsilon>0\) such that
+\[
+A_e=M-\varepsilon(X+Y)\in\mathcal C.
+\]
+Use \(\varepsilon X,\varepsilon Y\) as the two incident weights and \(M\)
+as retained anchors. The eliminated diagonal is \(M\), and the manufactured
+coupling is \(\varepsilon^2XM^{-1}Y\). Its required symmetry forces
+\[
+XM^{-1}Y=YM^{-1}X.
+\]
+After whitening by \(M^{-1/2}\), every pair in the whitened cone commutes.
+Commuting real symmetric matrices are simultaneously orthogonally
+diagonalizable, so
+\[
+\mathcal C\subseteq
+\{M^{1/2}ODO^\top M^{1/2}:D\succeq0\text{ diagonal}\}
+=\mathcal C_H.
+\]
+The preceding theorem proves that \(\mathcal C_H\) itself is closed, yielding
+maximality. \(\square\)
+
+The assumptions exclude correlated or nonconvex admissible sets, cones
+without an SPD order unit, parameter-dependent constraints, variable
+congruence charts, and nonflat link data. Classification in those domains
+remains open. \status{OPEN}
+
+\section{Nonflat links and effective support}
+\label{sec:cg-effective-support}
+
+For a graph edge \(e=(i,j)\), write the twisted energy as
+\begin{equation}
+(z_i-\Theta_ez_j)^\top W_e(z_i-\Theta_ez_j).
+\label{eq:cg-twisted-pair}
+\end{equation}
+An internal edge under hard identification contributes
+\begin{equation}
+(I-\Theta_e)^\top W_e(I-\Theta_e),
+\label{eq:cg-internal-residual}
+\end{equation}
+which vanishes exactly when
+\begin{equation}
+W_e^{1/2}(I-\Theta_e)=0.
+\label{eq:cg-weighted-invisibility}
+\end{equation}
+\status{ESTABLISHED}
+
+Positive-definite \(W_e\) forces \(\Theta_e=I\); a singular weight may hide a
+nonidentity twist. \status{ESTABLISHED}
+
+For \(N_e=\ker W_e\) and quotient map \(q_e:\R^K\to\R^K/N_e\),
+\begin{equation}
+W_e^{1/2}(I-\Theta_e)=0
+\quad\Longleftrightarrow\quad
+q_e\Theta_e=q_e.
+\label{eq:cg-edge-quotient}
+\end{equation}
+\status{ESTABLISHED}
+
+This is edge-local. A single common quotient
+\(\R^K/N\) on which every induced weight is positive definite exists exactly
+when
+\begin{equation}
+\ker W_e=N,\qquad \Theta_eN=N
+\quad\text{for every relevant edge}.
+\label{eq:cg-common-quotient}
+\end{equation}
+On that quotient ordinary group-valued holonomy is defined. When the kernels
+differ, there is no canonical product of the edge-local quotients and no
+single ``represented support.'' \status{ESTABLISHED}
+
+A triangle makes the boundary exact:
+\[
+\begin{aligned}
+W_{12}&=\operatorname{diag}(1,0),&
+\Theta_{12}&=\operatorname{diag}(1,2),\\
+W_{23}&=\operatorname{diag}(0,1),&
+\Theta_{23}&=\operatorname{diag}(2,1),\\
+W_{31}&=I,&\Theta_{31}&=I.
+\end{aligned}
+\]
+Every edge satisfies \eqref{eq:cg-weighted-invisibility}, yet the loop product
+is \(2I\), fixing no nonzero vector. The local kernels differ, so no common
+effective quotient exists. \status{ESTABLISHED}
+
+\section{Cut links and rectangular sheaf closure}
+\label{sec:cg-sheaf-closure}
+
+For positive-definite cut weights between two already trivialized clusters,
+define
+\[
+C=\sum W_e,\qquad B=\sum W_e\Theta_e,\qquad
+A=\sum\Theta_e^\top W_e\Theta_e.
+\]
+One group-valued coarse pair reproduces the cut exactly if and only if all
+cut twists coincide. Indeed, with \(\bar\Theta=C^{-1}B\),
+\begin{equation}
+\Delta=A-B^\top C^{-1}B
+=\sum_e(\Theta_e-\bar\Theta)^\top W_e
+(\Theta_e-\bar\Theta)\succeq0,
+\label{eq:cg-cut-excess}
+\end{equation}
+and \(\Delta=0\) exactly under common twists. \status{ESTABLISHED}
+
+The weighted mean has the correct gauge law but can be singular; equal weights
+with twists \(I_2\) and \(-I_2\) give \(\bar\Theta=0\).
+\status{ESTABLISHED}
+
+The exact closed category is larger than one invertible link.
+
+\theoremheading{Rectangular endpoint-map closure}{thm:cg-rectangular-endpoint-closure}
+Choose a minimal factor
+\[
+W_e=C_e^\top C_e,\qquad C_e:\R^K\to E_e .
+\]
+Then
+\begin{equation}
+(z_i-\Theta_ez_j)^\top W_e(z_i-\Theta_ez_j)
+=\|R_{i,e}z_i-R_{j,e}z_j\|_{E_e}^2,
+\qquad
+R_{i,e}=C_e,\quad R_{j,e}=C_e\Theta_e.
+\label{eq:cg-sheaf-factor}
+\end{equation}
+For partial injections \(S_{iI}:V_I\to\R^K\), the coarse endpoint maps are
+\begin{equation}
+R^c_{I,e}=R_{i,e}S_{iI},\qquad
+R^c_{J,e}=R_{j,e}S_{jJ}.
+\label{eq:cg-sheaf-coarse-maps}
+\end{equation}
+They reproduce \(S^\top\Lambda S\) exactly, parallel cut edges compress
+losslessly by the direct sum of their \(E_e\), and nested blocking is
+associative. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Expanding \eqref{eq:cg-sheaf-factor} gives the original pair form.
+Precomposition gives \eqref{eq:cg-sheaf-coarse-maps}; its cross block is
+\[
+-(R^c_{I,e})^\top R^c_{J,e}
+=-S_{iI}^\top W_e\Theta_eS_{jJ},
+\]
+and the diagonal blocks agree by the same expansion. Vertical stacking in
+\(\bigoplus_eE_e\) sums the energies without loss. A second injection \(T\)
+gives \((RS)T=R(ST)\), proving repeated closure. \(\square\)
+
+This is the degree-zero cellular-sheaf Laplacian category
+\citep{HansenGhrist2019}. Vertex spaces may have unequal dimensions and
+automorphism groups \(\GL(V_I)\); edge basis changes act on both endpoint
+maps and the edge metric. It is gauge covariant and strictly larger than the
+fixed-\(K\) group-link family. Open questions are canonical minimal
+compression, characterization of compression to one invertible transporter
+and one SPD weight, and compatibility with normalized laws and RG rescaling.
+\status{OPEN}
+
+\section{Partial fixed-section aggregation}
+\label{sec:cg-partial}
+
+For each undirected internal edge, choose one orientation \(e=(i,j)\), so
+\(\Theta_e\) transports from \(j\) to \(i\). Assume
+\(\Theta_e\in\GL(K)\), \(\Theta_{\bar e}=\Theta_e^{-1}\), and
+\(W_e\succ0\). Positive definiteness is the nondegeneracy assumption used
+below. \status{HYPOTHESIS}
+
+The cluster connection Laplacian \(L_I\) is defined by
+\begin{equation}
+z^\top L_Iz
+=\sum_{e=(i,j)\in E_I}
+(z_i-\Theta_ez_j)^\top W_e(z_i-\Theta_ez_j).
+\label{eq:cg-connection-laplacian-energy}
+\end{equation}
+\status{DEFINITION}
+
+With semidefinite weights, the exact condition remains the edgewise constraint
+in \eqref{eq:cg-weighted-invisibility}, and the resulting effective-support
+problem is not replaced by the following proposition. \status{ESTABLISHED}
+
+Let \((I_\alpha)_\alpha\) be the connected components of the internal graph.
+Choose a root \(r_\alpha\) and a spanning tree in each component. For a tree
+path from \(r_\alpha\) to \(v\), let \(P_{v\leftarrow r_\alpha}\) be the
+ordered product of its represented transports. Let
+\(\operatorname{Hol}_{r_\alpha}\) be the group of represented transport
+products around all closed walks based at \(r_\alpha\), and define
+\begin{equation}
+\operatorname{Fix}(\operatorname{Hol}_{r_\alpha})
+=\{u\in\R^K:Hu=u\text{ for every }
+H\in\operatorname{Hol}_{r_\alpha}\}.
+\label{eq:cg-holonomy-fixed-space}
+\end{equation}
+\status{DEFINITION}
+
+\propositionheading{Kernel--holonomy fixed-space isomorphism}{prop:cg-kernel-holonomy}
+On every connected component \(I_\alpha\), root evaluation is a linear
+isomorphism
+\begin{equation}
+\operatorname{ev}_{r_\alpha}:\ker L_{I_\alpha}
+\xrightarrow{\sim}
+\operatorname{Fix}(\operatorname{Hol}_{r_\alpha}),
+\qquad z\longmapsto z_{r_\alpha}.
+\label{eq:cg-kernel-holonomy-isomorphism}
+\end{equation}
+Consequently,
+\begin{equation}
+\ker L_I\cong
+\bigoplus_\alpha\operatorname{Fix}(\operatorname{Hol}_{r_\alpha}),
+\qquad
+f_I:=\dim\ker L_I
+=\sum_\alpha\dim\operatorname{Fix}
+(\operatorname{Hol}_{r_\alpha}).
+\label{eq:cg-fixed-rank}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+By \eqref{eq:cg-connection-laplacian-energy} and \(W_e\succ0\), a vector is
+in \(\ker L_{I_\alpha}\) exactly when
+\(z_i=\Theta_ez_j\) on every edge. Such a parallel section is determined by
+its root value, so root evaluation is injective. Transporting its value
+around any rooted closed walk returns the same value, placing its image in
+\(\operatorname{Fix}(\operatorname{Hol}_{r_\alpha})\).
+
+Conversely, take
+\(u\in\operatorname{Fix}(\operatorname{Hol}_{r_\alpha})\) and define
+\(z_v=P_{v\leftarrow r_\alpha}u\) along the spanning tree. Tree-edge
+constraints hold by construction. For a non-tree edge \(e=(i,j)\), the tree
+path from \(r_\alpha\) to \(j\), followed by \(e\), followed by the reverse
+tree path from \(i\) to \(r_\alpha\), has holonomy
+\begin{equation}
+H_e=P_{r_\alpha\leftarrow i}\Theta_e
+P_{j\leftarrow r_\alpha}.
+\label{eq:cg-fundamental-cycle-holonomy}
+\end{equation}
+Since \(H_eu=u\) and
+\(P_{r_\alpha\leftarrow i}=P_{i\leftarrow r_\alpha}^{-1}\), multiplication
+by \(P_{i\leftarrow r_\alpha}\) gives
+\(\Theta_ez_j=z_i\). Thus every edge constraint holds, proving surjectivity.
+The full Laplacian is the direct sum over connected components, which yields
+\eqref{eq:cg-fixed-rank}. \(\square\)
+
+For a connected cluster, \(f_I=K\) exactly when every represented holonomy
+element is the identity. This is the full fixed sector. The case
+\(0<f_I<K\) is a partial fixed sector, while \(f_I=0\) leaves no retained
+cluster degree. A nonfaithful representation can make represented holonomy
+trivial even when principal holonomy is not. \status{ESTABLISHED}
+
+This rank is a state-independent structural admissibility criterion. It assigns no
+partition cost, singletons remain admissible, and it does not require the
+constituent belief means to coincide. \status{NOT-CLAIMED}
+
+Define the abstract fixed fiber
+\begin{equation}
+\mathsf F_I
+=\bigoplus_\alpha\operatorname{Fix}
+(\operatorname{Hol}_{r_\alpha}).
+\label{eq:cg-abstract-fixed-fiber}
+\end{equation}
+After choosing bases, let
+\(\iota_I:\mathsf F_I\hookrightarrow(\R^K)^I\) be the full-column matrix
+that extends each root value by the spanning-tree construction in the proof.
+Its range is independent of those choices and equals \(\ker L_I\). For a
+partition \(\mathcal P\), put
+\(\iota_{\mathcal P}=\operatorname{blkdiag}_{I\in\mathcal P}\iota_I\).
+Then
+\begin{equation}
+L_I\iota_I=0,\qquad
+\Lambda_{\rm c}=\iota_{\mathcal P}^\top\Lambda
+\iota_{\mathcal P}\succeq0,\qquad
+\Lambda_{\rm c}\succ0
+\Longleftrightarrow
+\operatorname{range}(\iota_{\mathcal P})\cap\ker\Lambda=\{0\}.
+\label{eq:cg-partial-properness}
+\end{equation}
+\status{ESTABLISHED}
+
+Internal edges vanish, while cut edges become the
+rectangular endpoint data of \eqref{eq:cg-sheaf-coarse-maps}. An ordinary
+smooth vector bundle over varying parameters additionally requires locally
+constant \(f_I\); rank jumps produce strata rather than a smooth bundle.
+\status{ESTABLISHED}
+
+\propositionheading{Nested fixed sections compose exactly}{prop:cg-nested-sections-compose}
+Let a larger cluster \(A\) be a union of first-level clusters, and let
+\begin{equation}
+\iota_{A\leftarrow\mathcal P}
+=\operatorname{blkdiag}_{I\subset A}\iota_I,
+\qquad
+L_A^{(1)}
+=\iota_{A\leftarrow\mathcal P}^\top L_A
+\iota_{A\leftarrow\mathcal P}.
+\label{eq:cg-nested-first-compression}
+\end{equation}
+Then the fine and first-level kernels obey
+\begin{equation}
+\ker L_A
+=\iota_{A\leftarrow\mathcal P}\ker L_A^{(1)}.
+\label{eq:cg-nested-fixed-sections}
+\end{equation}
+If
+\(\iota_A^{(2)}:\mathsf F_A\hookrightarrow
+\bigoplus_{I\subset A}\mathsf F_I\) has range \(\ker L_A^{(1)}\), then the
+fine-level fixed-section injection is
+\begin{equation}
+\iota_A^{\rm fine}
+=\iota_{A\leftarrow\mathcal P}\iota_A^{(2)}.
+\label{eq:cg-nested-injection-composition}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Every zero mode of \(L_A\) has zero energy in each positive-semidefinite
+edge summand. Its restriction to every first-level cluster therefore belongs
+to \(\ker L_I\), so it lies in
+\(\operatorname{range}(\iota_{A\leftarrow\mathcal P})\). Write it as
+\(\iota_{A\leftarrow\mathcal P}y\). Since \(L_A\succeq0\),
+\begin{equation}
+y\in\ker L_A^{(1)}
+\Longleftrightarrow
+y^\top L_A^{(1)}y=0
+\Longleftrightarrow
+\iota_{A\leftarrow\mathcal P}y\in\ker L_A.
+\label{eq:cg-nested-kernel-equivalence}
+\end{equation}
+This proves \eqref{eq:cg-nested-fixed-sections}; substituting the range of
+\(\iota_A^{(2)}\) gives \eqref{eq:cg-nested-injection-composition}. Matrix
+composition is associative, so the same statement iterates through further
+levels. \(\square\)
+
+Thus the vertex fixed spaces and sheaf endpoint maps are exactly functorial
+under nested partitions. \status{ESTABLISHED}
+
+Probability normalization, rescaling, and minimal group-link compression remain
+separate obligations. \status{OPEN}
+
+\subsection{Constant-metric Gaussian relaxation}
+\label{sec:cg-gaussian-fixed-relaxation}
+
+\propositionheading{Relaxation onto the fixed sector}{prop:cg-gaussian-fixed-relaxation}
+Let \(R=R^\top\succ0\) and \(L=L^\top\succeq0\) be constant matrices on
+\(\R^d\). If the columns of \(N_0\) form a basis of \(\ker L\), define the
+\(R\)-orthogonal projector
+\begin{equation}
+\Pi_0^R=N_0(N_0^\top RN_0)^{-1}N_0^\top R,
+\label{eq:cg-r-projector}
+\end{equation}
+and set \(\Pi_0^R=0\) when \(\ker L=\{0\}\). The flow
+\begin{equation}
+R\dot z=-Lz,\qquad z(0)=z_0,
+\label{eq:cg-constant-metric-flow}
+\end{equation}
+converges to \(\Pi_0^Rz_0\). If the positive spectrum is nonempty and
+\begin{equation}
+\lambda_+
+=\lambda_{\min}^{+}(R^{-1/2}LR^{-1/2}),
+\label{eq:cg-transverse-rate}
+\end{equation}
+then
+\begin{equation}
+\|z(t)-\Pi_0^Rz_0\|_R
+\leq e^{-\lambda_+t}
+\|z_0-\Pi_0^Rz_0\|_R.
+\label{eq:cg-transverse-decay}
+\end{equation}
+For \(\mathcal E(z)=\tfrac12z^\top Lz\), the exact dissipation identity is
+\begin{equation}
+\frac{d}{dt}\mathcal E(z(t))
+=-\dot z^\top R\dot z
+=-z^\top LR^{-1}Lz\leq0.
+\label{eq:cg-fixed-flow-dissipation}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Set \(y=R^{1/2}z\) and
+\(A=R^{-1/2}LR^{-1/2}\succeq0\). Then
+\(\dot y=-Ay\). The spectral theorem gives convergence to the Euclidean
+projection of \(y_0\) onto \(\ker A=R^{1/2}\ker L\), with transverse norm
+decaying at the smallest positive eigenvalue of \(A\). Transforming back
+gives \eqref{eq:cg-r-projector} and \eqref{eq:cg-transverse-decay}. Direct
+differentiation gives \eqref{eq:cg-fixed-flow-dissipation}. \(\square\)
+
+For a constant passive reframing \(z'=Tz\), \(T\in\GL(d)\), covariance of
+the equation requires the congruence laws
+\begin{equation}
+R'=T^{-\top}RT^{-1},\qquad
+L'=T^{-\top}LT^{-1},\qquad
+\Pi_0^{R'}=T\Pi_0^RT^{-1}.
+\label{eq:cg-flow-congruence}
+\end{equation}
+\status{ESTABLISHED}
+
+The choice \(R=I_d\) is therefore equivariant only
+under orthogonal reframings. If \(T=T(t)\), the ordinary derivative acquires
+the term \(\dot TT^{-1}z'\). Covariance requires a time covariant derivative;
+when the original temporal connection is zero, it is
+\begin{equation}
+D_t'z'=\dot z'-\dot TT^{-1}z'=T\dot z,
+\qquad R'D_t'z'=-L'z'.
+\label{eq:cg-time-covariant-flow}
+\end{equation}
+\status{ESTABLISHED}
+
+The information-geometric identification is exact on the fixed-covariance
+Gaussian mean family
+\(q_z=\mathcal N(z,R^{-1})\). Its mean Fisher matrix is \(R\), and
+\begin{equation}
+\KL(q_z\Vert q_w)
+=\frac12(z-w)^\top R(z-w).
+\label{eq:cg-fixed-covariance-kl}
+\end{equation}
+Thus \eqref{eq:cg-constant-metric-flow} is exactly the Fisher natural-gradient
+flow of \(\mathcal E\) on that mean family. For a general regular statistical
+family, only the local expansion
+\begin{equation}
+\KL(q_\theta\Vert q_{\theta+d\theta})
+=\frac12d\theta^\top F(\theta)d\theta
++o(\|d\theta\|^2),
+\label{eq:cg-local-fisher-kl}
+\end{equation}
+is available under the standard regularity hypotheses
+\citep{AmariNagaoka2000}. \status{ESTABLISHED}
+
+Freezing
+\(F(\theta_0)=R\) yields a local linearization. The development does not
+identify a generic, state-dependent Fisher flow with the constant global
+projector and rate above. \status{NOT-CLAIMED}
+
+The solution of \eqref{eq:cg-constant-metric-flow} is a parameterized
+dynamical trajectory.  Away from stationary points, its oriented
+unparameterized orbit is a history in the sense of
+\Cref{def:hist-oriented-history}, and its Fisher arclength is invariant under
+orientation-preserving reparameterization by
+\Cref{thm:hist-fisher-clock-invariance}. The exponential rate and the
+dissipation per unit \(t\) are properties of this chosen parameterization, not
+of the unparameterized history. \status{ESTABLISHED}
+
+Here \(t\) is a declared flow parameter; it is neither a coordinate on the
+timeless contextual base, an RG-depth index, nor physical time. No
+physical-time identification is claimed. \status{NOT-CLAIMED}
+
+\subsection{Gaussian marginal-law specialization}
+\label{sec:cg-gaussian-marginal-law}
+
+Specialize \Cref{thm:cg-holonomy-kl-marginal} after transporting every
+constituent marginal to one root. For this specialization, declare the
+admissible parent family to be the full nondegenerate Gaussian family.
+Trivial represented holonomy then makes the holonomy-fixed admissible
+subfamily equal to that declared parent; it does not itself select the parent
+family. Write the transported marginals as
+\(q_i^{(r)}=\mathcal N(m_i,C_i)\), with \(C_i\succ0\), and choose weights
+\(a_i>0\) satisfying \(\sum_i a_i=1\). \status{HYPOTHESIS}
+
+\propositionheading{Full-Gaussian forward-KL barycenter}{prop:cg-gaussian-forward-kl-barycenter}
+The unique minimizer of
+\begin{equation}
+\mathcal D_I(m,C)
+=\sum_i a_i\KL\bigl(\mathcal N(m_i,C_i)
+\Vert\mathcal N(m,C)\bigr),
+\label{eq:cg-gaussian-barycenter-objective}
+\end{equation}
+matches the first two moments:
+\begin{equation}
+\bar m=\sum_i a_im_i,\qquad
+\bar C=\sum_i a_i\left[C_i+(m_i-\bar m)(m_i-\bar m)^\top\right].
+\label{eq:cg-gaussian-barycenter-moments}
+\end{equation}
+Its minimized score is
+\begin{equation}
+\mathcal D_I^\star
+=\frac12\left[
+\log\det\bar C-\sum_i a_i\log\det C_i
+\right].
+\label{eq:cg-gaussian-barycenter-score}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+The Gaussian KL formula gives
+\begin{equation}
+\begin{aligned}
+2\mathcal D_I(m,C)
+&=\Tr(C^{-1}M(m))-K+\log\det C
+-\sum_i a_i\log\det C_i,\\
+M(m)&=\sum_i a_i\left[C_i+(m_i-m)(m_i-m)^\top\right].
+\end{aligned}
+\label{eq:cg-gaussian-barycenter-expansion}
+\end{equation}
+Completing the weighted square gives
+\(M(m)=\bar C+(m-\bar m)(m-\bar m)^\top\), so \(m=\bar m\) is the unique
+minimizer. At that value,
+\(\Tr(C^{-1}\bar C)-\log\det(C^{-1}\bar C)\geq K\), with equality exactly
+when \(C=\bar C\). Substitution proves
+\eqref{eq:cg-gaussian-barycenter-score}. \(\square\)
+
+Under nontrivial represented holonomy, the moment-matched Gaussian need not
+belong to the holonomy-fixed parent family. \status{ESTABLISHED}
+
+The
+applicable optimization is then the constrained one in
+\Cref{thm:cg-holonomy-kl-marginal}. The development does not claim that
+\eqref{eq:cg-gaussian-barycenter-moments} removes that constraint.
+\status{NOT-CLAIMED}
+
+For an explicit witness, let \(K=2\),
+\(\mathcal H=\{I_2,-I_2\}\subset\mathrm{SO}(2)\), and take the one-law
+ensemble \(\mathcal N(u,I_2)\) with \(u\neq0\). Its unconstrained
+moment-matched Gaussian is itself and is not \(\mathcal H\)-invariant. The
+Haar-constrained optimizer below is instead
+\(\mathcal N(0,I_2+uu^\top)\), with score
+\(\tfrac12\log(1+\lVert u\rVert^2)>0\). Thus the holonomy constraint can be
+active even when there is no pairwise disagreement among the transported
+constituents.
+
+\corollaryheading{Compact-closure holonomy Gaussian barycenter}{cor:cg-compact-holonomy-barycenter}
+Let \(\mathcal H\subset\GL(K)\) be a represented holonomy group whose closure
+\(\overline{\mathcal H}\) is compact in \(\GL(K)\), and let
+\(\mu_{\overline{\mathcal H}}\) be normalized Haar probability measure on
+\(\overline{\mathcal H}\). A nondegenerate Gaussian is
+\(\mathcal H\)-invariant exactly when it is
+\(\overline{\mathcal H}\)-invariant. Define
+\begin{equation}
+a=\sum_i a_im_i,\qquad
+M_2=\sum_i a_i(C_i+m_im_i^\top),
+\label{eq:cg-gaussian-raw-moments}
+\end{equation}
+and their Haar projections
+\begin{equation}
+a_{\overline{\mathcal H}}
+=\int_{\overline{\mathcal H}}ha
+d\mu_{\overline{\mathcal H}}(h),\qquad
+M_{2,\overline{\mathcal H}}
+=\int_{\overline{\mathcal H}}hM_2h^\top
+d\mu_{\overline{\mathcal H}}(h),\qquad
+C_{\overline{\mathcal H}}
+=M_{2,\overline{\mathcal H}}
+-a_{\overline{\mathcal H}}a_{\overline{\mathcal H}}^\top.
+\label{eq:cg-gaussian-haar-moments}
+\end{equation}
+Then \(C_{\overline{\mathcal H}}\succ0\), and
+\(\mathcal N(a_{\overline{\mathcal H}},C_{\overline{\mathcal H}})\) is the unique minimizer of
+\eqref{eq:cg-gaussian-barycenter-objective} over all
+\(\mathcal H\)-invariant nondegenerate Gaussians. Its score retains the
+log-determinant form
+\begin{equation}
+\mathcal D_{I,\overline{\mathcal H}}^\star
+=\frac12\left[
+\log\det C_{\overline{\mathcal H}}-\sum_i a_i\log\det C_i
+\right].
+\label{eq:cg-gaussian-haar-score}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+The stabilizer of a Gaussian under the continuous \(\GL(K)\) pushforward
+action is closed. Hence invariance under \(\mathcal H\) is equivalent to
+invariance under \(\overline{\mathcal H}\). For every such invariant
+candidate \(q\), invariance of KL under a common invertible pushforward gives
+\begin{equation}
+\sum_i a_i\KL(q_i^{(r)}\Vert q)
+=\int_{\overline{\mathcal H}}\sum_i a_i
+\KL(h_\#q_i^{(r)}\Vert q)d\mu_{\overline{\mathcal H}}(h).
+\label{eq:cg-haar-objective-average}
+\end{equation}
+The orbit-averaged source ensemble on the right has first moment
+\(a_{\overline{\mathcal H}}\) and second moment
+\(M_{2,\overline{\mathcal H}}\). Haar invariance makes both moments
+\(\overline{\mathcal H}\)-invariant, so its moment-matched Gaussian
+is an admissible candidate. Its covariance is positive definite because it
+contains the Haar average of the positive-definite matrices \(hC_ih^\top\).
+The calculation in
+\Cref{prop:cg-gaussian-forward-kl-barycenter} therefore proves uniqueness.
+Every element of the compact matrix group
+\(\overline{\mathcal H}\) has \(\lvert\det h\rvert=1\), so
+\(\log\det(hC_ih^\top)=\log\det C_i\), which yields
+\eqref{eq:cg-gaussian-haar-score}. \(\square\)
+
+Compactness cannot be dropped from this averaging formula. If the represented
+holonomy contains \(2I_K\), an invariant Gaussian would require
+\(m=2m\) and \(C=4C\); hence \(m=0\) and \(C=0\), contradicting
+nondegeneracy. The generated expanding holonomy group therefore admits no
+invariant SPD Gaussian. \status{ESTABLISHED}
+
+There is a separate exact identity when every transported constituent and
+the parent are restricted to one fixed covariance \(C_0\succ0\). Define the
+symmetrized convention
+\begin{equation}
+D_{\rm SKL}(p,q)
+:=\frac12\left[\KL(p\Vert q)+\KL(q\Vert p)\right].
+\label{eq:cg-symmetric-kl-convention}
+\end{equation}
+For \(q_i^{(r)}=\mathcal N(m_i,C_0)\) and
+\(\bar q_{C_0}=\mathcal N(\bar m,C_0)\), the fixed-covariance barycenter
+score satisfies
+\begin{equation}
+\sum_i a_i\KL(q_i^{(r)}\Vert\bar q_{C_0})
+=\sum_{i<j}a_ia_jD_{\rm SKL}(q_i^{(r)},q_j^{(r)})
+=\frac12\sum_{i,j}a_ia_jD_{\rm SKL}(q_i^{(r)},q_j^{(r)}).
+\label{eq:cg-fixed-covariance-pairwise-identity}
+\end{equation}
+\status{ESTABLISHED}
+
+This follows from the weighted variance identity in the \(C_0^{-1}\) inner
+product. It is not the free-covariance optimization of
+\Cref{prop:cg-gaussian-forward-kl-barycenter}, whose covariance includes the
+between-mean term in \eqref{eq:cg-gaussian-barycenter-moments}.
+\status{ESTABLISHED}
+
+Ordinary pairwise KL between untransported local marginals is not a
+cross-fiber quantity. After choosing a path, a second path can change the
+transported law by a loop-holonomy action. Stabilization by that action
+guarantees path independence; without it the two KL values need not agree.
+For example, using the holonomy \(H\) in
+\eqref{eq:cg-isotropic-holonomy-counterexample} and
+\(q_i=q_j=\mathcal N(e_2,I_3)\), the identity path gives KL zero, whereas a
+path differing by \(H\) gives KL equal to \(2\). Moreover, an unpenalized sum
+of nonnegative within-cluster pairwise KL values is minimized by the
+singleton partition, where it vanishes. It therefore supplies no
+nondegenerate partition selector by itself. It also contains only marginal
+information and does not test the common recovery-kernel condition for joint
+recovery in \Cref{sec:cg-kl-recovery}. \status{ESTABLISHED}
+
+Two elementary examples separate the structural and marginal statements.
+On a two-vertex tree with identity transport and \(W=I_K\), represented
+holonomy is trivial, yet the marginals
+\(\mathcal N(-ae_1,I_K)\) and \(\mathcal N(ae_1,I_K)\) have transported
+divergence
+\begin{equation}
+\KL\bigl(\mathcal N(-ae_1,I_K)\Vert
+\mathcal N(ae_1,I_K)\bigr)=2a^2,
+\label{eq:cg-trivial-holonomy-large-kl}
+\end{equation}
+which is arbitrarily large. Conversely, take a triangle with \(K=3\), unit
+edge weights, identity transports on two edges, and closing transport
+\begin{equation}
+H=\operatorname{diag}(1,-1,-1)\in\operatorname{SO}(3).
+\label{eq:cg-isotropic-holonomy-counterexample}
+\end{equation}
+Its represented holonomy is nontrivial and
+\(\operatorname{Fix}(H)=\operatorname{span}(e_1)\), so the structural fixed
+sector has \(f_I=1<K\). Nevertheless, \(H\) preserves
+\(\mathcal N(0,\sigma^2I_3)\); assigning that marginal at every vertex makes
+all transported marginal KL values zero. \status{ESTABLISHED}
+
+Transported KL therefore measures marginal occupation of the available law
+modes, not the dimension of the state-independent structural fixed section.
+\status{ESTABLISHED}
+
+\section{Quotient volume for hard membership}
+\label{sec:cg-quotient-volume}
+
+Let \(P=\widehat S\in\{0,1\}^{n\times m}\), with nonempty cluster sizes
+\(s_1,\ldots,s_m\), \(D=\operatorname{diag}(s_i)\),
+\(s=(s_i)\), and \(n=\sum_i s_i\). For a positive-semidefinite matrix,
+\(\operatorname{pdet}\) denotes the product of its positive eigenvalues.
+On the translation quotient, the metric
+induced from the fine Euclidean quotient is
+\begin{equation}
+H=D-\frac{ss^\top}{n},\qquad
+\ker H=\operatorname{span}(\mathbf1_m),\qquad
+\operatorname{pdet}H=\frac{m\prod_i s_i}{n}.
+\label{eq:cg-quotient-metric}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+For a coarse class \([x]\),
+\[
+\min_a\|Px+a\mathbf1_n\|^2
+=x^\top\left(D-\frac{ss^\top}{n}\right)x.
+\]
+Deleting row and column \(r\), the matrix determinant lemma gives the
+principal cofactor \(\prod_i s_i/n\). Since a rank-\((m-1)\) Laplacian with
+kernel \(\mathbf1_m\) has pseudodeterminant \(m\) times any principal
+cofactor, \eqref{eq:cg-quotient-metric} follows. \(\square\)
+
+For \(K\) channels, standard quotient Lebesgue measure and fine-induced
+Hausdorff measure are related by
+\begin{equation}
+\mu_{\rm ind}=J_{\mathcal P}\mu_{\rm std},\qquad
+J_{\mathcal P}
+=\left(\frac{m\prod_i s_i}{n}\right)^{K/2}.
+\label{eq:cg-quotient-jacobian}
+\end{equation}
+If
+\[
+\operatorname{range}(S)\cap\ker\Lambda
+=\mathbf1_n\otimes\R^K,
+\]
+the quotient Gaussian is proper and its generalized determinant satisfies
+\begin{equation}
+\det_{H\otimes I_K}(\Lambda_{\rm c})
+:=\frac{\operatorname{pdet}\Lambda_{\rm c}}
+{(\operatorname{pdet}H)^K}
+=\frac{\operatorname{pdet}\Lambda_{\rm c}}{J_{\mathcal P}^2}.
+\label{eq:cg-quotient-generalized-determinant}
+\end{equation}
+This is the determinant of the precision relative to the quotient metric
+\(H\otimes I_K\). For the common unnormalized factor
+\(\exp(-x^\top\Lambda_{\rm c}x/2)\), let \(d_q=(m-1)K\). Its normalizers are
+\begin{equation}
+\begin{aligned}
+Z_{\rm std}
+&=(2\pi)^{d_q/2}
+(\operatorname{pdet}\Lambda_{\rm c})^{-1/2},\\
+Z_{\rm ind}
+&=(2\pi)^{d_q/2}
+\det_{H\otimes I_K}(\Lambda_{\rm c})^{-1/2}
+=J_{\mathcal P}Z_{\rm std}.
+\end{aligned}
+\label{eq:cg-quotient-normalizers}
+\end{equation}
+The factor cancels from the normalized law because the measure changes by
+the same amount. \status{ESTABLISHED}
+
+Raw partition functions differ by \(\log J_{\mathcal P}\), so a partition
+score needs a fixed volume convention, an exact correction, or a compensating
+prior. \status{ESTABLISHED}
+
+\section{Recognition-side costs}
+\label{sec:cg-restriction-costs}
+
+Let \(B\in\R^{NK\times mK}\) have orthonormal columns spanning
+\(\operatorname{range}S\), let
+\(B_\perp\in\R^{NK\times r}\), \(r=NK-mK\), complete it so that
+\([B\ B_\perp]\) is orthogonal, and write
+\(p=\mathcal N(\mu,\Lambda^{-1})\). These definitions apply throughout this
+section.
+
+The admissible mean-only family leaves covariance unrestricted. For
+\(q=\mathcal N(\nu,\Sigma)\), \(\nu\in\operatorname{range}S\), its exact
+optimized cost is
+\begin{equation}
+\mathcal G_{\rm tie}
+=\inf_{\nu\in\operatorname{range}S,\ \Sigma\succ0}
+\KL\bigl(\mathcal N(\nu,\Sigma)\Vert p\bigr)
+=\frac12m_\perp^\top
+\left(B_\perp^\top\Lambda^{-1}B_\perp\right)^{-1}m_\perp,
+\qquad
+m_\perp=B_\perp^\top\mu.
+\label{eq:cg-mean-tie-cost}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Optimizing the Gaussian KL over covariance gives
+\(\Lambda^{-1}\), leaving
+\(\frac12(\nu-\mu)^\top\Lambda(\nu-\mu)\). Minimizing over
+\(\nu=Ba\) gives the \(\Lambda\)-projection of \(\mu\). In the orthogonal
+basis \([B\ B_\perp]\), its remaining block is the Schur complement
+\[
+\Lambda_{22}-\Lambda_{21}\Lambda_{11}^{-1}\Lambda_{12}
+=\left(B_\perp^\top\Lambda^{-1}B_\perp\right)^{-1}.
+\]
+This proves \eqref{eq:cg-mean-tie-cost}. \(\square\)
+
+A recognition law supported exactly on \(\operatorname{range}S\) is singular
+against \(p\), so its relative entropy to \(p\) is \(+\infty\). The following
+declared full-rank regularization makes the divergence and every finite term
+explicit. Let \(\nu_\star\) be the mean optimizer above and set
+\begin{equation}
+\Sigma_\varepsilon
+=B(B^\top\Lambda B)^{-1}B^\top
++\varepsilon B_\perp B_\perp^\top,
+\qquad
+q_\varepsilon=\mathcal N(\nu_\star,\Sigma_\varepsilon),
+\qquad \varepsilon>0.
+\label{eq:cg-epsilon-regularized-law}
+\end{equation}
+Then, exactly,
+\begin{equation}
+\begin{aligned}
+\mathcal G_\varepsilon
+:=\KL(q_\varepsilon\Vert p)
+={}&\mathcal G_{\rm tie}
++\frac{r}{2}\log\frac1\varepsilon-\frac r2
++\frac12\log\det(B_\perp^\top\Lambda^{-1}B_\perp)\\
+&+\frac{\varepsilon}{2}
+\Tr(B_\perp^\top\Lambda B_\perp).
+\end{aligned}
+\label{eq:cg-epsilon-divergence}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+In the orthogonal basis \([B\ B_\perp]\), the covariance in
+\eqref{eq:cg-epsilon-regularized-law} has determinant
+\(\det(B^\top\Lambda B)^{-1}\varepsilon^r\), while
+\[
+\Tr(\Lambda\Sigma_\varepsilon)
+=mK+\varepsilon\Tr(B_\perp^\top\Lambda B_\perp).
+\]
+The Gaussian KL formula and the optimized mean term give all terms in
+\eqref{eq:cg-epsilon-divergence} after using
+\[
+\det\Lambda
+=\det(B^\top\Lambda B)
+\det\left(B_\perp^\top\Lambda^{-1}B_\perp\right)^{-1},
+\]
+which is the block determinant identity. \(\square\)
+
+Thus \(\mathcal G_\varepsilon\to+\infty\) as
+\(\varepsilon\downarrow0\): identification is a generative construction, not
+a finite recognition restriction.
+
+The marginal precision in \eqref{eq:cg-mean-tie-cost} obeys
+\begin{equation}
+\left(B_\perp^\top\Lambda^{-1}B_\perp\right)^{-1}
+\preceq B_\perp^\top\Lambda B_\perp,
+\label{eq:cg-loewner}
+\end{equation}
+with equality exactly when
+\(B^\top\Lambda B_\perp=0\). Using the restriction precision instead
+therefore overstates the cost except under \(\Lambda\)-orthogonality.
+\status{ESTABLISHED}
+
+If only covariance factorization across a partition is imposed, the exact
+Gaussian optimum has gap
+\begin{equation}
+\mathcal G_{\rm fact}
+=\frac12\left[
+\sum_I\log\det\Lambda_{II}-\log\det\Lambda
+\right].
+\label{eq:cg-factorization-gap}
+\end{equation}
+\status{ESTABLISHED}
+
+The mean-tie cost is nonnegative and vanishes at the
+finest partition; the factorization gap decreases under merging by Fischer's
+determinant inequality and vanishes at the coarsest partition. The quotient
+volume is convention dependent across partitions. Therefore these terms do
+not supply a nondegenerate intrinsic scale without an additional coefficient
+or a different nonmonotone functional. Whether such a selector exists remains
+open. \status{OPEN}
+
+The corrected cross-inventory boundary is the general theorem of
+\Cref{sec:cg-elbo}: a common evidence-preserving Markov pushforward makes
+ELBOs comparable and ordered. The hard energy trace analyzed here is not such
+a pushforward unless a separate theorem proves it, so its cross-partition
+difference can mix evidence and tightness. \status{ESTABLISHED}
+
+\section{The frame sector}
+\label{sec:cg-frame}
+
+If a coarse Gaussian \((U_I,\mu_I,\Sigma_I)\) is sent to constituent \(i\)
+through \(U_iU_I^{-1}\), then
+\begin{equation}
+\mathcal N(U_iU_I^{-1}\mu_I,
+U_iU_I^{-1}\Sigma_IU_I^{-\top}U_i^\top)
+=\mathcal N(U_i\bar m,U_i\bar S U_i^\top),
+\label{eq:cg-frame-cancellation}
+\end{equation}
+with \(\bar m=U_I^{-1}\mu_I\) and
+\(\bar S=U_I^{-1}\Sigma_IU_I^{-\top}\).
+Thus the coarse frame cancels. With faithful representation the level set is
+exactly one gauge orbit; without faithfulness only unidentifiability follows.
+\status{ESTABLISHED}
+
+For \(K\geq2\), \(n\geq2\), no map
+\(F:\GL^+(K)^n\to\GL^+(K)\) is both left equivariant and permutation
+symmetric. Choose an order-\(n\) rotation \(v\in\mathrm{SO}(K)\) and inputs
+\((I,v,\ldots,v^{n-1})\). Left multiplication by \(v\) cyclically permutes
+the tuple. Symmetry keeps \(F\) fixed, while equivariance sends it to \(vF\);
+hence \((I-v)F=0\), making \(F\) singular. \status{ESTABLISHED}
+
+\paragraph{Physicist summary.}
+Hard Gaussian aggregation is exact Galerkin restriction: internal springs
+disappear and cut springs add. Gaussian marginalization is a different
+operation and mixes matrix channels; it fails in general but closes exactly
+when all parameters decouple in one congruence metric. Nonflat or
+rank-changing links close in the larger sheaf category of endpoint
+measurement ports. With positive-definite represented internal weights,
+holonomy determines the available parallel modes: trivial holonomy retains
+the full \(K\)-dimensional sector, while nontrivial holonomy can retain only a
+partial sector or none. When the infimum is attained, transported KL measures
+whether the marginals occupy an available mode; without attainment, a zero
+infimum establishes only approximability. It is not a structural-holonomy
+test or a partition selector, and joint recovery remains separate. Quotient
+volumes, mean tying, and determinant gaps are explicit, but none selects an
+intrinsic blocking scale by itself.

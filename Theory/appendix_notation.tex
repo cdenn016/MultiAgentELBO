@@ -1,0 +1,544 @@
+\chapter{Typed Notation Contract}
+\label{app:notation-contract}
+
+This appendix is a type checker, not a second development of the theory.
+Superscripts \(b\) and \(m\) always denote the belief and model channels.
+They may have different representations, fiber dimensions, connections, and
+coarse maps, but the ambient theory induces both channels from one principal
+\(G\)-bundle.
+
+\footnotesize
+\renewcommand{\arraystretch}{1.05}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.23\textwidth}
+>{\raggedright\arraybackslash}p{0.27\textwidth}
+>{\raggedright\arraybackslash}p{0.43\textwidth}@{}}
+\toprule
+Symbol & Type & Meaning and prohibited identification \\
+\midrule
+\(\mathcal C\) &
+smooth base manifold &
+Context space.  It is neither the population graph nor a probability
+sample space. \\
+\(P\xrightarrow{\pi}\mathcal C\) &
+principal \(G\)-bundle &
+The common source of belief and model associated bundles. It is not either
+statistical bundle. \\
+\(\rho_b,\rho_m\) &
+actions on sample fibers &
+Both are representations of the same \(G\); they need not be equivalent,
+faithful, or of equal dimension. \(\rho_x(g)\) acts on a sample coordinate in
+channel \(x\). \\
+\(\widehat\rho_b,\widehat\rho_m\) &
+actions on laws &
+\(\widehat\rho_x(g)q=(\rho_x(g))_\#q\).  A hatted action is not an action
+on a sample vector. \\
+\(\mathcal E_b=P\times_{\widehat\rho_b}\mathcal B_b,\qquad
+  \mathcal E_m=P\times_{\widehat\rho_m}\mathcal B_m\) &
+associated law bundles over \(\mathcal C\) &
+Their fibers contain belief and model laws.  They are not principal
+bundles. \\
+\(u_i^b,u_i^m;\ h_i\) with \(u_i^m=u_i^b h_i\) &
+two local sections of \(P\); unique map \(h_i:\mathcal C_i\to G\) &
+The relative principal frame exists independently of \(\rho_b,\rho_m\). It
+does not define a map between their representation spaces. \\
+\(u_i^{x\prime}=u_i^x a_i^x;\quad
+R_i^x=\rho_x(a_i^x)^{-1}=\rho_x(g_i^x)\), with
+\(g_i^x=(a_i^x)^{-1}\) &
+passive section rechoice and old-to-new sample-coordinate map in channel \(x\) &
+If \(v_x'=R_i^xv_x\), then \(q_i^{x\prime}=(R_i^x)_\#q_i^x\) and a
+same-channel transport obeys
+\(T_{r\leftarrow i}^{x\prime}
+=R_r^x\circ T_{r\leftarrow i}^x\circ(R_i^x)^{-1}\).
+A linear cross-channel map transforms by
+\(F_i'=R_i^mF_i(R_i^b)^{-1}\), covariance by
+\(\Sigma_i'=R_i^x\Sigma_i(R_i^x)^\top\), and precision by inverse
+congruence.  This \(R_i^x\) is neither a belief--model map nor an RG
+restriction. \\
+\(\Phi:\mathcal E_b\to\mathcal E_m\) &
+belief-to-model associated-bundle morphism &
+Covers \(\operatorname{id}_{\mathcal C}\).  It is not a gauge
+automorphism or a same-channel transport. \\
+\(\widetilde\Phi:\mathcal E_m\to\mathcal E_b\) &
+model-to-belief associated-bundle morphism &
+Covers \(\operatorname{id}_{\mathcal C}\).  It is independent of \(\Phi\)
+and is not presumed to be its inverse. \\
+\(\omega_b,\omega_m\), or \(H^b,H^m\) &
+two principal connections on \(P\), or induced horizontal distributions &
+They are separate geometric data on the same principal bundle. Vector-bundle covariant
+derivatives are a linear specialization. \\
+\(\Omega_\gamma,\widetilde\Omega_\gamma\) &
+\((\mathcal E_b)_{\gamma(0)}\to(\mathcal E_b)_{\gamma(1)}\) and
+\((\mathcal E_m)_{\gamma(0)}\to(\mathcal E_m)_{\gamma(1)}\) &
+Same-channel parallel transports induced by the two connections along a
+piecewise-smooth base curve \(\gamma\subset\mathcal C\). \\
+\(\varpi_x:\mathcal E_x\to\mathcal C,\quad V\mathcal E_x\) &
+associated law-bundle projection and its vertical tangent bundle &
+The vertical space is tangent to a statistical fiber.  It is neither a sample
+space nor the tangent space of the contextual base. \\
+\(g_x^F,\mathcal T_x\) &
+vertical symmetric tensors of orders two and three on \(\mathcal E_x\) &
+The descended Fisher and Amari--Chentsov tensors exist under the declared
+regular-model hypotheses. They are not tensors on \(\mathcal C\) until a
+section and connection are supplied. \\
+\(D^{\omega_x}s=\operatorname{ver}^{\omega_x}\circ Ts\) &
+map \(T\mathcal U\to s^*V\mathcal E_x\) for a smooth section
+\(s:\mathcal U\to\mathcal E_x\) &
+Connection-relative vertical first jet.  For nonlinear statistical fibers it
+is not a linear covariant derivative on a vector space of sections. \\
+\(h_s^{\omega_x},c_s^{\omega_x}\) &
+sections of \(\operatorname{Sym}^2T^*\mathcal U\) and
+\(\operatorname{Sym}^3T^*\mathcal U\) &
+Pullbacks of \(g_x^F\) and \(\mathcal T_x\) by \(D^{\omega_x}s\).  They are
+passive-gauge covariant but connection-relative, and they are not fixed by the
+active gauge group at fixed connection; \(h_s^{\omega_x}\) is only a
+semimetric until nondegeneracy is proved. \\
+\(N;\ N_\star;\ q=N_\star|_{\mathcal B}\) &
+sample kernel \(\mathsf K\times\bar{\mathscr K}\to[0,1]\); affine law map
+\(\mathcal P(\mathsf K)\to\mathcal P(\bar{\mathsf K})\); law-fiber map
+\(\mathcal B\to\bar{\mathcal B}\) &
+Three distinct objects.  \(N\) determines \(N_\star\), and \(N_\star\)
+restricts to \(q\) only under the declared family closure
+\(N_\star(\mathcal B)\subseteq\bar{\mathcal B}\); neither arrow reverses.
+Sample-level equivariance of \(N\) implies the law-level intertwining, and not
+conversely.  None of the three is the associated-bundle morphism. \\
+\(\Psi;\ T^V\Psi\) &
+associated-bundle morphism \(E\to\bar E\) over \(f\); its vertical differential
+\(VE\to V\bar E\) &
+\(\Psi\) is induced by \((\mathcal P,\kappa,q)\) exactly under
+\eqref{eq:rg-scale-intertwiner}.  For a fixed principal map \(\mathcal P\) and
+associated-bundle morphism \(\Psi\), the representative
+\(q=\iota_{\mathcal P(u)}^{-1}\Psi\iota_u\) is unique.  Replacing the target
+frame changes that representative by the full represented target gauge action,
+not merely by image isotropy; \(\Psi\) never determines \(N\).  \(T^V\Psi\)
+equals \(Tq\) only in a frame pair \((u,\mathcal P(u))\); in any other frame
+pair the identification uses coarse-side invariance of \(\bar g^F\). \\
+\(A_\Psi=\mathcal D\Psi;\ \mathfrak A_{\mathcal P}\) &
+section of \(\varpi^*T^*\mathcal C\otimes\Psi^*V\bar E\); element of
+\(\Omega^1(\mathcal C;f^*\operatorname{Ad}\bar P)\) &
+Horizontal defect and scale-connection defect form, related by
+\eqref{eq:pb-anomaly-fundamental-field}.  The sign convention is transported
+fine horizontal minus coarse horizontal lift.  They compose by the ordered law
+\eqref{eq:pb-anomaly-composition}; an unweighted sum of two stage defects is a
+type error. \\
+\(\Delta_F^\Psi;\ \delta_\Psi;\ \mathcal X_\Psi;\ \mathcal Q_\Psi\) &
+vertical form on \(\operatorname{Sym}^2V^*E\); its section pullback and the two
+anomaly tensors on \(\operatorname{Sym}^2T^*\mathcal U\) &
+\(\Delta_F^\Psi\) is the fiber Fisher defect and \(\delta_\Psi\) its base
+pullback; they are different objects on different bundles.  The base comparison
+retains \emph{two} tensors, \(-\mathcal X_\Psi\) with \(\mathcal X_\Psi\)
+signed and \(-\mathcal Q_\Psi\) with \(\mathcal Q_\Psi\succeq0\); neither may be
+summarized as one mismatch term. \\
+\(\mathcal E_i,\varpi_i;\ \boldsymbol\omega_i\) &
+\(\mathcal E_b|_{\mathcal C_i}\times_{\mathcal C_i}
+\mathcal E_m|_{\mathcal C_i}\to\mathcal C_i\); product connection &
+Agent \(i\)'s paired law bundle and the pair
+\(\boldsymbol\omega_i=(\omega_b,\omega_m)\).  The common projection does not
+select relative channel weights or a joint Fisher metric. \\
+\(v^\omega(\Gamma),L^\omega(\Gamma)\) &
+vertical velocity and vertical Fisher length of a curve \(\Gamma:J\to E\) &
+The parameter on \(J\) is arbitrary.  This length selects neither an
+inference orbit nor a physical time. \\
+\(\mathfrak S_i\) &
+declared regular configuration space of belief--model sections for agent \(i\) &
+Its tangent vectors are section variations evaluated vertically at each fixed
+context.  It is not the contextual base or an undeclared infinite-dimensional
+probability space. \\
+\(\mathscr H_i\) &
+oriented unparameterized curve in \(\mathfrak S_i\) &
+An equivalence class under orientation-preserving reparameterization.  Its
+orientation is selected by the VFE descent ray only after a regular metric or
+mobility is declared. \\
+\(\Sigma_i:\mathscr H_i\times\mathcal C_i\to\mathcal E_i\) &
+adjoint evaluation map of an inference history &
+\(\varpi_i\circ\Sigma_i(r,c)=c\): history changes the section value while the
+base context remains fixed. \\
+\(\pi_i^{\mathrm{conf}},\iota_i\) &
+configuration extraction from an admissible conditional/full-law family and
+its smooth right-inverse &
+\(\pi_i^{\mathrm{conf}}\circ\iota_i=\operatorname{id}\) is the commuting condition that
+makes \(\iota_i\) a genuine joint-law lift of the displayed agent
+configuration, rather than an unrelated parameterized family. \\
+\(\overline{\Fenergy}_{B,o}\) &
+outside-averaged conditional block VFE at fixed \(Q_{B^c}\) &
+Under the local--global support, finiteness, integrability, and differentiation
+hypotheses, it differs from the restricted collective VFE only by a
+configuration-independent term. \\
+\(\mathsf G_i^F=\iota_i^*G_{\mathfrak R_B}^F\) &
+exact Fisher metric induced from the lifted conditional/full recognition law &
+A weighted marginal Fisher sum has this status only under separately proved
+block orthogonality or fixed dependence; degeneracy requires a justified
+quotient. \\
+\(\mathcal Q_\ell;\ \mathsf G_\ell\) &
+declared configuration manifold at scale \(\ell\); its \emph{strong}
+configuration metric &
+Determined by the declared base measure, channel weights, basis, and topology,
+not by the bundle.  \(\mathsf G_\ell\) is a section of
+\(\operatorname{Sym}^2T^*\mathcal Q_\ell\) and is neither the fiber metric
+\(g_x^F\) nor the base semimetric \(h_s^{\omega_x}\).  It carries a scale or
+agent subscript always, and is not the unsubscripted M-step preconditioner
+\(\mathsf G\) of \Cref{ch:elbo}.  A labeled weighted
+product equals a joint-law pullback only under the criterion
+\eqref{eq:hist-joint-versus-product}. \\
+\(\mathsf R_\ell:\mathcal Q_\ell\to\mathcal Q_{\ell+1}\) &
+smooth coarse configuration map &
+Separately declared data.  It is not the sample kernel \(K_\ell\), the law map
+\(N_\star\), the bundle morphism \(\Psi\) or \(C_{\ell,s}\), the nonlinear
+action map \(\mathcal R^H\), the block measure-pair map \(\mathcal R_b\), the
+derivative \(D_\ell\), the reference-space endomorphism
+\(\widehat{\mathcal R}_\ell\), the conjugated retained projection
+\(\widehat R_\ell\), the root-vertex set \(\mathcal R\), or the descent ray
+\(\mathcal R^-_{\Fenergy_i}\).  A pointwise bundle morphism induces it only on
+the projectable set, which can have empty interior. \\
+\(a_\ell;\ Q^{(\ell)}(r);\ \tau^{(\ell)}(r)\) &
+positive semiconjugacy factor; configuration at depth \(\ell\) and orbit
+position \(r\); accumulated Fisher duration at that depth &
+Distinct typed quantities plus a parameter-conversion datum.  Depth \(\ell\)
+is a discrete scale index; \(r\) is a chosen oriented orbit parameter; and
+\(\tau^{(\ell)}\) is metric-relative arc length from a chosen origin.  After
+choosing metric, origin, orientation, and path, \(\tau\) can be a function of
+\(r\), but it is not canonically determined by an unparameterized orbit or by
+scale depth.  The factor \(a_\ell=\mathrm d\sigma/\mathrm dr\) is the
+coarse-flow-parameter rate relative to the fine parameter, not a physical-time
+or Fisher-duration rate; ordinary arc length uses \(\lvert a_\ell\rvert\), and
+positivity selects the oriented semiconjugacy. \\
+\(\nu_F,L_F,\tau_{Q,\lambda_0}\) &
+Fisher speed, realized path length, and cumulative clock from a chosen origin &
+They are defined on a selected regular history. Length and cumulative duration
+are invariant under orientation-preserving reparameterization; neither is
+physical time. \\
+\(T_{ij}^b(c),T_{ij}^m(c)\) &
+elements of \(G\) at one \(c\in\mathcal C_i\cap\mathcal C_j\) &
+Transition functions computed from two frame atlases of the same \(P\).
+Their cocycles are cohomologous descriptions of one principal-bundle class.
+They use no nonconstant curve and are not graph links. \\
+\(\Theta_e^b,\Theta_e^m\) &
+oriented-edge-copy elements of \(G\) on
+\(\mathfrak I=(V,E,\bar{\ })\) &
+Channel-specific graph-link data, transforming under discrete vertex frame changes
+\(h_i^x\), with \(\Theta_{\bar e}^x=(\Theta_e^x)^{-1}\). Parallel copies
+retain distinct labels. Equality with represented base transport requires
+vertex contexts, assigned curves, \(h_i^x=g_i^x(c_i)\), and the explicit
+link--transport hypothesis.  The superscripted contextual re-expression
+\(h_i^x\) is not the relative principal-frame field \(h_i\). \\
+\(\mathcal H,\overline{\mathcal H}\) &
+represented graph holonomy group and its closure in the represented matrix group &
+A finitely generated \(\mathcal H\) need not be closed. Haar averaging in the
+compact-closure theorem is over \(\overline{\mathcal H}\), after explicitly
+assuming that this closure is compact. \\
+\(\nu_{\mathrm{mix}}=\lambda+\sum_n2^{-n}\delta_{a_n}\) &
+fixed sigma-finite reference for a mixed family &
+Exists in this form exactly when the union of all positive atomic supports is
+countable, assuming no singular-continuous components. It is fixed for the
+family, not selected separately at each parameter. \\
+\(M_o;\ z=M_o(\mathsf Y_D);\ \Pi_o=M_o/z\) &
+finite evidence-slice measure; positive-finite mass; posterior probability &
+The slice is primary at a selected regular observation. $M_o$ is not itself a
+probability unless $z=1$, and normalization requires $0<z<\infty$. \\
+\(\Lelbo^{\mathrm{ext}},\Fenergy^{\mathrm{ext}}\) &
+maps on every latent probability law with values in
+$[-\infty,\log z]$ and $[-\log z,+\infty]$ &
+$\Lelbo^{\mathrm{ext}}=\log z-\KL(Q\Vert\Pi_o)$ and
+$\Fenergy^{\mathrm{ext}}=-\Lelbo^{\mathrm{ext}}$. The safe gap identity is
+$\log z-\Lelbo^{\mathrm{ext}}=\KL$; the sum
+$\Lelbo^{\mathrm{ext}}+\KL$ is not formed in the singular branch. \\
+\(\Lelbo,\Fenergy\) &
+finite classical split of the extended functionals &
+The expected-log-joint minus expected-log-recognition formula is used only
+under absolute continuity and separate log-integrability. It is not the
+definition on arbitrary $Q$. \\
+\(\mathrm{TC}(Q)=\KL(Q\Vert\bigotimes_bQ_b)\) &
+extended nonnegative total correlation &
+May equal $+\infty$. Its product-reference chain identity holds in
+$[0,+\infty]$ without subtracting entropies; marginal-entropy formulas are
+finite-domain corollaries. \\
+\(K:\mathsf X\rightsquigarrow\mathsf Y\) &
+normalized, parameter-independent Markov kernel &
+It satisfies \(K(x,\mathsf Y)=1\) for every \(x\), pushes laws forward, and
+obeys data processing.  For right-acting scale kernels,
+\(K_{\ell r}:=K_{\ell k}K_{kr}\) means
+\((\mu K_{\ell k})K_{kr}=\mu K_{\ell r}\), representing the abstract
+composite \(K_{kr}\circ K_{\ell k}\).  A kernel is not an energy restriction
+or a Galerkin matrix. \\
+\(\mathscr K_{\mathrm{op}}\) &
+declared operator category &
+Its objects are topological vector spaces and its morphisms are continuous
+linear maps; the analytic tier uses Banach spaces and bounded linear maps.
+Abstract arrows compose with \(\circ\), not with right-acting kernel
+juxtaposition. \\
+\(I_{\mathbb R^b};\ I_b\) &
+the \(b\)-dimensional identity covariance; declared rescaling/identification
+kernel &
+The covariance \(I_{\mathbb R^b}\) occurs in replicated Gaussian laws. The
+plain \(I_b\) is a normalized kernel composed with \(C_b\) in the RG
+measure-pair map; it is neither that covariance nor the score lift
+\(\mathscr I_b\). \\
+\(\iota_{\mathcal P}\) &
+coarse-to-fine deterministic embedding &
+Imposes a hard block constraint on an energy family.  Normalization and
+an induced probability channel require separate proofs. \\
+\(\mathsf C,\mathsf P\) &
+compression and prolongation on a declared linear feature tier &
+Here \(\mathsf C\mathsf P=I\).  A message propagator may be compressed as
+\(\mathsf C A\mathsf P\), but a hard-tied quadratic energy uses
+\(\mathsf P^*H\mathsf P\), an exact Gaussian marginal uses a Schur complement,
+and a general law uses Markov pushforward. \\
+\(K_a,E_{a,o}\) &
+normalized interaction-record kernel and its fixed-record negative log density &
+One actual record is one global factor.  It may occur in several incident
+coordinate-local VFEs without being duplicated in the joint. \\
+\(\alpha_i,\beta_{ij},\eta_{ij}=\alpha_i\beta_{ij}\) &
+receiver occupancy, conditional source attention, and joint edge-event law &
+Exact meta-attention pushes \(\eta\) and then disintegrates.  A row
+\(\beta\) alone does not determine receiver weights. \\
+\(\mathscr P_\ell\xrightarrow{\varpi_\ell}\mathcal C_\ell\) &
+scale-\(\ell\) principal bundle and its principal projection &
+\(\mathscr P_\ell\) is distinct from the root-level notation \(P\), from the
+normalized law \(\pi_\ell\), and from every interaction-coordinate operator.
+The projection is \(\varpi_\ell\), not \(\pi_\ell\). \\
+\(\boldsymbol\Xi_\ell^{\mathrm{MVG}}
+=((A_i^{(\ell)}),(W_{ij}^{(\ell)}))\) &
+scale-\(\ell\) MVG operator-parameter tuple &
+It determines the assembled interaction precision in
+Chapter~\ref{ch:gaussian-renormalization}.
+It is neither the normalized law \(\pi_\ell\) nor a bundle projection. \\
+\((\rho_\ell,m_\ell);\ M_\ell,\pi_\ell\) &
+scale-\(\ell\) probability reference, finite evidence measure, its mass, and
+normalized law &
+Here \(M_\ell=m_\ell(\mathsf X_\ell)\in(0,\infty)\) and
+\(\pi_\ell=m_\ell/M_\ell\).  The measure pair is the primary law-level RG
+state; normalization does not discard the separately tracked evidence mass. \\
+\(c_{\mathrm{ray}}(b);\ n_{\mathrm{cut}}(b)\) &
+additive fixed-action-ray shift; cut-edge count for the declared block ratio \(b\) &
+It is present only on the projective action tier of the \(b\)-step map
+\(\mathcal R_b^H\). A fixed tracked measure pair restores mass preservation
+and forces \(c_{\mathrm{ray}}(b)=0\). The count
+\(n_{\mathrm{cut}}(b)\) occurs only in the operator-scale counting law. \\
+\(B(b);\ \partial B(b)\) &
+typical block at ratio \(b\); its coarse cut &
+Local notation for the weighted scaling comparison. Neither object is fixed by
+the block ratio alone; both belong to the declared weighted graph family. \\
+\(W_{\partial}(b),A_B(b);\ s_W,s_A\) &
+cut-coupling and block-self sums; their declared norm-growth exponents &
+\(W_{\partial}(b)=\sum_{e\in\partial B(b)}W_e\) and
+\(A_B(b)=\sum_{i\in B(b)}A_i\). The exponents satisfy
+\(\lVert W_{\partial}(b)\rVert\asymp b^{s_W}\) and
+\(\lVert A_B(b)\rVert\asymp b^{s_A}\) in the declared norm; edge count alone
+does not determine them. \\
+\(b>1;\ C_b,\ I_b,\ K_b=C_bI_b\) &
+block-RG structural coarse kernel, rescaling/identification kernel, and
+composite kernel &
+\(C_b\) is the structural coarse Markov kernel and \(I_b\) the declared
+rescaling/identification kernel returning its target to the common measurable
+state space; their right-acting composite is \(K_b=C_bI_b\). \\
+\(\mathcal R_b,\mathcal R_b^\rho;\ \mathcal R_b^H,\mathfrak B_b^H\) &
+block-RG measure-pair and reference maps; finite-action map and action beta &
+\(\mathcal R_b(\rho,m)=(\rho K_b,mK_b)\) is the primary measure-pair map and
+\(\mathcal R_b^\rho\rho=\rho K_b\) its reference component. On the dominated,
+finite-action tier, \(\mathcal R_b^H[H;\rho]\) is the reference-dependent
+action map and \(\mathfrak B_b^H[H;\rho]=(\mathcal R_b^H[H;\rho]-H)/\log b\).
+Neither the action nor its beta is defined outside its stated finite-action
+domain. \\
+\(K_\ell;\ \Pi_\ell(z,dx)\) &
+normalized forward scale kernel; reverse conditional for
+\(\pi_\ell(dx)K_\ell(x,dz)\) &
+\(K_\ell\) pushes \(\rho_\ell\) and \(m_\ell\) forward together.
+\(\Pi_\ell\) is a fixed version defined only
+\(\pi_{\ell+1}\)-almost everywhere; it is not an inverse of
+\(K_\ell\). \\
+\(Q_\ell,\ U_\ell=DQ_\ell(0)\) &
+bounded conditional log-Laplace action increment and its linearization &
+\(Q_\ell(\varphi)=-\log U_\ell(e^{-\varphi})\) is finite on bounded
+actions and locally analytic at every bounded center by the recentering
+identity, whereas
+\(U_\ell\varphi=\mathbb E[\varphi(X_\ell)\mid X_{\ell+1}]\) extends as an
+\(L^p\) contraction.  The larger linear domain is not a nonlinear action
+domain. \\
+\(\mathfrak B_\ell,\overline{\mathfrak B}_\ell\) &
+\(L^\infty(\pi_\ell;\mathbb R)\) and its quotient by
+\(\mathbb R\mathbf1\) &
+The full space tracks additive evidence-mass changes.  The quotient is used
+only on the explicitly projective tier and carries the oscillation norm. \\
+\(\nu_\ell=\bigotimes_i\nu_{\ell i};\ C_{\ell,A},P_{\ell,A}\) &
+product interaction reference; coordinate expectation and Boolean-lattice
+Hoeffding projector &
+The interaction tier separately assumes \(\nu_\ell\sim\pi_\ell\) at every
+admitted scale.  A normalized Markov kernel need not preserve this premise;
+the diagonal-cloning channel is the exact obstruction. \\
+\(\mathcal G_\ell,\phi_g;\ E_\ell,\mathsf H_\ell\) &
+full nonempty-subset interaction Banach space and canonical representative;
+quotient assembly and Hoeffding extraction &
+Here \(\phi_g=\sum_{A\ne\varnothing}g_A\), \(E_\ell g=[\phi_g]\), and
+\(\mathsf H_\ell E_\ell=E_\ell\mathsf H_\ell=I\) on their typed spaces.  The extraction
+bound \(3^{|V_\ell|}-1\) is finite for every finite network but is not
+dimension-free. \\
+\(T_\ell^{\mathcal G};\ U_\ell^{\phi_g}\) &
+exact nonlinear interaction RG and its tilted conditional-expectation factor &
+\(T_\ell^{\mathcal G}=\mathsf H_{\ell+1}\overline Q_\ell E_\ell\), while
+\(DT_\ell^{\mathcal G}(g)=\mathsf H_{\ell+1}\overline{U_\ell^{\phi_g}}E_\ell\).
+The untilted \(U_\ell\) occurs only at \(g=0\). \\
+\(R_\ell;r_{\ell+1}^{\mathcal G},\overline r_{\ell+1}^{Q}\) &
+bounded idempotent retained projection; coordinate and action-quotient
+residuals &
+The retained map is projected unless the exact-image invariance condition
+holds.  This indexed projection is unrelated to the stochastic refinement
+kernel \(R\) below; the residual norm is always reported when nonzero. \\
+\(\delta_\ell,\ B_{n\leftarrow\ell},\overline U_{n\leftarrow\ell}\) &
+essential Dobrushin coefficient, accumulated block factor, and ordered
+quotient cocycle &
+The accumulated log-\(\delta\) inequality is a sufficient irrelevance
+certificate, with \(\log0=-\infty\); its failure is not a relevance or
+marginality theorem. \\
+\(r_{\mathrm{ess}}(U)=r(U+\mathcal K(X))\) &
+essential spectral radius in the Calkin algebra
+\(\mathcal L(X)/\mathcal K(X)\) &
+This convention quotients by all compact operators.  It is not a
+finite-rank quotient, and the qualified positive-unital theorem additionally
+requires its stated Banach-lattice, quasi-interior-unit, pole, and positive
+dual-eigenfunctional hypotheses. \\
+\(L^2_0(\mu);\ \mathscr S_\pi[\varphi]=-\varphi+\pi(\varphi)\) &
+centered square-integrable score tangent; score of the normalized exponential
+action path &
+\(\mathscr S_\pi\) is an isometry from the action quotient with the Fisher norm
+\(\lVert[\varphi]\rVert_F\) onto the bounded centered subspace, whose Fisher
+completion is \(L^2_0(\pi)\).  The Fisher norm is not the oscillation norm, and
+the completion is not a domain of the nonlinear action map \(Q_\ell\). \\
+\(\mathscr I_b;\ U_b;\ \mathscr L_b=U_b\mathscr I_b\) &
+iid score replication lift; block reverse conditional expectation; score
+renormalization operator &
+\(\mathscr I_bh=\sum_{i=1}^bh(x_i)\) with
+\(\lVert\mathscr I_b\rVert=\sqrt b\).  The replication \(\mathscr I_b\) is not
+the Hoeffding assembly \(E_\ell\); \(\mathscr L_b\) is not the ELBO
+\(\Lelbo\).  \(\mathscr L_b\) is an endomorphism only when the block statistic
+is normalized so that its law equals the input law. \\
+\(\mathrm{He}_k;\ e_k=\mathrm{He}_k/\sqrt{k!}\) &
+probabilists' Hermite polynomials and their normalized orthonormal basis &
+Complete orthonormal in \(L^2(\gamma)\); deleting \(e_0\) gives a basis of
+\(L^2_0(\gamma)\).  Every \(e_k\) is unbounded, so a Hermite basis is not a
+basis of \(L^\infty/\R\mathbf 1\) and, for \(k\geq3\), admits no two-sided
+exponential action neighborhood. \\
+\(\Delta s_\ell=\log b_\ell;\ s_{n\leftarrow\ell}=\sum_{k=\ell}^{n-1}\Delta s_k\) &
+adjacent and cumulative log block scale &
+\(s_{n\leftarrow\ell}=\log B_{n\leftarrow\ell}\).  It is a scale index, not a
+duration; every reported growth rate is divided by it. \\
+\(D_\ell=DT_\ell(x_\ell);\ D_{n\leftarrow\ell}=D_{n-1}\cdots D_\ell;\ \widehat D_{n\leftarrow\ell}\) &
+derivative along an exact orbit and its ordered composition &
+The rightmost factor acts first. The hatted cocycle is the one transported by
+the declared comparison trivializations. These are maps between different
+spaces; an ordinary spectrum requires a declared identification. \\
+\(v_{\ell,a},\lambda_{\ell,a};\ \lambda_{n\leftarrow\ell,a}\) &
+compatible cross-scale mode line and its coefficients &
+Defined by \(D_\ell v_{\ell,a}=\lambda_{\ell,a}v_{\ell+1,a}\) and the ordered
+product law. The equation \(D_\ell v=\lambda v\) is ill typed and is not
+used. \\
+\(\chi_{n\leftarrow\ell}(u);\ \upsilon_{n\leftarrow\ell,a}\) &
+finite-time norm growth rate and scalar mode exponent &
+Both are relative to the declared norms, the declared extensive normalization,
+the block ratios, and the comparison maps.  A Lyapunov exponent is asserted only
+when the upper and lower asymptotic rates agree; no Oseledets splitting is
+claimed. The exponent \(\upsilon_a\) is distinct from the generative latent
+variable \(y_a\). \\
+\(J_\ell:\mathcal G_\star\to\mathcal G_\ell;\
+  \widehat T_\ell^{\mathcal G}=J_{\ell+1}^{-1}T_\ell^{\mathcal G}J_\ell\) &
+comparison trivialization and the pulled exact interaction map &
+This is the inverse orientation of \(I_\ell\), so \(J_\ell=I_\ell^{-1}\) when
+both are declared.  Exponent invariance requires tempered
+\(\lVert J_n\rVert\) and \(\lVert J_n^{-1}\rVert\), not only tempered mode
+normalization. \\
+\(\beta_\ell^{\mathrm{ex}},\beta_\ell^{\mathrm{ret}},\delta\beta_\ell\) &
+exact, retained, and omitted discrete interaction beta &
+All three live in \(\mathcal G_\star\) and divide by \(\Delta s_\ell\).
+\(\delta\beta_\ell\) is the transported coordinate residual; it vanishes on the
+retained sector exactly under exact-image invariance.  Neither is the action
+beta \(\mathfrak B_b^H\), whose reference change is inhomogeneous. \\
+\(\nabla^{\mathrm{scale}},\beta^{\mathrm{scale}};\ \mathsf V(s,t)\) &
+scale connection on a declared \(C^1\) Banach bundle over a scale manifold, its
+covariant scale derivative, and a scale evolution family &
+The scale connection has base the scale manifold and is not either contextual
+principal connection \(\omega_b,\omega_m\), nor the inference-orbit parameter,
+nor Fisher duration.  Discrete endpoint data do not determine it. \\
+\(\widehat{\mathcal M}_\ell^{(\tau)}\) &
+base-\(\ell\) reference monodromy of a \(p\)-periodic identified scale sequence &
+It is an endomorphism of the declared reference space
+\(Y_\star^{(\tau)}\).  A reference monodromy fixed object and all points of
+its \(p\)-cycle lie in that space and need not be fixed by any one-step
+reference map. \\
+\(\Pi^{\mathrm{res}}=\mathsf P\mathsf C;\ \mathsf Q=I-\Pi^{\mathrm{res}}\) &
+resolved projection and its complement on the linear observable tier &
+Idempotent by \(\mathsf C\mathsf P=I\).  This projection is not the reverse
+kernel \(\Pi_\ell\), not the posterior \(\Pi_o\), and not the retained
+interaction projection \(R_\ell\). \\
+\(R_\rho(z,dy)\) &
+reverse conditional of the probability reference \(\rho\) under the coarse
+channel &
+Used by the conditional-partition formula and by the reference-change law for
+the action beta.  It is neither the retained projection \(R_\ell\) nor the
+stochastic refinement kernel \(R\) below. \\
+\(C_{\ell k}:\mathfrak X_\ell\to\mathfrak X_k\) &
+arrow in the scale diagram &
+Composes abstractly as \(C_{kr}\circ C_{\ell k}=C_{\ell r}\).  Right-acting
+kernel juxtaposition is the separate convention stated above.  A renormalization dynamics
+also needs comparison and rescaling maps. \\
+\(c_\ell,C_\ell^b,C_\ell^m\) &
+base and channelwise adjacent-scale maps &
+\(C_\ell^x\) covers \(c_\ell\).  Their failures to commute with
+\(\Phi_\ell,\widetilde\Phi_\ell\) or parallel transport are covariant
+defect diagrams. \\
+\(Q,R\) &
+coarse map and stochastic refinement kernel &
+For noninjective \(Q\), \(Q_\#R(c,\cdot)=\delta_c\) is only a stochastic
+right section; it does not recover the discarded realized microstate. \\
+\(P_b,P_m;\ G_b\times G_m\) &
+optional product-gauge extension &
+Used only when independent principal topology or independent physical gauge
+symmetries are intended. It is not required for separate frames,
+representations, or connections in the ambient theory. \\
+\bottomrule
+\end{longtable}
+
+\paragraph{Three transports that must remain distinct.}
+\(\Omega_\gamma\) and \(\widetilde\Omega_\gamma\) move laws between fibers
+over different base points in one channel. \(T_{ij}^x(c)\) compares two
+coordinates in the same principal fiber. \(\Theta_e^x\) is a declared
+edge-copy variable on the interaction complex. Only an explicit hypothesis
+may identify the represented \(\Theta_e^x\) with parallel transport along
+an assigned base curve.
+
+\paragraph{Three uses of ``pullback.''}
+The informational tensor pullback of \Cref{ch:pullback-geometry} uses the
+connection-relative vertical jet \(D^\omega s\) to obtain tensors on the
+contextual base.  The parameter restriction of
+\Cref{prop:ig-pullback-vs-pushforward} is an ordinary tensor pullback along an
+injective map of statistical parameter manifolds.  A pullback attractor in
+\Cref{sec:rg-dynamical-types} is instead a backward-asymptotic object for a
+nonautonomous cocycle.  These are three different typed constructions; their
+shared word transfers no theorem.
+
+\paragraph{Four notions of order and path.}
+A base curve \(\gamma\subset\mathcal C\) orders contexts and carries no
+verticality or horizontality predicate at all. A bundle curve
+\(\Gamma\) has stationary, vertical, horizontal, or mixed velocity at each
+parameter value relative to a connection, and the interval labels obtained by
+quantifying those pointwise types are not exhaustive. An inference history
+\(\mathscr H_i\) is an oriented unparameterized orbit in a section
+configuration space; its evaluation at each fixed context is vertical, and
+verticality predicates apply to that evaluation rather than to the
+configuration curve. An ordered interaction-record path retained by exact
+coarse-graining is a sample-space coordinate, while RG depth is a scale index.
+None is identified with physical time.
+
+\paragraph{Finite-design link copies.}
+The full context-dependent product of frame-coordinate changes uses
+\(\Theta_{a,e}^x\) with discrete vertex action
+\(h_{a,i}^x=g_i^x(c_a)\), abbreviated as \(\Theta_{a,ij}^x\) when the
+edge copy is unique. A submodel that constrains one shared link across all
+\(a\) retains the stabilizer for which
+\(h_{a,i}^x\Theta_{ij}^x(h_{a,j}^x)^{-1}\) is independent of \(a\).
+Context-independent rechoices are sufficient but need not exhaust that
+stabilizer; any larger law requires a declared compensation.
+
+\paragraph{Two uses of ``coarse.''}
+A Markov channel discards sample information while preserving
+normalization.  A hard restriction substitutes a lower-dimensional
+configuration into an energy.  A Galerkin map compresses an operator.
+These operations can agree in a special realization, but no shared word
+changes their types or transfers a theorem from one to another.

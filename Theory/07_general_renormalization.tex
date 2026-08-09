@@ -1,0 +1,1170 @@
+\chapter{General Renormalization}
+\label{ch:renormalization}
+
+Coarse arrows alone form a scale diagram. They become a renormalization
+dynamics only after comparison and rescaling data identify what is being
+compared across levels. In the present theory the state includes one
+principal gauge bundle, two associated statistical bundles, their possibly
+distinct connections, and both cross-bundle morphisms. A scalar normalization
+of one operator cannot stand for that full state.
+
+\section{The scale category and comparison data}
+\label{sec:rg-scale-category}
+
+\definitionheading{Scale diagram}{def:rg-scale-diagram}
+Let \(\mathsf S\) be a category whose objects are resolutions \(\ell\).
+Choose a target category \(\mathscr K\): sets and maps for a deterministic
+state, standard Borel spaces and Markov kernels for a stochastic state, an
+explicitly declared category of topological vector spaces and continuous
+linear maps for an operator state, or an explicitly declared product of such
+categories for a mixed state.  In the analytic tier used below, the operator
+objects are Banach spaces and the morphisms are bounded linear maps. A state functor
+\(F:\mathsf S\to\mathscr K\) assigns an object
+\(\mathfrak X_\ell=F(\ell)\) and morphisms
+\begin{equation}
+C_{\ell k}\in
+\operatorname{Hom}_{\mathscr K}(\mathfrak X_\ell,\mathfrak X_k),
+\qquad
+C_{kr}\circ C_{\ell k}=C_{\ell r}.
+\label{eq:rg-scale-diagram}
+\end{equation}
+Here \(\circ\) denotes abstract composition in \(\mathscr K\), with
+componentwise composition in a product category.  Separately, for the
+stochastic component only, use right-acting kernel juxtaposition
+\begin{equation}
+K_{\ell r}:=K_{\ell k}K_{kr},
+\qquad
+(\mu K_{\ell k})K_{kr}=\mu K_{\ell r},
+\label{eq:rg-right-acting-kernel-composition}
+\end{equation}
+this is the kernel representing the abstract composite
+\(K_{kr}\circ K_{\ell k}\). One symbol is never asked to be simultaneously a
+map, a kernel, and an operator. \status{DEFINITION}
+
+Comparison requires more data. Either choose levelwise re-embeddings
+\(\jmath_\ell:\mathfrak X_{\ell+1}\to\mathfrak X_\ell\), or identify each
+level with a reference object by declared isomorphisms
+\(I_\ell:\mathfrak X_\ell\xrightarrow{\sim}\mathfrak X_\star\) in
+\(\mathscr K\).
+Field, base, unit, and reference-measure rescalings are part of these maps.
+If an externally parameterized dynamical model is separately supplied, its
+parameter rescaling also belongs here; the scale diagram itself introduces no
+time variable, and RG depth is not the intrinsic inference duration of
+\Cref{ch:relational-inference}. Only the isomorphism option supplies the inverse used in the
+reference-space transformations
+\begin{equation}
+\widehat{\mathcal R}_\ell
+=I_{\ell+1}C_{\ell,\ell+1}I_\ell^{-1}:
+\mathfrak X_\star\longrightarrow\mathfrak X_\star.
+\label{eq:rg-reference-cocycle}
+\end{equation}
+\status{DEFINITION}
+
+A positive scalar \(\zeta_\ell\) can be one component of this comparison; it
+cannot by itself identify changing fields, measures, or bundle objects.
+\status{ESTABLISHED}
+
+If probability laws are present, every scale declares its sample space and
+reference measure. A law-level arrow is a normalized Markov kernel as in
+\Cref{ch:coarsegraining}. An energy-level arrow additionally owes the
+coarse reference measure, its Radon--Nikodym or Jacobian rule, and a finite
+normalizer. Algebraic closure does not supply those data. \status{HYPOTHESIS}
+
+\section{Exact measure-pair arrows}
+\label{sec:rg-measure-pair-arrows}
+
+\definitionheading{Scale-indexed measure pair}{def:rg-measure-pair}
+For each scale \(\ell\), let \((\mathsf X_\ell,\mathscr X_\ell)\) be a
+standard-Borel space, let \(\rho_\ell\) be a probability measure, and let
+\(m_\ell\ll\rho_\ell\) be a finite positive measure.  Write
+\begin{equation}
+m_\ell(dx)=\exp[-H_\ell(x)]\rho_\ell(dx),
+\qquad
+0<M_\ell:=m_\ell(\mathsf X_\ell)<\infty,
+\qquad
+\pi_\ell=\frac{m_\ell}{M_\ell}.
+\label{eq:rg-measure-pair-normalization}
+\end{equation}
+The extended-value convention is \(\exp(-\infty)=0\); thus the action is
+defined only \(\rho_\ell\)-almost everywhere and no finite action is
+silently assumed.  A scale arrow is a normalized, parameter-independent
+Markov kernel
+\begin{equation}
+K_\ell:\mathsf X_\ell\rightsquigarrow\mathsf X_{\ell+1},
+\qquad
+\rho_{\ell+1}=\rho_\ell K_\ell,
+\qquad
+m_{\ell+1}=m_\ell K_\ell.
+\label{eq:rg-measure-pair-arrow}
+\end{equation}
+The downstream action is the Radon--Nikodym representative
+\begin{equation}
+H_{\ell+1}=-\log\frac{dm_{\ell+1}}{d\rho_{\ell+1}}
+\quad \rho_{\ell+1}\text{-almost everywhere}.
+\label{eq:rg-measure-pair-action}
+\end{equation}
+This is a definition of an exact law-level RG arrow.  The requirement that
+the spaces be standard Borel is used later to choose regular conditional
+versions; it does not identify distinct scale spaces or produce an
+autonomous operator. \status{DEFINITION}
+
+\propositionheading{Exact composition and normalized law}{prop:rg-measure-pair-composition}
+For two composable normalized kernels \(K_\ell\) and \(K_{\ell+1}\), the
+measure-pair arrows compose exactly:
+\begin{equation}
+(\rho_\ell,m_\ell)(K_\ell K_{\ell+1})
+=\bigl((\rho_\ell K_\ell)K_{\ell+1},
+(m_\ell K_\ell)K_{\ell+1}\bigr).
+\label{eq:rg-measure-pair-composition}
+\end{equation}
+Moreover \(m_{\ell+1}\ll\rho_{\ell+1}\),
+\(m_{\ell+1}(\mathsf X_{\ell+1})=M_\ell\), and
+\begin{equation}
+\pi_{\ell+1}=\pi_\ell K_\ell.
+\label{eq:rg-normalized-law-pushforward}
+\end{equation}
+Thus the normalized law and the unnormalized evidence mass are distinct
+components of the same exact construction. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Kernel composition and Tonelli's theorem give
+\eqref{eq:rg-measure-pair-composition}.  If
+\((\rho_\ell K_\ell)(A)=0\), then
+\(K_\ell(x,A)=0\) for \(\rho_\ell\)-almost every \(x\), hence also for
+\(m_\ell\)-almost every \(x\), which proves absolute continuity at the
+next scale.  Normalization of \(K_\ell\) preserves the mass of
+\(m_\ell\); division by that same mass gives
+\eqref{eq:rg-normalized-law-pushforward}.  \(\square\)
+
+The subsequent finite-network realization takes each
+\(\mathsf X_\ell\) to be a finite product of agent coordinate spaces and
+supplies the action calculus, contraction theorems, and interaction content
+that this general arrow does not itself supply.  The exact nonlinear
+interaction-coordinate map, its tilted derivative, and its retained-space
+residual are defined only after the additional product-equivalence premises
+of \Cref{sec:rg-finite-network-interactions}; they are not linear
+conditional-expectation maps away from the unperturbed action.  In particular,
+a scale sequence is a cocycle until the comparison data of
+\Cref{sec:rg-scale-category} identify its varying spaces. \status{ESTABLISHED}
+
+\section{The common-principal geometric state}
+\label{sec:rg-common-principal-state}
+
+\definitionheading{Geometric RG state}{def:rg-geometric-state}
+At level \(\ell\), declare a smooth base \(\mathcal C_\ell\), a Lie group
+\(G_\ell\), and one principal right \(G_\ell\)-bundle
+\(\varpi_\ell:\mathscr P_\ell\to\mathcal C_\ell\). Let
+\(\mathcal B_{\ell,b}\) and \(\mathcal B_{\ell,m}\) be statistical fibers with
+possibly different left actions
+\(\widehat\rho_{\ell,b}\) and \(\widehat\rho_{\ell,m}\) of the same group. The
+belief and model bundles are
+\begin{equation}
+\mathcal E_{\ell,b}
+=\mathscr P_\ell\times_{\widehat\rho_{\ell,b}}\mathcal B_{\ell,b},
+\qquad
+\mathcal E_{\ell,m}
+=\mathscr P_\ell\times_{\widehat\rho_{\ell,m}}\mathcal B_{\ell,m}.
+\label{eq:rg-associated-bundles}
+\end{equation}
+Choose two principal connections
+\(\omega_{\ell,b},\omega_{\ell,m}\in
+\Omega^1(\mathscr P_\ell,\mathfrak g_\ell)\). They induce horizontal distributions
+\(H^b_\ell,H^m_\ell\) and parallel transports
+\(\Omega_{\ell,\gamma}\) and
+\(\widetilde\Omega_{\ell,\gamma}\) on the two associated bundles. Thus the
+general geometric state contains
+\begin{equation}
+\mathfrak X_\ell=
+\left(
+\mathcal C_\ell;\
+G_\ell,\mathscr P_\ell;\
+\mathcal E_{\ell,b},H^b_\ell;\
+\mathcal E_{\ell,m},H^m_\ell;\
+\Phi_\ell,\widetilde\Phi_\ell;\
+\ldots
+\right).
+\label{eq:rg-full-state}
+\end{equation}
+Here
+\[
+\Phi_\ell:\mathcal E_{\ell,b}\to\mathcal E_{\ell,m},
+\qquad
+\widetilde\Phi_\ell:\mathcal E_{\ell,m}\to\mathcal E_{\ell,b}
+\]
+are separately declared associated-bundle morphisms over the identity. They
+need not be invertible or mutual inverses. A fixed fiber map
+\(f^{bm}_\ell:\mathcal B_{\ell,b}\to\mathcal B_{\ell,m}\) induces such a morphism
+only when it intertwines the actions,
+\begin{equation}
+f^{bm}_\ell\circ\widehat\rho_{\ell,b}(g)
+=\widehat\rho_{\ell,m}(g)\circ f^{bm}_\ell
+\quad\text{for every }g\in G_\ell,
+\label{eq:rg-cross-intertwiner}
+\end{equation}
+and analogously in the reverse direction. Hence a common principal bundle
+does not manufacture either cross map. The ellipsis in
+\eqref{eq:rg-full-state} denotes law, kernel, or operator components declared
+by a realization. \status{DEFINITION}
+
+When levelwise agent or meta-agent sections and regular vertical Fisher
+tensors are also declared, the geometric state may include their
+connection-relative perceived semimetrics.  These components are not supplied
+by the associated bundles alone.  If a scale arrow also supplies a bundle
+morphism, related fine and coarse sections, and a vanishing horizontal
+defect, their exact cross-scale naturality is
+\Cref{cor:pb-meta-perceived-geometry}.  Its positive-semidefinite
+information-loss defect further requires that the fiber map be a normalized
+parameter-independent Markov channel.  The discrete or continuous beta is
+defined only after the reference-base identifications in
+\eqref{eq:pb-metric-beta-reference}.  Thus a meta-agent has its own pullback
+geometry, but no tensor on two different bases is subtracted before transport
+to the common reference space. \status{ESTABLISHED}
+
+Local belief and model frames may nevertheless be chosen separately. On a
+common trivializing neighborhood, two sections
+\(u^b_{\ell,i},u^m_{\ell,i}:U_i\to\mathscr P_\ell\) determine a unique smooth relative
+principal-frame field
+\begin{equation}
+u^m_{\ell,i}=u^b_{\ell,i}\cdot h_{\ell,i},
+\qquad h_{\ell,i}:U_i\to G_\ell.
+\label{eq:rg-relative-frame}
+\end{equation}
+Existence and uniqueness follow because each principal fiber is a free and
+transitive \(G_\ell\)-torsor; the statement is independent of the
+representations. If the sections are
+re-chosen as \(u^b_{\ell,i}a^b_{\ell,i}\) and
+\(u^m_{\ell,i}a^m_{\ell,i}\), then
+\(h_{\ell,i}\mapsto
+(a^b_{\ell,i})^{-1}h_{\ell,i}a^m_{\ell,i}\). When the representations
+differ, \(\widehat\rho_{\ell,b}(h_{\ell,i})\) and
+\(\widehat\rho_{\ell,m}(h_{\ell,i})\) act on different fibers; there is no
+matrix quotient of the associated frames and no cross-fiber identification
+without extra intertwining data such as \eqref{eq:rg-cross-intertwiner}.
+If only associated-frame data are given and either action is nonfaithful, the
+principal element \(h_{\ell,i}\) need not be reconstructible without chosen
+lifts to \(\mathscr P_\ell\).
+\status{ESTABLISHED}
+
+Scale change must also be typed. Let
+\(c_\ell:\mathcal C_\ell\to\mathcal C_{\ell+1}\) be smooth, let
+\(\kappa_\ell:G_\ell\to G_{\ell+1}\) be a Lie-group homomorphism, and let
+\(\mathcal P_\ell:\mathscr P_\ell\to\mathscr P_{\ell+1}\) cover \(c_\ell\) and obey
+\begin{equation}
+\mathcal P_\ell(p\cdot g)
+=\mathcal P_\ell(p)\cdot\kappa_\ell(g).
+\label{eq:rg-principal-scale-map}
+\end{equation}
+Existence of such a map is a genuine topological condition on the declared
+data, not a normalization: an equivariant \(\mathcal P_\ell\) over \(c_\ell\)
+exists if and only if the extended bundle
+\(\mathscr P_\ell\times_{\kappa_\ell}G_{\ell+1}\) is isomorphic to the pullback
+\(c_\ell^*\mathscr P_{\ell+1}\) as a principal \(G_{\ell+1}\)-bundle over
+\(\mathcal C_\ell\).  It can fail, for instance for the Hopf bundle over
+\(S^2\) against the trivial bundle with \(c_\ell\) the identity.  This is a
+scope note on a declared datum rather than a defect of any theorem below, and
+every statement that uses \(\mathcal P_\ell\) inherits it.
+\status{ESTABLISHED}
+
+For \(s\in\{b,m\}\), given a declared \(\kappa_\ell\)-equivariant
+\(\mathcal P_\ell\), a fiber map
+\(q_{\ell,s}:\mathcal B_{\ell,s}\to\mathcal B_{\ell+1,s}\) descends to a
+bundle map if and only if
+\begin{equation}
+q_{\ell,s}\circ\widehat\rho_{\ell,s}(g)
+=\widehat\rho_{\ell+1,s}(\kappa_\ell(g))\circ q_{\ell,s}.
+\label{eq:rg-scale-intertwiner}
+\end{equation}
+It then induces
+\begin{equation}
+C_{\ell,s}:\mathcal E_{\ell,s}\to\mathcal E_{\ell+1,s},
+\qquad
+C_{\ell,s}[p,z]=[\mathcal P_\ell(p),q_{\ell,s}(z)],
+\label{eq:rg-associated-scale-map}
+\end{equation}
+covering \(c_\ell\).  The biconditional is a two-line computation on
+representatives.  Two representatives of one point of
+\(\mathcal E_{\ell,s}\) are \((p,z)\) and
+\((pg,\widehat\rho_{\ell,s}(g)^{-1}z)\); their images under the displayed
+formula are \([\mathcal P_\ell(p),q_{\ell,s}(z)]\) and
+\([\mathcal P_\ell(p)\kappa_\ell(g),
+q_{\ell,s}(\widehat\rho_{\ell,s}(g)^{-1}z)]\), and the second equals
+\([\mathcal P_\ell(p),\widehat\rho_{\ell+1,s}(\kappa_\ell(g))
+q_{\ell,s}(\widehat\rho_{\ell,s}(g)^{-1}z)]\).  These agree for every
+\((p,z,g)\) exactly when \eqref{eq:rg-scale-intertwiner} holds, which proves
+both directions.  One degenerate case must be recorded rather than absorbed: if
+\(\mathcal B_{\ell+1,s}\) reduces to a single \(G_{\ell+1}\)-fixed point, then
+\eqref{eq:rg-scale-intertwiner} is vacuously true and is therefore not
+necessary in any informative sense.  Two further hypotheses are consumed
+whenever the induced morphism is used at the information-geometric tier, and
+neither follows from affinity of the law pushforward on the cone of measures:
+family closure of the underlying kernel, meaning that the pushed laws remain in
+the declared coarse model, and smoothness of \(q_{\ell,s}\) between the two
+declared parametrized-measure models.
+\status{ESTABLISHED}
+
+More general associated-bundle maps may be declared
+directly, but they owe the same transition compatibility. For a genuine
+multi-step scale functor, the maps \(c\), \(\kappa\), \(\mathcal P\), and
+\(q_{\ell,s}\) also obey their respective composition laws.  Explicitly, for
+composable steps the required identities are
+\(c_{\ell+1}\circ c_\ell\), \(\kappa_{\ell+1}\circ\kappa_\ell\),
+\(\mathcal P_{\ell+1}\circ\mathcal P_\ell\),
+\(q_{\ell+1,s}\circ q_{\ell,s}\), and consequently
+\(C_{\ell+1,s}\circ C_{\ell,s}\), with the rightmost factor acting first at
+every level; at the law-fiber level the composite is the pushforward of the
+composed kernel by the Chapman--Kolmogorov identity.  Identity arrows have
+identity components, so these laws make the family a functor on the thin
+category of the finite scale set.  Adjacent maps without
+these laws form only a sequence of coarse steps. \status{ESTABLISHED}
+
+If local comparison functions
+\(a^s_\ell\) satisfy
+\[
+\mathcal P_\ell(u^s_\ell(x))
+=u^s_{\ell+1}(c_\ell x)\cdot a^s_\ell(x),
+\]
+then equivariance of \(\mathcal P_\ell\) forces
+\begin{equation}
+a^b_\ell\kappa_\ell(h_\ell)
+=(h_{\ell+1}\circ c_\ell)a^m_\ell.
+\label{eq:rg-relative-frame-naturality}
+\end{equation}
+Thus the two represented frame channels remain compatible even when their
+fiber dimensions or actions differ. \status{ESTABLISHED}
+
+For general nonlinear associated fibers, the cross-scale morphism defects are
+the ordered pairs of maps
+\begin{equation}
+\mathbf D^\Phi_\ell
+=\left(C_{\ell,m}\circ\Phi_\ell,
+\Phi_{\ell+1}\circ C_{\ell,b}\right),\qquad
+\mathbf D^{\widetilde\Phi}_\ell
+=\left(C_{\ell,b}\circ\widetilde\Phi_\ell,
+\widetilde\Phi_{\ell+1}\circ C_{\ell,m}\right).
+\label{eq:rg-cross-morphism-defects}
+\end{equation}
+The defect vanishes when the two components of the corresponding pair are
+equal. For a base curve \(\gamma:x\to y\), the cross-scale connection
+defects are likewise the pairs
+\begin{align}
+\mathbf D^b_{\ell,\gamma}
+&=\left(C_{\ell,b,y}\circ\Omega_{\ell,\gamma},
+\Omega_{\ell+1,c_\ell\gamma}\circ C_{\ell,b,x}\right),\nonumber\\
+\mathbf D^m_{\ell,\gamma}
+&=\left(C_{\ell,m,y}\circ\widetilde\Omega_{\ell,\gamma},
+\widetilde\Omega_{\ell+1,c_\ell\gamma}\circ C_{\ell,m,x}\right).
+\label{eq:rg-cross-connection-defects}
+\end{align}
+Independently, within-scale nonparallelness is measured by
+\begin{align}
+\mathbf A^\Phi_{\ell,\gamma}
+&=\left(\widetilde\Omega_{\ell,\gamma}\circ\Phi_{\ell,x},
+\Phi_{\ell,y}\circ\Omega_{\ell,\gamma}\right),\nonumber\\
+\mathbf A^{\widetilde\Phi}_{\ell,\gamma}
+&=\left(\Omega_{\ell,\gamma}\circ\widetilde\Phi_{\ell,x},
+\widetilde\Phi_{\ell,y}\circ\widetilde\Omega_{\ell,\gamma}\right).
+\label{eq:rg-within-connection-defects}
+\end{align}
+\status{DEFINITION}
+
+Subtraction of the two components is reserved for a declared vector or affine
+realization. \status{DEFINITION}
+
+A sufficient principal-level condition for
+\(\mathbf D^s_{\ell,\gamma}\) to vanish is
+\begin{equation}
+\mathcal P_\ell^*\omega_{\ell+1,s}
+=\mathrm d\kappa_\ell\circ\omega_{\ell,s},
+\qquad s\in\{b,m\}.
+\label{eq:rg-principal-connection-naturality}
+\end{equation}
+If a representation is not faithful, vanishing of its represented transport
+defect need not imply this principal-level identity. \status{ESTABLISHED}
+
+The infinitesimal object measuring failure of
+\eqref{eq:rg-principal-connection-naturality} is the scale-connection defect
+form
+\(\mathfrak A_{\mathcal P_\ell}
+=\mathcal P_\ell^*\omega_{\ell+1,s}-\mathrm d\kappa_\ell\circ\omega_{\ell,s}\)
+of \eqref{eq:pb-scale-connection-defect}, and by
+\Cref{thm:pb-isotropy-criterion} the represented horizontal defect vanishes
+along a coarse section exactly under the isotropy condition
+\eqref{eq:pb-isotropy-criterion}, which is strictly weaker than
+\eqref{eq:rg-principal-connection-naturality} whenever the represented action
+fails to be infinitesimally effective there.  Across composable steps these
+defects obey an \emph{ordered} law, not a sum:
+\begin{equation}
+\mathfrak A_{\mathcal P_{02}}
+=\mathcal P_{01}^*\mathfrak A_{\mathcal P_{12}}
++\mathrm d\kappa_{12}\circ\mathfrak A_{\mathcal P_{01}},
+\label{eq:rg-scale-connection-defect-cocycle}
+\end{equation}
+whose represented form is \eqref{eq:pb-anomaly-composition}.  Writing the
+composite defect as an unweighted sum of the two stage defects is a type error
+before it is an error of fact: the two take values in different vertical
+bundles, the earlier one must be pushed forward by the later vertical
+differential, and the later one must be evaluated at the image point on the
+pushed base tangent.  \status{ESTABLISHED}
+
+\propositionheading{Covariance of the defect diagrams}{prop:rg-defect-covariance}
+Under admissible local-frame changes in the belief and model associated
+bundles, both components of every pair in
+\eqref{eq:rg-cross-morphism-defects}--\eqref{eq:rg-within-connection-defects}
+acquire the same endpoint coordinate changes. Consequently the equality
+locus of each pair is gauge invariant. In a fiberwise-linear vector-bundle
+realization, subtracting the two components gives the familiar Hom-bundle
+defect with the same left--right law. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Let \(\mathscr G_{\ell,b,x}\) and \(\mathscr G_{\ell,m,x}\) denote the fiber
+coordinate changes induced by the selected belief and model frame
+re-trivializations at \(x\), represented through
+\(\widehat\rho_{\ell,b}\) and \(\widehat\rho_{\ell,m}\). For example,
+\[
+\Phi_{\ell,x}\mapsto
+\mathscr G_{\ell,m,x}\circ\Phi_{\ell,x}\circ
+(\mathscr G_{\ell,b,x})^{-1},
+\quad
+\Omega_{\ell,\gamma}\mapsto
+\mathscr G_{\ell,b,y}\circ\Omega_{\ell,\gamma}\circ
+(\mathscr G_{\ell,b,x})^{-1},
+\]
+and a cross-scale map obeys
+\[
+C_{\ell,b,x}\mapsto
+\mathscr G_{\ell+1,b,c_\ell(x)}\circ C_{\ell,b,x}\circ
+(\mathscr G_{\ell,b,x})^{-1},
+\]
+with analogous model and endpoint laws. Substitution shows that both
+components of \(\mathbf A^\Phi_{\ell,\gamma}\) acquire the same model
+coordinate change at \(y\) and inverse belief coordinate change at \(x\).
+The equality of the two components is therefore independent of the chosen
+frames. The other pairs are identical calculations. In a linear realization,
+subtraction factors out the common endpoint actions. \(\square\)
+
+The defect data may be retained as running fields; the theory does not
+require them to vanish. A numerical size requires a declared metric or
+divergence on each target fiber. The compositions
+\(\widetilde\Phi_\ell\Phi_\ell\) and
+\(\Phi_\ell\widetilde\Phi_\ell\) are independent running endomorphisms and
+are not identities unless imposed. Smooth parallel transport remains
+distinct from separately declared graph links
+\(\Theta^b_{ij},\Theta^m_{ij}\). \status{ESTABLISHED}
+
+The default common-principal construction does not impose a common local
+frame or a common connection. The stronger common-frame hypothesis is
+\(u^b_{\ell,i}=u^m_{\ell,i}\), equivalently
+\(h_{\ell,i}=e\), on the chosen patches. Independently, the equal-connection
+hypothesis is \(\omega_{\ell,b}=\omega_{\ell,m}\). Even then, different
+representations generally produce different associated transports on
+different fibers: they represent the same principal holonomy but are not
+literally the same map. If a further associated-bundle isomorphism
+\(\Xi_\ell:\mathcal E_{\ell,b}\xrightarrow{\sim}\mathcal E_{\ell,m}\) is
+declared, its existence is additional global data; equal fiber type is
+necessary but not sufficient in general. Its parallel and RG-preservation
+conditions are
+\[
+\widetilde\Omega_{\ell,\gamma}\Xi_{\ell,x}
+=\Xi_{\ell,y}\Omega_{\ell,\gamma},\qquad
+C_{\ell,m}\Xi_\ell=\Xi_{\ell+1}C_{\ell,b}.
+\]
+The optional \(\Xi_\ell\) is unavailable when the associated bundles are
+nonisomorphic, as can occur when ranks or fiber types differ. No such
+isomorphism is needed to define \(\Phi_\ell\) and
+\(\widetilde\Phi_\ell\). \status{HYPOTHESIS}
+
+\paragraph{Optional product-gauge extension.}
+If an application truly requires independent gauge groups, independent
+principal-bundle topology, or independently acting gauge automorphisms, one
+may instead introduce
+\[
+P_{\ell,b}\to\mathcal C_\ell,\qquad
+P_{\ell,m}\to\mathcal C_\ell,\qquad
+Q_\ell=P_{\ell,b}\times_{\mathcal C_\ell}P_{\ell,m},
+\]
+where \(Q_\ell\) is principal for
+\(G_{\ell,b}\times G_{\ell,m}\). Each associated bundle then uses its own
+factor. This extension carries extra topological and gauge data and is not
+part of the minimal theory. In a category admitting the required mapping
+object, its belief-to-model maps are sections of
+\[
+Q_\ell\times_{G_{\ell,b}\times G_{\ell,m}}
+\operatorname{Map}(\mathcal B_{\ell,b},\mathcal B_{\ell,m}),
+\qquad
+(g_b,g_m)\cdot f
+=\widehat\rho_{\ell,m}(g_m)\circ f\circ
+\widehat\rho_{\ell,b}(g_b)^{-1}.
+\]
+A constant fiber map descends only if it is fixed by this action, a generally
+restrictive condition for independently varying \((g_b,g_m)\). Cross maps
+therefore still have to be supplied, and a diagonal reduction to one group
+requires additional group and bundle-identification data. \status{DEFINITION}
+
+\section{Autonomous maps and cocycles}
+\label{sec:rg-dynamical-types}
+
+\definitionheading{Dynamical type}{def:rg-dynamical-type}
+The sequence \(\widehat{\mathcal R}_\ell\) in
+\eqref{eq:rg-reference-cocycle} is:
+autonomous when it is one map \(\widehat{\mathcal R}\);
+periodic when
+\(\widehat{\mathcal R}_{\ell+p}=\widehat{\mathcal R}_\ell\);
+stationary random when it is a measurable stationary cocycle; and general
+otherwise. \status{DEFINITION}
+
+The correct invariant object depends on this type. An autonomous fixed object
+satisfies \(\widehat{\mathcal R}x=x\). A periodic scheme has a fixed object
+of its monodromy or an attracting \(p\)-cycle. A stationary random scheme may
+have a random invariant section. A general cocycle may have pullback or
+forward attracting sections. The term \emph{fixed ray} additionally requires
+a positive cone and projectivization. \status{DEFINITION}
+
+\propositionheading{Uniform contraction need not give one fixed ray}{prop:rg-contraction-no-fixed-ray}
+Uniform Hilbert-projective contraction of a nonautonomous positive cocycle can
+erase initial conditions without selecting one scale-independent ray.
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+On \(\R^2_{>0}\), let
+\[
+A=\begin{pmatrix}2&1\\1&1\end{pmatrix},
+\qquad
+B=\begin{pmatrix}1&1\\1&2\end{pmatrix}.
+\]
+Both are strictly positive and have a uniform projective contraction
+coefficient below one. Their Perron rays differ. Under the alternating
+cocycle, even iterates converge to the Perron ray
+\([1,\sqrt2]\) of
+\[
+BA=\begin{pmatrix}3&2\\4&3\end{pmatrix},
+\]
+while odd iterates converge to the distinct ray
+\(A[1,\sqrt2]\). The attractor is period two, not one fixed ray. \(\square\)
+
+For maps satisfying
+\(\tau(\widehat{\mathcal R}_\ell)\leq q<1\), Birkhoff contraction gives
+\begin{equation}
+d_H(
+\widehat{\mathcal R}_{\ell-1}\cdots\widehat{\mathcal R}_0x,
+\widehat{\mathcal R}_{\ell-1}\cdots\widehat{\mathcal R}_0y)
+\leq q^\ell d_H(x,y),
+\label{eq:rg-cocycle-contraction}
+\end{equation}
+where defined \citep{Birkhoff1957,nussbaum1988hilbert}. This proves forgetting
+of initial rays, not time independence of the attracting section.
+
+\subsection{Ordered derivative cocycles and generalized cross-scale modes}
+\label{sec:rg-generalized-modes}
+
+A scale sequence by itself supplies no eigenvalue problem. It supplies an
+ordered family of maps between different spaces, and the invariant content of
+that family is a composition law together with compatible mode sections. This
+subsection fixes those types once, so that the interaction realization of
+\Cref{ch:agent-network-rg} can instantiate them without inventing an ambient
+common space.
+
+\definitionheading{Scale-indexed evolution and its derivative cocycle}{def:rg-derivative-cocycle}
+Let \((X_\ell,\lVert\cdot\rVert_\ell)_{\ell\geq0}\) be Banach spaces and let
+\(T_\ell:\mathcal U_\ell\to X_{\ell+1}\) be continuously Fr\'echet differentiable on an
+open set \(\mathcal U_\ell\subseteq X_\ell\). The ordered nonlinear evolution is
+\begin{equation}
+\Phi_{n\leftarrow\ell}=T_{n-1}\circ\cdots\circ T_\ell,
+\qquad
+\Phi_{\ell\leftarrow\ell}=\operatorname{id}_{X_\ell},
+\label{eq:rg-ordered-evolution}
+\end{equation}
+defined at those points whose successive forward images remain in the
+successive domains. Along an exact orbit \(x_{\ell+1}=T_\ell(x_\ell)\) contained
+in those domains, write
+\begin{equation}
+D_\ell=DT_\ell(x_\ell)\in\mathcal L(X_\ell,X_{\ell+1}),
+\qquad
+D_{n\leftarrow\ell}=D_{n-1}\cdots D_\ell,
+\qquad
+D_{\ell\leftarrow\ell}=I_{X_\ell}.
+\label{eq:rg-derivative-cocycle}
+\end{equation}
+The rightmost factor acts first. Nothing is proved here; the display fixes
+domains, codomains, and order. \status{DEFINITION}
+
+\propositionheading{Ordered composition of the evolution and its derivative}{prop:rg-cocycle-composition}
+For \(\ell\leq n\leq r\) and an exact orbit as above,
+\begin{equation}
+\Phi_{r\leftarrow n}\circ\Phi_{n\leftarrow\ell}=\Phi_{r\leftarrow\ell},
+\qquad
+D_{n\leftarrow\ell}=D\Phi_{n\leftarrow\ell}(x_\ell),
+\qquad
+D_{r\leftarrow n}D_{n\leftarrow\ell}=D_{r\leftarrow\ell}.
+\label{eq:rg-cocycle-composition}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+The first identity is associativity of composition of maps. The second is
+proved by induction on \(n-\ell\): it is the definition when \(n=\ell\), and if
+it holds at \(n\) then the Fr\'echet chain rule applied to
+\(\Phi_{n+1\leftarrow\ell}=T_n\circ\Phi_{n\leftarrow\ell}\) at \(x_\ell\), using
+\(\Phi_{n\leftarrow\ell}(x_\ell)=x_n\), gives
+\(D\Phi_{n+1\leftarrow\ell}(x_\ell)=DT_n(x_n)D_{n\leftarrow\ell}
+=D_nD_{n\leftarrow\ell}\). The third identity is the associativity of the
+ordered operator product, which is also the second identity applied to the
+first. \(\square\)
+
+The composition law in \eqref{eq:rg-cocycle-composition} is a two-parameter law,
+not a one-parameter semigroup. It reduces to a discrete semigroup only after
+declared isomorphisms \(J_\ell:X_\star\to X_\ell\) make the identified maps
+\(\widehat T_\ell=J_{\ell+1}^{-1}T_\ell J_\ell\) independent of \(\ell\); a
+\(p\)-periodic identified sequence produces a monodromy rather than a one-step
+autonomous map, in the sense of \Cref{def:rg-dynamical-type}. Writing a general
+segment as a power of one unnamed operator erases the base scale and, when the
+factors do not commute, also reverses the order: for
+\(A=\begin{psmallmatrix}1&1\\0&1\end{psmallmatrix}\) and
+\(B=\begin{psmallmatrix}1&0\\1&1\end{psmallmatrix}\) one has
+\(BA=\begin{psmallmatrix}1&1\\1&2\end{psmallmatrix}\) and
+\(AB=\begin{psmallmatrix}2&1\\1&1\end{psmallmatrix}\), which differ.
+\status{ESTABLISHED}
+
+For a mixed state in the sense of \Cref{def:rg-scale-diagram}, the composition
+law is owed in every declared component category. Composition of one linear
+derivative tier proves nothing about the base, principal, law-fiber,
+associated-bundle, action, or configuration components. \status{HYPOTHESIS}
+
+\definitionheading{Compatible cross-scale mode line}{def:rg-mode-line}
+A rank-one mode line of index \(a\) along the orbit is a family of nonzero
+vectors \(v_{\ell,a}\in X_\ell\) together with scalars
+\(\lambda_{\ell,a}\in\mathbb C\) satisfying
+\begin{equation}
+D_\ell v_{\ell,a}=\lambda_{\ell,a}v_{\ell+1,a}.
+\label{eq:rg-mode-line}
+\end{equation}
+This is a compatibility equation between adjacent fibers. The expression
+\(D_\ell v=\lambda v\) is not used: its two sides inhabit \(X_{\ell+1}\) and
+\(X_\ell\), which are different spaces unless an identification has been
+declared. For a mode subbundle of finite rank \(d_a\), choose injective frames
+\(V_{\ell,a}:\mathbb C^{d_a}\to X_\ell\) and matrices \(A_{\ell,a}\) with
+\begin{equation}
+D_\ell V_{\ell,a}=V_{\ell+1,a}A_{\ell,a}.
+\label{eq:rg-mode-frame}
+\end{equation}
+\status{DEFINITION}
+
+\propositionheading{Ordered product law for mode coefficients}{prop:rg-mode-product}
+Under \eqref{eq:rg-mode-line},
+\begin{equation}
+D_{n\leftarrow\ell}v_{\ell,a}=\lambda_{n\leftarrow\ell,a}v_{n,a},
+\qquad
+\lambda_{n\leftarrow\ell,a}=\prod_{k=\ell}^{n-1}\lambda_{k,a},
+\label{eq:rg-mode-product}
+\end{equation}
+with the empty product equal to one. Under \eqref{eq:rg-mode-frame} the
+corresponding finite-step matrix is the ordered product
+\(A_{n-1,a}\cdots A_{\ell,a}\). If one factor vanishes, the propagated mode is
+annihilated from that step onward. The complex phase or real sign of each
+factor is retained separately from any growth exponent. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Induction on \(n-\ell\) using \eqref{eq:rg-cocycle-composition} and
+\eqref{eq:rg-mode-line}: the case \(n=\ell\) is the empty product, and
+\(D_{n+1\leftarrow\ell}v_{\ell,a}=D_nD_{n\leftarrow\ell}v_{\ell,a}
+=\lambda_{n\leftarrow\ell,a}D_nv_{n,a}
+=\lambda_{n\leftarrow\ell,a}\lambda_{n,a}v_{n+1,a}\). The frame case is the same
+induction with matrix factors, whose order is fixed by
+\eqref{eq:rg-mode-frame}. \(\square\)
+
+An ill-typed eigenvalue equation is not repaired by notation. With
+\(X_0=\R\), \(X_1=\R^2\), and \(D_0x=(x,0)\), the expression \(D_0v=\lambda v\)
+equates an element of \(\R^2\) with one of \(\R\); the compatible line
+\(v_0=1\), \(v_1=(1,0)\), \(\lambda_0=1\) is well typed and carries the same
+information. \status{ESTABLISHED}
+
+\definitionheading{Cumulative log block scale and growth rates}{def:rg-mode-exponents}
+Let \(b_k>1\) be the declared adjacent block ratios and set
+\begin{equation}
+\Delta s_k=\log b_k,
+\qquad
+s_{n\leftarrow\ell}=\sum_{k=\ell}^{n-1}\Delta s_k,
+\label{eq:rg-cumulative-log-scale}
+\end{equation}
+and assume \(s_{n\leftarrow\ell}\to\infty\). For \(u\in X_\ell\setminus\{0\}\)
+with \(D_{n\leftarrow\ell}u\neq0\), the finite-time growth rate relative to the
+declared norms is
+\begin{equation}
+\chi_{n\leftarrow\ell}(u)
+ =\frac{\log\lVert D_{n\leftarrow\ell}u\rVert_n
+-\log\lVert u\rVert_\ell}{s_{n\leftarrow\ell}},
+\label{eq:rg-finite-time-rate}
+\end{equation}
+with the convention that the rate is \(-\infty\) once the image vanishes. Its
+upper and lower asymptotic rates are the corresponding limit superior and limit
+inferior; a Lyapunov exponent is asserted only when the two agree. For a mode
+line, the scalar finite-time exponent is
+\begin{equation}
+\upsilon_{n\leftarrow\ell,a}
+=\frac{\log\lvert\lambda_{n\leftarrow\ell,a}\rvert}{s_{n\leftarrow\ell}}
+=\frac{\sum_{k=\ell}^{n-1}\log\lvert\lambda_{k,a}\rvert}{s_{n\leftarrow\ell}},
+\qquad \log 0=-\infty.
+\label{eq:rg-scalar-exponent}
+\end{equation}
+A mode is called relevant, marginal, or irrelevant according as the declared
+asymptotic version of \eqref{eq:rg-scalar-exponent} is positive, zero, or
+negative. That trichotomy is a classification relative to the declared norms,
+the declared extensive normalization of the mode sections, the declared block
+ratios, and the declared comparison maps; it is not an intrinsic property of the
+scale sequence. \status{DEFINITION}
+
+\propositionheading{Scalar and norm growth agree for tempered mode sections}{prop:rg-mode-tempered-normalization}
+For a mode line and every \(n>\ell\) with \(\lambda_{n\leftarrow\ell,a}\neq0\),
+\begin{equation}
+\chi_{n\leftarrow\ell}(v_{\ell,a})
+=\upsilon_{n\leftarrow\ell,a}
++\frac{\log\lVert v_{n,a}\rVert_n-\log\lVert v_{\ell,a}\rVert_\ell}
+{s_{n\leftarrow\ell}}.
+\label{eq:rg-mode-exponent-relation}
+\end{equation}
+The two rates therefore have the same asymptotic upper and lower values whenever
+the mode sections are normalized to unit norm, or more generally whenever
+\(\log\lVert v_{n,a}\rVert_n\) is sublinear in \(s_{n\leftarrow\ell}\). Under a
+scalar regauging \(v_{\ell,a}'=c_{\ell,a}v_{\ell,a}\) with
+\(c_{\ell,a}\neq0\),
+\begin{equation}
+\lambda_{\ell,a}'=\lambda_{\ell,a}\frac{c_{\ell,a}}{c_{\ell+1,a}},
+\qquad
+\lambda_{n\leftarrow\ell,a}'
+=\lambda_{n\leftarrow\ell,a}\frac{c_{\ell,a}}{c_{n,a}},
+\label{eq:rg-mode-scalar-gauge}
+\end{equation}
+so the scalar exponent is unchanged exactly when
+\(\lvert\log\lvert c_{n,a}\rvert\rvert/s_{n\leftarrow\ell}\to0\).
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Take norms in \eqref{eq:rg-mode-product} and substitute into
+\eqref{eq:rg-finite-time-rate}; the displayed remainder is exactly the endpoint
+norm difference divided by \(s_{n\leftarrow\ell}\). Substituting
+\(v'_{\ell,a}=c_{\ell,a}v_{\ell,a}\) into \eqref{eq:rg-mode-line} and comparing
+coefficients gives the first equality in \eqref{eq:rg-mode-scalar-gauge}, and
+the telescoping product gives the second. Dividing
+\(\log\lvert\lambda'_{n\leftarrow\ell,a}\rvert\) by \(s_{n\leftarrow\ell}\)
+isolates the stated tempering condition. \(\square\)
+
+\theoremheading{Exponent invariance under tempered comparison trivializations}{thm:rg-tempered-comparison}
+Let \(J_k:X_\star\to X_k\) be bounded linear isomorphisms with bounded inverses,
+and set
+\begin{equation}
+\widehat D_k=J_{k+1}^{-1}D_kJ_k,
+\qquad
+\widehat D_{n\leftarrow\ell}=J_n^{-1}D_{n\leftarrow\ell}J_\ell.
+\label{eq:rg-transported-cocycle}
+\end{equation}
+If the complete trivializations and their inverses are tempered relative to the
+cumulative log block scale,
+\begin{equation}
+\frac{\log^+\lVert J_n\rVert+\log^+\lVert J_n^{-1}\rVert}{s_{n\leftarrow\ell}}
+\longrightarrow0,
+\label{eq:rg-tempered-trivialization}
+\end{equation}
+then for every \(u\in X_\ell\setminus\{0\}\) the asymptotic upper and lower
+rates of \(u\) in the native norms coincide with those of \(J_\ell^{-1}u\)
+computed for \(\widehat D_{n\leftarrow\ell}\) in the reference norm. Together
+with the scalar tempering condition of
+\Cref{prop:rg-mode-tempered-normalization}, this preserves both the scalar mode
+exponent and the norm growth rate. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Write \(x_n=D_{n\leftarrow\ell}u\) and
+\(\widehat x_n=J_n^{-1}x_n=\widehat D_{n\leftarrow\ell}J_\ell^{-1}u\), which is
+the second identity in \eqref{eq:rg-transported-cocycle}. Bounded invertibility
+gives
+\begin{equation}
+\frac{\lVert x_n\rVert_n}{\lVert J_n\rVert}
+\leq\lVert\widehat x_n\rVert_\star
+\leq\lVert J_n^{-1}\rVert\lVert x_n\rVert_n.
+\label{eq:rg-trivialization-two-sided}
+\end{equation}
+Taking logarithms changes the numerator of \eqref{eq:rg-finite-time-rate} by at
+most \(\log^+\lVert J_n\rVert+\log^+\lVert J_n^{-1}\rVert\), and the fixed
+initial scale contributes the constant
+\(\lvert\log\lVert J_\ell\rVert\rvert+\lvert\log\lVert J_\ell^{-1}\rVert\rvert\).
+Dividing by \(s_{n\leftarrow\ell}\) and using
+\eqref{eq:rg-tempered-trivialization} and \(s_{n\leftarrow\ell}\to\infty\)
+makes the difference of the two finite-time rates tend to zero, so their limits
+superior and inferior agree. The scalar statement is
+\eqref{eq:rg-mode-scalar-gauge}. \(\square\)
+
+\propositionheading{Superexponential distortion changes the apparent exponent}{prop:rg-superexponential-distortion}
+Tempering the scalar mode representatives alone is not sufficient. Let
+\(X_k=\R\) with the native absolute value, let every \(D_k\) be the identity, let
+\(b_k=e\), and let every scalar gauge factor be one, so that the native exponent
+is zero and the scalar normalization is tempered. Take
+\(J_ku=e^{k^2}u\). Then \(\widehat D_k=e^{-2k-1}I\) and
+\(\widehat D_{n\leftarrow0}=e^{-n^2}I\), so the apparent reference-space rate is
+\(-n^2/n=-n\to-\infty\). The complete comparison trivialization and its inverse,
+not only the mode normalization, must satisfy
+\eqref{eq:rg-tempered-trivialization}. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+\(\widehat D_k=J_{k+1}^{-1}J_k=e^{k^2-(k+1)^2}=e^{-2k-1}\), and the telescoping
+product over \(k=0,\dots,n-1\) is \(e^{-n^2}\). Here
+\(s_{n\leftarrow0}=n\), so \eqref{eq:rg-finite-time-rate} gives \(-n\), while
+the native rate is zero. Condition
+\eqref{eq:rg-tempered-trivialization} fails because
+\(\log\lVert J_n\rVert=n^2\). \(\square\)
+
+The definitions above are deliberately weaker than an existence statement. A
+multiplicative ergodic theorem would supply a measurable splitting into
+finitely or countably many exponent subspaces, but it requires data this scale
+diagram does not contain: a measure-preserving base flow, measurability of the
+cocycle in the base variable, integrability of \(\log^+\lVert D\rVert\) and, for
+the two-sided splitting, of \(\log^+\lVert D^{-1}\rVert\), and either finite
+dimension or a compactness or quasi-compactness hypothesis in the
+infinite-dimensional case \citep{Arnold1998}. A deterministic scale sequence
+supplies none of these by itself. This document therefore defines the growth
+rates above and does not assert an Oseledets splitting for the RG cocycle.
+\status{NOT-CLAIMED}
+
+\section{Scheme dependence and invariant candidates}
+\label{sec:rg-scheme-dependence}
+
+Let \(g(t)\) be running coordinates. Under a smooth reparameterization
+\(g'=f(g)\) and scale change \(t'=ct\),
+\begin{equation}
+\beta'(g')=\frac1cDf(g)\beta(g).
+\label{eq:rg-beta-change}
+\end{equation}
+\status{ESTABLISHED}
+
+Hence raw couplings, beta-function components, and a chosen blocking statistic
+are scheme dependent. They remain valid diagnostics when their scheme is
+stated, but are not universal observables. \status{ESTABLISHED}
+
+For a differentiable homogeneous positive endomorphism at a fixed ray, let
+\(\mu_0\) be the radial eigenvalue and \(\mu_a\) a transverse eigenvalue.
+The projective ratios and block-normalized dimensions are
+\begin{equation}
+\rho_a=\frac{\mu_a}{\mu_0},\qquad
+\upsilon_a=\frac{\log|\rho_a|}{\log b},
+\label{eq:rg-projective-dimensions}
+\end{equation}
+for declared block factor \(b\). \status{DEFINITION}
+
+They are invariant
+under smooth coordinate conjugacy at the ray once gauge, normalization, and
+other redundant directions have been quotiented and the same scale
+normalization is used. \status{ESTABLISHED}
+
+Candidate cross-scheme quantities include conjugacy classes, invariant
+manifolds, projective eigenvalue ratios, dimensionless amplitude ratios, and
+matched spectral or heat exponents. Their existence, convergence, and
+completeness must be proved in the chosen realization. Universality is a
+statement about basins and invariant observables, not algebraic closure
+alone. \status{HYPOTHESIS}
+
+\section{Two-index thermodynamic and RG limits}
+\label{sec:rg-two-index-limits}
+
+A finite-volume RG family has two indices:
+\begin{equation}
+X_{n,\ell},\qquad 0\leq\ell\leq L(n),
+\label{eq:rg-two-index-family}
+\end{equation}
+where \(n\) controls system size and \(\ell\) RG depth. Fixed-depth,
+maximal-depth, and diagonal limits are different:
+\begin{equation}
+\lim_{\ell\to\infty}\lim_{n\to\infty}X_{n,\ell},
+\qquad
+\lim_{n\to\infty}X_{n,L(n)},
+\qquad
+\lim_{n\to\infty}X_{n,\ell(n)}.
+\label{eq:rg-two-index-limits}
+\end{equation}
+\status{DEFINITION}
+
+\propositionheading{Fixed-depth and maximal-depth limits need not agree}{prop:rg-noncommuting-limits}
+Fix an integer \(b\geq2\).  For \(n\geq0\), put \(m=b^n\) and let
+\(\operatorname{Path}_m\)
+be the unweighted path on \(\{1,\ldots,m\}\), with combinatorial Laplacian
+\(L_m\).  At depth \(0\leq\ell\leq n\), form the consecutive blocks
+\begin{equation}
+B_j^{(\ell)}
+=\{(j-1)b^\ell+1,\ldots,jb^\ell\},
+\qquad
+1\leq j\leq b^{n-\ell}.
+\label{eq:rg-path-consecutive-blocks}
+\end{equation}
+Join two blocks exactly when a path edge crosses between them.  The resulting
+simple quotient is exactly \(\operatorname{Path}_{b^{n-\ell}}\).
+For any \(m\) divisible by \(b\), let the unnormalized contiguous
+block-indicator prolongation be
+\begin{equation}
+S_{m,b}\in\mathbb R^{m\times(m/b)},
+\qquad
+(S_{m,b})_{ij}
+=\mathbf1_{\{(j-1)b+1,\ldots,jb\}}(i).
+\label{eq:rg-path-block-indicator}
+\end{equation}
+It realizes the exact operator quotient
+\begin{equation}
+S_{m,b}^{\mathsf T}L_mS_{m,b}=L_{m/b}.
+\label{eq:rg-path-galerkin-quotient}
+\end{equation}
+Set \(S_{m,1}=I_m\).  At depth \(1\leq\ell\leq n\), define
+\begin{equation}
+S_{m,b^\ell}
+:=S_{m,b}S_{m/b,b}\cdots S_{m/b^{\ell-1},b},
+\label{eq:rg-path-depth-block-indicator}
+\end{equation}
+this is the indicator of the blocks in
+\eqref{eq:rg-path-consecutive-blocks} and obeys
+\begin{equation}
+S_{m,b^\ell}^{\mathsf T}L_mS_{m,b^\ell}=L_{m/b^\ell}.
+\label{eq:rg-path-depth-galerkin-quotient}
+\end{equation}
+The identities use unnormalized indicators.  With orthonormalized one-step
+indicators \(\widetilde S_{m,b}=b^{-1/2}S_{m,b}\), the left side of
+\eqref{eq:rg-path-galerkin-quotient} is instead \(b^{-1}L_{m/b}\), and the
+depth-\(\ell\) factor is \(b^{-\ell}\).
+
+For every \(m\geq1\), the eigenvalues of \(L_m\), including multiplicity, are
+\begin{equation}
+\lambda_{m,k}=2-2\cos\left(\frac{\pi k}{m}\right),
+\qquad 0\leq k\leq m-1.
+\label{eq:rg-path-laplacian-eigenvalues}
+\end{equation}
+Let
+\begin{equation}
+\mu_m=\frac1m\sum_{k=0}^{m-1}\delta_{\lambda_{m,k}},
+\qquad
+N_m(\lambda)=\mu_m((-\infty,\lambda]),
+\qquad
+U_m(\lambda)=\frac1m
+\#\{1\leq k\leq m-1:\lambda_{m,k}\leq\lambda\}.
+\label{eq:rg-path-spectral-counts}
+\end{equation}
+These are right-continuous full and zero-mode-excluded counts, and
+\(U_m=N_m-m^{-1}\mathbf1_{[0,\infty)}\).  More explicitly, for
+\(0\leq\lambda\leq4\), set
+\(\theta(\lambda)=\arccos(1-\lambda/2)\); then
+\begin{equation}
+N_m(\lambda)
+=\frac{1+\min\{m-1,\lfloor m\theta(\lambda)/\pi\rfloor\}}{m},
+\qquad
+U_m(\lambda)
+=\frac{\min\{m-1,\lfloor m\theta(\lambda)/\pi\rfloor\}}{m}.
+\label{eq:rg-path-exact-counts}
+\end{equation}
+Both counts vanish for \(\lambda<0\); for \(\lambda>4\), they equal
+\(1\) and \(1-m^{-1}\), respectively.  Specifically, for \(m\geq2\),
+\(N_m(\lambda)=m^{-1}\) on
+\([0,\lambda_{m,1})\), while \(U_m\) is zero there and jumps to \(m^{-1}\)
+at the included threshold \(\lambda_{m,1}\); at the included upper endpoint
+\(\lambda_{m,m-1}\), the counts are \(1\) and \(1-m^{-1}\).
+
+For every fixed \(\ell\), \(b^{n-\ell}\to\infty\) as \(n\to\infty\), and both
+counts converge pointwise to the right-continuous function
+\begin{equation}
+N_\infty(\lambda)=U_\infty(\lambda)
+=
+\begin{cases}
+0,&\lambda<0,\\[2pt]
+\displaystyle\frac1\pi\arccos\left(1-\frac{\lambda}{2}\right),
+&0\leq\lambda\leq4,\\[7pt]
+1,&\lambda>4.
+\end{cases}
+\label{eq:rg-path-thermodynamic-count}
+\end{equation}
+Thus the zero-mode-excluded lower-edge count obeys
+\begin{equation}
+U_\infty(\lambda)
+=\frac1\pi\arccos\left(1-\frac{\lambda}{2}\right)
+\sim\frac1\pi\sqrt{\lambda}
+\qquad(\lambda\downarrow0).
+\label{eq:rg-path-lower-edge-count}
+\end{equation}
+At maximal depth \(\ell=n\), however, the exact quotient is
+\(\operatorname{Path}_1\) for every
+\(n\), so \(\mu_1=\delta_0\),
+\(N_1=\mathbf1_{[0,\infty)}\), and \(U_1\equiv0\).  Hence the fixed-depth
+thermodynamic limit and the maximal-depth \(\operatorname{Path}_1\) limit are
+different.
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Each block in \eqref{eq:rg-path-consecutive-blocks} is connected, and exactly
+one original edge joins block \(j\) to block \(j+1\), with no other interblock
+edge; this proves the exact quotient statement.  More explicitly, for every
+\(z\in\mathbb R^{m/b}\),
+\[
+z^{\mathsf T}S_{m,b}^{\mathsf T}L_mS_{m,b}z
+=\sum_{i=1}^{m-1}\bigl((S_{m,b}z)_{i+1}-(S_{m,b}z)_i\bigr)^2
+=\sum_{j=1}^{m/b-1}(z_{j+1}-z_j)^2
+=z^{\mathsf T}L_{m/b}z.
+\]
+Equality of the symmetric quadratic forms proves
+\eqref{eq:rg-path-galerkin-quotient}; iteration proves
+\eqref{eq:rg-path-depth-galerkin-quotient}, and scalar normalization gives the
+stated factors.  The discrete cosine
+eigenvectors of the path Laplacian give
+\eqref{eq:rg-path-laplacian-eigenvalues}.  Monotonicity of \(k\mapsto
+\lambda_{m,k}\) then gives \eqref{eq:rg-path-exact-counts}, including its
+threshold and upper endpoint.  For every bounded continuous \(f\),
+\[
+\int f\mathrm{d}\mu_m
+=\frac1m\sum_{k=0}^{m-1}
+f\left(2-2\cos\frac{\pi k}{m}\right)
+\longrightarrow
+\frac1\pi\int_0^\pi f(2-2\cos\theta)\mathrm{d}\theta .
+\]
+The limiting distribution has the continuous cumulative function in
+\eqref{eq:rg-path-thermodynamic-count}; removing the one zero atom changes a
+finite count by \(m^{-1}\) and hence has the same limit.  Finally,
+\(\arccos(1-\lambda/2)\sim\sqrt\lambda\), while \(L_1=0\).
+\(\square\)
+
+Therefore a thermodynamic RG claim must specify a triangular family,
+projective consistency at fixed depth, uniform control of the coarse error,
+and a diagonal scaling \(\ell(n)\). Operator, law, connection, and
+cross-morphism convergence are separate obligations. Proving an exchange of
+limits or a nontrivial diagonal limit remains open. \status{OPEN}
+
+Put \(U(\lambda)=N(\lambda)-N(0)\). Suppose \(U\) is nondecreasing and
+right-continuous, \(U(0+)=0\), \(Z_+(t_0)<\infty\) for some \(t_0>0\), and,
+for \(c>0\), \(\alpha>0\), and a function \(L\) slowly varying at infinity,
+\[
+U(\lambda)\sim c\lambda^\alpha L(1/\lambda)
+\qquad(\lambda\downarrow0).
+\]
+Define the zero-mode-excluded heat moments
+\[
+Z_+(t)=M_0(t):=\int_{(0,\infty)}e^{-t\lambda}\,dU(\lambda),
+\qquad
+M_k(t):=\int_{(0,\infty)}\lambda^k e^{-t\lambda}\,dU(\lambda).
+\]
+The Abelian/Karamata direction of the regular-variation theorem
+\citep[\S1.7.1]{BinghamGoldieTeugels1987} gives
+\[
+M_k(t)\sim c\alpha\Gamma(\alpha+k)t^{-(\alpha+k)}L(t)
+\qquad(t\to\infty;\ k=0,1,2).
+\]
+With \(\pi_t(d\lambda)=e^{-t\lambda}dU(\lambda)/Z_+(t)\) and
+\(S_+(t)=\log Z_+(t)+tM_1(t)/Z_+(t)\), the spectral susceptibility obeys
+\begin{equation}
+-\frac{dS_+}{d\log t}
+=t^2\left(\frac{M_2}{Z_+}-\left(\frac{M_1}{Z_+}\right)^2\right)
+\longrightarrow\alpha.
+\label{eq:rg-heat-susceptibility}
+\end{equation}
+This is the Abelian forward direction; the converse Tauberian direction is not
+asserted here. \status{ESTABLISHED}
+
+Dividing entropy by \(\log|V_n|\) divides the susceptibility by the same
+factor and generally destroys a nonzero thermodynamic plateau. Zero-mode atoms
+and normalization must therefore be declared before interpreting a plateau as
+spectral dimension. \status{ESTABLISHED}
+
+\section{Projective laws and refinement}
+\label{sec:rg-projective-refinement}
+
+Compatible finite-dimensional laws obey the projective theorem of
+\Cref{sec:cg-projective-laws}. An energy recursion alone does not provide
+those laws. A probabilistic RG needs normalized kernels
+\(K_{\ell k}\) with
+\[
+\mu_k=\mu_\ell K_{\ell k},\qquad
+K_{\ell k}K_{kr}=K_{\ell r},
+\]
+and corresponding rules for the two bundle sectors and their reference
+measures. Smooth-section support, continuum ELBO convergence, and connection
+convergence remain additional open obligations. \status{OPEN}
+
+If the coarse map \(Q\) is noninjective, no deterministic two-sided inverse
+exists. A refinement kernel \(R\) can at most be a stochastic right section,
+\begin{equation}
+Q_\#R(c,\cdot)=\delta_c,
+\label{eq:rg-stochastic-right-section}
+\end{equation}
+which redraws a compatible microstate. It cannot recover every discarded
+realized microstate. \status{ESTABLISHED}
+
+Infinite divisibility may construct such refinements in distribution, but does
+not turn a many-to-one coarse-graining into a group inverse.
+\status{ESTABLISHED}
+
+\section{Typed comparison with Bayesian renormalization}
+\label{sec:rg-bayesian-comparison}
+
+Berman, Klinger, and Stapleton build on the dynamical Bayesian-inference
+flow of \citet{BermanHeckmanKlinger2022}, using a centered-KL posterior flow
+on model-parameter space. In the regular late-data regime they approximate the
+posterior by a Gaussian with covariance \(T^{-1}I^{-1}\). Set
+\(\tau=1/T\), and consider an inverse problem with a differentiable forward
+map \(G\). The delta method gives the leading local predictive approximation
+\[
+G(\theta)\ \dot\sim\
+\mathcal N\left(
+G(\mu_\tau),\quad
+\tau J_G(\mu_\tau) I(\mu_\tau)^{-1}J_G(\mu_\tau)^\top
+\right).
+\]
+It is exact when \(G\) is affine, but a nonlinear Gaussian pushforward is not
+in general Gaussian. Accordingly, the pushed inverse Fisher cometric
+\begin{equation}
+D_\tau
+=J_G(\mu_\tau)I(\mu_\tau)^{-1}J_G(\mu_\tau)^\top
+\label{eq:rg-bks-diffusion}
+\end{equation}
+is the local diffusion tensor used in their ERG-form Fokker--Planck equation;
+the corresponding small-\(\tau\) transition covariance is
+\(\tau D_\tau\) \citep{BermanKlingerStapleton2023}. Their continuation of
+this tensor beyond the late-data, small-\(\tau\) regime is a renormalization
+construction, not an exact nonlinear pushforward theorem or a Bayesian
+asymptotic theorem. \status{ESTABLISHED}
+
+This is an exact, carefully scoped literature statement. It does not identify
+an arbitrary recognition Fisher tensor with the BKS generative-model Fisher
+metric, transfer their stiff/sloppy eigenspaces to another operator sector, or
+prove that a graph aggregation runs in the opposite direction.
+\status{NOT-CLAIMED}
+
+In the small-\(\tau\) approximation, covariance broadens
+like \(\tau I^{-1}\) if \(I\) is held fixed, whereas a later Gaussian
+sufficient-statistic construction may add precision. That is a typed local
+contrast. A theorem of opposite flow directions would require a common state
+space, an explicit scale map, and a transported monotone including
+\[
+\frac{d}{d\tau}\left[\tau I(\mu_\tau)^{-1}\right]
+=I^{-1}-\tau I^{-1}\frac{dI}{d\tau}I^{-1}.
+\]
+No such bridge is asserted. \status{OPEN}
+
+\Cref{thm:cg-holonomy-kl-marginal} gives a separate
+admissibility statement: represented holonomy restricts the marginal-law
+modes available inside an already proposed block.  The BKS Fisher scale
+instead orders model-parameter directions by statistical distinguishability;
+it neither chooses node partitions nor tests holonomy. \status{ESTABLISHED}
+
+Constructing a nondegenerate partition selector compatible with these
+separate structures remains open. \status{OPEN}
+
+Mehta and Schwab give an exact variational-RG/deep-network correspondence
+under their RBM kernel and trace condition \citep{MehtaSchwab2014}. It is a
+historical exact precedent inside that construction, not a theorem that
+deterministic energy precomposition is a neural layer. Likewise, scalar
+Laplacian RG provides a heat-spectrum scale diagnostic and a heuristic
+real-space blocker; lifting its entrywise blocker covariantly to the two
+represented frame channels requires a new invariant statistic. These are
+constraints on applications, not definitions of the present general RG.
+\status{ESTABLISHED}
+
+\paragraph{Physicist summary.}
+Blocking removes detail; renormalization adds the maps that say how the
+blocked theory is compared with the original units. Here that comparison must
+carry one principal bundle, its two differently represented statistical
+bundles, two connection choices that may coincide, and two separately
+supplied cross morphisms. Separate belief and model frames are local views of the same
+principal geometry; their relative element lies in \(G_\ell\), even when its
+two representations act on unlike spaces. Failures to commute with blocking
+are covariant defect fields. Once all scales are identified, the dynamics may
+be autonomous, periodic, random, or a general cocycle, and each case has a
+different invariant object. System size and RG depth then form a two-index
+limit. Fixed points, universality, and continuum laws are meaningful only
+after these types and limits have been declared.
