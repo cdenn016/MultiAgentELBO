@@ -17,6 +17,13 @@ build task may modify its tracked contents.
 - Deterministic aggregate digest of the 44 tracked snapshot files:
   `571caaea14ebbc4c325fbec528aca63fb5f53db502207bf5e69f41262406f1dd`.
 
+The experiment manifest also records a runtime tree digest using the explicitly
+versioned framing `sorted-relative-posix-path-nul-raw-sha256-digest-v1`, excluding
+Python caches and `.pyc` files. For this snapshot that digest is
+`a7fddfcb8c67dbec71c7a35d0e415313a38154719e05d6ccd73672a810939343`.
+The two aggregate values use different framing conventions; per-file SHA-256
+comparison, not equality between the aggregate values, is the preservation check.
+
 The comparison excludes TeX build products and Python caches, including
 `main.lot`, `main.out`, `main.synctex.gz`, and `main.toc`. Future source checks
 must compare the tracked `Theory/` content against this snapshot record before

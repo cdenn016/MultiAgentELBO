@@ -1,4 +1,4 @@
-"""Complete multivariate-Gaussian realization of the ambient finite theory."""
+"""Typed multivariate-Gaussian adapter for the ambient finite theory."""
 
 from .experiment import GaussianExperimentResult, run_gaussian_experiment
 from .gauge import GaussianGaugeResult, apply_frame_change

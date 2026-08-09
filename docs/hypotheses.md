@@ -118,22 +118,31 @@ kernel is parameter-independent across an unexamined family, or establish RG uni
 ## GAU-01 — Coordinate relabeling and congruence invariants
 
 - **Epistemic status:** Finite Borel relabeling and matched inverse-congruence generalized
-  spectrum are established coordinate identities under their typed hypotheses. Task 3 checks
-  only componentwise finite relabeling; Gaussian congruence checks are deferred to Task 4.
+  spectrum are established coordinate identities under their typed hypotheses. The finite
+  laboratory checks componentwise finite relabeling; the Gaussian laboratory checks the
+  declared regular symmetric-definite inverse-congruence fixture.
 - **Prediction:** Coherent relabeling of every finite measure, channel, product reference, and
   action preserves evidence, KL, VFE, conditional-KL loss, and reconstruction, and intertwines
   the retained projection. Matched Gaussian inverse congruence preserves quadratic energy and
   the generalized spectrum of a regular symmetric-definite pencil.
 - **Null:** Any coherently transformed observable or intertwining square has a residual beyond
   tolerance.
-- **Operationalization:** Task 3 records the maximum finite invariant/intertwining residual as
-  `GAUGE_finite_relabeling_residual`; Task 4 will record energy, eigenpair, orthonormality, and
-  spectrum residuals separately.
+- **Operationalization:** The finite laboratory records the maximum finite
+  invariant/intertwining residual as `GAUGE_finite_relabeling_residual`. The Gaussian
+  laboratory separately records `GAU-01_energy_residual`,
+  `GAU-01_laplacian_energy_residual`, `GAU-01_generalized_spectrum_residual`,
+  `GAU-01_eigenpair_residual`, `GAU-01_metric_orthogonality_residual`,
+  `GAU-01_commuting_square_residual`, and literal determinant/ordinary-spectrum
+  oracle residuals.
 - **Control:** Exact source/target permutation matrices and axiswise product permutations;
   relabeling recognition alone is pinned to KL delta `-0.04054651081081644`. The Gaussian
-  ordinary-spectrum mismatch control is deferred.
-- **Support threshold:** Every finite residual at most `atol + rtol`; later Gaussian residuals
-  must satisfy their preregistered matrix tolerances.
+  quadratic energies are pinned to `149/5` and `34/5`, while the ordinary-spectrum change
+  under a nonorthogonal frame is retained as a negative control rather than mislabeled as an
+  invariant. The commuting-square fixture pins the transformed prolongator and the coarse
+  precisions `diag(6,8)` and `diag(6/25,2)`.
+- **Support threshold:** Every finite residual is at most `atol + rtol`; every Gaussian
+  residual satisfies its preregistered matrix tolerance and each negative control remains
+  separated from zero by more than that tolerance.
 - **Refutation threshold:** A coherent typed transform exceeds tolerance after all dimensions,
   orientations, and regularity assumptions are verified.
 - **Inconclusive rule:** Arbitrary gauge fields, holonomy, singular pencils without a declared
@@ -145,14 +154,15 @@ kernel is parameter-independent across an unexamined family, or establish RG uni
 
 - **Epistemic status:** Internal-edge cancellation and cut-weight addition are established
   conditional identities for the declared matrix-weighted Gaussian interaction family. The
-  declaration that a modeled system belongs to that family is a hypothesis. Implementation
-  tests are deferred to Task 4.
+  declaration that a modeled system belongs to that family is a hypothesis. The current
+  Gaussian laboratory is an implementation check of the declared literal fixtures, not an
+  empirical family-membership result.
 - **Prediction:** Hard-identification/Galerkin restriction annihilates internal edge energies,
   adds cut weights, and adds the declared self terms; it is not a Gaussian marginal.
 - **Null:** The coarse precision differs from the independently assembled cut/self precision.
 - **Operationalization:** Compare `S.T @ Lambda @ S` with the literal coarse operator and record
-  block residuals; separately compute the Schur-complement marginal as a negative distinction
-  control.
+  `GAU-02_galerkin_residual`; separately record the Schur-complement distinction, scalar Schur
+  oracle, matrix-valued Schur oracle, and unrestricted-Kron nonclosure metrics.
 - **Control:** Three scalar nodes with self terms `(1,2,3)`, edge weights `4` and `5`, and
   partition `{0,1}|{2}`; the distinct Schur complement and an unrestricted-Kron nonclosure
   witness prevent mislabeling.
