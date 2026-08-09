@@ -142,7 +142,7 @@ The finite laboratory disintegrates a joint posterior into a selected block and 
 
 ### 6.5 Fisher contraction
 
-A declared centered score for a finite parametric family is pushed through a fixed parameter-independent channel. The coarse score is computed by conditional expectation under the induced joint law. The laboratory reports fine Fisher information, coarse Fisher information, expected conditional score covariance, and the matrix residual. A recoverable-score control must have zero defect; an information-losing channel must have positive defect; the zero score is a valid zero tangent.
+A declared centered score for a finite parametric family is pushed through a supplied channel that is declared fixed and parameter-independent. Scores are canonicalized to `(n,d)` and all Fisher, defect, and residual tensors remain `(d,d)`, including `d=1`. The coarse score is computed by conditional expectation under the induced joint law `p_x K_xz`; fine Fisher, coarse Fisher, and expected conditional score covariance are computed independently before their matrix residual is formed. Centering and semidefinite diagnostics are scale-aware, and singular positive-semidefinite tensors are valid without repair. A recoverable score through a genuinely lossy channel must have zero defect; an information-losing score must have positive defect; the zero score is a valid zero tangent. This finite interface does not establish DQM, verify parameter independence across a channel family, prove experiment sufficiency, or establish natural-flow semiconjugacy.
 
 ### 6.6 Full finite interactions
 
@@ -150,15 +150,15 @@ Against a declared product reference, all nonempty-subset Hoeffding/Mobius compo
 
 ### 6.7 Gaussian realization
 
-The Gaussian adapter builds an SPD precision from PSD self terms and symmetric PSD edge weights. Linear systems and log determinants use Cholesky or symmetric generalized-eigenvalue routines; explicit inverses are avoided. It implements:
+The Gaussian adapter builds an SPD precision from PSD self terms and symmetric PSD edge weights. Linear systems and log determinants use Cholesky or symmetric generalized-eigenvalue routines; explicit inverses are avoided. Cholesky success is followed by an explicit reciprocal-condition gate, and vertexwise frames have a separate configured condition-number ceiling. It implements:
 
-- hard-identification/Galerkin aggregation `Lambda_c = S.T @ Lambda @ S`, explicitly distinct from Schur-complement Gaussian marginalization;
+- operator-level hard-identification/Galerkin aggregation `Lambda_c = S.T @ Lambda @ S`, explicitly distinct from Schur-complement Gaussian marginalization or a pushed-forward probability law;
 - block-diagonal passive frame changes applied by inverse congruence, with aggregation maps transformed in the same commuting square;
 - scalar quadratic-energy invariance;
-- generalized spectrum of `(L, Lambda)` under matched congruence;
+- generalized spectrum of `(L, Lambda)` under matched congruence, checked against independent exact roots and normalized eigenpair/metric-orthogonality residuals;
 - the flat aggregation formulas and internal-edge cancellation.
 
-Condition numbers and Cholesky residuals are recorded. Near-singular or singular inputs fail with a typed domain error unless an experiment explicitly declares a different repaired model.
+Validation proceeds through shape and dimension, finiteness, scale-aware symmetry, block semidefiniteness, assembled Cholesky, reciprocal conditioning, frame conditioning, and only then generalized eigensolution. Raw minimum eigenvalues, condition numbers, normalized eigenpair residuals, and metric-orthogonality residuals are recorded. Near-singular, singular, or over-conditioned-frame inputs fail with a typed domain error unless an experiment explicitly declares a different repaired model. No path clamps eigenvalues, adds jitter, forms an explicit inverse, or inserts a pseudoinverse or pseudodeterminant.
 
 ## 7. Click-to-run workflow
 
@@ -167,7 +167,13 @@ Each launcher exposes four small dictionaries:
 ```python
 RUN = {"name": "finite_exact_smoke", "seed": 20260808}
 THEORY = {"experiment": "finite_exact", "retained_interaction_order": 2}
-NUMERICS = {"dtype": "float64", "atol": 1e-10, "rtol": 1e-9}
+NUMERICS = {
+    "dtype": "float64",
+    "atol": 1e-10,
+    "rtol": 1e-9,
+    "min_spd_rcond": 1e-12,
+    "max_frame_condition": 1.0e6,
+}
 OUTPUT = {"root": "artifacts", "collect_diagnostics": True, "render_figures": True}
 ```
 

@@ -261,7 +261,7 @@ Commit message: `feat: add exact finite VFE laboratory core`
 
 - [ ] **Step 1: Write failing Fisher tests with literal oracles**
 
-At a uniform four-state law, use statistic `t=(-1,0,1,2)`, centered score `(-1.5,-0.5,0.5,1.5)`, and channel `A,A,B,B`. Assert fine Fisher `1.25`, coarse score `(-1,1)`, coarse Fisher `1.0`, conditional-covariance defect `0.25`, and residual zero. Add an identity-channel control with zero defect, accept the zero constant score as a valid zero tangent, and reject a nonzero constant vector because it is not centered. Type this as the finite conditional-expectation/covariance identity for a supplied centered score and fixed parameter-independent kernel; the vector test alone does not establish DQM.
+At a uniform four-state law, use statistic `t=(-1,0,1,2)`, centered score `(-1.5,-0.5,0.5,1.5)`, and channel `A,A,B,B`. Assert fine Fisher `1.25`, coarse score `(-1,1)`, coarse Fisher `1.0`, conditional-covariance defect `0.25`, and residual zero. Add a weighting-discriminating stochastic oracle `p=(1/2,1/3,1/6)`, `score=(-1,1,1)`, and `K=((1,0),(1/2,1/2),(0,1))`; assert `p_c=(2/3,1/3)`, coarse score `(-1/2,1)`, fine Fisher `1`, coarse Fisher `1/2`, and defect `1/2`. Add an identity-channel control, a genuinely lossy channel with fiber-constant score `(-1,-1,1,1)` and zero defect, accept the zero constant score as a valid zero tangent, and reject a nonzero constant vector because it is not centered. Add a two-parameter singular-PSD control with score rows `[(-3/2,-1),(-1/2,1),(1/2,-1),(3/2,1)]`, whose defect is `[[1/4,1/2],[1/2,1]]` with eigenvalues `(0,5/4)`; do not require positive definiteness or add jitter. Type this as the finite conditional-expectation/covariance identity for a supplied centered score and declared-fixed parameter-independent kernel; the vector test alone does not establish DQM or verify parameter independence across a family.
 
 - [ ] **Step 2: Run Fisher tests and confirm RED**
 
@@ -271,7 +271,7 @@ Expected: missing Fisher interface failure.
 
 - [ ] **Step 3: Implement analytic finite Fisher decomposition**
 
-Support vector and matrix-valued scores with the final axis as parameter dimension. Center-check the score, compute conditional means using joint probability mass, and report fine/coarse Fisher matrices, expected conditional covariance, eigenvalue diagnostics, and residual.
+Support scores shaped `(n,)` or `(n,d)`, promote the scalar form internally to `(n,1)`, and use fixed result ranks: joint mass `(n,m)`, coarse probability `(m,)`, coarse score `(m,d)`, and Fisher/defect/residual arrays `(d,d)`. Center-check each parameter coordinate with `abs(p @ score)[j] <= atol + rtol*max(1, p @ abs(score[:,j]))`. Compute conditional means from `p_x*K_xz`, assigning zero only as the explicit representative on unreachable coarse targets. Compute fine Fisher, coarse Fisher, and expected conditional covariance independently from their weighted outer-product definitions; only then form `residual = fine - coarse - covariance`. Use scale-aware symmetric-eigenvalue PSD diagnostics without clipping, jitter, Cholesky, or positive-definite assumptions. Return read-only defensive copies in a frozen `FisherChannelResult`.
 
 - [ ] **Step 4: Verify Fisher GREEN**
 
@@ -342,6 +342,9 @@ Commit message: `feat: add finite Fisher interaction and gauge experiments`
 - Create: `docs/results/2026-08-08-foundation-results.md`
 - Create: `.verification/ledger.json`
 - Create: `docs/verification/pytest-foundation.xml`
+- Modify: `src/multiagent_elbo/config.py`
+- Modify: `tests/test_config.py`
+- Modify: `run_finite_lab.py`
 
 **Interfaces:**
 - Consumes: Task 1 config/runtime/artifacts
@@ -361,13 +364,13 @@ For scalar self terms `(1,2,3)`, edges `w12=4`, `w23=5`, and partition `{0,1}|{2
  [0.0, -5.0, 8.0]]
 ```
 
-and the coarse precision is `[[8.0,-5.0],[-5.0,8.0]]`. Use code edges `(0,1):4` and `(1,2):5` with partition `{0,1}|{2}`. Assert the internal first edge cancels and the cut second edge remains. Name this operation hard identification/Galerkin aggregation, not Gaussian marginalization; a Schur-complement marginal is a distinct negative control. Reject an indefinite self/edge construction without adding jitter.
+and the coarse precision is `[[8.0,-5.0],[-5.0,8.0]]`. Use code edges `(0,1):4` and `(1,2):5` with partition `{0,1}|{2}`. Assert the internal first edge cancels and the cut second edge remains. Name the public operation `galerkin_aggregate_precision` and tag its result as an operator-level hard-identification/Galerkin restriction, never a Gaussian marginal or pushed-forward law. Pin the distinct scalar Schur-complement marginal obtained by eliminating node 1 as `[[39/11,-20/11],[-20/11,63/11]]`. Add the exact `K=2` unrestricted-Kron nonclosure witness whose Schur matrix is `1/19*[[33,2,-9,-3],[2,41,-4,-14],[-9,-4,37,6],[-3,-14,6,40]]`; its manufactured off-diagonal weight `1/19*[[9,3],[4,14]]` is asymmetric. Reject an indefinite self/edge construction without adding jitter. Permit scalar shorthand only for a consistently scalar `K=1` system; reject mixed block sizes, self-loops, duplicate reversed edges, and partitions with missing, repeated, overlapping, or empty blocks.
 
 - [ ] **Step 2: Write failing Gaussian gauge tests**
 
-Use `W=[[1,1/5],[1/5,2]]`, `A1=diag(2,3)`, `A2=diag(4,5)`, `L=[[W,-W],[-W,W]]`, `Lambda=diag(A1,A2)+L`, positive-orientation local frame matrix `T=diag(2,1,1,3)`, and `x=(1,2,-1,1)`. With coordinates `x'=T x`, transform both operators by inverse congruence `Lambda'=T^{-T}Lambda T^{-1}` and `L'=T^{-T}LT^{-1}`. Assert `x^T Lambda x=x'^T Lambda' x'=149/5` and the corresponding `L` energy is `34/5`. Assert matched generalized roots agree below `1e-9`. Pin the negative control: ordinary `L` spectra are `{0,0,3±sqrt(29)/5}` before and `{0,0,(125±sqrt(1513))/72}` after. Do not parse transformed `L'` back into row-sum edge blocks.
+Use `W=[[1,1/5],[1/5,2]]`, `A1=diag(2,3)`, `A2=diag(4,5)`, `L=[[W,-W],[-W,W]]`, `Lambda=diag(A1,A2)+L`, positive-orientation local frame blocks whose assembled matrix is `T=diag(2,1,1,3)`, and `x=(1,2,-1,1)`. With coordinates `x'=T x`, transform both operators by inverse congruence `Lambda'=T^{-T}Lambda T^{-1}` and `L'=T^{-T}LT^{-1}`, using linear solves rather than forming an explicit inverse. Assert `x^T Lambda x=x'^T Lambda' x'=149/5` and the corresponding `L` energy is `34/5`. Pin the independent generalized roots to `{0,0,(5077-5*sqrt(14785))/10802,(5077+5*sqrt(14785))/10802}`, approximately `{0,0,0.413722650732677663,0.526288458321201249}`; also assert `det(Lambda)=10802/25`, `det(Lambda')=5401/450`, and the Cholesky-derived log-determinant difference is `-2*log(6)`. Record normalized eigenpair residuals and `V.T@Lambda@V-I`, not only agreement between two calls to the same eigensolver. Pin the negative control: ordinary `L` spectra are `{0,0,3±sqrt(29)/5}` before and `{0,0,(125±sqrt(1513))/72}` after. Do not parse transformed `L'` back into row-sum edge blocks.
 
-Add a commuting-square aggregation control. If `y=S z`, `y'=T_f y`, and `z'=T_c z`, transform `S'=T_f S T_c^{-1}` and assert `S'^T Lambda' S'=T_c^{-T}(S^T Lambda S)T_c^{-1}`. Holding `S` fixed is permitted only when `T_f S=S T_c`.
+Add a commuting-square aggregation control. If `y=S z`, `y'=T_f y`, and `z'=T_c z`, transform `S'=T_f S T_c^{-1}` and assert `S'^T Lambda' S'=T_c^{-T}(S^T Lambda S)T_c^{-1}`. For `S=[I;I]`, the literal `T_f` above, and `T_c=diag(5,2)`, assert `S'=[[2/5,0],[0,1/2],[1/5,0],[0,3/2]]`, `S.T@Lambda@S=diag(6,8)`, and `S'.T@Lambda'@S'=diag(6/25,2)`. Holding `S` fixed is permitted only when `T_f S=S T_c`. The frame API accepts an `(N,K,K)` collection, validates each local block's positive determinant and condition number, assembles the block diagonal internally, and returns transformed prolongators as general matrices.
 
 - [ ] **Step 3: Run Gaussian tests and confirm RED**
 
@@ -377,7 +380,7 @@ Expected: missing Gaussian package failure.
 
 - [ ] **Step 4: Implement stable Gaussian realization**
 
-Validate finiteness and symmetry explicitly before calling `scipy.linalg.eigh`; then validate PSD edge/self blocks and require assembled precision SPD with Cholesky. Use `cho_factor`/`cho_solve`, `slogdet` only after SPD validation, and `scipy.linalg.eigvalsh(L, Lambda)` for regular pencils. Record raw minimum eigenvalues and condition numbers as chart-dependent diagnostics, not gauge invariants. Never call `pinv`.
+Extend `NUMERICS` with explicit persisted float toggles `min_spd_rcond` in `(0,1]` and `max_frame_condition` in `[1,infinity)`, with strict finite validation; update both launchers and configuration tests. Validation order is shape/dimension, finiteness, normalized symmetry residual, symmetric projection only within tolerance, block PSD checks with `atol+rtol*scale`, assembly, repeated finiteness/symmetry checks, Cholesky, reciprocal-condition gate, frame-condition gate, then the generalized eigensolve. Cholesky success alone does not establish acceptable conditioning. Use Cholesky solves and compute log determinant as `2*sum(log(diag(C)))`; use `scipy.linalg.eigh(L,Lambda)` for the regular pencil and retain eigenvectors for residual diagnostics. Record raw minimum eigenvalues and condition numbers as chart-dependent diagnostics, not gauge invariants. Never clamp eigenvalues, add jitter, form an explicit inverse, or call `pinv`. Generate seeded positive-orientation local frames with bounded prescribed singular spectra and add a separate over-conditioned typed-error control.
 
 - [ ] **Step 5: Verify Gaussian GREEN**
 
