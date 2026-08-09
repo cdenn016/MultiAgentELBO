@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -12,7 +13,7 @@ from typing import Mapping
 
 import numpy as np
 
-from .config import ExperimentConfig, canonical_config_json, config_sha256
+from .config import ExperimentConfig, canonical_config_json
 
 
 @dataclass(frozen=True)
@@ -26,7 +27,8 @@ class RunStore:
     def create(
         cls, config: ExperimentConfig, provenance: Mapping[str, object]
     ) -> "RunStore":
-        config_hash = config_sha256(config)
+        resolved_config_json = canonical_config_json(config)
+        config_hash = hashlib.sha256(resolved_config_json.encode("utf-8")).hexdigest()
         run_dir = (
             config.output.root
             / _sanitize_run_name(config.run.name)
@@ -39,7 +41,7 @@ class RunStore:
         run_dir.mkdir(parents=True, exist_ok=False)
 
         store = cls(run_dir=run_dir, config_hash=config_hash)
-        resolved_config = json.loads(canonical_config_json(config))
+        resolved_config = json.loads(resolved_config_json)
         store.write_json(
             "config",
             {"config_hash": config_hash, "resolved_config": resolved_config},
@@ -61,11 +63,13 @@ class RunStore:
 
     def write_json(self, name: str, payload: object) -> Path:
         path = self.run_dir / _artifact_filename(name, ".json")
+        _reject_existing_artifact(path)
         _atomic_json(path, payload)
         return path
 
     def write_npz(self, name: str, arrays: Mapping[str, np.ndarray]) -> Path:
         path = self.run_dir / _artifact_filename(name, ".npz")
+        _reject_existing_artifact(path)
         _atomic_npz(path, arrays)
         return path
 
@@ -80,6 +84,11 @@ def _artifact_filename(name: str, suffix: str) -> str:
     if candidate.name != name or name in {"", ".", ".."}:
         raise ValueError("artifact name must be a single filename")
     return name if name.endswith(suffix) else f"{name}{suffix}"
+
+
+def _reject_existing_artifact(path: Path) -> None:
+    if path.exists():
+        raise FileExistsError(f"artifact already exists: {path.name}")
 
 
 def _atomic_json(path: Path, payload: object) -> None:
