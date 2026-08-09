@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 
 import multiagent_elbo.artifacts as artifacts
@@ -28,6 +29,13 @@ def make_config(root: Path, *, name: str = "finite exact") -> ExperimentConfig:
             "render_figures": False,
         },
     )
+
+
+def make_hard_link_or_skip(source: Path, destination: Path) -> None:
+    try:
+        os.link(source, destination)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"hard links are unavailable: {error}")
 
 
 def test_canonical_hash_is_stable_across_source_dictionary_insertion_order(tmp_path: Path):
@@ -246,6 +254,46 @@ def test_finalize_rejects_a_declared_symlink(tmp_path: Path):
         match=r"artifact must not be a symlink or reparse path: linked\.json",
     ):
         store.finalize(["linked.json"])
+
+
+def test_finalize_rejects_a_declared_file_with_an_external_hard_link(
+    tmp_path: Path,
+):
+    store = RunStore.create(make_config(tmp_path), {"source": "test"})
+    external = tmp_path / "external.json"
+    external.write_text("{}", encoding="utf-8")
+    make_hard_link_or_skip(external, store.run_dir / "linked.json")
+
+    with pytest.raises(
+        ValueError, match=r"artifact must have exactly one hard link: linked\.json"
+    ):
+        store.finalize(["linked.json"])
+
+
+def test_finalize_rejects_an_external_hard_link_to_core_config(tmp_path: Path):
+    store = RunStore.create(make_config(tmp_path), {"source": "test"})
+    make_hard_link_or_skip(
+        store.run_dir / "config.json", tmp_path / "config-alias.json"
+    )
+
+    with pytest.raises(
+        ValueError, match=r"artifact must have exactly one hard link: config\.json"
+    ):
+        store.finalize([])
+
+
+def test_finalize_rejects_duplicate_file_identity_within_inventory(tmp_path: Path):
+    store = RunStore.create(make_config(tmp_path), {"source": "test"})
+    external = tmp_path / "external.json"
+    external.write_text("{}", encoding="utf-8")
+    make_hard_link_or_skip(external, store.run_dir / "first.json")
+    make_hard_link_or_skip(external, store.run_dir / "second.json")
+
+    with pytest.raises(
+        ValueError,
+        match=r"duplicate artifact file identity: second\.json aliases first\.json",
+    ):
+        store.finalize(["first.json", "second.json"])
 
 
 def test_finalize_completes_with_an_accurate_inventory_and_blocks_later_writes(

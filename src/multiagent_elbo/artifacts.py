@@ -94,6 +94,12 @@ class RunStore:
         manifest = self._require_incomplete()
         declared_names = _materialize_declarations(declared_artifacts)
         resolved_run_dir = _strict_resolved_run_dir(self.run_dir)
+        inventory_paths = [
+            self.run_dir / "config.json",
+            self.run_dir / "manifest.json",
+            *(self.run_dir / name for name in declared_names),
+        ]
+        _reject_duplicate_file_identities(inventory_paths)
         config_path = _require_owned_regular_file(
             self.run_dir / "config.json",
             resolved_run_dir,
@@ -203,10 +209,30 @@ def _require_owned_regular_file(
         )
     if not stat.S_ISREG(path_stat.st_mode):
         raise ValueError(f"artifact is not a regular file: {path.name}")
+    if path_stat.st_nlink != 1:
+        raise ValueError(f"artifact must have exactly one hard link: {path.name}")
     resolved = path.resolve(strict=True)
     if resolved.parent != resolved_run_dir:
         raise ValueError(f"artifact is not owned by run directory: {path.name}")
     return resolved
+
+
+def _reject_duplicate_file_identities(paths: Iterable[Path]) -> None:
+    seen: dict[tuple[int, int], str] = {}
+    for path in paths:
+        try:
+            path_stat = path.lstat()
+        except FileNotFoundError:
+            continue
+        if _is_reparse_stat(path, path_stat) or not stat.S_ISREG(path_stat.st_mode):
+            continue
+        identity = (path_stat.st_dev, path_stat.st_ino)
+        previous = seen.get(identity)
+        if previous is not None:
+            raise ValueError(
+                f"duplicate artifact file identity: {path.name} aliases {previous}"
+            )
+        seen[identity] = path.name
 
 
 def _is_reparse_path(path: Path) -> bool:
