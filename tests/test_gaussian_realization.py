@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 from pathlib import Path
 import shutil
@@ -87,6 +89,22 @@ def test_scalar_schur_marginal_is_distinct_from_galerkin_restriction():
         [[39.0 / 11.0, -20.0 / 11.0], [-20.0 / 11.0, 63.0 / 11.0]],
     )
     assert not np.allclose(marginal, galerkin.precision)
+
+
+def test_retain_all_schur_honors_requested_vertex_order():
+    interaction = scalar_interaction()
+
+    reordered = schur_complement_precision(
+        interaction.precision,
+        retained_vertices=(2, 0, 1),
+        block_size=1,
+        numerics=NUMERICS,
+    )
+
+    requested = np.array([2, 0, 1])
+    expected = interaction.precision[np.ix_(requested, requested)]
+    np.testing.assert_allclose(reordered, expected)
+    assert not np.array_equal(reordered, interaction.precision)
 
 
 def test_unrestricted_matrix_weight_kron_reduction_leaves_declared_family():
@@ -378,6 +396,43 @@ def test_seeded_frames_are_deterministic_positive_and_bounded():
     assert np.max(np.linalg.cond(first)) <= 50.0 * (1.0 + 1e-12)
 
 
+def test_generated_frames_are_accepted_at_the_declared_condition_boundary():
+    boundary_numerics = NumericsConfig(
+        dtype="float64",
+        atol=1e-12,
+        rtol=1e-10,
+        min_spd_rcond=1e-12,
+        max_frame_condition=50.0,
+    )
+    frames = generate_positive_orientation_frames(
+        np.random.default_rng(20260808), 4, 3, max_condition=50.0
+    )
+
+    result = apply_frame_change(
+        np.eye(12), np.zeros((12, 12)), frames, boundary_numerics
+    )
+
+    assert np.max(result.frame_condition_numbers) == pytest.approx(50.0)
+
+
+@pytest.mark.parametrize("scale", [1.0e100, 1.0e-100])
+def test_positive_orientation_validation_is_invariant_to_uniform_frame_scaling(
+    scale: float,
+):
+    frame = np.array([scale * np.eye(4)])
+    prolongator = np.eye(4)
+
+    held = transform_prolongator(
+        prolongator,
+        frame,
+        frame,
+        NUMERICS,
+        hold_fixed=True,
+    )
+
+    np.testing.assert_array_equal(held, prolongator)
+
+
 def gaussian_config(
     root: Path,
     *,
@@ -431,16 +486,15 @@ def test_gaussian_experiment_writes_core_bundle_and_only_requested_diagnostics(
 def test_gaussian_experiment_renders_only_after_numerical_finalization(tmp_path: Path):
     calls: list[tuple[Path, Path, tuple[str, ...], bytes]] = []
 
-    class Manifest:
-        status = "complete"
-
     def renderer(
         run_dir: Path, output_dir: Path, *, requested: tuple[str, ...]
-    ) -> Manifest:
+    ) -> object:
         manifest_bytes = (run_dir / "manifest.json").read_bytes()
         calls.append((run_dir, output_dir, requested, manifest_bytes))
         assert b'"complete":true' in manifest_bytes
-        return Manifest()
+        return _write_test_figure_manifest(
+            run_dir, output_dir, requested=requested, status="complete"
+        )
 
     result = run_gaussian_experiment(
         gaussian_config(tmp_path, figures=True), renderer=renderer
@@ -456,6 +510,122 @@ def test_gaussian_experiment_renders_only_after_numerical_finalization(tmp_path:
             (result.run_dir / "manifest.json").read_bytes(),
         )
     ]
+
+
+def _write_test_figure_manifest(
+    run_dir: Path,
+    output_dir: Path,
+    *,
+    requested: tuple[str, ...],
+    status: str,
+) -> object:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    figures: list[dict[str, str]] = []
+    if status == "complete":
+        png = output_dir / "gaussian-generalized-spectrum.png"
+        pdf = output_dir / "gaussian-generalized-spectrum.pdf"
+        png.write_bytes(b"\x89PNG test")
+        pdf.write_bytes(b"%PDF test")
+        figures.append(
+            {
+                "name": "gaussian_spectrum",
+                "png": png.name,
+                "png_sha256": hashlib.sha256(png.read_bytes()).hexdigest(),
+                "pdf": pdf.name,
+                "pdf_sha256": hashlib.sha256(pdf.read_bytes()).hexdigest(),
+            }
+        )
+        message = None
+    else:
+        message = "renderer reported failure"
+    manifest_path = output_dir / "figure-manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "figures": figures,
+                "message": message,
+                "requested": list(requested),
+                "run_dir": str(run_dir.resolve()),
+                "status": status,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    class Manifest:
+        pass
+
+    manifest = Manifest()
+    manifest.status = status
+    manifest.run_dir = run_dir
+    manifest.output_dir = output_dir
+    manifest.requested = requested
+    manifest.manifest_path = manifest_path
+    return manifest
+
+
+def test_renderer_backed_failed_manifest_is_validated(tmp_path: Path):
+    def renderer(
+        run_dir: Path, output_dir: Path, *, requested: tuple[str, ...]
+    ) -> object:
+        return _write_test_figure_manifest(
+            run_dir, output_dir, requested=requested, status="failed"
+        )
+
+    result = run_gaussian_experiment(
+        gaussian_config(tmp_path, figures=True), renderer=renderer
+    )
+
+    assert result.status == "pass"
+    assert result.figure_status == "failed"
+    saved = json.loads((result.figure_dir / "figure-manifest.json").read_text())
+    assert saved["status"] == "failed"
+    assert saved["message"] == "renderer reported failure"
+
+
+def test_renderer_complete_manifest_with_wrong_inventory_hash_is_recorded_as_failure(
+    tmp_path: Path,
+):
+    def renderer(
+        run_dir: Path, output_dir: Path, *, requested: tuple[str, ...]
+    ) -> object:
+        manifest = _write_test_figure_manifest(
+            run_dir, output_dir, requested=requested, status="complete"
+        )
+        (output_dir / "gaussian-generalized-spectrum.png").write_bytes(
+            b"\x89PNG changed after manifest"
+        )
+        return manifest
+
+    result = run_gaussian_experiment(
+        gaussian_config(tmp_path, figures=True), renderer=renderer
+    )
+
+    assert result.status == "pass"
+    assert result.figure_status == "failed"
+    failure = json.loads((result.figure_dir / "figure-failure.json").read_text())
+    assert failure["status"] == "failed"
+    assert "unbacked" in failure["message"]
+
+
+@pytest.mark.parametrize("returned_status", ["complete", "failed"])
+def test_unbacked_renderer_status_is_recorded_as_failure(
+    tmp_path: Path, returned_status: str
+):
+    class UnbackedManifest:
+        status = returned_status
+        manifest_path = None
+
+    result = run_gaussian_experiment(
+        gaussian_config(tmp_path, figures=True),
+        renderer=lambda *_args, **_kwargs: UnbackedManifest(),
+    )
+
+    assert result.status == "pass"
+    assert result.figure_status == "failed"
+    saved = json.loads((result.figure_dir / "figure-manifest.json").read_text())
+    assert saved["status"] == "failed"
+    assert "unbacked" in saved["message"]
 
 
 def test_renderer_failure_cannot_change_finalized_numerical_status_or_bytes(
@@ -489,6 +659,7 @@ def test_saved_metrics_expose_independent_literal_oracles(tmp_path: Path):
         "GAU-01_determinant_oracle_residual",
         "GAU-01_ordinary_spectrum_oracle_residual",
         "GAU-01_ordinary_spectrum_change_control",
+        "GAU-01_commuting_square_residual",
         "GAU-02_scalar_schur_oracle_residual",
         "GAU-02_kron_schur_oracle_residual",
         "GAU-02_kron_nonclosure_control",
@@ -505,6 +676,32 @@ def test_saved_metrics_expose_independent_literal_oracles(tmp_path: Path):
     assert result.metrics["GAU-01_ordinary_spectrum_change_control"].value > result.metrics[
         "GAU-01_ordinary_spectrum_change_control"
     ].tolerance
+    assert result.metrics["GAU-01_commuting_square_residual"].value <= result.metrics[
+        "GAU-01_commuting_square_residual"
+    ].tolerance
+    assert set(result.arrays) >= {
+        "coarse_frames",
+        "expected_coarse_precision",
+        "expected_transformed_coarse_precision",
+        "expected_transformed_prolongator",
+    }
+    np.testing.assert_allclose(result.arrays["coarse_frames"], [np.diag([5.0, 2.0])])
+    np.testing.assert_allclose(result.arrays["expected_coarse_precision"], np.diag([6.0, 8.0]))
+    np.testing.assert_allclose(
+        result.arrays["expected_transformed_coarse_precision"],
+        np.diag([6.0 / 25.0, 2.0]),
+    )
+    np.testing.assert_allclose(
+        result.arrays["expected_transformed_prolongator"],
+        np.array(
+            [
+                [2.0 / 5.0, 0.0],
+                [0.0, 1.0 / 2.0],
+                [1.0 / 5.0, 0.0],
+                [0.0, 3.0 / 2.0],
+            ]
+        ),
+    )
 
 
 def test_invalid_renderer_status_is_recorded_as_a_figure_failure(tmp_path: Path):

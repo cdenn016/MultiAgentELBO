@@ -34,13 +34,19 @@ def _validate_frames(
         raise GaussianNumericalError(f"{label} must contain only finite values")
     conditions: list[float] = []
     for index, block in enumerate(value):
-        determinant = float(np.linalg.det(block))
-        if not np.isfinite(determinant) or determinant <= 0.0:
+        determinant_sign, log_absolute_determinant = np.linalg.slogdet(block)
+        if determinant_sign <= 0.0 or not np.isfinite(log_absolute_determinant):
             raise GaussianNumericalError(
                 f"{label} block {index} must have positive determinant"
             )
         condition = float(np.linalg.cond(block))
-        if not np.isfinite(condition) or condition > numerics.max_frame_condition:
+        boundary_tolerance = numerics.atol + numerics.rtol * max(
+            numerics.max_frame_condition, 1.0
+        )
+        if (
+            not np.isfinite(condition)
+            or condition - numerics.max_frame_condition > boundary_tolerance
+        ):
             raise GaussianNumericalError(
                 f"{label} block {index} condition number exceeds max_frame_condition"
             )
@@ -276,7 +282,8 @@ def generate_positive_orientation_frames(
         left, _ = np.linalg.qr(rng.normal(size=(block_size, block_size)))
         right, _ = np.linalg.qr(rng.normal(size=(block_size, block_size)))
         frame = left @ np.diag(singular_values) @ right.T
-        if np.linalg.det(frame) <= 0.0:
+        determinant_sign, _ = np.linalg.slogdet(frame)
+        if determinant_sign <= 0.0:
             left[:, 0] *= -1.0
             frame = left @ np.diag(singular_values) @ right.T
         frames.append(frame)

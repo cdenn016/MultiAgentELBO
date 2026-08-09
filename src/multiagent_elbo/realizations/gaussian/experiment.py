@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import hashlib
+import json
 import math
 from pathlib import Path
 from types import MappingProxyType
 from typing import Callable, Literal, Mapping
 
 import numpy as np
+import scipy.linalg
 
 from ...artifacts import RunStore
 from ...config import ExperimentConfig, config_sha256
@@ -75,6 +78,91 @@ def _negative_control_metric(
         assessment_scope="implementation_check",
         theorem_status="negative_control",
     )
+
+
+def _validated_renderer_status(
+    manifest: object,
+    run_dir: Path,
+    output_dir: Path,
+    requested: tuple[str, ...],
+) -> Literal["complete", "failed"]:
+    """Validate that a renderer status is backed by its on-disk manifest."""
+    status = getattr(manifest, "status", None)
+    if status not in {"complete", "failed"}:
+        raise ValueError(f"renderer returned invalid status: {status!r}")
+    try:
+        returned_run_dir = Path(getattr(manifest, "run_dir")).resolve()
+        returned_output_dir = Path(getattr(manifest, "output_dir")).resolve()
+        returned_requested = tuple(getattr(manifest, "requested"))
+        manifest_path = Path(getattr(manifest, "manifest_path")).resolve(strict=True)
+    except (AttributeError, TypeError, OSError) as error:
+        raise ValueError(f"renderer returned unbacked {status!r} status") from error
+    resolved_run_dir = run_dir.resolve()
+    resolved_output_dir = output_dir.resolve()
+    if (
+        returned_run_dir != resolved_run_dir
+        or returned_output_dir != resolved_output_dir
+        or returned_requested != requested
+        or manifest_path.parent != resolved_output_dir
+        or manifest_path.name not in {"figure-manifest.json", "figure-failure.json"}
+        or not manifest_path.is_file()
+    ):
+        raise ValueError(f"renderer returned unbacked {status!r} status")
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"renderer returned unbacked {status!r} status") from error
+    if (
+        not isinstance(payload, dict)
+        or payload.get("status") != status
+        or payload.get("run_dir") != str(resolved_run_dir)
+        or payload.get("requested") != list(requested)
+        or not isinstance(payload.get("figures"), list)
+    ):
+        raise ValueError(f"renderer returned unbacked {status!r} status")
+    figures = payload["figures"]
+    if status == "failed":
+        if figures or not isinstance(payload.get("message"), str) or not payload["message"].strip():
+            raise ValueError("renderer returned unbacked 'failed' status")
+        return "failed"
+    if payload.get("message") is not None or tuple(
+        record.get("name") if isinstance(record, dict) else None for record in figures
+    ) != requested:
+        raise ValueError("renderer returned unbacked 'complete' status")
+    for record in figures:
+        for kind in ("png", "pdf"):
+            filename = record.get(kind)
+            publication = (
+                resolved_output_dir / filename if type(filename) is str else None
+            )
+            if (
+                type(filename) is not str
+                or Path(filename).name != filename
+                or publication is None
+                or not publication.is_file()
+                or publication.stat().st_size == 0
+            ):
+                raise ValueError("renderer returned unbacked 'complete' status")
+            try:
+                actual_sha256 = hashlib.sha256(publication.read_bytes()).hexdigest()
+            except OSError as error:
+                raise ValueError(
+                    "renderer returned unbacked 'complete' status"
+                ) from error
+            if record.get(f"{kind}_sha256") != actual_sha256:
+                raise ValueError("renderer returned unbacked 'complete' status")
+    return "complete"
+
+
+def _record_figure_failure_safely(
+    run_dir: Path, output_dir: Path, message: str
+) -> None:
+    try:
+        from ...figures import record_figure_failure
+
+        record_figure_failure(run_dir, output_dir, message)
+    except Exception:
+        pass
 
 
 def _fixtures(
@@ -186,6 +274,23 @@ def _fixtures(
         @ gauge.transformed_precision
         @ gauge.transformed_prolongator
     )
+    expected_coarse_precision = np.diag([6.0, 8.0])
+    expected_transformed_coarse_precision = np.diag([6.0 / 25.0, 2.0])
+    expected_transformed_prolongator = np.array(
+        [
+            [2.0 / 5.0, 0.0],
+            [0.0, 1.0 / 2.0],
+            [1.0 / 5.0, 0.0],
+            [0.0, 3.0 / 2.0],
+        ]
+    )
+    coarse_via_frame = scipy.linalg.solve(
+        coarse_frames[0].T,
+        scipy.linalg.solve(
+            coarse_frames[0].T, coarse_precision.T, check_finite=False
+        ).T,
+        check_finite=False,
+    )
     metrics = {
         "GAU-01_energy_residual": _identity_metric(
             max(
@@ -254,6 +359,30 @@ def _fixtures(
             tolerance,
             "Both precision determinants agree with independent literal oracles.",
         ),
+        "GAU-01_commuting_square_residual": _identity_metric(
+            float(
+                max(
+                    np.max(np.abs(coarse_precision - expected_coarse_precision)),
+                    np.max(
+                        np.abs(
+                            transformed_coarse_precision
+                            - expected_transformed_coarse_precision
+                        )
+                    ),
+                    np.max(
+                        np.abs(transformed_coarse_precision - coarse_via_frame)
+                    ),
+                    np.max(
+                        np.abs(
+                            gauge.transformed_prolongator
+                            - expected_transformed_prolongator
+                        )
+                    ),
+                )
+            ),
+            tolerance,
+            "The transformed prolongator closes the coarse inverse-congruence commuting square.",
+        ),
         "GAU-01_ordinary_spectrum_oracle_residual": _identity_metric(
             float(
                 max(
@@ -308,8 +437,12 @@ def _fixtures(
         ),
     }
     arrays = {
+        "coarse_frames": coarse_frames,
         "coarse_precision": coarse_precision,
+        "expected_coarse_precision": expected_coarse_precision,
         "expected_generalized_eigenvalues": expected_generalized,
+        "expected_transformed_coarse_precision": expected_transformed_coarse_precision,
+        "expected_transformed_prolongator": expected_transformed_prolongator,
         "fine_coordinates": coordinates,
         "fine_frames": frames,
         "fine_laplacian": interaction.laplacian,
@@ -394,6 +527,7 @@ def run_gaussian_experiment(
     figure_dir: Path | None = None
     if config.output.render_figures:
         figure_dir = store.run_dir.parent / "figures" / store.run_dir.name
+        requested = ("gaussian_spectrum",)
         if renderer is None:
             from ...figures import render_run
 
@@ -402,33 +536,14 @@ def run_gaussian_experiment(
             figure_manifest = renderer(
                 store.run_dir,
                 figure_dir,
-                requested=("gaussian_spectrum",),
+                requested=requested,
             )
-            returned_status = getattr(figure_manifest, "status", None)
-            if returned_status == "complete":
-                figure_status = "complete"
-            elif returned_status == "failed":
-                figure_status = "failed"
-            else:
-                figure_status = "failed"
-                try:
-                    from ...figures import record_figure_failure
-
-                    record_figure_failure(
-                        store.run_dir,
-                        figure_dir,
-                        f"renderer returned invalid status: {returned_status!r}",
-                    )
-                except Exception:
-                    pass
+            figure_status = _validated_renderer_status(
+                figure_manifest, store.run_dir, figure_dir, requested
+            )
         except Exception as error:
             figure_status = "failed"
-            try:
-                from ...figures import record_figure_failure
-
-                record_figure_failure(store.run_dir, figure_dir, str(error))
-            except Exception:
-                pass
+            _record_figure_failure_safely(store.run_dir, figure_dir, str(error))
     return GaussianExperimentResult(
         run_dir=store.run_dir,
         config_hash=store.config_hash,

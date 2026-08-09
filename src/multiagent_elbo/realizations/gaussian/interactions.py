@@ -297,15 +297,15 @@ def schur_complement_precision(
     ):
         raise GaussianNumericalError("retained_vertices must be unique valid vertices")
     eliminated = tuple(vertex for vertex in range(n_vertices) if vertex not in retained)
-    if not eliminated:
-        return _readonly(value)
     retained_indices = np.concatenate(
         [np.arange(vertex * block_size, (vertex + 1) * block_size) for vertex in retained]
     )
+    rr = value[np.ix_(retained_indices, retained_indices)]
+    if not eliminated:
+        return _readonly(rr)
     eliminated_indices = np.concatenate(
         [np.arange(vertex * block_size, (vertex + 1) * block_size) for vertex in eliminated]
     )
-    rr = value[np.ix_(retained_indices, retained_indices)]
     re = value[np.ix_(retained_indices, eliminated_indices)]
     ee = value[np.ix_(eliminated_indices, eliminated_indices)]
     er = value[np.ix_(eliminated_indices, retained_indices)]
