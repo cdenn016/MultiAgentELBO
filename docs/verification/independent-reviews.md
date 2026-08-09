@@ -133,9 +133,12 @@ fix requires refreshed JUnit/run evidence and final-revision ledger rebinding.
 The broad reviewer found no Critical or Important source, mathematics, or test
 defect. The only findings were two Minors: incorrect attention final-state labels
 plus colliding DQM log-axis labels in the new figures, and the absence of a tracked
-Task 5 TDD process-evidence copy. This consolidated fix wave addresses those source
-and process findings. Post-fix scoped re-review is not preemptively claimed here,
-and final verification-ledger binding remains intentionally pending.
+Task 5 TDD process-evidence copy. The consolidated fix wave corrected the state
+labels and log ticks, made the Task 5 evidence durable, and then moved panel label
+`C` clear of every visible y-axis tick after the first scoped visual check exposed
+one residual collision. The final scoped re-review at `cc863e4` reported no
+Critical, Important, or Minor finding and approved the source for final machine
+evidence. Final verification-ledger binding remains intentionally pending.
 
 ## Residual limitations
 

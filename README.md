@@ -177,7 +177,7 @@ Run the complete test suite with:
 C:\Python314\python.exe -m pytest -q -p no:cacheprovider
 ```
 
-The current JUnit record contains 382 collected tests: 380 passed, zero failed,
+The current JUnit record contains 385 collected tests: 383 passed, zero failed,
 zero errored, and two were skipped for the Windows symlink privilege described
 below.
 

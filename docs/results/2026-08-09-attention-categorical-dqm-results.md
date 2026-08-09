@@ -206,22 +206,21 @@ each file directly with no arguments from a sanitized temporary working
 directory with `PYTHONPATH` set to the empty string. Each direct run reports
 `status=pass` and creates exactly one complete manifest.
 
-The pre-fix Task 8 JUnit evidence is
+The final post-review JUnit evidence generated on source revision `cc863e4` is
 `docs/verification/pytest-foundation.xml` with SHA-256
-`1b530f177a71fffc8758607d72ff6c9a672725b0a7408ee5b48816fed5e388e0`.
+`e4b595e859444539840dac867c3ea35c860fd599c90433800484e91678a8150c`.
 Counts were parsed from the XML rather than inferred from console progress.
 
 | Tests | Passed | Failures | Errors | Skipped | Time |
 |---:|---:|---:|---:|---:|---:|
-| 382 | 380 | 0 | 0 | 2 | 18.540 s |
+| 385 | 383 | 0 | 0 | 2 | 18.543 s |
 
-This consolidated fix added three figure regressions. The state/tick focused
+The consolidated fix added three figure regressions. The state/tick focused
 result is `2 passed, 22 deselected`; the panel-C focused result is
 `1 passed, 24 deselected`; and the plan's integrated figure/launcher/attention/
-DQM slice is `65 passed`. Because the source and test revision changed, the
-tracked JUnit above is retained as pre-fix historical evidence, not final
-post-fix closure; the coordinator must refresh the full-suite JUnit after the
-post-fix scoped re-review and before binding the final ledger.
+DQM slice is `65 passed`. After the final scoped source re-review approved the
+fix with no remaining findings, the full suite above was rerun. Final-revision
+ledger binding remains a separate control-plane step.
 
 Both skips are Windows symbolic-link cases for which the test account returned
 WinError 1314: `test_finalize_rejects_a_declared_symlink` and
@@ -234,9 +233,11 @@ executed.
 The durable review record is `docs/verification/independent-reviews.md`.
 Earlier task-scoped reviews pinned the attention gauge action, hardened DQM
 finite-difference step controls and warnings, and added positive-loss and
-monotonicity controls before this integration. The required broad whole-branch
-review occurs after the Task 8 implementation/evidence commit; its status is
-therefore deliberately pending in this Step 8 record.
+monotonicity controls before this integration. The broad whole-branch review
+found no Critical or Important source, mathematics, or test defect. Its two
+Minor figure/process findings were corrected, and the final scoped re-review at
+`cc863e4` reported no remaining findings. Verification-ledger binding remains
+deliberately separate from that source-review verdict.
 
 The results leave open arbitrary categorical families, parameter-dependent or
 learned coarse channels, continuum limits, nontrivial connections or holonomy,
