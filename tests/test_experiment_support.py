@@ -164,3 +164,38 @@ def test_validated_renderer_status_rejects_unbacked_renderer_output(
 
     with pytest.raises(ValueError, match="unbacked|invalid status"):
         validated_renderer_status(manifest, run_dir, output_dir, requested)
+
+
+def test_validated_renderer_status_controls_an_unhashable_unsupported_status(
+    tmp_path: Path,
+):
+    manifest = SimpleNamespace(status=[])
+
+    with pytest.raises(ValueError, match="invalid status"):
+        validated_renderer_status(manifest, tmp_path, tmp_path, ())
+
+
+def test_validated_renderer_status_rejects_a_publication_symlink_escape(
+    tmp_path: Path,
+):
+    run_dir = tmp_path / "run"
+    output_dir = tmp_path / "figures"
+    requested = ("first",)
+    run_dir.mkdir()
+    manifest = _renderer_manifest(run_dir, output_dir, requested)
+    outside = tmp_path / "outside.png"
+    outside.write_bytes(b"\x89PNG\r\n\x1a\noutside fixture")
+    publication = output_dir / "first.png"
+    publication.unlink()
+    try:
+        publication.symlink_to(outside)
+    except OSError as error:
+        pytest.skip(f"symlinks are unavailable: {error}")
+    payload = json.loads(manifest.manifest_path.read_text("utf-8"))
+    payload["figures"][0]["png_sha256"] = hashlib.sha256(
+        outside.read_bytes()
+    ).hexdigest()
+    manifest.manifest_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="unbacked"):
+        validated_renderer_status(manifest, run_dir, output_dir, requested)

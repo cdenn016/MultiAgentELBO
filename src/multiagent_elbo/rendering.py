@@ -22,7 +22,7 @@ def validated_renderer_status(
         status = getattr(manifest, "status")
     except Exception as error:
         raise ValueError("renderer returned unbacked status") from error
-    if status not in {"complete", "failed"}:
+    if type(status) is not str or status not in {"complete", "failed"}:
         raise ValueError(f"renderer returned invalid status: {status!r}")
 
     try:
@@ -82,11 +82,16 @@ def _validate_publication_record(record: dict[str, object], output_dir: Path) ->
     for kind in ("png", "pdf"):
         try:
             filename = record.get(kind)
-            publication = output_dir / filename if type(filename) is str else None
+            publication = (
+                (output_dir / filename).resolve(strict=True)
+                if type(filename) is str
+                else None
+            )
             if (
                 type(filename) is not str
                 or Path(filename).name != filename
                 or publication is None
+                or publication.parent != output_dir
                 or not publication.is_file()
                 or publication.stat().st_size == 0
             ):
