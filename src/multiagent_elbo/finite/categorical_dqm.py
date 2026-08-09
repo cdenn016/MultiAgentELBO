@@ -130,7 +130,8 @@ def _centered_quotient(
     if step <= _MAX_SAFE_HALF_DENOMINATOR_STEP:
         return (values_plus - values_minus) / (2.0 * step)
     half_difference = 0.5 * values_plus - 0.5 * values_minus
-    return half_difference / step
+    with np.errstate(under="ignore"):
+        return half_difference / step
 
 
 def _coordinate_perturbations(

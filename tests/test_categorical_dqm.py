@@ -137,7 +137,7 @@ def test_centered_fine_difference_avoids_overflowing_doubled_step():
         NUMERICS,
     )
 
-    with warnings.catch_warnings():
+    with warnings.catch_warnings(), np.errstate(under="warn"):
         warnings.simplefilter("error", RuntimeWarning)
         finite_difference = centered_log_probability_finite_difference(
             family, (0.0,), 1.0e308
@@ -165,7 +165,7 @@ def test_centered_pushed_difference_avoids_overflowing_doubled_step():
         NUMERICS,
     )
 
-    with warnings.catch_warnings():
+    with warnings.catch_warnings(), np.errstate(under="warn"):
         warnings.simplefilter("error", RuntimeWarning)
         finite_difference = centered_pushed_log_probability_finite_difference(
             family, (0.0,), swap, 1.0e308
