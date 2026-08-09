@@ -143,6 +143,111 @@ def test_finalize_rejects_a_missing_declared_artifact_without_completing(
     assert (store.run_dir / "manifest.json").read_bytes() == initial_manifest
 
 
+def test_finalize_rejects_deleted_config(tmp_path: Path):
+    store = RunStore.create(make_config(tmp_path), {"source": "test"})
+    (store.run_dir / "config.json").unlink()
+
+    with pytest.raises(
+        FileNotFoundError, match=r"required artifact does not exist: config\.json"
+    ):
+        store.finalize([])
+
+
+@pytest.mark.parametrize("tamper", ["recorded_hash", "resolved_config"])
+def test_finalize_rejects_tampered_config_identity(tmp_path: Path, tamper: str):
+    store = RunStore.create(make_config(tmp_path), {"source": "test"})
+    config_path = store.run_dir / "config.json"
+    payload = json.loads(config_path.read_text(encoding="utf-8"))
+    if tamper == "recorded_hash":
+        payload["config_hash"] = "0" * 64
+    else:
+        payload["resolved_config"]["run"]["seed"] = 1
+    config_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="config.json identity does not match run"):
+        store.finalize([])
+
+
+def test_finalize_rejects_an_undeclared_partial_file(tmp_path: Path):
+    store = RunStore.create(make_config(tmp_path), {"source": "test"})
+    (store.run_dir / "partial.tmp").write_text("partial", encoding="utf-8")
+
+    with pytest.raises(ValueError, match=r"undeclared run entry: partial\.tmp"):
+        store.finalize([])
+
+    manifest = json.loads((store.run_dir / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["complete"] is False
+    assert "partial.tmp" not in manifest["artifacts"]
+
+
+def test_finalize_rejects_an_undeclared_directory(tmp_path: Path):
+    store = RunStore.create(make_config(tmp_path), {"source": "test"})
+    (store.run_dir / "scratch").mkdir()
+
+    with pytest.raises(ValueError, match="undeclared run entry: scratch"):
+        store.finalize([])
+
+
+@pytest.mark.parametrize(
+    "declarations",
+    [
+        ["metrics.json", "metrics.json"],
+        ["metrics.json", "METRICS.json"],
+    ],
+)
+def test_finalize_rejects_portable_duplicate_declarations(
+    tmp_path: Path, declarations: list[str]
+):
+    store = RunStore.create(make_config(tmp_path), {"source": "test"})
+    store.write_json("metrics", {"residual": 0.0})
+
+    with pytest.raises(ValueError, match="duplicate artifact declaration"):
+        store.finalize(declarations)
+
+
+@pytest.mark.parametrize(
+    "core_name", ["config.json", "manifest.json", "CONFIG.JSON"]
+)
+def test_finalize_rejects_core_artifact_declarations(
+    tmp_path: Path, core_name: str
+):
+    store = RunStore.create(make_config(tmp_path), {"source": "test"})
+
+    with pytest.raises(
+        ValueError, match=rf"core artifact must not be declared: {core_name}"
+    ):
+        store.finalize([core_name])
+
+
+@pytest.mark.parametrize(
+    "unsafe_name", ["metrics:stream", "CON", "nul.json", "LPT1.npz"]
+)
+def test_artifact_writes_reject_ads_and_windows_reserved_names(
+    tmp_path: Path, unsafe_name: str
+):
+    store = RunStore.create(make_config(tmp_path), {"source": "test"})
+
+    with pytest.raises(ValueError, match="invalid artifact filename"):
+        store.write_json(unsafe_name, {"value": 1})
+
+
+def test_finalize_rejects_a_declared_symlink(tmp_path: Path):
+    store = RunStore.create(make_config(tmp_path), {"source": "test"})
+    target = tmp_path / "outside.json"
+    target.write_text("{}", encoding="utf-8")
+    link = store.run_dir / "linked.json"
+    try:
+        link.symlink_to(target)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"symlinks are unavailable: {error}")
+
+    with pytest.raises(
+        ValueError,
+        match=r"artifact must not be a symlink or reparse path: linked\.json",
+    ):
+        store.finalize(["linked.json"])
+
+
 def test_finalize_completes_with_an_accurate_inventory_and_blocks_later_writes(
     tmp_path: Path,
 ):
@@ -150,7 +255,7 @@ def test_finalize_completes_with_an_accurate_inventory_and_blocks_later_writes(
     store.write_json("metrics", {"residual": 0.0})
     store.write_npz("arrays", {"values": np.array([1.0, 2.0])})
 
-    store.finalize(["metrics.json", "arrays.npz"])
+    store.finalize(name for name in ("metrics.json", "arrays.npz"))
 
     manifest = json.loads((store.run_dir / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["complete"] is True

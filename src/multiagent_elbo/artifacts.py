@@ -9,12 +9,23 @@ import json
 import os
 from pathlib import Path
 import re
+import stat
 import tempfile
 from typing import Mapping
 
 import numpy as np
 
 from .config import ExperimentConfig, canonical_config_json
+
+
+_CORE_ARTIFACTS = frozenset({"config.json", "manifest.json"})
+_CORE_ARTIFACT_KEYS = frozenset(name.casefold() for name in _CORE_ARTIFACTS)
+_PORTABLE_FILENAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+_WINDOWS_RESERVED_BASENAMES = frozenset(
+    {"CON", "PRN", "AUX", "NUL"}
+    | {f"COM{index}" for index in range(1, 10)}
+    | {f"LPT{index}" for index in range(1, 10)}
+)
 
 
 @dataclass(frozen=True)
@@ -81,19 +92,34 @@ class RunStore:
 
     def finalize(self, declared_artifacts: Iterable[str]) -> Path:
         manifest = self._require_incomplete()
-        for name in declared_artifacts:
-            filename = _artifact_filename(name, "")
-            if not (self.run_dir / filename).is_file():
-                raise FileNotFoundError(
-                    f"declared artifact does not exist: {filename}"
-                )
+        declared_names = _materialize_declarations(declared_artifacts)
+        resolved_run_dir = _strict_resolved_run_dir(self.run_dir)
+        config_path = _require_owned_regular_file(
+            self.run_dir / "config.json",
+            resolved_run_dir,
+            missing_label="required",
+        )
+        _require_owned_regular_file(
+            self.run_dir / "manifest.json",
+            resolved_run_dir,
+            missing_label="required",
+        )
+        _validate_config_identity(config_path, self.config_hash)
 
-        inventory = {
-            path.name: "complete"
-            for path in sorted(self.run_dir.iterdir(), key=lambda item: item.name)
-            if path.is_file() and not path.name.endswith(".tmp")
-        }
-        inventory["manifest.json"] = "complete"
+        for filename in declared_names:
+            _require_owned_regular_file(
+                self.run_dir / filename,
+                resolved_run_dir,
+                missing_label="declared",
+            )
+
+        expected_names = _CORE_ARTIFACTS | set(declared_names)
+        actual_entries = {entry.name for entry in self.run_dir.iterdir()}
+        undeclared_entries = sorted(actual_entries - expected_names)
+        if undeclared_entries:
+            raise ValueError(f"undeclared run entry: {undeclared_entries[0]}")
+
+        inventory = {name: "complete" for name in sorted(expected_names)}
         manifest["artifacts"] = inventory
         manifest["complete"] = True
         path = self.run_dir / "manifest.json"
@@ -102,8 +128,13 @@ class RunStore:
 
     def _require_incomplete(self) -> dict[str, object]:
         manifest_path = self.run_dir / "manifest.json"
-        if not manifest_path.is_file():
-            raise RuntimeError(f"run manifest is missing: {manifest_path}")
+        resolved_run_dir = _strict_resolved_run_dir(self.run_dir)
+        try:
+            manifest_path = _require_owned_regular_file(
+                manifest_path, resolved_run_dir, missing_label="required"
+            )
+        except FileNotFoundError as error:
+            raise RuntimeError(f"run manifest is missing: {manifest_path}") from error
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         if not isinstance(manifest, dict):
             raise RuntimeError(f"run manifest is invalid: {manifest_path}")
@@ -120,10 +151,101 @@ def _sanitize_run_name(name: str) -> str:
 
 
 def _artifact_filename(name: str, suffix: str) -> str:
-    candidate = Path(name)
-    if candidate.name != name or name in {"", ".", ".."}:
-        raise ValueError("artifact name must be a single filename")
-    return name if name.endswith(suffix) else f"{name}{suffix}"
+    if type(name) is not str:
+        raise ValueError(f"invalid artifact filename: {name!r}")
+    filename = name if name.endswith(suffix) else f"{name}{suffix}"
+    if (
+        _PORTABLE_FILENAME.fullmatch(filename) is None
+        or filename.endswith(".")
+        or filename.split(".", 1)[0].upper() in _WINDOWS_RESERVED_BASENAMES
+    ):
+        raise ValueError(f"invalid artifact filename: {name}")
+    return filename
+
+
+def _materialize_declarations(declared_artifacts: Iterable[str]) -> tuple[str, ...]:
+    names = tuple(_artifact_filename(name, "") for name in declared_artifacts)
+    seen: set[str] = set()
+    for name in names:
+        portable_key = name.casefold()
+        if portable_key in _CORE_ARTIFACT_KEYS:
+            raise ValueError(f"core artifact must not be declared: {name}")
+        if portable_key in seen:
+            raise ValueError(f"duplicate artifact declaration: {name}")
+        seen.add(portable_key)
+    return names
+
+
+def _strict_resolved_run_dir(run_dir: Path) -> Path:
+    try:
+        if _is_reparse_path(run_dir):
+            raise ValueError(f"run directory must not be a symlink or reparse path: {run_dir}")
+        resolved = run_dir.resolve(strict=True)
+    except FileNotFoundError as error:
+        raise RuntimeError(f"run directory is missing: {run_dir}") from error
+    if not resolved.is_dir():
+        raise RuntimeError(f"run path is not a directory: {run_dir}")
+    return resolved
+
+
+def _require_owned_regular_file(
+    path: Path, resolved_run_dir: Path, *, missing_label: str
+) -> Path:
+    try:
+        path_stat = path.lstat()
+    except FileNotFoundError as error:
+        raise FileNotFoundError(
+            f"{missing_label} artifact does not exist: {path.name}"
+        ) from error
+    if _is_reparse_stat(path, path_stat):
+        raise ValueError(
+            f"artifact must not be a symlink or reparse path: {path.name}"
+        )
+    if not stat.S_ISREG(path_stat.st_mode):
+        raise ValueError(f"artifact is not a regular file: {path.name}")
+    resolved = path.resolve(strict=True)
+    if resolved.parent != resolved_run_dir:
+        raise ValueError(f"artifact is not owned by run directory: {path.name}")
+    return resolved
+
+
+def _is_reparse_path(path: Path) -> bool:
+    try:
+        return _is_reparse_stat(path, path.lstat())
+    except FileNotFoundError:
+        return False
+
+
+def _is_reparse_stat(path: Path, path_stat: os.stat_result) -> bool:
+    if stat.S_ISLNK(path_stat.st_mode):
+        return True
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    file_attributes = getattr(path_stat, "st_file_attributes", 0)
+    if reparse_flag and file_attributes & reparse_flag:
+        return True
+    is_junction = getattr(path, "is_junction", None)
+    return bool(is_junction is not None and is_junction())
+
+
+def _validate_config_identity(path: Path, config_hash: str) -> None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict) or not isinstance(
+            payload.get("resolved_config"), dict
+        ):
+            raise ValueError("invalid config payload")
+        canonical = json.dumps(
+            payload["resolved_config"],
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+            allow_nan=False,
+        )
+    except (OSError, ValueError, TypeError, json.JSONDecodeError) as error:
+        raise RuntimeError("config.json identity does not match run") from error
+    recomputed_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    if payload.get("config_hash") != config_hash or recomputed_hash != config_hash:
+        raise RuntimeError("config.json identity does not match run")
 
 
 def _reject_existing_artifact(path: Path) -> None:
