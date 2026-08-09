@@ -93,6 +93,8 @@ def vfe_channel_decomposition(
     q: ProbabilityMeasure, pair: MeasurePair, channel: MarkovKernel
 ) -> VfeChannelResult:
     """Compute the finite KL chain rule for recognition and posterior laws."""
+    if not isinstance(q, ProbabilityMeasure):
+        raise TypeError("q must be a ProbabilityMeasure")
     posterior = pair.posterior()
     if q.labels != posterior.labels or q.labels != channel.source_labels:
         raise ValueError("recognition, posterior, and channel source labels must match")

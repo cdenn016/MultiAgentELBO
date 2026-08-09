@@ -109,6 +109,21 @@ def test_kl_requires_probability_measures_at_runtime(invalid_argument: str):
         kl_divergence(q, p)  # type: ignore[arg-type]
 
 
+def test_free_energy_rejects_a_merely_finite_recognition_law():
+    q = FiniteMeasure(LABELS, (0.2, 0.3, 0.1, 0.4), NUMERICS)
+
+    with pytest.raises(TypeError, match="q must be a ProbabilityMeasure"):
+        free_energy(q, exact_pair())  # type: ignore[arg-type]
+
+
+def test_vfe_channel_rejects_a_merely_finite_recognition_law():
+    q = FiniteMeasure(LABELS, (0.2, 0.3, 0.1, 0.4), NUMERICS)
+    identity = MarkovKernel(LABELS, LABELS, np.eye(4), NUMERICS)
+
+    with pytest.raises(TypeError, match="q must be a ProbabilityMeasure"):
+        vfe_channel_decomposition(q, exact_pair(), identity)  # type: ignore[arg-type]
+
+
 def test_block_update_matches_collective_vfe_difference_with_fixed_outside_marginal():
     posterior = np.array([[0.10, 0.20], [0.30, 0.40]])
     q_before = np.array([[0.21, 0.13], [0.14, 0.52]])
