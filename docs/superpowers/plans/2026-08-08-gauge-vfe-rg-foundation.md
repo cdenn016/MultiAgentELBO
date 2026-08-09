@@ -6,7 +6,7 @@
 
 **Architecture:** A finite categorical probability core implements measure-pair pushforward, exact VFE decompositions, Fisher contraction, and full finite interactions. Gauge tests are representation metamorphics, while all matrix-weighted Gaussian/RG machinery is isolated under `realizations/gaussian`. Thin launchers resolve frozen typed configuration and call importable experiment APIs.
 
-**Tech Stack:** Python 3.14, NumPy 2.x, SciPy 1.x, Matplotlib 3.x, pytest 8.x, standard-library dataclasses/JSON/hashlib/pathlib.
+**Tech Stack:** Python 3.14, NumPy 2.x, SciPy 1.x, Matplotlib 3.x, pytest 9.x, standard-library dataclasses/JSON/hashlib/pathlib.
 
 ## Global Constraints
 
@@ -17,7 +17,7 @@
 - Universal finite probability code must not import Gaussian realization modules.
 - A fixed generative law must never accept recognition state as an input.
 - Every coarse identity applies one declared normalized Markov channel to all compared measures.
-- Retained sparse/pairwise approximations always report an explicit full-space residual.
+- Retained sparse/pairwise approximations always report an explicit full-space residual in the theorem's coordinate `G` norm; weighted L2 may be recorded only as a separately named diagnostic.
 - Gaussian singularity is an error unless a distinct repaired model is explicitly declared; no silent pseudoinverse.
 - Config validation occurs before RNG creation and before artifact-directory creation.
 - Resolved configuration is frozen, canonicalized once, hashed once, and recorded in every run manifest.
@@ -180,7 +180,7 @@ Commit message: `feat: establish typed reproducible experiment foundation`
 
 - [ ] **Step 1: Write failing finite-measure tests from literal fixtures**
 
-Use support `("00", "01", "10", "11")`, reference masses `(0.25, 0.25, 0.25, 0.25)`, likelihood masses `(0.2, 0.4, 0.6, 0.8)`, and deterministic channel rows `A,A,B,B`. Assert fine and coarse evidence both equal literal `2.0`, coarse reference is `(0.5, 0.5)`, coarse likelihood is `(0.6, 1.4)`, and a non-row-stochastic matrix is rejected.
+Use support `("00", "01", "10", "11")`, reference masses `rho=(0.25,0.25,0.25,0.25)`, unnormalized evidence-submeasure masses `m_o=(0.2,0.4,0.6,0.8)`, and deterministic channel rows `A,A,B,B`. Assert fine and coarse evidence both equal literal `2.0`, coarse reference is `(0.5,0.5)`, coarse evidence submeasure is `(0.6,1.4)`, fine density `dm_o/drho` is `(0.8,1.6,2.4,3.2)`, coarse density is `(1.2,2.8)`, and a non-row-stochastic matrix is rejected.
 
 - [ ] **Step 2: Run finite-measure tests and confirm RED**
 
@@ -190,7 +190,7 @@ Expected: import failure for the missing finite package.
 
 - [ ] **Step 3: Implement validated finite measures and kernels**
 
-Preserve ordered labels and validate uniqueness. `FiniteMeasure` permits finite nonnegative mass; `ProbabilityMeasure` additionally requires total mass one within configured tolerance. `MarkovKernel` requires finite nonnegative entries and row sums one. Pushforward is right multiplication by the kernel matrix. `MeasurePair.posterior()` normalizes its finite positive likelihood measure and refuses zero evidence.
+Preserve ordered labels and validate uniqueness. `FiniteMeasure` permits finite nonnegative mass; `ProbabilityMeasure` additionally requires total mass one within configured tolerance. `MarkovKernel` requires finite nonnegative entries and row sums one. Pushforward is right multiplication by the kernel matrix. `MeasurePair(reference, evidence_measure)` enforces `m_o << rho`; `posterior()` normalizes the finite positive evidence submeasure and refuses zero evidence. Never call `m_o` a pointwise likelihood.
 
 - [ ] **Step 4: Verify finite-measure GREEN**
 
@@ -209,11 +209,11 @@ assert result.conditional_kl == pytest.approx(fine_kl - coarse_kl)
 assert result.residual == pytest.approx(0.0, abs=1e-12)
 ```
 
-Add a support-violation case that returns `math.inf` and identifies the offending state. Add a recoverable channel control with zero conditional KL.
+Add a support-violation case that returns a structured extended-real result with `fine_vfe=math.inf`, the offending state, and `residual=None`; do not evaluate `inf-inf`. Add a recoverable channel control with finite zero conditional KL and zero ordinary residual.
 
 - [ ] **Step 6: Write a failing local-to-collective block-update test**
 
-Use a literal two-binary-variable posterior table `[[0.10,0.20],[0.30,0.40]]`. Construct `q_before` and `q_after` with the same second-variable marginal `(0.35,0.65)` and literal conditionals `((0.6,0.4),(0.2,0.8))` versus `((0.4,0.6),(0.5,0.5))`. In the test, compute the expected outside-weighted conditional KL difference by explicit scalar expressions, not a production helper, and assert equality to the collective KL difference.
+Use a literal two-binary-variable posterior table `[[0.10,0.20],[0.30,0.40]]`, with rows the block variable `y0`, columns the outside variable `y1`, and `block_axes=(0,)`. The conditional pairs are `q(y0|y1=j)`. With outside marginal `(0.35,0.65)`, use `q_before=[[0.21,0.13],[0.14,0.52]]` from conditionals `((0.6,0.4),(0.2,0.8))` and `q_after=[[0.14,0.325],[0.21,0.325]]` from `((0.4,0.6),(0.5,0.5))`. In the test, compute the expected outside-weighted conditional posterior-KL difference by explicit scalar expressions, not a production helper, and assert both it and the collective VFE difference equal `-0.06702325206172067`. The identity is for a difference; evidence and local-normalizer constants cancel.
 
 - [ ] **Step 7: Run VFE tests and confirm RED**
 
@@ -223,7 +223,7 @@ Expected: missing VFE interface failures.
 
 - [ ] **Step 8: Implement VFE and block decompositions**
 
-Compute KL only on `q>0`; return infinity when `q>0` and `p=0`. Build reverse conditionals from each source measure and the shared channel. The conditional-KL term is weighted by the coarse recognition law. For the block identity, require exactly equal outside marginals within tolerance and compute both sides independently.
+Compute KL only on `q>0`; return infinity with an undefined numeric residual when `q>0` and `p=0`. Build reverse conditionals from each source measure and the shared channel. The conditional-KL term is weighted by the coarse recognition law. For the reduced block identity, require exactly equal outside marginals and compute both sides independently. If a future approximate mode is added, it must retain and report the outside-marginal KL change instead of asserting the reduced identity.
 
 - [ ] **Step 9: Verify Task 2 GREEN and regression suite**
 
@@ -261,7 +261,7 @@ Commit message: `feat: add exact finite VFE laboratory core`
 
 - [ ] **Step 1: Write failing Fisher tests with literal oracles**
 
-At a uniform four-state law, use statistic `t=(-1,0,1,2)`, centered score `(-1.5,-0.5,0.5,1.5)`, and channel `A,A,B,B`. Assert fine Fisher `1.25`, coarse score `(-1,1)`, coarse Fisher `1.0`, conditional-covariance defect `0.25`, and residual zero. Add an identity-channel control with zero defect and a constant-score rejection case.
+At a uniform four-state law, use statistic `t=(-1,0,1,2)`, centered score `(-1.5,-0.5,0.5,1.5)`, and channel `A,A,B,B`. Assert fine Fisher `1.25`, coarse score `(-1,1)`, coarse Fisher `1.0`, conditional-covariance defect `0.25`, and residual zero. Add an identity-channel control with zero defect, accept the zero constant score as a valid zero tangent, and reject a nonzero constant vector because it is not centered. Type this as the finite conditional-expectation/covariance identity for a supplied centered score and fixed parameter-independent kernel; the vector test alone does not establish DQM.
 
 - [ ] **Step 2: Run Fisher tests and confirm RED**
 
@@ -279,7 +279,7 @@ Run the command from Step 2. Expected: all tests pass.
 
 - [ ] **Step 5: Write failing interaction tests**
 
-Use three independent uniform spin axes `{-1,+1}` and values `phi(x)=0.7*x1*x2*x3`. Assert the empty component is zero, all node/pair components are zero, the triple component equals `phi`, full reconstruction residual is below `1e-12`, and the pairwise-retained residual norm is literal `0.7`. Add a nonuniform binary product-reference fixture to catch accidental uniform averaging.
+Use three independent uniform spin axes `{-1,+1}` and values `phi(x)=0.7*x1*x2*x3`. Assert the empty component is zero, all node/pair components are zero, the triple component equals `phi`, and full reconstruction residual is below `1e-12`. Add a discriminating four-spin pairwise-retained oracle `phi=0.3*x1*x2*x3+0.4*x1*x2*x4`: its theorem-coordinate `G` residual norm is `0.3+0.4=0.7`, its quotient sup norm is `0.7`, and its separately named weighted L2 diagnostic is `sqrt(0.3**2+0.4**2)=0.5`. Add a nonuniform binary product-reference fixture to catch accidental uniform averaging.
 
 - [ ] **Step 6: Run interaction tests and confirm RED**
 
@@ -289,11 +289,11 @@ Expected: missing interaction interface failure.
 
 - [ ] **Step 7: Implement full subset decomposition and retained projection**
 
-For each subset, conditionally average over complement axes against the declared product reference and apply Boolean inclusion-exclusion. Store components by sorted tuple of axis indices, reconstruct by broadcasting, and report omitted components plus their weighted L2 norm.
+For each subset, conditionally average over complement axes against the declared product reference and apply Boolean inclusion-exclusion. Store components by sorted tuple of axis indices, reconstruct by broadcasting, and report omitted components, the theorem-coordinate norm `sum_A ||g_A||_infinity`, the action quotient sup norm, and a separately labeled weighted L2 diagnostic.
 
 - [ ] **Step 8: Write failing finite gauge metamorphic tests**
 
-Permute each binary site's labels independently in a joint law, recognition law, and deterministic coarse channel. Assert invariant evidence, KL, VFE, conditional-KL loss, and full-interaction reconstruction norm after transforming all typed objects. Add a negative control that transforms the recognition law but not the generative measure and therefore changes VFE.
+For row-law permutation matrices use `q'=q P_X`, `p'=p P_X`, `rho'=rho P_X`, `m'=m P_X`, and `K'=P_X.T K P_Z`, so `q'K'=(qK)P_Z`. Push every axis reference forward, pull the action/value array back, and intertwine the retained projection. Assert invariant evidence, KL, VFE, conditional-KL loss, and full-interaction residuals. Pin the negative control to Task 2: flip the first bit of `q` only, giving `q'=(0.1,0.4,0.2,0.3)`, and assert `KL(q'||p)-KL(q||p)=(log(2)-log(3))/10=-0.04054651081081644`. Scope this laboratory to componentwise finite Borel relabelings, not arbitrary gauge fields or holonomy.
 
 - [ ] **Step 9: Implement finite relabeling helpers and verify interaction/gauge GREEN**
 
@@ -311,7 +311,7 @@ The launcher defines `RUN`, `THEORY`, `NUMERICS`, and `OUTPUT`. `main()` resolve
 
 - [ ] **Step 12: Document the hypothesis registry**
 
-Write complete FIN-01, FIN-02, FIN-03, INF-01, INT-01, GAU-01, GAU-02, and deferred RG-01 entries with prediction, null, operationalization, control, support threshold, refutation threshold, inconclusive rule, and theory source pointer.
+Write complete FIN-01, FIN-02, FIN-03, INF-01, INT-01, GAU-01, GAU-02, and deferred RG-01 entries with epistemic status, prediction, null, operationalization, control, support threshold, refutation threshold, inconclusive rule, and theory source pointer. FIN-01/02/03, INF-01, INT-01, finite relabeling invariance, generalized-spectrum congruence, and Gaussian aggregation under its declared family are established conditional identities whose tests verify this implementation; the Gaussian interaction-family declaration is a hypothesis; RG attraction/universality remains conjectural or open.
 
 - [ ] **Step 13: Verify Task 3 GREEN and same-seed determinism**
 
@@ -361,11 +361,13 @@ For scalar self terms `(1,2,3)`, edges `w12=4`, `w23=5`, and partition `{0,1}|{2
  [0.0, -5.0, 8.0]]
 ```
 
-and the coarse precision is `[[8.0,-5.0],[-5.0,8.0]]`. Assert the internal `w12` contribution cancels and the cut `w23` remains. Reject an indefinite self/edge construction without adding jitter.
+and the coarse precision is `[[8.0,-5.0],[-5.0,8.0]]`. Use code edges `(0,1):4` and `(1,2):5` with partition `{0,1}|{2}`. Assert the internal first edge cancels and the cut second edge remains. Name this operation hard identification/Galerkin aggregation, not Gaussian marginalization; a Schur-complement marginal is a distinct negative control. Reject an indefinite self/edge construction without adding jitter.
 
 - [ ] **Step 2: Write failing Gaussian gauge tests**
 
-Use a two-agent, two-dimensional SPD system and deterministic invertible frame matrices with non-unit determinant. Transform precision and Laplacian by matched block congruence. Assert one literal quadratic-energy control and seeded metamorphic residuals below `1e-10`; assert generalized eigenvalues of `(L,Lambda)` agree below `1e-9`; assert ordinary eigenvalues generally differ as the negative control.
+Use `W=[[1,1/5],[1/5,2]]`, `A1=diag(2,3)`, `A2=diag(4,5)`, `L=[[W,-W],[-W,W]]`, `Lambda=diag(A1,A2)+L`, positive-orientation local frame matrix `T=diag(2,1,1,3)`, and `x=(1,2,-1,1)`. With coordinates `x'=T x`, transform both operators by inverse congruence `Lambda'=T^{-T}Lambda T^{-1}` and `L'=T^{-T}LT^{-1}`. Assert `x^T Lambda x=x'^T Lambda' x'=149/5` and the corresponding `L` energy is `34/5`. Assert matched generalized roots agree below `1e-9`. Pin the negative control: ordinary `L` spectra are `{0,0,3±sqrt(29)/5}` before and `{0,0,(125±sqrt(1513))/72}` after. Do not parse transformed `L'` back into row-sum edge blocks.
+
+Add a commuting-square aggregation control. If `y=S z`, `y'=T_f y`, and `z'=T_c z`, transform `S'=T_f S T_c^{-1}` and assert `S'^T Lambda' S'=T_c^{-T}(S^T Lambda S)T_c^{-1}`. Holding `S` fixed is permitted only when `T_f S=S T_c`.
 
 - [ ] **Step 3: Run Gaussian tests and confirm RED**
 
@@ -375,7 +377,7 @@ Expected: missing Gaussian package failure.
 
 - [ ] **Step 4: Implement stable Gaussian realization**
 
-Validate symmetry and PSD edge/self blocks with `scipy.linalg.eigh`; require assembled precision SPD with Cholesky. Use `cho_factor`/`cho_solve`, `slogdet` only after SPD validation, and `scipy.linalg.eigvalsh(L, Lambda)` for regular pencils. Record minimum eigenvalues, condition numbers, and residuals. Never call `pinv`.
+Validate finiteness and symmetry explicitly before calling `scipy.linalg.eigh`; then validate PSD edge/self blocks and require assembled precision SPD with Cholesky. Use `cho_factor`/`cho_solve`, `slogdet` only after SPD validation, and `scipy.linalg.eigvalsh(L, Lambda)` for regular pencils. Record raw minimum eigenvalues and condition numbers as chart-dependent diagnostics, not gauge invariants. Never call `pinv`.
 
 - [ ] **Step 5: Verify Gaussian GREEN**
 
@@ -411,7 +413,7 @@ Run from the repository root:
 & "C:\Python314\python.exe" "C:\Users\chris and christine\.codex\skills\verification\scripts\verification_gate.py" start --cwd . --ledger .verification/ledger.json --mode closure
 ```
 
-Add one claim each for strict config/side-effect ordering, evidence/VFE identities, local-global identity, Fisher contraction, full-interaction reconstruction/residual, finite gauge metamorphics, Gaussian aggregation, Gaussian gauge invariants, atomic/reproducible artifacts, and both launcher integrations. Use current JUnit and run artifacts for code/experiment evidence; use the frozen theorem derivations only for mathematical provenance.
+Add one implementation claim each for strict config/side-effect ordering, evidence/VFE identities, local-global identity, Fisher contraction, full-interaction reconstruction/residual, finite relabeling metamorphics, Gaussian aggregation, Gaussian frame invariants, atomic/reproducible artifacts, and both launcher integrations. Use current JUnit and run artifacts for code/experiment evidence. If mathematical claims are included, they require current derivation evidence from the frozen theory snapshot and must remain distinct from the code claims; JUnit and numerical agreement cannot close universal mathematics.
 
 - [ ] **Step 11: Validate the ledger against the final live revision**
 

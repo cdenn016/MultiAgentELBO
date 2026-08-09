@@ -19,7 +19,7 @@ The user-facing workflow has no command-line interface. Every run begins from an
 - The fixed normalized generative law never takes a recognition law or posterior as input.
 - Local agent and block objectives are coordinate views of one joint VFE; they are not summed as independent global objectives.
 - A coarse operation pushes the reference measure, evidence measure, recognition law, and posterior through the same declared normalized Markov channel.
-- Full finite interaction closure and retained sparse/pairwise approximation are separate. Every retained approximation reports its exact residual.
+- Full finite interaction closure and retained sparse/pairwise approximation are separate. Every retained approximation reports its exact residual in the theorem's coordinate `G` norm; weighted L2 is only a separately named diagnostic.
 - Gauge transformations are passive coordinate changes. Invariants must be checked against transformed representations of the same object.
 - Gaussian information-form, Schur, determinant, generalized-pencil, and matrix-weighted graph claims remain under `realizations/gaussian/`.
 - Singular Gaussian rays are not silently repaired with pseudoinverses or pseudodeterminants.
@@ -49,7 +49,7 @@ Track the supplied theory snapshot without altering it, ignore generated caches/
 
 ### Milestone 1 — exact finite laboratory
 
-Deliver a click-to-run finite categorical experiment over three binary agents. It must verify normalized measure-pair pushforward, evidence preservation, the exact VFE chain-rule gap, a local-to-collective block update identity, DQM score/Fisher contraction, and a full-interaction decomposition with explicit retained residual.
+Deliver a click-to-run finite categorical experiment over three binary agents. It must verify normalized measure-pair pushforward, evidence preservation, the exact VFE chain-rule gap, a local-to-collective block update identity, the conditional-score/Fisher contraction identity for a declared centered score, and a full-interaction decomposition with explicit retained residual. The finite vector check does not by itself establish DQM.
 
 ### Milestone 2 — gauge and Gaussian realization
 
@@ -119,7 +119,7 @@ Named RNG streams are derived deterministically from one seed using `numpy.rando
 
 `FiniteMeasure` stores a labeled finite support and nonnegative mass vector. `MarkovKernel` stores source/target labels and a row-stochastic matrix. Constructors validate finiteness, support identity, nonnegativity, and normalization where required.
 
-`MeasurePair(reference, likelihood)` represents `rho` and finite positive `m = exp(-H) rho`. `pushforward(kernel)` applies the same channel to both. Evidence is `m.total_mass`; the effective action is `-log(dm/drho)` only on positive coarse reference support.
+`MeasurePair(reference, evidence_measure)` represents `rho` and the finite positive evidence submeasure `m_o = exp(-H_o) rho`, and enforces `m_o << rho`. `pushforward(kernel)` applies the same channel to both. Evidence is `m_o.total_mass`; the effective action is `-log(dm_o/drho)` only on positive coarse reference support. Pointwise likelihood density and evidence-submeasure mass are never conflated.
 
 ### 6.3 Exact VFE
 
@@ -132,28 +132,28 @@ For a common channel `C`, the implementation reports:
 - fine VFE;
 - coarse VFE of `qC` against `piC`;
 - conditional KL between reverse conditionals of `q` and `pi`;
-- the residual `fine - coarse - conditional_kl`.
+- the residual `fine - coarse - conditional_kl` on the finite branch.
 
-Zero-mass branches are explicit. Infinite extended values are represented as `math.inf`; equality of two infinite values never licenses a recovery conclusion.
+Zero-mass branches are explicit. Infinite extended values are represented as `math.inf`; an `inf-inf` residual is recorded as undefined rather than evaluated, and equality of two infinite values never licenses a recovery conclusion.
 
 ### 6.4 Local-to-collective coordinate identity
 
-The finite laboratory disintegrates a joint posterior into a selected block and outside state. Two recognition laws share the outside marginal and differ only in the block conditional. The result reports the collective VFE difference and the outside-averaged conditional block-VFE difference. Their residual is the oracle; local VFEs are never summed over overlapping blocks.
+The finite laboratory disintegrates a joint posterior into a selected block and outside state. Two recognition laws share exactly the same outside marginal and differ only in the block conditional. The result reports the collective VFE difference and the outside-averaged conditional block-VFE difference. Their residual is the oracle; local VFEs are never summed over overlapping blocks. An approximate-outside mode, if later added, must retain the outside-marginal KL change.
 
 ### 6.5 Fisher contraction
 
-A finite parametric exponential tilt supplies a centered analytic score. The coarse score is computed by conditional expectation under the joint law induced by the channel. The laboratory reports fine Fisher information, coarse Fisher information, expected conditional score covariance, and the matrix residual. A recoverable-score control must have zero defect; an information-losing channel must have positive defect.
+A declared centered score for a finite parametric family is pushed through a fixed parameter-independent channel. The coarse score is computed by conditional expectation under the induced joint law. The laboratory reports fine Fisher information, coarse Fisher information, expected conditional score covariance, and the matrix residual. A recoverable-score control must have zero defect; an information-losing channel must have positive defect; the zero score is a valid zero tangent.
 
 ### 6.6 Full finite interactions
 
-Against a declared product reference, all nonempty-subset Hoeffding/Mobius components are extracted and reassembled. The exact reconstruction residual must vanish. A retained order (for example pairwise) is an explicit projection; omitted components and their norm are persisted. A negative control must demonstrate a nonzero retained residual after a coarse operation that generates a higher-order interaction.
+Against a declared product reference, all nonempty-subset Hoeffding/Mobius components are extracted and reassembled. The exact reconstruction residual must vanish. A retained order (for example pairwise) is an explicit projection; omitted components, the coordinate norm `sum_A ||g_A||_infinity`, and separately named quotient-sup and weighted-L2 diagnostics are persisted. A negative control must demonstrate a nonzero retained residual.
 
 ### 6.7 Gaussian realization
 
 The Gaussian adapter builds an SPD precision from PSD self terms and symmetric PSD edge weights. Linear systems and log determinants use Cholesky or symmetric generalized-eigenvalue routines; explicit inverses are avoided. It implements:
 
-- `Lambda_c = S.T @ Lambda @ S`;
-- block-diagonal passive frame changes applied by congruence;
+- hard-identification/Galerkin aggregation `Lambda_c = S.T @ Lambda @ S`, explicitly distinct from Schur-complement Gaussian marginalization;
+- block-diagonal passive frame changes applied by inverse congruence, with aggregation maps transformed in the same commuting square;
 - scalar quadratic-energy invariance;
 - generalized spectrum of `(L, Lambda)` under matched congruence;
 - the flat aggregation formulas and internal-edge cancellation.
@@ -185,17 +185,17 @@ Every run owns `artifacts/<run-name>/<config-hash>-<seed>/`. Existing completed 
 
 JSON and NPZ publication uses sibling temporary files, flush/fsync where available, and `os.replace`. One provenance object is reused across all files. Diagnostics collection and figure rendering are independent toggles.
 
-## 9. Pre-registered first hypotheses
+## 9. Pre-registered claim and experiment registry
 
 | ID | Status | Prediction and null | Primary observable | Closure rule |
 |---|---|---|---|---|
-| FIN-01 | theorem implementation | A common normalized channel preserves evidence mass; null is nonzero change. | `abs(Z_fine-Z_coarse)` | verified only by exact/literal finite oracle plus passing test |
-| FIN-02 | theorem implementation | Fine VFE equals coarse VFE plus conditional KL; null is nonzero residual. | chain-rule residual | verified by hand-derived fixture and independent implementation paths |
-| FIN-03 | theorem implementation | A block update with fixed outside marginal has the same local and collective VFE difference. | delta residual | verified by enumerated joint fixture |
-| INF-01 | theorem implementation | Fisher loss equals conditional score covariance and is PSD. | matrix residual and minimum eigenvalue | verified by analytic categorical score and losing/recoverable controls |
-| INT-01 | theorem implementation | Full finite interactions reconstruct exactly; a retained pairwise space can fail to close. | reconstruction and truncation norms | exact reconstruction plus a nonzero negative-control residual |
-| GAU-01 | theorem implementation | Passive frame changes preserve quadratic energy and matched generalized spectrum. | energy/spectrum residuals | hand-derived scalar control plus seeded GL(K) metamorphics |
-| GAU-02 | Gaussian proposition implementation | Flat aggregation annihilates internal edges and adds cut weights. | coarse-block residuals | literal two-cluster matrix fixture |
+| FIN-01 | established conditional identity; implementation check | A common normalized channel preserves evidence mass; null is nonzero change. | `abs(Z_fine-Z_coarse)` | implementation verified only by exact/literal finite oracle plus passing current test |
+| FIN-02 | established conditional identity; implementation check | Fine VFE equals coarse VFE plus conditional KL on the finite branch; null is nonzero residual. | chain-rule residual or structured infinite branch | implementation verified by hand-derived fixture and independent paths |
+| FIN-03 | established conditional identity; implementation check | A block update with exactly fixed outside marginal has the same local and collective VFE difference. | delta residual | implementation verified by enumerated joint fixture |
+| INF-01 | established conditional identity; implementation check | Fisher loss equals conditional score covariance and is PSD for a declared centered score. | matrix residual and minimum eigenvalue | implementation verified by analytic categorical score and losing/recoverable controls |
+| INT-01 | established full-space identity plus retained-model diagnostic | Full finite interactions reconstruct exactly; a retained pairwise space can fail to close. | reconstruction and theorem-coordinate truncation norms | exact reconstruction plus a nonzero negative-control residual |
+| GAU-01 | established coordinate identity; implementation check | Passive frame changes preserve quadratic energy and matched generalized spectrum under inverse congruence. | energy/spectrum residuals | hand-derived control plus seeded positive-orientation GL(K) metamorphics |
+| GAU-02 | established conditional on the declared Gaussian interaction family | Flat Galerkin aggregation annihilates internal edges and adds cut weights. | coarse-block residuals | literal two-cluster matrix fixture and Schur-complement negative control |
 | RG-01 | conjecture attack, later | Declared scalarized Gaussian rays may attract in a stated basin. | ray angle, normalized distance, remainder, scheme dispersion | never `EVIDENCE_VERIFIED` as a universal claim from finite trends |
 
 Every experiment records supports/refutes/inconclusive thresholds before execution and carries a named control. A failed theorem-implementation check diagnoses the implementation or its applicability assumptions; it does not refute the theorem until those are independently cleared.
