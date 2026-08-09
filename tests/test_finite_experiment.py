@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -331,6 +333,75 @@ def test_renderer_failure_leaves_numerical_status_and_semantic_bytes_unchanged(
     )
     assert failure["status"] == "failed"
     assert failure["message"] == "injected renderer failure"
+
+
+def _write_finite_figure_manifest(
+    run_dir: Path, output_dir: Path, requested: tuple[str, ...]
+) -> SimpleNamespace:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    png = output_dir / "finite-identity.png"
+    pdf = output_dir / "finite-identity.pdf"
+    png.write_bytes(b"\x89PNG\r\n\x1a\nfixture")
+    pdf.write_bytes(b"%PDF-1.7\nfixture")
+    manifest_path = output_dir / "figure-manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "figures": [
+                    {
+                        "name": "finite_identity",
+                        "png": png.name,
+                        "png_sha256": hashlib.sha256(png.read_bytes()).hexdigest(),
+                        "pdf": pdf.name,
+                        "pdf_sha256": hashlib.sha256(pdf.read_bytes()).hexdigest(),
+                    }
+                ],
+                "message": None,
+                "requested": list(requested),
+                "run_dir": str(run_dir.resolve()),
+                "status": "complete",
+            }
+        ),
+        encoding="utf-8",
+    )
+    return SimpleNamespace(
+        status="complete",
+        run_dir=run_dir,
+        output_dir=output_dir,
+        requested=requested,
+        manifest_path=manifest_path,
+    )
+
+
+def test_finite_runner_records_a_status_only_renderer_result_as_unbacked(
+    tmp_path: Path,
+):
+    result = run_finite_experiment(
+        experiment_config(tmp_path, collect_diagnostics=False, render_figures=True),
+        renderer=lambda *_args, **_kwargs: SimpleNamespace(status="complete"),
+    )
+
+    assert result.status == "pass"
+    assert result.figure_status == "failed"
+    failure = json.loads((result.figure_dir / "figure-manifest.json").read_text("utf-8"))
+    assert "unbacked" in failure["message"]
+
+
+def test_finite_runner_records_a_wrong_image_hash_as_unbacked(tmp_path: Path):
+    def renderer(run_dir: Path, output_dir: Path, *, requested: tuple[str, ...]) -> object:
+        manifest = _write_finite_figure_manifest(run_dir, output_dir, requested)
+        (output_dir / "finite-identity.png").write_bytes(b"\x89PNG modified")
+        return manifest
+
+    result = run_finite_experiment(
+        experiment_config(tmp_path, collect_diagnostics=False, render_figures=True),
+        renderer=renderer,
+    )
+
+    assert result.status == "pass"
+    assert result.figure_status == "failed"
+    failure = json.loads((result.figure_dir / "figure-failure.json").read_text("utf-8"))
+    assert "unbacked" in failure["message"]
 
 
 def test_secondary_failure_manifest_error_cannot_invalidate_finalized_numerics(

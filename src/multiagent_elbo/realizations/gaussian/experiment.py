@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-import hashlib
-import json
 import math
 from pathlib import Path
 from types import MappingProxyType
@@ -15,6 +13,7 @@ import scipy.linalg
 
 from ...artifacts import RunStore
 from ...config import ExperimentConfig, config_sha256
+from ...rendering import record_figure_failure_safely, validated_renderer_status
 from ...runtime import RngStreams, collect_provenance
 from .gauge import apply_frame_change, generate_positive_orientation_frames
 from .interactions import (
@@ -78,91 +77,6 @@ def _negative_control_metric(
         assessment_scope="implementation_check",
         theorem_status="negative_control",
     )
-
-
-def _validated_renderer_status(
-    manifest: object,
-    run_dir: Path,
-    output_dir: Path,
-    requested: tuple[str, ...],
-) -> Literal["complete", "failed"]:
-    """Validate that a renderer status is backed by its on-disk manifest."""
-    status = getattr(manifest, "status", None)
-    if status not in {"complete", "failed"}:
-        raise ValueError(f"renderer returned invalid status: {status!r}")
-    try:
-        returned_run_dir = Path(getattr(manifest, "run_dir")).resolve()
-        returned_output_dir = Path(getattr(manifest, "output_dir")).resolve()
-        returned_requested = tuple(getattr(manifest, "requested"))
-        manifest_path = Path(getattr(manifest, "manifest_path")).resolve(strict=True)
-    except (AttributeError, TypeError, OSError) as error:
-        raise ValueError(f"renderer returned unbacked {status!r} status") from error
-    resolved_run_dir = run_dir.resolve()
-    resolved_output_dir = output_dir.resolve()
-    if (
-        returned_run_dir != resolved_run_dir
-        or returned_output_dir != resolved_output_dir
-        or returned_requested != requested
-        or manifest_path.parent != resolved_output_dir
-        or manifest_path.name not in {"figure-manifest.json", "figure-failure.json"}
-        or not manifest_path.is_file()
-    ):
-        raise ValueError(f"renderer returned unbacked {status!r} status")
-    try:
-        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
-        raise ValueError(f"renderer returned unbacked {status!r} status") from error
-    if (
-        not isinstance(payload, dict)
-        or payload.get("status") != status
-        or payload.get("run_dir") != str(resolved_run_dir)
-        or payload.get("requested") != list(requested)
-        or not isinstance(payload.get("figures"), list)
-    ):
-        raise ValueError(f"renderer returned unbacked {status!r} status")
-    figures = payload["figures"]
-    if status == "failed":
-        if figures or not isinstance(payload.get("message"), str) or not payload["message"].strip():
-            raise ValueError("renderer returned unbacked 'failed' status")
-        return "failed"
-    if payload.get("message") is not None or tuple(
-        record.get("name") if isinstance(record, dict) else None for record in figures
-    ) != requested:
-        raise ValueError("renderer returned unbacked 'complete' status")
-    for record in figures:
-        for kind in ("png", "pdf"):
-            filename = record.get(kind)
-            publication = (
-                resolved_output_dir / filename if type(filename) is str else None
-            )
-            if (
-                type(filename) is not str
-                or Path(filename).name != filename
-                or publication is None
-                or not publication.is_file()
-                or publication.stat().st_size == 0
-            ):
-                raise ValueError("renderer returned unbacked 'complete' status")
-            try:
-                actual_sha256 = hashlib.sha256(publication.read_bytes()).hexdigest()
-            except OSError as error:
-                raise ValueError(
-                    "renderer returned unbacked 'complete' status"
-                ) from error
-            if record.get(f"{kind}_sha256") != actual_sha256:
-                raise ValueError("renderer returned unbacked 'complete' status")
-    return "complete"
-
-
-def _record_figure_failure_safely(
-    run_dir: Path, output_dir: Path, message: str
-) -> None:
-    try:
-        from ...figures import record_figure_failure
-
-        record_figure_failure(run_dir, output_dir, message)
-    except Exception:
-        pass
 
 
 def _fixtures(
@@ -538,12 +452,12 @@ def run_gaussian_experiment(
                 figure_dir,
                 requested=requested,
             )
-            figure_status = _validated_renderer_status(
+            figure_status = validated_renderer_status(
                 figure_manifest, store.run_dir, figure_dir, requested
             )
         except Exception as error:
             figure_status = "failed"
-            _record_figure_failure_safely(store.run_dir, figure_dir, str(error))
+            record_figure_failure_safely(store.run_dir, figure_dir, str(error))
     return GaussianExperimentResult(
         run_dir=store.run_dir,
         config_hash=store.config_hash,

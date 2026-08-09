@@ -16,6 +16,10 @@ from multiagent_elbo.geometry.finite_gauge import (
     FinitePermutation,
     apply_site_relabeling,
 )
+from multiagent_elbo.rendering import (
+    record_figure_failure_safely,
+    validated_renderer_status,
+)
 from multiagent_elbo.runtime import RngStreams, collect_provenance
 
 from .fisher import fisher_channel_decomposition
@@ -361,15 +365,15 @@ def run_finite_experiment(
                 figure_dir,
                 requested=("finite_identity",),
             )
-            rendered_status = getattr(figure_manifest, "status", None)
-            if rendered_status not in {"complete", "failed"}:
-                raise TypeError("renderer must return a FigureManifest status")
-            figure_status = rendered_status
+            figure_status = validated_renderer_status(
+                figure_manifest,
+                store.run_dir,
+                figure_dir,
+                ("finite_identity",),
+            )
         except Exception as error:
-            from multiagent_elbo.figures import record_figure_failure
-
-            failure = record_figure_failure(store.run_dir, figure_dir, str(error))
-            figure_status = failure.status
+            figure_status = "failed"
+            record_figure_failure_safely(store.run_dir, figure_dir, str(error))
     return FiniteExperimentResult(
         run_dir=store.run_dir,
         config_hash=store.config_hash,
