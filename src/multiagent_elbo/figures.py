@@ -713,9 +713,11 @@ def _categorical_dqm_figure(arrays: Mapping[str, np.ndarray]) -> Figure:
     for label, axis in zip(
         "ABC", (fine_axis, coarse_axis, remainder_axis), strict=True
     ):
+        panel_position = (
+            (0.01, 0.98) if axis is remainder_axis else (-0.16, 1.08)
+        )
         axis.text(
-            -0.16 if axis is not remainder_axis else -0.08,
-            1.08,
+            *panel_position,
             label,
             transform=axis.transAxes,
             fontsize=9,

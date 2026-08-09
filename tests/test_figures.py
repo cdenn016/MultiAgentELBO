@@ -558,6 +558,50 @@ def test_dqm_figure_uses_sparse_nonoverlapping_saved_step_labels(tmp_path: Path)
             figure.clear()
 
 
+def test_dqm_panel_c_is_inside_the_axis_and_clear_of_y_tick_labels(
+    tmp_path: Path,
+):
+    import multiagent_elbo.figures as figures_module
+
+    run = run_categorical_dqm_experiment(
+        _categorical_dqm_config(tmp_path / "runs")
+    )
+
+    with matplotlib.rc_context(figures_module._STYLE):
+        figure = figures_module._categorical_dqm_figure(run.arrays)
+        figure.set_dpi(300)
+        try:
+            canvas = FigureCanvasAgg(figure)
+            canvas.draw()
+            assert figure.get_figwidth() == pytest.approx(3.5)
+            assert canvas.get_width_height()[0] == 1050
+            axis = figure.axes[2]
+            renderer = canvas.get_renderer()
+            panel = next(text for text in axis.texts if text.get_text() == "C")
+            panel_box = panel.get_window_extent(renderer)
+            tick_boxes = [
+                label.get_window_extent(renderer)
+                for label in (
+                    *axis.get_yticklabels(minor=False),
+                    *axis.get_yticklabels(minor=True),
+                )
+                if label.get_visible() and label.get_text()
+            ]
+            assert tick_boxes
+            assert not any(panel_box.overlaps(box) for box in tick_boxes)
+            axis_box = axis.get_window_extent(renderer)
+            assert panel_box.x0 >= axis_box.x0
+            assert panel_box.x1 <= axis_box.x1
+            assert panel_box.y0 >= axis_box.y0
+            assert panel_box.y1 <= axis_box.y1
+            assert not panel_box.overlaps(axis.title.get_window_extent(renderer))
+            legend = axis.get_legend()
+            assert legend is not None
+            assert not panel_box.overlaps(legend.get_window_extent(renderer))
+        finally:
+            figure.clear()
+
+
 def test_complete_figure_output_is_immutable_under_a_later_renderer_failure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):

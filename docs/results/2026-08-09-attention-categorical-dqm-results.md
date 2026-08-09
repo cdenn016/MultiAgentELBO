@@ -146,7 +146,7 @@ declared family and fixed parameter-independent coarse channel.
 
 Final attention replay:
 
-`C:\tmp\multiagent-elbo-attention-dqm-final-fix1-replays-20260809\attention`
+`C:\tmp\multiagent-elbo-attention-dqm-final-fix1-panel-c-replays-20260809\attention`
 
 | File | SHA-256 |
 |---|---|
@@ -155,12 +155,12 @@ Final attention replay:
 
 Final categorical DQM replay:
 
-`C:\tmp\multiagent-elbo-attention-dqm-final-fix1-replays-20260809\categorical_dqm`
+`C:\tmp\multiagent-elbo-attention-dqm-final-fix1-panel-c-replays-20260809\categorical_dqm`
 
 | File | SHA-256 |
 |---|---|
-| `categorical-dqm-diagnostic.png` | `24edc6ba966273246639819b8b34afa068726c24782f69fbc819e71ed7af627a` |
-| `categorical-dqm-diagnostic.pdf` | `990c40c1a921eb921ef527a084b5634cc4fb5514b0e7fdb057cb27e78f93fbf3` |
+| `categorical-dqm-diagnostic.png` | `d6a1be6daec5c5abde56e01e84b43160a5c6847717e418841f36555911ee748b` |
+| `categorical-dqm-diagnostic.pdf` | `316e560325f62fc209d97538100a2ce6f358a285e06e872064d2bbe411dc0045` |
 
 Both manifests are complete and record 300 DPI. Each PNG is exactly 1050
 pixels wide and each PDF MediaBox is exactly 252 points wide, yielding the
@@ -190,11 +190,13 @@ remainder ladder are implementation checks, not an analytic proof."
 Original-resolution visual inspection of these fresh replays confirmed that the
 attention panels name final states `w0` and `w1`, and that the DQM step axis shows
 only `0.0125`, `0.025`, `0.05`, and `0.1` without conflicting minor labels. No
-text is clipped or overlapping; final-size labels remain readable; the axes are
-restrained without chart junk; and accessible Okabe-Ito colors are reinforced
-by distinct marker and line-style encodings. Renderer-construction regressions
-independently check the state labels, fixed step labels, absence of minor-label
-text, nonoverlap, exact width, and canvas containment.
+text is clipped or overlapping. Panel C is inside the upper-left of its axes
+and is visually clear of every major/minor y-tick label, the title, the data, and
+the legend. Final-size labels remain readable; the axes are restrained without
+chart junk; and accessible Okabe-Ito colors are reinforced by distinct marker
+and line-style encodings. Renderer-construction regressions independently check
+the state labels, fixed step labels, absence of minor-label text, panel-C
+separation, exact width, and canvas containment at 1050-pixel export geometry.
 
 ## Launcher and machine-test evidence
 
@@ -213,9 +215,10 @@ Counts were parsed from the XML rather than inferred from console progress.
 |---:|---:|---:|---:|---:|---:|
 | 382 | 380 | 0 | 0 | 2 | 18.540 s |
 
-This consolidated fix added two figure regressions. Its focused result is
-`2 passed, 22 deselected`, and the plan's integrated figure/launcher/attention/
-DQM slice is `64 passed`. Because the source and test revision changed, the
+This consolidated fix added three figure regressions. The state/tick focused
+result is `2 passed, 22 deselected`; the panel-C focused result is
+`1 passed, 24 deselected`; and the plan's integrated figure/launcher/attention/
+DQM slice is `65 passed`. Because the source and test revision changed, the
 tracked JUnit above is retained as pre-fix historical evidence, not final
 post-fix closure; the coordinator must refresh the full-suite JUnit after the
 post-fix scoped re-review and before binding the final ledger.
