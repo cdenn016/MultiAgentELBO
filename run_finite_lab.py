@@ -2,6 +2,14 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+import sys
+
+
+_SRC_DIR = Path(__file__).resolve().parent / "src"
+if str(_SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(_SRC_DIR))
+
 from multiagent_elbo.config import ExperimentConfig
 from multiagent_elbo.finite.experiment import FiniteExperimentResult, run_finite_experiment
 
@@ -20,6 +28,8 @@ NUMERICS = {
     "dtype": "float64",
     "atol": 1e-10,
     "rtol": 1e-9,
+    "min_spd_rcond": 1e-12,
+    "max_frame_condition": 1.0e6,
 }
 
 OUTPUT = {

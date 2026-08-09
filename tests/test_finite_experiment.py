@@ -27,7 +27,13 @@ from multiagent_elbo.geometry.finite_gauge import (
 
 
 LABELS = ("00", "01", "10", "11")
-NUMERICS = NumericsConfig(dtype="float64", atol=1e-12, rtol=1e-10)
+NUMERICS = NumericsConfig(
+    dtype="float64",
+    atol=1e-12,
+    rtol=1e-10,
+    min_spd_rcond=1e-12,
+    max_frame_condition=1.0e6,
+)
 
 
 def gauge_fixture():
@@ -187,6 +193,8 @@ def experiment_config(
     *,
     seed: int = 20260808,
     retained_interaction_order: int | None = 2,
+    collect_diagnostics: bool = True,
+    render_figures: bool = False,
 ) -> ExperimentConfig:
     return ExperimentConfig.from_dicts(
         {"name": "finite exact", "seed": seed},
@@ -194,11 +202,17 @@ def experiment_config(
             "experiment": "finite_exact",
             "retained_interaction_order": retained_interaction_order,
         },
-        {"dtype": "float64", "atol": 1e-10, "rtol": 1e-9},
+        {
+            "dtype": "float64",
+            "atol": 1e-10,
+            "rtol": 1e-9,
+            "min_spd_rcond": 1e-12,
+            "max_frame_condition": 1.0e6,
+        },
         {
             "root": str(root),
-            "collect_diagnostics": True,
-            "render_figures": False,
+            "collect_diagnostics": collect_diagnostics,
+            "render_figures": render_figures,
         },
     )
 
@@ -212,6 +226,7 @@ def test_finite_experiment_writes_one_complete_exact_run_bundle(tmp_path: Path):
     assert set(path.name for path in result.run_dir.iterdir()) == {
         "arrays.npz",
         "config.json",
+        "diagnostics.npz",
         "manifest.json",
         "metrics.json",
     }
@@ -220,9 +235,129 @@ def test_finite_experiment_writes_one_complete_exact_run_bundle(tmp_path: Path):
     assert manifest["artifacts"] == {
         "arrays.npz": "complete",
         "config.json": "complete",
+        "diagnostics.npz": "complete",
         "manifest.json": "complete",
         "metrics.json": "complete",
     }
+
+
+@pytest.mark.parametrize("collect_diagnostics", [False, True])
+@pytest.mark.parametrize("render_figures", [False, True])
+def test_finite_output_toggles_cover_the_reachable_two_by_two_matrix(
+    tmp_path: Path, collect_diagnostics: bool, render_figures: bool
+):
+    result = run_finite_experiment(
+        experiment_config(
+            tmp_path,
+            collect_diagnostics=collect_diagnostics,
+            render_figures=render_figures,
+        )
+    )
+
+    assert (result.run_dir / "metrics.json").is_file()
+    assert (result.run_dir / "arrays.npz").is_file()
+    assert (result.run_dir / "diagnostics.npz").is_file() is collect_diagnostics
+    expected_figure_dir = result.run_dir.parent / "figures" / result.run_dir.name
+    assert result.figure_dir == (expected_figure_dir if render_figures else None)
+    assert result.figure_status == ("complete" if render_figures else "not_requested")
+    assert expected_figure_dir.exists() is render_figures
+    if render_figures:
+        figure_manifest = json.loads(
+            (expected_figure_dir / "figure-manifest.json").read_text("utf-8")
+        )
+        assert figure_manifest["status"] == "complete"
+        assert figure_manifest["requested"] == ["finite_identity"]
+
+
+def test_collect_diagnostics_alone_adds_declared_finite_intermediate_tensors(
+    tmp_path: Path,
+):
+    result = run_finite_experiment(
+        experiment_config(
+            tmp_path, collect_diagnostics=True, render_figures=False
+        )
+    )
+
+    with np.load(result.run_dir / "diagnostics.npz", allow_pickle=False) as archive:
+        assert set(archive.files) == {
+            "fisher_coarse_probability",
+            "fisher_coarse_score",
+            "fisher_conditional_covariance",
+            "fisher_fine",
+            "fisher_joint_mass",
+            "gauge_relabelled_channel",
+            "gauge_relabelled_q",
+            "gauge_relabelled_values",
+            "stochastic_fisher_coarse_score",
+        }
+        assert archive["fisher_joint_mass"].shape == (4, 2)
+        assert archive["gauge_relabelled_channel"].shape == (4, 2)
+
+
+def test_renderer_failure_leaves_numerical_status_and_semantic_bytes_unchanged(
+    tmp_path: Path,
+):
+    baseline = run_finite_experiment(
+        experiment_config(
+            tmp_path / "baseline",
+            collect_diagnostics=False,
+            render_figures=False,
+        )
+    )
+
+    def fail_renderer(run_dir, output_dir, requested):
+        raise RuntimeError("injected renderer failure")
+
+    failed_render = run_finite_experiment(
+        experiment_config(
+            tmp_path / "failed",
+            collect_diagnostics=False,
+            render_figures=True,
+        ),
+        renderer=fail_renderer,
+    )
+
+    assert baseline.status == failed_render.status == "pass"
+    assert (baseline.run_dir / "metrics.json").read_bytes() == (
+        failed_render.run_dir / "metrics.json"
+    ).read_bytes()
+    assert (baseline.run_dir / "arrays.npz").read_bytes() == (
+        failed_render.run_dir / "arrays.npz"
+    ).read_bytes()
+    assert failed_render.figure_status == "failed"
+    assert failed_render.figure_dir is not None
+    failure = json.loads(
+        (failed_render.figure_dir / "figure-manifest.json").read_text("utf-8")
+    )
+    assert failure["status"] == "failed"
+    assert failure["message"] == "injected renderer failure"
+
+
+def test_secondary_failure_manifest_error_cannot_invalidate_finalized_numerics(
+    tmp_path: Path,
+):
+    def fail_renderer_and_block_failure_manifest(run_dir, output_dir, requested):
+        output_dir.parent.mkdir(parents=True, exist_ok=True)
+        output_dir.write_text("not a directory", "utf-8")
+        raise RuntimeError("injected renderer failure")
+
+    result = run_finite_experiment(
+        experiment_config(
+            tmp_path,
+            collect_diagnostics=False,
+            render_figures=True,
+        ),
+        renderer=fail_renderer_and_block_failure_manifest,
+    )
+
+    assert result.status == "pass"
+    assert result.figure_status == "failed"
+    assert (result.run_dir / "manifest.json").is_file()
+    assert json.loads((result.run_dir / "manifest.json").read_text("utf-8"))[
+        "complete"
+    ] is True
+    assert (result.run_dir / "metrics.json").is_file()
+    assert (result.run_dir / "arrays.npz").is_file()
 
 
 def test_finite_metrics_keep_implementation_checks_distinct_from_theorem_status(
@@ -280,7 +415,13 @@ def test_finite_experiment_rejects_the_wrong_experiment_before_writing(tmp_path:
     config = ExperimentConfig.from_dicts(
         {"name": "wrong", "seed": 1},
         {"experiment": "gaussian_realization", "retained_interaction_order": 2},
-        {"dtype": "float64", "atol": 1e-10, "rtol": 1e-9},
+        {
+            "dtype": "float64",
+            "atol": 1e-10,
+            "rtol": 1e-9,
+            "min_spd_rcond": 1e-12,
+            "max_frame_condition": 1.0e6,
+        },
         {
             "root": str(tmp_path),
             "collect_diagnostics": True,

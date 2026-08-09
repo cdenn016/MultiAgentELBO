@@ -22,7 +22,13 @@ def make_config(root: Path, *, name: str = "finite exact") -> ExperimentConfig:
     return ExperimentConfig.from_dicts(
         {"name": name, "seed": 20260808},
         {"experiment": "finite_exact", "retained_interaction_order": 2},
-        {"dtype": "float64", "atol": 1e-10, "rtol": 1e-9},
+        {
+            "dtype": "float64",
+            "atol": 1e-10,
+            "rtol": 1e-9,
+            "min_spd_rcond": 1e-12,
+            "max_frame_condition": 1.0e6,
+        },
         {
             "root": str(root),
             "collect_diagnostics": True,
@@ -43,7 +49,13 @@ def test_canonical_hash_is_stable_across_source_dictionary_insertion_order(tmp_p
     second = ExperimentConfig.from_dicts(
         {"seed": 20260808, "name": "finite exact"},
         {"retained_interaction_order": 2, "experiment": "finite_exact"},
-        {"rtol": 1e-9, "dtype": "float64", "atol": 1e-10},
+        {
+            "max_frame_condition": 1.0e6,
+            "rtol": 1e-9,
+            "min_spd_rcond": 1e-12,
+            "dtype": "float64",
+            "atol": 1e-10,
+        },
         {
             "render_figures": False,
             "root": str(tmp_path),

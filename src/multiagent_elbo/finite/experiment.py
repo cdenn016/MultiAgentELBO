@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 import math
 from pathlib import Path
 from types import MappingProxyType
-from typing import Literal, Mapping
+from typing import Callable, Literal, Mapping
 
 import numpy as np
 
@@ -25,6 +25,7 @@ from .vfe import block_update_decomposition, kl_divergence, vfe_channel_decompos
 
 
 MetricStatus = Literal["pass", "fail", "inconclusive"]
+FigureRunStatus = Literal["not_requested", "complete", "failed"]
 TheoremStatus = Literal[
     "established_conditional_identity",
     "finite_metamorphic_identity",
@@ -53,6 +54,8 @@ class FiniteExperimentResult:
     status: MetricStatus
     metrics: Mapping[str, MetricRecord]
     arrays: Mapping[str, np.ndarray]
+    figure_status: FigureRunStatus
+    figure_dir: Path | None
 
 
 def _readonly(values: object) -> np.ndarray:
@@ -265,7 +268,7 @@ def _finite_fixtures(config: ExperimentConfig):
             theorem_status="negative_control",
         ),
     }
-    arrays = {
+    raw_arrays = {
         "fisher_coarse_probability": fisher.coarse_probability,
         "fisher_coarse_score": fisher.coarse_score,
         "fisher_conditional_covariance": fisher.conditional_covariance,
@@ -281,19 +284,45 @@ def _finite_fixtures(config: ExperimentConfig):
         "singular_fisher_defect": singular_fisher.conditional_covariance,
         "stochastic_fisher_coarse_score": stochastic_fisher.coarse_score,
     }
-    return metrics, arrays
+    diagnostic_names = {
+        "fisher_coarse_probability",
+        "fisher_coarse_score",
+        "fisher_conditional_covariance",
+        "fisher_fine",
+        "fisher_joint_mass",
+        "gauge_relabelled_channel",
+        "gauge_relabelled_q",
+        "gauge_relabelled_values",
+        "stochastic_fisher_coarse_score",
+    }
+    arrays = {
+        name: values
+        for name, values in raw_arrays.items()
+        if name not in diagnostic_names
+    }
+    diagnostics = {
+        name: raw_arrays[name] for name in sorted(diagnostic_names)
+    }
+    return metrics, arrays, diagnostics
 
 
-def run_finite_experiment(config: ExperimentConfig) -> FiniteExperimentResult:
+def run_finite_experiment(
+    config: ExperimentConfig,
+    *,
+    renderer: Callable[..., object] | None = None,
+) -> FiniteExperimentResult:
     """Run the fixed finite laboratory and atomically finalize its exact inventory."""
     if not isinstance(config, ExperimentConfig):
         raise TypeError("config must be an ExperimentConfig")
     if config.theory.experiment != "finite_exact":
         raise ValueError("finite experiment requires theory.experiment='finite_exact'")
 
-    metrics, raw_arrays = _finite_fixtures(config)
+    metrics, raw_arrays, raw_diagnostics = _finite_fixtures(config)
     arrays = {
         name: _readonly(raw_arrays[name]) for name in sorted(raw_arrays)
+    }
+    diagnostics = {
+        name: _readonly(raw_diagnostics[name]) for name in sorted(raw_diagnostics)
     }
     config_hash = config_sha256(config)
     streams = RngStreams.from_seed(config.run.seed)
@@ -308,14 +337,45 @@ def run_finite_experiment(config: ExperimentConfig) -> FiniteExperimentResult:
         {name: asdict(metrics[name]) for name in sorted(metrics)},
     )
     store.write_npz("arrays", arrays)
-    store.finalize(("metrics.json", "arrays.npz"))
+    declared_artifacts = ["metrics.json", "arrays.npz"]
+    if config.output.collect_diagnostics:
+        store.write_npz("diagnostics", diagnostics)
+        declared_artifacts.append("diagnostics.npz")
+    store.finalize(declared_artifacts)
     status: MetricStatus = (
         "pass" if all(metric.status == "pass" for metric in metrics.values()) else "fail"
     )
+    figure_status: FigureRunStatus = "not_requested"
+    figure_dir: Path | None = None
+    if config.output.render_figures:
+        figure_dir = store.run_dir.parent / "figures" / store.run_dir.name
+        try:
+            if renderer is None:
+                from multiagent_elbo.figures import render_run
+
+                active_renderer = render_run
+            else:
+                active_renderer = renderer
+            figure_manifest = active_renderer(
+                store.run_dir,
+                figure_dir,
+                requested=("finite_identity",),
+            )
+            rendered_status = getattr(figure_manifest, "status", None)
+            if rendered_status not in {"complete", "failed"}:
+                raise TypeError("renderer must return a FigureManifest status")
+            figure_status = rendered_status
+        except Exception as error:
+            from multiagent_elbo.figures import record_figure_failure
+
+            failure = record_figure_failure(store.run_dir, figure_dir, str(error))
+            figure_status = failure.status
     return FiniteExperimentResult(
         run_dir=store.run_dir,
         config_hash=store.config_hash,
         status=status,
         metrics=MappingProxyType(dict(metrics)),
         arrays=MappingProxyType(arrays),
+        figure_status=figure_status,
+        figure_dir=figure_dir,
     )
