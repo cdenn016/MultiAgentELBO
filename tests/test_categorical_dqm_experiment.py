@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import math
 import hashlib
 import importlib.util
@@ -15,6 +16,7 @@ from multiagent_elbo.finite.categorical_dqm_experiment import (
     CategoricalDqmExperimentResult,
     run_categorical_dqm_experiment,
 )
+from multiagent_elbo.finite.categorical_dqm import DqmRemainderLadder
 
 
 GENERIC_METRIC_KEYS = {
@@ -176,6 +178,106 @@ def test_default_categorical_dqm_run_emits_generic_and_literal_oracle_metrics(
     assert all(metric.status == "pass" for metric in result.metrics.values())
 
 
+def test_default_arrays_match_independent_rational_probability_score_and_fisher_oracles(
+    tmp_path: Path,
+):
+    result = run_categorical_dqm_experiment(categorical_dqm_config(tmp_path))
+
+    expected_fine_probability = np.array([1.0 / 3.0, 1.0 / 2.0, 1.0 / 6.0])
+    expected_fine_score = np.array(
+        [
+            [2.0 / 3.0, -1.0 / 2.0],
+            [-1.0 / 3.0, 1.0 / 2.0],
+            [-1.0 / 3.0, -1.0 / 2.0],
+        ]
+    )
+    expected_coarse_probability = np.array([5.0 / 12.0, 7.0 / 12.0])
+    expected_coarse_score = np.array(
+        [[7.0 / 15.0, -1.0 / 2.0], [-1.0 / 3.0, 5.0 / 14.0]]
+    )
+    expected_fine_fisher = np.array(
+        [[2.0 / 9.0, -1.0 / 6.0], [-1.0 / 6.0, 1.0 / 4.0]]
+    )
+    expected_coarse_fisher = np.array(
+        [[7.0 / 45.0, -1.0 / 6.0], [-1.0 / 6.0, 5.0 / 28.0]]
+    )
+    expected_defect = np.array([[1.0 / 15.0, 0.0], [0.0, 1.0 / 14.0]])
+
+    np.testing.assert_allclose(
+        result.arrays["fine_probability"],
+        expected_fine_probability,
+        rtol=0.0,
+        atol=1.0e-15,
+    )
+    np.testing.assert_allclose(
+        result.arrays["analytic_fine_score"],
+        expected_fine_score,
+        rtol=0.0,
+        atol=1.0e-15,
+    )
+    np.testing.assert_allclose(
+        result.arrays["finite_difference_fine_score"],
+        expected_fine_score,
+        rtol=0.0,
+        atol=1.0e-8,
+    )
+    np.testing.assert_allclose(
+        result.arrays["coarse_probability"],
+        expected_coarse_probability,
+        rtol=0.0,
+        atol=1.0e-15,
+    )
+    np.testing.assert_allclose(
+        result.arrays["analytic_coarse_score"],
+        expected_coarse_score,
+        rtol=0.0,
+        atol=1.0e-15,
+    )
+    np.testing.assert_allclose(
+        result.arrays["finite_difference_coarse_score"],
+        expected_coarse_score,
+        rtol=0.0,
+        atol=1.0e-8,
+    )
+    np.testing.assert_allclose(
+        result.arrays["fine_fisher"],
+        expected_fine_fisher,
+        rtol=0.0,
+        atol=1.0e-15,
+    )
+    np.testing.assert_allclose(
+        result.arrays["coarse_fisher"],
+        expected_coarse_fisher,
+        rtol=0.0,
+        atol=1.0e-15,
+    )
+    np.testing.assert_allclose(
+        result.arrays["fisher_defect"],
+        expected_defect,
+        rtol=0.0,
+        atol=1.0e-15,
+    )
+
+
+def test_default_theta_with_edited_ladder_has_no_default_only_or_pinned_metrics(
+    tmp_path: Path,
+):
+    result = run_categorical_dqm_experiment(
+        categorical_dqm_config(
+            tmp_path,
+            dqm_step_sizes=(0.08, 0.04, 0.02, 0.01),
+        )
+    )
+
+    assert result.status == "pass"
+    assert set(result.metrics) == GENERIC_METRIC_KEYS | CUSTOM_DIAGNOSTIC_METRIC_KEYS
+    assert DEFAULT_ONLY_METRIC_KEYS.isdisjoint(result.metrics)
+    assert PINNED_DEFAULT_METRIC_KEYS.isdisjoint(result.metrics)
+    assert result.metrics["INF-NEG-01_wrong_weight_gap_diagnostic"].value == (
+        pytest.approx(4.0 / 21.0)
+    )
+
+
 def test_custom_theta_keeps_generic_checks_without_default_literal_or_pinned_metrics(
     tmp_path: Path,
 ):
@@ -195,6 +297,93 @@ def test_custom_theta_keeps_generic_checks_without_default_literal_or_pinned_met
     assert result.arrays["dqm_step_sizes"].shape == (4,)
     assert result.arrays["dqm_remainder_positive"].shape == (4,)
     assert result.arrays["dqm_remainder_negative"].shape == (4,)
+
+
+def _analysis_with(
+    analysis: object,
+    *,
+    fisher_channel_result: object | None = None,
+    remainder_ladder: object | None = None,
+) -> SimpleNamespace:
+    return SimpleNamespace(
+        base_probability=analysis.base_probability,
+        analytic_fine_score=analysis.analytic_fine_score,
+        finite_difference_fine_score=analysis.finite_difference_fine_score,
+        finite_difference_pushed_score=analysis.finite_difference_pushed_score,
+        fisher_channel_result=(
+            analysis.fisher_channel_result
+            if fisher_channel_result is None
+            else fisher_channel_result
+        ),
+        remainder_ladder=(
+            analysis.remainder_ladder
+            if remainder_ladder is None
+            else remainder_ladder
+        ),
+        family_scope=analysis.family_scope,
+        channel_scope=analysis.channel_scope,
+    )
+
+
+def test_zero_fisher_loss_trace_fails_the_control_and_aggregate_status(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import multiagent_elbo.finite.categorical_dqm_experiment as experiment
+
+    real_analyze = experiment.analyze_categorical_dqm
+
+    def zero_loss_analysis(*args, **kwargs):
+        analysis = real_analyze(*args, **kwargs)
+        fisher = analysis.fisher_channel_result
+        zeros = np.zeros_like(fisher.conditional_covariance)
+        zero_loss_fisher = replace(
+            fisher,
+            fine_fisher=fisher.coarse_fisher,
+            conditional_covariance=zeros,
+            residual=zeros,
+            minimum_defect_eigenvalue=0.0,
+            defect_is_psd=True,
+        )
+        return _analysis_with(analysis, fisher_channel_result=zero_loss_fisher)
+
+    monkeypatch.setattr(experiment, "analyze_categorical_dqm", zero_loss_analysis)
+
+    result = run_categorical_dqm_experiment(
+        categorical_dqm_config(tmp_path, theta=(-0.75, 1.25))
+    )
+
+    control = result.metrics["INF-02_positive_loss_trace_control"]
+    assert control.value == 0.0
+    assert control.status == "fail"
+    assert result.status == "fail"
+
+
+def test_flat_remainder_ladders_fail_both_strict_monotonicity_controls(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import multiagent_elbo.finite.categorical_dqm_experiment as experiment
+
+    real_analyze = experiment.analyze_categorical_dqm
+
+    def flat_ladder_analysis(*args, **kwargs):
+        analysis = real_analyze(*args, **kwargs)
+        steps = analysis.remainder_ladder.step_sizes
+        flat = DqmRemainderLadder(
+            steps,
+            np.full_like(steps, 1.0e-3),
+            np.full_like(steps, 1.0e-3),
+        )
+        return _analysis_with(analysis, remainder_ladder=flat)
+
+    monkeypatch.setattr(experiment, "analyze_categorical_dqm", flat_ladder_analysis)
+
+    result = run_categorical_dqm_experiment(categorical_dqm_config(tmp_path))
+
+    positive = result.metrics["DQM-01_positive_remainder_ladder_monotonicity"]
+    negative = result.metrics["DQM-01_negative_remainder_ladder_monotonicity"]
+    assert positive.status == "fail"
+    assert negative.status == "fail"
+    assert result.status == "fail"
 
 
 def _write_figure_manifest(

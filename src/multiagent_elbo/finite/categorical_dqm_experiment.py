@@ -74,6 +74,21 @@ def _identity_metric(
     )
 
 
+def _strictly_decreasing_metric(
+    values: np.ndarray, interpretation: str
+) -> MetricRecord:
+    adjacent_differences = np.diff(values)
+    maximum_adjacent_difference = float(np.max(adjacent_differences))
+    return MetricRecord(
+        value=maximum_adjacent_difference,
+        tolerance=0.0,
+        status="pass" if np.all(adjacent_differences < 0.0) else "fail",
+        interpretation=interpretation,
+        assessment_scope="implementation_check",
+        theorem_status="established_conditional_identity",
+    )
+
+
 def _categorical_dqm_fixture(
     config: ExperimentConfig,
 ) -> tuple[dict[str, MetricRecord], dict[str, np.ndarray], dict[str, np.ndarray]]:
@@ -162,11 +177,14 @@ def _categorical_dqm_fixture(
             interpretation="The fixed-channel Fisher information-loss tensor is PSD.",
             theorem_status="established_conditional_identity",
         ),
-        "INF-02_positive_loss_trace_control": lower_bounded_metric(
-            float(np.trace(defect)),
-            tolerance,
-            lower_bound=tolerance,
+        "INF-02_positive_loss_trace_control": MetricRecord(
+            value=float(np.trace(defect)),
+            tolerance=tolerance,
+            status=(
+                "pass" if float(np.trace(defect)) > tolerance else "fail"
+            ),
             interpretation="The registered lossy channel removes detectable Fisher information.",
+            assessment_scope="implementation_check",
             theorem_status="established_conditional_identity",
         ),
     }
@@ -220,15 +238,17 @@ def _categorical_dqm_fixture(
                 for key, value in literal_values.items()
             }
         )
-        metrics["DQM-01_positive_remainder_ladder_monotonicity"] = _identity_metric(
-            max(0.0, float(np.max(np.diff(ladder.positive)))),
-            tolerance,
-            "The registered positive DQM remainder ladder strictly decreases.",
+        metrics["DQM-01_positive_remainder_ladder_monotonicity"] = (
+            _strictly_decreasing_metric(
+                ladder.positive,
+                "The registered positive DQM remainder ladder strictly decreases.",
+            )
         )
-        metrics["DQM-01_negative_remainder_ladder_monotonicity"] = _identity_metric(
-            max(0.0, float(np.max(np.diff(ladder.negative)))),
-            tolerance,
-            "The registered negative DQM remainder ladder strictly decreases.",
+        metrics["DQM-01_negative_remainder_ladder_monotonicity"] = (
+            _strictly_decreasing_metric(
+                ladder.negative,
+                "The registered negative DQM remainder ladder strictly decreases.",
+            )
         )
         metrics["INF-NEG-01_wrong_weight_gap"] = target_metric(
             wrong_weight_gap,
