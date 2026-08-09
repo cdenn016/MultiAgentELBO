@@ -126,9 +126,11 @@ and final-revision ledger rebinding.
 
 ## Residual limitations
 
-- The current Windows account cannot create a symbolic link for the dynamic
-  artifact regression; that JUnit case remains skipped. Hard-link tests execute,
-  and reparse/junction logic has static and adversarial evidence.
+- The current Windows account cannot create symbolic links for the two dynamic
+  regressions: artifact symlink rejection and figure-publication symlink escape.
+  Both JUnit cases remain skipped, so neither dynamic branch executed. Hard-link
+  tests execute, and reparse/junction ownership logic retains static and
+  adversarial evidence where applicable.
 - Crash recovery and concurrent/distributed writers are outside the current
   single-owner `RunStore` contract.
 - The categorical DQM remainder ladder is numerical corroboration of this exact
