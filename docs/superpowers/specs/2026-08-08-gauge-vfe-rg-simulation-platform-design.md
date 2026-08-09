@@ -179,6 +179,8 @@ OUTPUT = {"root": "artifacts", "collect_diagnostics": True, "render_figures": Tr
 
 The guard calls a thin `main()` that resolves configuration, invokes `run_experiment(config)`, atomically publishes the run bundle, and returns the typed result. Tests and future sweep launchers import `run_experiment` directly. Figure rendering can be replayed independently and a rendering failure cannot invalidate numerical results.
 
+Replay figures use local Matplotlib style contexts and the noninteractive Agg backend, never module-import side effects. They export vector PDF and 300-DPI PNG at a 3.5-inch publication width with readable sans-serif typography, hidden top/right spines, Okabe-Ito colors, and redundant markers or line styles for grayscale accessibility. Signed residual panels retain a visible zero and configured tolerance boundaries. Because the first fixtures are deterministic exact enumerations rather than repeated samples, their captions say `n=1 exact fixture`; uncertainty bars and significance annotations are intentionally absent rather than fabricated.
+
 ## 8. Artifacts and reproducibility
 
 Every run owns `artifacts/<run-name>/<config-hash>-<seed>/`. Existing completed runs are never silently overwritten. The run bundle contains:

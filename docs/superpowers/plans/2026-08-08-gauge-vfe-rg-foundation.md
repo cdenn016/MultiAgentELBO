@@ -392,7 +392,7 @@ Assert click-to-run behavior, typed results, complete atomic run bundle, indepen
 
 - [ ] **Step 7: Implement Gaussian launcher and pure figure replay**
 
-`run_gaussian_lab.py` follows the same four-dictionary shape as the finite launcher. `make_figures.py` has an editable dictionary containing `run_dir`, `output_dir`, and requested figure names. Render at least a VFE/Fisher identity residual panel for the finite lab and fine/coarse generalized-spectrum panel for the Gaussian lab.
+`run_gaussian_lab.py` follows the same four-dictionary shape as the finite launcher. `make_figures.py` has an editable dictionary containing `run_dir`, `output_dir`, and requested figure names. Render at least a signed VFE/Fisher identity-residual panel for the finite lab and matched generalized-spectrum panel for the Gaussian lab. Use a local `matplotlib.rc_context` so imports do not mutate global style: 3.5-inch publication width, 8/9/7-point body/axis/tick typography, hidden top/right spines, the Okabe-Ito colorblind-safe palette, and redundant marker/line encodings that remain legible in grayscale. Signed residuals use a symmetric scale with visible zero and tolerance boundaries; exact zeros are annotated rather than displaced. Export vector PDF plus 300-DPI PNG from the saved arrays/metrics with the noninteractive Agg backend. These are deterministic enumerated identity diagnostics, not sample estimates, so captions state `n=1 exact fixture` and do not invent error bars or significance marks.
 
 - [ ] **Step 8: Verify launchers, figures, and full suite GREEN**
 
