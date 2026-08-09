@@ -1,0 +1,106 @@
+# Independent foundation reviews
+
+## Scope
+
+This record summarizes independent, read-only reviews of the fixed Task 4
+commits and the subsequent fixed-commit re-reviews. Reviewers inspected source,
+tests, and exact-commit archives; reproduced adversarial probes; and separated
+software correctness from analytic-theory status. Agreement among reviewers is
+supporting judgment only. Current JUnit and reproduced run artifacts provide the
+mechanical evidence used by the verification ledger.
+
+## Figure, toggle, and launcher integration
+
+Initial range: `dbbeb10..e4cbf97`
+
+The review confirmed behaviorally independent `collect_diagnostics` and
+`render_figures` paths, numerical finalization before rendering, byte-identical
+saved-input replays, source-layout bootstrapping without an editable install,
+local Matplotlib styling, Okabe-Ito encodings, and explicit `n=1 exact fixture`
+semantics.
+
+It found these actionable defects:
+
+1. PNG and PDF were moved separately without rollback, so an injected failure
+   on the second final replace left a stray PNG.
+2. `output_dir` could equal or sit below `run_dir`, allowing figure replay to
+   mutate an immutable numerical bundle.
+3. `bbox_inches="tight"` changed the exported width from the declared 3.5
+   inches.
+
+Commit `23cb9b2` added tracked rollback of all published image paths, resolved
+path-containment guards to both public figure APIs, and exact-size exports. The
+independent re-review reproduced an injected second-replace failure and found
+no remaining image, a failed manifest, and an unchanged valid preexisting
+bundle. Equal/nested paths caused no numerical mutation; a Windows junction
+resolving into the run was also rejected. Measured widths were 1050 pixels at
+300 DPI and 252 PDF points. Re-review verdict: no Critical or Important issues;
+one minor observation was that the mechanically successful junction probe is
+not a portable dynamic regression because link creation is environment
+dependent. Ready: yes.
+
+## Gaussian realization and numerical boundaries
+
+Initial commit: `52ace1b`
+
+Independent symbolic/exact-arithmetic review recomputed:
+
+- Galerkin precision `[[8,-5],[-5,8]]`;
+- scalar Schur precision `[[39/11,-20/11],[-20/11,63/11]]`;
+- the exact matrix-valued Schur witness and asymmetric manufactured block;
+- precision and Laplacian energies `149/5` and `34/5`;
+- determinants `10802/25` and `5401/450`;
+- the generalized characteristic polynomial and radical roots;
+- both ordinary-spectrum radical oracles;
+- the transformed prolongator and both sides of the coarse commuting square.
+
+The initial review found:
+
+1. raw determinant underflow/overflow and an exact condition-ceiling comparison
+   rejected valid positive-orientation frames, including many frames emitted by
+   the module's own generator;
+2. a renderer could return an unbacked `complete` or `failed` status;
+3. the commuting square was exercised by a unit test but was not a first-class,
+   independently replayable experiment metric;
+4. retain-all Schur output ignored the caller's requested vertex order.
+
+Commit `523274e` changed orientation validation to `slogdet`, admitted only the
+configured roundoff allowance at the condition boundary, verified on-disk
+figure manifests and PNG/PDF SHA-256 identities, pinned and persisted `T_c`,
+literal `S'`, and both coarse operators, added
+`GAU-01_commuting_square_residual`, and honored requested retain-all order.
+
+The fixed-commit re-review ran 800 generated-frame round trips with zero
+rejections, exercised full transforms at uniform scales `1e-100` and `1e100`,
+and confirmed that materially over-bound frames still reject. Backed
+complete/failed manifests passed; unbacked and corrupt-hash controls became
+recorded failures without invalidating numerical results. The independently
+computed commuting-square residual was `5.55e-17`, and the retain-all
+permutation error was exactly zero. Exact-tree focused JUnit: 74 tests, zero
+failures, errors, or skips. Re-review verdict: no Critical, Important, or Minor
+issues. Ready: yes.
+
+## Earlier finite-core reviews
+
+The finite foundation had already undergone independent code and mathematical
+reviews before Task 4. Those reviews checked runtime category guards, structured
+extended-real KL behavior, non-leading and multi-axis block updates, centered
+Fisher scores, nonuniform stochastic conditional weights, distinct interaction
+norms, and coherent finite permutation directions. All Critical and Important
+findings were remediated before commit `903027f`. Later integration review
+invalidated that commit's broad launcher closure because its two output toggles
+were initially inert and its direct source-layout import was masked by pytest;
+commit `e4cbf97` supplied the reachable 2-by-2 toggle matrix and sanitized
+fresh-checkout launchers. The final ledger therefore binds current revision
+`51480cf`, not the superseded Task 3 ledger.
+
+## Residual limitations
+
+- The current Windows account cannot create a symbolic link for the dynamic
+  artifact regression; that JUnit case remains skipped. Hard-link tests execute,
+  and reparse/junction logic has static and adversarial evidence.
+- Crash recovery and concurrent/distributed writers are outside the current
+  single-owner `RunStore` contract.
+- These reviews establish readiness of the declared implementation scope. They
+  do not establish universal mathematical claims, Gaussian family membership
+  for external data, or RG universality.
