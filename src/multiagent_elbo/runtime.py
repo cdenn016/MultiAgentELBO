@@ -18,6 +18,9 @@ import scipy
 _STREAM_NAMES = ("problem", "recognition", "controls", "figures")
 _GIT_STATUS_FORMAT = "git-status-porcelain-v1-z-untracked-files-all"
 _DIRTY_TREE_FORMAT = "git-diff-binary-head-plus-sorted-untracked-path-content-v1"
+_THEORY_DIGEST_FORMAT = (
+    "sorted-relative-posix-path-nul-raw-file-sha256-v1-excluding-pyc-pycache"
+)
 
 
 class _Digest(Protocol):
@@ -82,6 +85,7 @@ def collect_provenance(
         "dirty_tree_sha256": dirty_tree_sha256,
         "theory_root": str(theory_root),
         "theory_exists": theory_exists,
+        "theory_digest_format": _THEORY_DIGEST_FORMAT,
         "theory_sha256": theory_sha256,
         "input_hashes": {
             "resolved_config_sha256": config_hash,

@@ -48,6 +48,9 @@ def test_provenance_records_scipy_and_exact_input_hash_bindings(
     assert provenance["scipy_version"] == scipy.__version__
     assert provenance["theory_exists"] is True
     assert provenance["theory_sha256"] == runtime._tree_sha256(theory)
+    assert provenance["theory_digest_format"] == (
+        "sorted-relative-posix-path-nul-raw-file-sha256-v1-excluding-pyc-pycache"
+    )
     assert provenance["input_hashes"] == {
         "resolved_config_sha256": config_hash,
         "theory_tree_sha256": provenance["theory_sha256"],
