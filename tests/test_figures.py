@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import FrozenInstanceError
 import json
 from pathlib import Path
+import re
 import struct
 
 import matplotlib
@@ -45,6 +46,21 @@ def _png_pixels_per_meter(path: Path) -> tuple[int, int, int]:
             return struct.unpack(">IIB", chunk)
         offset += 12 + length
     raise AssertionError("PNG has no physical-resolution metadata")
+
+
+def _png_dimensions(path: Path) -> tuple[int, int]:
+    payload = path.read_bytes()
+    assert payload[12:16] == b"IHDR"
+    return struct.unpack(">II", payload[16:24])
+
+
+def _pdf_media_box(path: Path) -> tuple[float, float]:
+    match = re.search(
+        rb"/MediaBox\s*\[\s*0\s+0\s+([0-9.]+)\s+([0-9.]+)\s*\]",
+        path.read_bytes(),
+    )
+    assert match is not None
+    return float(match.group(1)), float(match.group(2))
 
 
 def _write_gaussian_run(run_dir: Path) -> None:
@@ -111,6 +127,8 @@ def test_finite_replay_uses_finalized_saved_artifacts_and_local_style(tmp_path: 
     assert unit == 1
     assert x_ppm == pytest.approx(11811, abs=1)
     assert y_ppm == pytest.approx(11811, abs=1)
+    assert _png_dimensions(figure.png)[0] == 1050
+    assert _pdf_media_box(figure.pdf)[0] == pytest.approx(252.0)
     assert json.loads(manifest.manifest_path.read_text("utf-8"))["caption"] == (
         "n=1 exact fixture"
     )
@@ -246,3 +264,83 @@ def test_failure_status_survives_when_the_failure_manifest_cannot_be_written(
     assert failure.manifest_path is None
     assert "renderer failed" in str(failure.message)
     assert "failure manifest unavailable" in str(failure.message)
+
+
+def test_second_final_image_replace_failure_rolls_back_the_whole_bundle(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import multiagent_elbo.figures as figures_module
+
+    run = run_finite_experiment(_finite_config(tmp_path / "runs"))
+    output_dir = tmp_path / "figures"
+    real_replace = figures_module.os.replace
+    final_image_replacements = 0
+
+    def fail_second_final_image_replace(source, destination):
+        nonlocal final_image_replacements
+        final_path = Path(destination)
+        if final_path.parent == output_dir and final_path.suffix in {".png", ".pdf"}:
+            final_image_replacements += 1
+            if final_image_replacements == 2:
+                raise OSError("injected second replace failure")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(figures_module.os, "replace", fail_second_final_image_replace)
+
+    result = render_run(
+        run.run_dir, output_dir, requested=("finite_identity",)
+    )
+
+    assert result.status == "failed"
+    assert "injected second replace failure" in str(result.message)
+    assert list(output_dir.glob("*.png")) == []
+    assert list(output_dir.glob("*.pdf")) == []
+    failure = json.loads((output_dir / "figure-manifest.json").read_text("utf-8"))
+    assert failure["status"] == "failed"
+
+
+@pytest.mark.parametrize("relative_output", [Path("."), Path("nested/figures")])
+def test_replay_rejects_output_inside_the_numerical_run_without_mutation(
+    tmp_path: Path, relative_output: Path
+):
+    run = run_finite_experiment(_finite_config(tmp_path / "runs"))
+    before_names = {path.name for path in run.run_dir.iterdir()}
+    before_bytes = {
+        name: (run.run_dir / name).read_bytes() for name in before_names
+    }
+    output_dir = run.run_dir / relative_output
+
+    result = render_run(
+        run.run_dir, output_dir, requested=("finite_identity",)
+    )
+
+    assert result.status == "failed"
+    assert result.manifest_path is None
+    assert "outside the numerical run" in str(result.message)
+    assert {path.name for path in run.run_dir.iterdir()} == before_names
+    assert {
+        name: (run.run_dir / name).read_bytes() for name in before_names
+    } == before_bytes
+
+
+@pytest.mark.parametrize("relative_output", [Path("."), Path("nested/figures")])
+def test_failure_recorder_rejects_output_inside_the_numerical_run_without_mutation(
+    tmp_path: Path, relative_output: Path
+):
+    run = run_finite_experiment(_finite_config(tmp_path / "runs"))
+    before_names = {path.name for path in run.run_dir.iterdir()}
+    before_bytes = {
+        name: (run.run_dir / name).read_bytes() for name in before_names
+    }
+
+    result = record_figure_failure(
+        run.run_dir, run.run_dir / relative_output, "renderer failed"
+    )
+
+    assert result.status == "failed"
+    assert result.manifest_path is None
+    assert "outside the numerical run" in str(result.message)
+    assert {path.name for path in run.run_dir.iterdir()} == before_names
+    assert {
+        name: (run.run_dir / name).read_bytes() for name in before_names
+    } == before_bytes

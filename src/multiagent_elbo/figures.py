@@ -78,10 +78,20 @@ def render_run(
     requested: Sequence[str] | None = None,
 ) -> FigureManifest:
     """Render requested figures using only a finalized numerical run bundle."""
-    source = Path(run_dir)
-    destination = Path(output_dir)
+    source_input = Path(run_dir)
+    destination_input = Path(output_dir)
+    try:
+        source, destination = _resolve_replay_paths(source_input, destination_input)
+    except Exception as error:
+        return _unpublished_failure(
+            source_input,
+            destination_input,
+            str(error) or type(error).__name__,
+            requested=(),
+        )
     normalized_requested: tuple[str, ...] = ()
     staged: list[Path] = []
+    published: list[Path] = []
     try:
         normalized_requested = _normalize_requested(requested)
         existing = _load_complete_figure_manifest(
@@ -112,8 +122,10 @@ def render_run(
         for name, png_staged, pdf_staged, png_final, pdf_final in publications:
             os.replace(png_staged, png_final)
             staged.remove(png_staged)
+            published.append(png_final)
             os.replace(pdf_staged, pdf_final)
             staged.remove(pdf_staged)
+            published.append(pdf_final)
             records.append(FigureRecord(name=name, png=png_final, pdf=pdf_final))
 
         manifest_path = destination / "figure-manifest.json"
@@ -150,6 +162,8 @@ def render_run(
     except Exception as error:
         for path in staged:
             path.unlink(missing_ok=True)
+        for path in published:
+            path.unlink(missing_ok=True)
         return _record_figure_failure(
             source,
             destination,
@@ -162,9 +176,21 @@ def record_figure_failure(
     run_dir: Path | str, output_dir: Path | str, message: str
 ) -> FigureManifest:
     """Atomically record a renderer failure outside the numerical run bundle."""
-    return _record_figure_failure(
-        Path(run_dir), Path(output_dir), message, requested=()
-    )
+    if type(message) is not str or not message.strip():
+        raise ValueError("figure failure message must be a nonempty string")
+    source_input = Path(run_dir)
+    destination_input = Path(output_dir)
+    try:
+        source, destination = _resolve_replay_paths(source_input, destination_input)
+    except Exception as error:
+        reason = str(error) or type(error).__name__
+        return _unpublished_failure(
+            source_input,
+            destination_input,
+            f"{message}; failure manifest unavailable: {reason}",
+            requested=(),
+        )
+    return _record_figure_failure(source, destination, message, requested=())
 
 
 def _record_figure_failure(
@@ -214,6 +240,24 @@ def _record_figure_failure(
     )
 
 
+def _unpublished_failure(
+    run_dir: Path,
+    output_dir: Path,
+    message: str,
+    *,
+    requested: tuple[str, ...],
+) -> FigureManifest:
+    return FigureManifest(
+        run_dir=run_dir,
+        output_dir=output_dir,
+        status="failed",
+        requested=requested,
+        figures=(),
+        message=message,
+        manifest_path=None,
+    )
+
+
 def _normalize_requested(requested: Sequence[str] | None) -> tuple[str, ...]:
     if requested is None:
         raise ValueError("requested figure names must be supplied")
@@ -230,6 +274,17 @@ def _normalize_requested(requested: Sequence[str] | None) -> tuple[str, ...]:
     if unsupported:
         raise ValueError(f"unsupported figure: {unsupported[0]}")
     return names
+
+
+def _resolve_replay_paths(run_dir: Path, output_dir: Path) -> tuple[Path, Path]:
+    try:
+        resolved_run = run_dir.resolve(strict=False)
+    except OSError as error:
+        raise ValueError("numerical run path cannot be resolved") from error
+    resolved_output = output_dir.resolve(strict=False)
+    if resolved_output == resolved_run or resolved_run in resolved_output.parents:
+        raise ValueError("figure output_dir must be outside the numerical run_dir")
+    return resolved_run, resolved_output
 
 
 def _load_finalized_artifacts(
@@ -279,11 +334,10 @@ def _render_requested_figure(
             raise ValueError(f"unsupported figure: {name}")
         try:
             FigureCanvasAgg(figure)
-            figure.savefig(png_path, dpi=300, format="png", bbox_inches="tight")
+            figure.savefig(png_path, dpi=300, format="png")
             figure.savefig(
                 pdf_path,
                 format="pdf",
-                bbox_inches="tight",
                 metadata={
                     "Creator": "multiagent_elbo",
                     "Producer": "multiagent_elbo",
