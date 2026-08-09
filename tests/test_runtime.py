@@ -76,6 +76,65 @@ def test_git_status_digest_is_sha256_of_exact_nul_delimited_porcelain_bytes(
     assert provenance["git_status_sha256"] == hashlib.sha256(raw_status).hexdigest()
 
 
+def test_dirty_tree_digest_changes_when_tracked_bytes_change_under_same_status(
+    tmp_path: Path, monkeypatch
+):
+    raw_status = b" M src/a.py\0"
+    tracked_diff = b"diff --git a/src/a.py b/src/a.py\n-old\n+first\n"
+
+    def fake_git_bytes(_repo: Path, *args: str) -> bytes:
+        if args[0] == "status":
+            return raw_status
+        if args[0] == "diff":
+            return tracked_diff
+        if args[0] == "ls-files":
+            return b""
+        raise AssertionError(args)
+
+    monkeypatch.setattr(runtime, "_git_output", lambda *_args: "2" * 40)
+    monkeypatch.setattr(runtime, "_git_bytes", fake_git_bytes)
+    first = collect_provenance(
+        tmp_path, tmp_path / "missing-theory", "b" * 64, RngStreams.from_seed(81)
+    )
+    tracked_diff = b"diff --git a/src/a.py b/src/a.py\n-old\n+second\n"
+    second = collect_provenance(
+        tmp_path, tmp_path / "missing-theory", "b" * 64, RngStreams.from_seed(81)
+    )
+
+    assert first["git_status_sha256"] == second["git_status_sha256"]
+    assert first["dirty_tree_sha256"] != second["dirty_tree_sha256"]
+    assert first["dirty_tree_format"] == (
+        "git-diff-binary-head-plus-sorted-untracked-path-content-v1"
+    )
+
+
+def test_dirty_tree_digest_binds_untracked_file_contents(tmp_path: Path, monkeypatch):
+    untracked = tmp_path / "new.txt"
+    untracked.write_bytes(b"first")
+
+    def fake_git_bytes(_repo: Path, *args: str) -> bytes:
+        if args[0] == "status":
+            return b"?? new.txt\0"
+        if args[0] == "diff":
+            return b""
+        if args[0] == "ls-files":
+            return b"new.txt\0"
+        raise AssertionError(args)
+
+    monkeypatch.setattr(runtime, "_git_output", lambda *_args: "2" * 40)
+    monkeypatch.setattr(runtime, "_git_bytes", fake_git_bytes)
+    first = collect_provenance(
+        tmp_path, tmp_path / "missing-theory", "b" * 64, RngStreams.from_seed(82)
+    )
+    untracked.write_bytes(b"second")
+    second = collect_provenance(
+        tmp_path, tmp_path / "missing-theory", "b" * 64, RngStreams.from_seed(82)
+    )
+
+    assert first["git_status_sha256"] == second["git_status_sha256"]
+    assert first["dirty_tree_sha256"] != second["dirty_tree_sha256"]
+
+
 def test_clean_git_status_has_false_dirty_flag_and_empty_stream_digest(
     tmp_path: Path, monkeypatch
 ):
