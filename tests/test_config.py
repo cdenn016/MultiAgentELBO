@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 import pytest
 
-from multiagent_elbo.config import ConfigError, ExperimentConfig
+from multiagent_elbo.config import (
+    AttentionTheoryConfig,
+    CategoricalDqmTheoryConfig,
+    ConfigError,
+    ExperimentConfig,
+    config_sha256,
+)
 
 
 def valid_dicts(root: Path | None = None) -> tuple[dict, dict, dict, dict]:
@@ -23,6 +30,130 @@ def valid_dicts(root: Path | None = None) -> tuple[dict, dict, dict, dict]:
             "collect_diagnostics": True,
             "render_figures": False,
         },
+    )
+
+
+def attention_theory() -> dict[str, object]:
+    return {
+        "experiment": "attention_marked_event",
+        "fixture": "nested_nonuniform_v1",
+    }
+
+
+def dqm_theory() -> dict[str, object]:
+    return {
+        "experiment": "categorical_dqm",
+        "fixture": "three_category_softmax_v1",
+        "theta": [math.log(2.0), math.log(3.0)],
+        "finite_difference_step": 1.0e-5,
+        "dqm_step_sizes": [0.1, 0.05, 0.025, 0.0125],
+    }
+
+
+def test_attention_and_dqm_theory_configs_resolve_to_frozen_variants(
+    tmp_path: Path,
+):
+    run, _, numerics, output = valid_dicts(tmp_path)
+
+    attention = ExperimentConfig.from_dicts(run, attention_theory(), numerics, output)
+    dqm = ExperimentConfig.from_dicts(run, dqm_theory(), numerics, output)
+
+    assert isinstance(attention.theory, AttentionTheoryConfig)
+    assert isinstance(dqm.theory, CategoricalDqmTheoryConfig)
+    assert dqm.theory.theta == (math.log(2.0), math.log(3.0))
+    assert dqm.theory.dqm_step_sizes == (0.1, 0.05, 0.025, 0.0125)
+
+
+@pytest.mark.parametrize(
+    ("theory", "message"),
+    [
+        (
+            {"experiment": "attention_marked_event"},
+            "missing theory key: fixture",
+        ),
+        (
+            {
+                "experiment": "attention_marked_event",
+                "fixture": "nested_nonuniform_v1",
+                "unexpected": True,
+            },
+            "unknown theory key: unexpected",
+        ),
+        (
+            {"experiment": "attention_marked_event", "fixture": "other"},
+            "fixture must be 'nested_nonuniform_v1'",
+        ),
+        (
+            {
+                **dqm_theory(),
+                "fixture": "other",
+            },
+            "fixture must be 'three_category_softmax_v1'",
+        ),
+        ({**dqm_theory(), "theta": [True, math.log(3.0)]}, r"theta\[0\] must be a finite float"),
+        ({**dqm_theory(), "theta": [1, math.log(3.0)]}, r"theta\[0\] must be a finite float"),
+        ({**dqm_theory(), "theta": ["bad", math.log(3.0)]}, r"theta\[0\] must be a finite float"),
+        ({**dqm_theory(), "theta": [math.log(2.0)]}, "theta must contain exactly 2 values"),
+        ({**dqm_theory(), "theta": [math.log(2.0), math.log(3.0), 0.0]}, "theta must contain exactly 2 values"),
+        ({**dqm_theory(), "theta": "not-a-sequence"}, "theta must be a list or tuple"),
+        ({**dqm_theory(), "finite_difference_step": 0.0}, "finite_difference_step must be a positive finite float"),
+        ({**dqm_theory(), "finite_difference_step": -1.0e-5}, "finite_difference_step must be a positive finite float"),
+        ({**dqm_theory(), "finite_difference_step": float("inf")}, "finite_difference_step must be a positive finite float"),
+        ({**dqm_theory(), "finite_difference_step": float("nan")}, "finite_difference_step must be a positive finite float"),
+        ({**dqm_theory(), "dqm_step_sizes": []}, "dqm_step_sizes must not be empty"),
+        ({**dqm_theory(), "dqm_step_sizes": [0.1, 0.05, 0.05]}, "dqm_step_sizes must contain unique values"),
+        ({**dqm_theory(), "dqm_step_sizes": [0.1, 0.05, 0.075]}, "dqm_step_sizes must be strictly decreasing"),
+        ({**dqm_theory(), "dqm_step_sizes": [0.1, 0.0]}, r"dqm_step_sizes\[1\] must be a positive finite float"),
+    ],
+)
+def test_invalid_discriminated_theory_configs_are_rejected(
+    theory: dict[str, object], message: str
+):
+    run, _, numerics, output = valid_dicts()
+
+    with pytest.raises(ConfigError, match=message):
+        ExperimentConfig.from_dicts(run, theory, numerics, output)
+
+
+def test_legacy_launcher_config_hashes_remain_unchanged():
+    finite = ExperimentConfig.from_dicts(
+        {"name": "finite exact", "seed": 20260808},
+        {"experiment": "finite_exact", "retained_interaction_order": 2},
+        {
+            "dtype": "float64",
+            "atol": 1e-10,
+            "rtol": 1e-9,
+            "min_spd_rcond": 1e-12,
+            "max_frame_condition": 1.0e6,
+        },
+        {
+            "root": "artifacts",
+            "collect_diagnostics": True,
+            "render_figures": False,
+        },
+    )
+    gaussian = ExperimentConfig.from_dicts(
+        {"name": "gaussian realization", "seed": 20260808},
+        {"experiment": "gaussian_realization", "retained_interaction_order": None},
+        {
+            "dtype": "float64",
+            "atol": 1e-12,
+            "rtol": 1e-10,
+            "min_spd_rcond": 1e-12,
+            "max_frame_condition": 1.0e6,
+        },
+        {
+            "root": "artifacts",
+            "collect_diagnostics": True,
+            "render_figures": False,
+        },
+    )
+
+    assert config_sha256(finite) == (
+        "ad296bae54057c87330a964e99c1ce6657bcfc2f769fd3d7211c5d6a6380e4f9"
+    )
+    assert config_sha256(gaussian) == (
+        "30e8e0dd923c24a63d9ffc91e4b1d9740d15f576bb393f3106783fdd1b78085c"
     )
 
 
