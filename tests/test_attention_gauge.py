@@ -163,13 +163,46 @@ def test_covariant_inputs_require_a_numerics_config():
         )
 
 
-def test_matched_single_node_frames_preserve_all_scalar_attention_values():
+def test_matched_single_node_frames_apply_pinned_action_and_preserve_scalars():
     inputs, _ = _literal_inputs()
     baseline = evaluate_attention(inputs)
 
     transformed_inputs = transform_attention_inputs(inputs, _literal_frames())
     transformed = evaluate_attention(transformed_inputs)
 
+    assert_allclose(
+        transformed_inputs.receiver_vectors,
+        [[3.0, 2.0], [-1.0, 7.0 / 6.0]],
+        atol=NUMERICS.atol,
+        rtol=NUMERICS.rtol,
+    )
+    assert_allclose(
+        transformed_inputs.receiver_covectors,
+        [[1.0, -1.0], [-1.0 / 9.0, 4.0 / 3.0]],
+        atol=NUMERICS.atol,
+        rtol=NUMERICS.rtol,
+    )
+    assert_allclose(
+        transformed_inputs.source_vectors,
+        [[3.0 / 2.0, -1.0], [2.0, 17.0 / 12.0]],
+        atol=NUMERICS.atol,
+        rtol=NUMERICS.rtol,
+    )
+    assert_allclose(
+        transformed_inputs.links,
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[5.0 / 3.0, 1.0], [-2.0 / 9.0, 2.0 / 3.0]],
+            ],
+            [
+                [[1.0, -1.0 / 2.0], [7.0 / 12.0, 29.0 / 24.0]],
+                [[1.0, 0.0], [-13.0 / 24.0, 3.0 / 2.0]],
+            ],
+        ],
+        atol=NUMERICS.atol,
+        rtol=NUMERICS.rtol,
+    )
     for actual, expected in (
         (transformed.occupancy_logits, baseline.occupancy_logits),
         (transformed.source_logits, baseline.source_logits),
