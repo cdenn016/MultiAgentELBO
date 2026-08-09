@@ -146,21 +146,21 @@ declared family and fixed parameter-independent coarse channel.
 
 Final attention replay:
 
-`C:\tmp\multiagent-elbo-attention-dqm-task8-reproduced-20260809\replays-final\attention`
+`C:\tmp\multiagent-elbo-attention-dqm-final-fix1-replays-20260809\attention`
 
 | File | SHA-256 |
 |---|---|
-| `attention-composition.png` | `02b0b1529cf5fc71eb776e2705afe406102efc995e1fc65bad1f6bc7e3044b48` |
-| `attention-composition.pdf` | `bc5accc9d95e9d7b11caa688f7d88954c456ce833237862865cb966e9a59c20c` |
+| `attention-composition.png` | `632f4421bca828c8c65852b7aeae2951c9072fd565d5aa8a978ffef96303ebb6` |
+| `attention-composition.pdf` | `7ed36223d64763e2f2d1b40ba5807fba0b4c4e6a5109b14f1f7651e3f758495b` |
 
 Final categorical DQM replay:
 
-`C:\tmp\multiagent-elbo-attention-dqm-task8-reproduced-20260809\replays-final\categorical_dqm`
+`C:\tmp\multiagent-elbo-attention-dqm-final-fix1-replays-20260809\categorical_dqm`
 
 | File | SHA-256 |
 |---|---|
-| `categorical-dqm-diagnostic.png` | `eb785f6ee06a0d573859d29921fb892426930bc5b75308b479d4fd4e8e75ce39` |
-| `categorical-dqm-diagnostic.pdf` | `4dd1d064744a856d98d9c88cdaa32066920311f7857acc6b7b99b483a86b4025` |
+| `categorical-dqm-diagnostic.png` | `24edc6ba966273246639819b8b34afa068726c24782f69fbc819e71ed7af627a` |
+| `categorical-dqm-diagnostic.pdf` | `990c40c1a921eb921ef527a084b5634cc4fb5514b0e7fdb057cb27e78f93fbf3` |
 
 Both manifests are complete and record 300 DPI. Each PNG is exactly 1050
 pixels wide and each PDF MediaBox is exactly 252 points wide, yielding the
@@ -187,11 +187,14 @@ saved artifacts at theta=(0.693147, 1.09861), direction=(0.6, -0.8), and step
 range [0.0125, 0.1]; analytic/finite-difference agreement and the finite
 remainder ladder are implementation checks, not an analytic proof."
 
-Original-resolution visual inspection found no clipped or overlapping text,
-readable final-size labels, restrained axes without chart junk, and accessible
-Okabe-Ito colors reinforced by distinct marker and line-style encodings. A
-renderer-construction regression test independently checks that titles, axis
-labels, panel labels, and legends remain inside the exact-width canvas.
+Original-resolution visual inspection of these fresh replays confirmed that the
+attention panels name final states `w0` and `w1`, and that the DQM step axis shows
+only `0.0125`, `0.025`, `0.05`, and `0.1` without conflicting minor labels. No
+text is clipped or overlapping; final-size labels remain readable; the axes are
+restrained without chart junk; and accessible Okabe-Ito colors are reinforced
+by distinct marker and line-style encodings. Renderer-construction regressions
+independently check the state labels, fixed step labels, absence of minor-label
+text, nonoverlap, exact width, and canvas containment.
 
 ## Launcher and machine-test evidence
 
@@ -201,13 +204,21 @@ each file directly with no arguments from a sanitized temporary working
 directory with `PYTHONPATH` set to the empty string. Each direct run reports
 `status=pass` and creates exactly one complete manifest.
 
-JUnit evidence is `docs/verification/pytest-foundation.xml` with SHA-256
+The pre-fix Task 8 JUnit evidence is
+`docs/verification/pytest-foundation.xml` with SHA-256
 `1b530f177a71fffc8758607d72ff6c9a672725b0a7408ee5b48816fed5e388e0`.
 Counts were parsed from the XML rather than inferred from console progress.
 
 | Tests | Passed | Failures | Errors | Skipped | Time |
 |---:|---:|---:|---:|---:|---:|
 | 382 | 380 | 0 | 0 | 2 | 18.540 s |
+
+This consolidated fix added two figure regressions. Its focused result is
+`2 passed, 22 deselected`, and the plan's integrated figure/launcher/attention/
+DQM slice is `64 passed`. Because the source and test revision changed, the
+tracked JUnit above is retained as pre-fix historical evidence, not final
+post-fix closure; the coordinator must refresh the full-suite JUnit after the
+post-fix scoped re-review and before binding the final ledger.
 
 Both skips are Windows symbolic-link cases for which the test account returned
 WinError 1314: `test_finalize_rejects_a_declared_symlink` and

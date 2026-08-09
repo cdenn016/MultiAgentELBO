@@ -541,7 +541,7 @@ def _attention_composition_figure(arrays: Mapping[str, np.ndarray]) -> Figure:
                 linewidth=0.9,
                 label=f"Receiver {receiver_index}",
             )
-        axis.set_title(f"Direct eta | z={state_index}")
+        axis.set_title(f"Direct eta | w{state_index}")
         axis.set_ylabel("Event mass")
         axis.set_xticks(np.arange(direct.shape[1] * source_count))
         axis.tick_params(axis="x", labelbottom=False)
@@ -696,6 +696,19 @@ def _categorical_dqm_figure(arrays: Mapping[str, np.ndarray]) -> Figure:
     remainder_axis.set_title("Two-sided normalized DQM remainder")
     remainder_axis.set_xlabel("Step size")
     remainder_axis.set_ylabel("Remainder")
+    tick_indices = np.linspace(
+        0,
+        steps.size - 1,
+        num=min(steps.size, 4),
+        dtype=np.int64,
+    )
+    display_steps = steps[order][np.unique(tick_indices)]
+    remainder_axis.set_xticks(
+        display_steps,
+        labels=tuple(f"{value:.4g}" for value in display_steps),
+        minor=False,
+    )
+    remainder_axis.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
     remainder_axis.legend(frameon=False, loc="best")
     for label, axis in zip(
         "ABC", (fine_axis, coarse_axis, remainder_axis), strict=True

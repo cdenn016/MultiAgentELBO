@@ -500,6 +500,64 @@ def test_new_renderer_construction_keeps_final_size_text_inside_exact_width(
             figure.clear()
 
 
+def test_attention_figure_titles_name_the_final_states(tmp_path: Path):
+    import multiagent_elbo.figures as figures_module
+
+    run = run_attention_experiment(_attention_config(tmp_path / "runs"))
+
+    with matplotlib.rc_context(figures_module._STYLE):
+        figure = figures_module._attention_composition_figure(run.arrays)
+        try:
+            assert [axis.get_title() for axis in figure.axes[:2]] == [
+                "Direct eta | w0",
+                "Direct eta | w1",
+            ]
+        finally:
+            figure.clear()
+
+
+def test_dqm_figure_uses_sparse_nonoverlapping_saved_step_labels(tmp_path: Path):
+    import multiagent_elbo.figures as figures_module
+
+    run = run_categorical_dqm_experiment(
+        _categorical_dqm_config(tmp_path / "runs")
+    )
+
+    with matplotlib.rc_context(figures_module._STYLE):
+        figure = figures_module._categorical_dqm_figure(run.arrays)
+        try:
+            canvas = FigureCanvasAgg(figure)
+            canvas.draw()
+            axis = figure.axes[2]
+            renderer = canvas.get_renderer()
+            np.testing.assert_allclose(
+                axis.get_xticks(minor=False),
+                np.array([0.0125, 0.025, 0.05, 0.1]),
+            )
+            labels = [
+                label
+                for label in axis.get_xticklabels(minor=False)
+                if label.get_visible() and label.get_text()
+            ]
+            assert [label.get_text() for label in labels] == [
+                "0.0125",
+                "0.025",
+                "0.05",
+                "0.1",
+            ]
+            assert not any(
+                label.get_visible() and label.get_text()
+                for label in axis.get_xticklabels(minor=True)
+            )
+            boxes = [label.get_window_extent(renderer) for label in labels]
+            assert all(
+                not left.overlaps(right)
+                for left, right in zip(boxes, boxes[1:])
+            )
+        finally:
+            figure.clear()
+
+
 def test_complete_figure_output_is_immutable_under_a_later_renderer_failure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):

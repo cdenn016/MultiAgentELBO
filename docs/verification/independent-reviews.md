@@ -117,12 +117,25 @@ Three material review findings were resolved before Task 8:
    `b5ffae7` made the positive-loss predicate and both strict default monotonicity
    checks status-bearing.
 
+The retrospective tracked Task 5 TDD record, including the original staged
+RED/GREEN commands and the later `09ebd3c`/`394083d` fix rounds, is
+`docs/verification/task-5-categorical-dqm-tdd-evidence.md`. It is explicitly a
+tracked copy of an ignored coordination report, not a claim that the intermediate
+working trees are Git-reconstructible.
+
 The shared Task 8 integration adds saved-artifact-only attention/DQM figures,
 package exports, and sanitized launcher coverage. Its implementation self-review and
-machine evidence are recorded in the attention/DQM results document. The required
-broad whole-branch review occurs after this implementation/evidence commit; it is not
-preemptively claimed here. Any later source fix requires refreshed JUnit/run evidence
-and final-revision ledger rebinding.
+machine evidence are recorded in the attention/DQM results document. Any later source
+fix requires refreshed JUnit/run evidence and final-revision ledger rebinding.
+
+## Final whole-branch review before the consolidated fix wave
+
+The broad reviewer found no Critical or Important source, mathematics, or test
+defect. The only findings were two Minors: incorrect attention final-state labels
+plus colliding DQM log-axis labels in the new figures, and the absence of a tracked
+Task 5 TDD process-evidence copy. This consolidated fix wave addresses those source
+and process findings. Post-fix scoped re-review is not preemptively claimed here,
+and final verification-ledger binding remains intentionally pending.
 
 ## Residual limitations
 
