@@ -2,7 +2,7 @@
 
 MultiAgentELBO is an exact, finite simulation laboratory for studying the
 conditional identities and explicit counterexamples in the `gauge_vfe_rg`
-theory. The first foundation release contains two deliberately separated
+theory. The current release contains four deliberately separated
 layers:
 
 - a universal finite categorical core for measures, Markov coarse graining,
@@ -10,7 +10,13 @@ layers:
   finite relabeling metamorphics;
 - a typed multivariate-Gaussian realization for matrix-weighted interactions,
   hard-identification/Galerkin restriction, Schur-complement marginalization,
-  and passive local-frame congruence checks.
+  and passive local-frame congruence checks;
+- an exact finite marked-event attention laboratory for normalized
+  `eta = alpha * beta`, associative joint-law coarsening, scalar gauge
+  metamorphics, and beta-only negative controls; and
+- a positive three-category exponential-family laboratory separating the
+  analytic finite-support DQM derivation from finite-difference, remainder,
+  conditional-score, and Fisher-loss implementation diagnostics.
 
 The repository does not expose an application CLI. Experiment choices live in
 plain configuration dictionaries at the top of click-to-run Python files.
@@ -26,11 +32,15 @@ repository directory:
 C:\Python314\python.exe -m pip install -e ".[test]"
 ```
 
-Then open either launcher, edit only its `RUN`, `THEORY`, `NUMERICS`, and
+Then open any laboratory launcher, edit only its `RUN`, `THEORY`, `NUMERICS`, and
 `OUTPUT` dictionaries, and run the file:
 
 - `run_finite_lab.py` runs the exact finite laboratory.
 - `run_gaussian_lab.py` runs the Gaussian realization laboratory.
+- `run_attention_lab.py` runs the state-conditioned marked-event attention
+  laboratory.
+- `run_categorical_dqm_lab.py` runs the positive categorical DQM/Fisher
+  laboratory.
 - `make_figures.py` replays figures from an already finalized run without
   rerunning the numerical experiment.
 
@@ -44,7 +54,9 @@ work merely by being imported.
 | Dictionary | Fields | Meaning |
 |---|---|---|
 | `RUN` | `name`, `seed` | Human-readable run identity and the root seed for four named RNG streams. |
-| `THEORY` | `experiment`, `retained_interaction_order` | Selects the finite or Gaussian laboratory and the retained finite interaction order where applicable. |
+| `THEORY` (`finite_exact`, `gaussian_realization`) | `experiment`, `retained_interaction_order` | Selects the foundation laboratory and the retained finite interaction order where applicable. |
+| `THEORY` (`attention_marked_event`) | `experiment`, `fixture` | Selects the frozen `nested_nonuniform_v1` marked-event fixture. |
+| `THEORY` (`categorical_dqm`) | `experiment`, `fixture`, `theta`, `finite_difference_step`, `dqm_step_sizes` | Selects the frozen positive categorical family, parameter, centered-difference step, and two-sided DQM diagnostic ladder. |
 | `NUMERICS` | `dtype`, `atol`, `rtol`, `min_spd_rcond`, `max_frame_condition` | Declares floating-point precision, comparison tolerances, and explicit Gaussian conditioning gates. |
 | `OUTPUT` | `root`, `collect_diagnostics`, `render_figures` | Selects the artifact root and independently toggles diagnostic arrays and post-finalization rendering. |
 
@@ -101,9 +113,33 @@ The Gaussian launcher exercises implementation checks for:
   frame changes;
 - SPD, reciprocal-condition, positive-orientation, and frame-condition gates.
 
+The attention launcher exercises implementation checks for:
+
+- exact marked-event factorization and normalization, including inactive-row
+  representatives;
+- direct-versus-staged state and node pushforward of `eta`, followed by
+  disintegration into `alpha` and active-row `beta`;
+- independently pinned rational values and reverse state bridges;
+- coherent local `GL+(2)` recomputation and finite node relabeling; and
+- broken-link, incoherent-relabeling, and beta-only controls that remain
+  detectably separated from the exact construction.
+
+The categorical DQM launcher exercises implementation checks for:
+
+- probability normalization, score centering, and analytic-versus-centered-FD
+  fine scores;
+- the positive/negative normalized square-root likelihood remainder ladder;
+- conditional-expectation coarse scores versus independently pushed FD scores;
+- Fisher loss as expected conditional score covariance, including positive
+  loss and PSD checks; and
+- literal rational oracles plus an intentionally wrong unweighted-score
+  control at the default parameter.
+
 The preregistered status and falsification rules for every named metric are in
-`docs/hypotheses.md`. The current machine results and verification scope are in
-`docs/results/2026-08-09-foundation-results.md`.
+`docs/hypotheses.md`. The foundation record remains in
+`docs/results/2026-08-09-foundation-results.md`; the attention/DQM results and
+current full-suite evidence are in
+`docs/results/2026-08-09-attention-categorical-dqm-results.md`.
 
 ## Theory and evidence boundary
 
@@ -112,13 +148,16 @@ The preregistered status and falsification rules for every named metric are in
 revision, dirty-source caveat, and aggregate digest are recorded in
 `docs/theory-provenance.md`.
 
-Passing tests establish that this code reproduces the declared finite fixtures
-and metamorphic identities. They do not prove the analytic theory, establish
-DQM for an arbitrary statistical family, show that an arbitrary application
-belongs to the declared Gaussian interaction family, or establish RG
-attraction/universality. Continuum limits, nontrivial holonomy and connections,
-attention composition, empirical partition selection, and universality studies
-remain later milestones.
+Passing tests establish that this code reproduces the declared deterministic
+finite fixtures and metamorphic identities. The categorical family's DQM status
+comes from its finite-support smooth-positive Taylor derivation; the remainder
+ladder only corroborates that implementation numerically. These checks do not
+establish DQM for an arbitrary family, infer parameter-independence of an
+unexamined channel family, make beta-only coarsening associative, show that an
+external system belongs to the Gaussian or marked-event fixtures, or establish
+RG attraction/universality. Continuum limits, nontrivial holonomy and
+connections, empirical partition selection, and universality studies remain
+later milestones.
 
 ## Repository map
 
@@ -138,12 +177,12 @@ Run the complete test suite with:
 C:\Python314\python.exe -m pytest -q -p no:cacheprovider
 ```
 
-The foundation JUnit record contains 198 collected tests: 197 passed, zero
-failed, zero errored, and one was skipped for the Windows symlink privilege
-described below.
+The current JUnit record contains 382 collected tests: 380 passed, zero failed,
+zero errored, and two were skipped for the Windows symlink privilege described
+below.
 
-One Windows-only symlink regression is skipped when the current account lacks
-the privilege needed to create a test symlink. The executed hard-link tests and
-the static reparse-point checks still protect the artifact ownership boundary;
-the skipped dynamic symlink case is reported explicitly in the results rather
-than counted as exercised evidence.
+Two Windows-only symlink regressions are skipped when the current account lacks
+the privilege needed to create test symlinks: one numerical-artifact ownership
+case and one figure-publication escape case. The executed hard-link tests and
+the static reparse-point checks still protect the ownership boundaries; both
+skips are reported explicitly rather than counted as exercised evidence.

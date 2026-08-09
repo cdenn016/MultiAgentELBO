@@ -176,6 +176,177 @@ kernel is parameter-independent across an unexamined family, or establish RG uni
   cancellation, and cut-edge aggregation; `Theory/06_gaussian.tex`, frame-dependent interaction
   family declaration.
 
+## ATT-01 — Marked-event factorization and normalization
+
+- **Epistemic status:** Established conditional finite-law identity; the current laboratory is
+  an implementation check of one frozen deterministic fixture.
+- **Prediction:** On every positive state and active receiver row, the joint marked-event law
+  satisfies `eta = alpha * beta`; state-conditional event masses, receiver occupancies, and
+  active source rows normalize, while inactive representatives remain zero.
+- **Null:** A factorization or normalization residual exceeds its scale-aware tolerance.
+- **Operationalization:** Record `ATT-01_factorization_residual` and
+  `ATT-01_normalization_residual` over the saved fine, intermediate, direct-coarse, and
+  staged-coarse laws.
+- **Control:** Frozen `nested_nonuniform_v1` state probabilities and the explicit zero-occupancy
+  row convention; constructor validation rejects nonnormalized or nonzero inactive rows.
+- **Support threshold:** Both residuals are at most `atol + rtol * scale` and every stored law is
+  finite and normalized on its declared support.
+- **Refutation threshold:** Either residual exceeds its tolerance after the support masks,
+  partitions, and saved arrays are validated.
+- **Inconclusive rule:** A malformed law, incomplete artifact, undefined conditional on a null
+  receiver, or a changed undeclared fixture is inconclusive about the general identity.
+- **Theory source pointer:** `Theory/07b_agent_network_rg.tex`, Section "Exact attention between
+  meta-agents," especially Equations `rg-attention-event-law` and `rg-meta-attention`.
+
+## ATT-02 — Associative joint-law attention coarsening
+
+- **Epistemic status:** Established conditional identity for normalized marked-event laws and
+  nested Markov/node partitions; the registered run is a literal implementation check.
+- **Prediction:** Direct and staged pushforward produce the same final `eta`, receiver
+  occupancy `alpha`, active-row `beta`, and posterior reverse bridge, and agree with the frozen
+  rational oracle.
+- **Null:** Any direct/staged, literal-oracle, or reverse-bridge residual exceeds tolerance.
+- **Operationalization:** Use every `ATT-02_*_residual` metric: direct/staged `eta`, `alpha`, and
+  active `beta`; literal `eta`, `alpha`, and active `beta`; and the reverse bridge.
+- **Control:** Explicit fine-to-middle, middle-to-coarse, and composed state/node kernels in
+  `nested_nonuniform_v1`, with direct rational expectations computed independently.
+- **Support threshold:** Every `ATT-02_*_residual` is at most `atol + rtol * scale`.
+- **Refutation threshold:** A validated direct/staged or literal residual exceeds that bound.
+- **Inconclusive rule:** Noncomposable kernels, changed partitions, invalid probability laws,
+  nonfinite arrays, or comparison of inactive conditional rows makes this fixture inapplicable.
+- **Theory source pointer:** `Theory/07b_agent_network_rg.tex`, Equation `rg-meta-attention` and
+  the tower-property statement that joint-law pushforward, then disintegration, is associative.
+
+## ATT-03 — Scalar gauge invariance after covariant recomputation
+
+- **Epistemic status:** Established scalar gauge identity under coherent endpoint/frame
+  transformations; the `GL+(2)` fixture is a finite metamorphic implementation check.
+- **Prediction:** Coherent recomputation preserves occupancy/source logits, `alpha`, `beta`, and
+  scalar `eta`; leaving the links untransformed produces a detectable nonzero gap.
+- **Null:** A coherent residual exceeds tolerance or the broken-link gap collapses.
+- **Operationalization:** Record `ATT-03_gauge_logits_residual`,
+  `ATT-03_gauge_alpha_residual`, `ATT-03_gauge_beta_residual`,
+  `ATT-03_gauge_eta_residual`, and `ATT-03_broken_link_gap_control`.
+- **Control:** Frozen nonorthogonal positive-determinant local frames, correctly transformed
+  vectors/covectors/links, and a matched broken-link negative control.
+- **Support threshold:** All four coherent residuals are at most `atol + rtol * scale`, and the
+  broken-link gap is greater than `1e-3` beyond numerical tolerance.
+- **Refutation threshold:** A coherent residual exceeds tolerance after dimensions and endpoint
+  orientations are verified, or the registered broken-link control is not detectably nonzero.
+- **Inconclusive rule:** Singular/wrong-orientation frames, unmatched endpoint conventions,
+  arbitrary connections or holonomy, or a different scoring map are outside this metamorphic.
+- **Theory source pointer:** `Theory/07b_agent_network_rg.tex`, Section "Exact attention between
+  meta-agents," where marked-event probabilities are gauge-invariant scalars.
+
+## ATT-04 — Finite relabeling naturality
+
+- **Epistemic status:** Finite relabeling naturality check; it does not assert invariance under
+  an incoherent change of only one typed component.
+- **Prediction:** A coherent cyclic relabeling of `eta` and both node partitions intertwines the
+  coarse pushforward, while relabeling `eta` alone remains detectably different.
+- **Null:** The coherent residual exceeds tolerance or the incoherent mismatch collapses.
+- **Operationalization:** Record `ATT-04_relabeling_naturality_residual` and
+  `ATT-04_incoherent_relabeling_gap_control`.
+- **Control:** Frozen cyclic permutation with receiver and source partition kernels transformed
+  in the same direction; the negative control keeps those kernels fixed.
+- **Support threshold:** Coherent residual at most `atol + rtol * scale`; incoherent gap greater
+  than `1e-3` beyond tolerance.
+- **Refutation threshold:** The coherent square fails after permutation directions and partition
+  labels are checked, or the frozen negative control becomes indistinguishable.
+- **Inconclusive rule:** Duplicate labels, nonbijective maps, mismatched source/receiver types,
+  or an undeclared relabeling action lies outside the finite naturality claim.
+- **Theory source pointer:** `Theory/07b_agent_network_rg.tex`, typed node partitions and the
+  joint marked-event pushforward in Equation `rg-meta-attention`.
+
+## ATT-NEG-01 — Beta-only nonassociativity control
+
+- **Epistemic status:** Deliberately incorrect coarse-graining control, not a candidate theorem.
+- **Prediction:** Equal-row averaging of normalized `beta` without receiver occupancy has a
+  direct/staged gap `1/10` and direct-versus-correct joint-law gap `1/20` in the frozen fixture.
+- **Null:** Either pinned gap is indistinguishable from zero or misses its rational target.
+- **Operationalization:** Record `ATT-NEG-01_beta_only_associativity_gap` and
+  `ATT-NEG-01_beta_only_correct_gap`.
+- **Control:** Apply the wrong rule to the same nested partitions used by ATT-02 so only omission
+  of `alpha` distinguishes it from the exact construction.
+- **Support threshold:** The gaps equal `1/10` and `1/20`, respectively, within
+  `atol + rtol * scale`.
+- **Refutation threshold:** A frozen-fixture gap misses its target after the wrong rule and
+  rational oracle are independently checked.
+- **Inconclusive rule:** A changed fixture can have different or accidentally zero gaps; without
+  a preregistered literal target it is diagnostic rather than pass/fail evidence.
+- **Theory source pointer:** `Theory/07b_agent_network_rg.tex`, Section "Exact attention between
+  meta-agents," which requires pushing `eta`, not `beta` alone.
+
+## DQM-01 — Positive categorical-family DQM and numerical corroboration
+
+- **Epistemic status:** Analytically established for the declared smooth positive finite
+  exponential family by a finite-support Taylor derivation; finite differences and the
+  remainder ladder are separate numerical implementation checks.
+- **Prediction:** Probabilities normalize, analytic scores center, centered finite differences
+  reproduce the analytic score, and both default normalized two-sided remainder sequences
+  decrease toward zero.
+- **Null:** The analytic finite-support Taylor argument fails for the declared family, or an
+  implementation residual/default ladder check violates its registered threshold.
+- **Operationalization:** Record all `DQM-01_*` metrics, including literal probability/score
+  residuals at `theta=(log 2, log 3)`, analytic/FD error, final normalized remainder, and
+  positive/negative ladder monotonicity.
+- **Control:** Three positive softmax categories with zero base logits, statistics
+  `((1,0),(0,1),(0,0))`, direction `(3/5,-4/5)`, FD step `1e-5`, and ladder
+  `(0.1,0.05,0.025,0.0125)`.
+- **Support threshold:** The analytic finite-support derivation supplies the DQM proof;
+  normalization, centering, FD, and literal residuals meet scale-aware tolerances; the final
+  normalized remainder is at most `0.0125`; both default ladders strictly decrease.
+- **Refutation threshold:** A counterexample to positivity/smooth Taylor expansion refutes the
+  family claim. A failed FD/ladder threshold refutes only the numerical implementation check.
+- **Inconclusive rule:** Nonpositive support, invalid perturbations, nonfinite values, an edited
+  theta/ladder without frozen monotonicity thresholds, or numerical cancellation is inconclusive
+  about DQM.
+- **Theory source pointer:** `Theory/07b_agent_network_rg.tex`, Definition `rg-dqm-score`;
+  `Theory/06_general_coarsegraining.tex`, Theorem `cg-fisher-contraction`. The family-specific
+  Taylor derivation is recorded in the approved design document.
+
+## INF-02 — Conditional score and categorical Fisher loss
+
+- **Epistemic status:** Established conditional identity for a DQM family and a declared-fixed,
+  normalized, parameter-independent Markov channel; the run is an implementation check.
+- **Prediction:** The coarse score is the fine score's conditional expectation, agrees with an
+  independently pushed centered-FD score, and satisfies `I_fine - I_coarse = E Cov(score|Z)`
+  with a PSD, detectably positive defect in the frozen lossy fixture.
+- **Null:** The conditional-score/FD or Fisher residual exceeds tolerance, the defect has an
+  eigenvalue below its negative tolerance, or the positive-loss control collapses.
+- **Operationalization:** Record `INF-02_conditional_score_fd_residual`,
+  `INF-02_fisher_identity_residual`, `INF-02_fisher_defect_min_eigenvalue`,
+  `INF-02_positive_loss_trace_control`, and the default literal coarse/Fisher residuals.
+- **Control:** Frozen `3 x 2` channel, independent pushed finite differences, rational coarse
+  probability/score/Fisher tensors, and defect `diag(1/15,1/14)`.
+- **Support threshold:** Score and matrix residuals meet scale-aware tolerances; minimum defect
+  eigenvalue is within its PSD allowance; loss trace exceeds tolerance; literal residuals pass.
+- **Refutation threshold:** An identity/PSD threshold fails after DQM, score centering, channel
+  normalization, and parameter-independence are established.
+- **Inconclusive rule:** The kernel object records but cannot prove independence across theta;
+  an uncentered score, parameter-dependent channel, absent DQM evidence, or invalid law is
+  inconclusive about the theorem.
+- **Theory source pointer:** `Theory/06_general_coarsegraining.tex`, Theorem "Score projection
+  and Fisher loss," Equations `cg-score-projection` and `cg-fisher-loss`.
+
+## INF-NEG-01 — Unweighted coarse-score control
+
+- **Epistemic status:** Deliberately incorrect weighting control.
+- **Prediction:** Column-normalized kernel weights without fine-law mass differ from the correct
+  conditional score by sup norm `4/21` at the default fixture.
+- **Null:** The wrong-weight gap collapses to zero or misses `4/21` beyond tolerance.
+- **Operationalization:** Record `INF-NEG-01_wrong_weight_gap` at the frozen default; edited
+  theta emits only `INF-NEG-01_wrong_weight_gap_diagnostic` with inconclusive status.
+- **Control:** Compare the wrong score against the conditional-expectation score while holding
+  the fine law, analytic score, and channel fixed.
+- **Support threshold:** Default gap equals `4/21` within `atol + rtol * scale`.
+- **Refutation threshold:** The frozen default gap misses that rational oracle after both weight
+  formulas are independently evaluated.
+- **Inconclusive rule:** At edited theta there is no preregistered rational target; the gap is
+  diagnostic and cannot be promoted to a pass/fail claim.
+- **Theory source pointer:** `Theory/06_general_coarsegraining.tex`, Equation
+  `cg-score-projection`, which uses joint-law conditional weights.
+
 ## RG-01 — Attraction or universality of scalarized Gaussian rays
 
 - **Epistemic status:** Conjectural/open and explicitly deferred. No Task 3 or Task 4 finite run

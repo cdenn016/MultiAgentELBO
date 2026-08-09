@@ -7,6 +7,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+import pytest
+
 from multiagent_elbo.config import ExperimentConfig
 from multiagent_elbo.figures import FigureManifest
 from multiagent_elbo.finite.experiment import FiniteExperimentResult
@@ -16,6 +18,12 @@ from multiagent_elbo.finite.experiment import run_finite_experiment
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LAUNCHER = REPO_ROOT / "run_finite_lab.py"
 FIGURE_LAUNCHER = REPO_ROOT / "make_figures.py"
+ATTENTION_LAUNCHER = REPO_ROOT / "run_attention_lab.py"
+CATEGORICAL_DQM_LAUNCHER = REPO_ROOT / "run_categorical_dqm_lab.py"
+NEW_LAUNCHERS = (
+    ("attention", ATTENTION_LAUNCHER),
+    ("categorical_dqm", CATEGORICAL_DQM_LAUNCHER),
+)
 
 
 def load_launcher(module_name: str, path: Path = LAUNCHER):
@@ -24,6 +32,109 @@ def load_launcher(module_name: str, path: Path = LAUNCHER):
     module = importlib.util.module_from_spec(specification)
     specification.loader.exec_module(module)
     return module
+
+
+def test_new_stable_primitives_results_and_runs_are_public_package_exports():
+    from multiagent_elbo.finite import (
+        AttentionDisintegration,
+        AttentionExperimentResult,
+        CategoricalDqmAnalysis,
+        CategoricalDqmExperimentResult,
+        CategoricalExponentialFamily,
+        DqmRemainderLadder,
+        StateConditionedAttentionLaw,
+        analyze_categorical_dqm,
+        centered_log_probability_finite_difference,
+        centered_pushed_log_probability_finite_difference,
+        compose_kernels,
+        normalized_dqm_remainder_ladder,
+        run_attention_experiment,
+        run_categorical_dqm_experiment,
+    )
+    from multiagent_elbo.geometry import (
+        AttentionCovariantInputs,
+        AttentionGaugeEvaluation,
+        evaluate_attention,
+        transform_attention_inputs,
+    )
+
+    assert all(
+        value is not None
+        for value in (
+            AttentionDisintegration,
+            AttentionExperimentResult,
+            CategoricalDqmAnalysis,
+            CategoricalDqmExperimentResult,
+            CategoricalExponentialFamily,
+            DqmRemainderLadder,
+            StateConditionedAttentionLaw,
+            analyze_categorical_dqm,
+            centered_log_probability_finite_difference,
+            centered_pushed_log_probability_finite_difference,
+            compose_kernels,
+            normalized_dqm_remainder_ladder,
+            run_attention_experiment,
+            run_categorical_dqm_experiment,
+            AttentionCovariantInputs,
+            AttentionGaugeEvaluation,
+            evaluate_attention,
+            transform_attention_inputs,
+        )
+    )
+
+
+@pytest.mark.parametrize(("label", "launcher"), NEW_LAUNCHERS)
+def test_new_launcher_import_ignores_invalid_argv_and_has_no_side_effects(
+    tmp_path: Path, monkeypatch, label: str, launcher: Path
+):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", [launcher.name, "--invalid-argument"])
+
+    module = load_launcher(f"{label}_launcher_import_only", launcher)
+
+    assert hasattr(module, "main")
+    assert not hasattr(module, "parser")
+    assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize(("label", "launcher"), NEW_LAUNCHERS)
+def test_new_launcher_main_needs_only_an_overridden_output_root(
+    tmp_path: Path, label: str, launcher: Path
+):
+    module = load_launcher(f"{label}_launcher_main", launcher)
+    module.OUTPUT = {**module.OUTPUT, "root": str(tmp_path)}
+
+    result = module.main()
+
+    assert result.status == "pass"
+    assert not hasattr(module, "parser")
+    manifests = list(tmp_path.rglob("manifest.json"))
+    assert manifests == [result.run_dir / "manifest.json"]
+    assert json.loads(manifests[0].read_text("utf-8"))["complete"] is True
+
+
+@pytest.mark.parametrize(("label", "launcher"), NEW_LAUNCHERS)
+def test_new_launcher_runs_with_no_arguments_from_a_sanitized_temp_cwd(
+    tmp_path: Path, label: str, launcher: Path
+):
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = ""
+
+    completed = subprocess.run(
+        [sys.executable, str(launcher)],
+        cwd=tmp_path,
+        env=environment,
+        text=True,
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "status=pass" in completed.stdout
+    manifests = list((tmp_path / "artifacts").rglob("manifest.json"))
+    assert len(manifests) == 1
+    assert json.loads(manifests[0].read_text("utf-8"))["complete"] is True
 
 
 def test_import_does_not_read_process_arguments_or_write_files(

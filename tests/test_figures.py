@@ -1,17 +1,24 @@
 from __future__ import annotations
 
 from dataclasses import FrozenInstanceError
+import hashlib
 import json
+import math
 from pathlib import Path
 import re
 import struct
 
 import matplotlib
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 import numpy as np
 import pytest
 
 from multiagent_elbo.config import ExperimentConfig
 from multiagent_elbo.figures import FigureManifest, record_figure_failure, render_run
+from multiagent_elbo.finite.attention_experiment import run_attention_experiment
+from multiagent_elbo.finite.categorical_dqm_experiment import (
+    run_categorical_dqm_experiment,
+)
 from multiagent_elbo.finite.experiment import run_finite_experiment
 
 
@@ -32,6 +39,80 @@ def _finite_config(root: Path) -> ExperimentConfig:
             "render_figures": False,
         },
     )
+
+
+def _attention_config(root: Path) -> ExperimentConfig:
+    return ExperimentConfig.from_dicts(
+        {"name": "attention figure fixture", "seed": 20260809},
+        {"experiment": "attention_marked_event", "fixture": "nested_nonuniform_v1"},
+        {
+            "dtype": "float64",
+            "atol": 1e-12,
+            "rtol": 1e-10,
+            "min_spd_rcond": 1e-12,
+            "max_frame_condition": 1.0e6,
+        },
+        {
+            "root": str(root),
+            "collect_diagnostics": True,
+            "render_figures": False,
+        },
+    )
+
+
+def _categorical_dqm_config(root: Path) -> ExperimentConfig:
+    return ExperimentConfig.from_dicts(
+        {"name": "categorical DQM figure fixture", "seed": 20260809},
+        {
+            "experiment": "categorical_dqm",
+            "fixture": "three_category_softmax_v1",
+            "theta": [math.log(2.0), math.log(3.0)],
+            "finite_difference_step": 1.0e-5,
+            "dqm_step_sizes": [0.1, 0.05, 0.025, 0.0125],
+        },
+        {
+            "dtype": "float64",
+            "atol": 1e-12,
+            "rtol": 1e-10,
+            "min_spd_rcond": 1e-12,
+            "max_frame_condition": 1.0e6,
+        },
+        {
+            "root": str(root),
+            "collect_diagnostics": True,
+            "render_figures": False,
+        },
+    )
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _bundle_hashes(run_dir: Path) -> dict[str, str]:
+    return {
+        path.name: _sha256(path)
+        for path in sorted(run_dir.iterdir())
+        if path.is_file()
+    }
+
+
+def _replace_npz_array(
+    path: Path,
+    name: str,
+    *,
+    replacement: np.ndarray | None = None,
+    remove: bool = False,
+) -> None:
+    with np.load(path, allow_pickle=False) as archive:
+        arrays = {key: np.array(archive[key], copy=True) for key in archive.files}
+    if remove:
+        del arrays[name]
+    else:
+        assert replacement is not None
+        arrays[name] = replacement
+    with path.open("wb") as handle:
+        np.savez(handle, **arrays)
 
 
 def _png_pixels_per_meter(path: Path) -> tuple[int, int, int]:
@@ -101,6 +182,40 @@ def _write_gaussian_run(run_dir: Path) -> None:
     )
 
 
+def _write_combined_run(run_dir: Path, *source_dirs: Path) -> None:
+    run_dir.mkdir(parents=True)
+    metrics: dict[str, object] = {}
+    arrays: dict[str, np.ndarray] = {}
+    for source_dir in source_dirs:
+        metrics.update(json.loads((source_dir / "metrics.json").read_text("utf-8")))
+        with np.load(source_dir / "arrays.npz", allow_pickle=False) as archive:
+            for name in archive.files:
+                assert name not in arrays
+                arrays[name] = np.array(archive[name], copy=True)
+    (run_dir / "config.json").write_text("{}", "utf-8")
+    (run_dir / "metrics.json").write_text(
+        json.dumps(metrics, sort_keys=True, separators=(",", ":")), "utf-8"
+    )
+    with (run_dir / "arrays.npz").open("wb") as handle:
+        np.savez(handle, **arrays)
+    (run_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "complete": True,
+                "artifacts": {
+                    "arrays.npz": "complete",
+                    "config.json": "complete",
+                    "manifest.json": "complete",
+                    "metrics.json": "complete",
+                },
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ),
+        "utf-8",
+    )
+
+
 def test_finite_replay_uses_finalized_saved_artifacts_and_local_style(tmp_path: Path):
     run = run_finite_experiment(_finite_config(tmp_path / "runs"))
     output_dir = tmp_path / "figures"
@@ -151,6 +266,238 @@ def test_gaussian_replay_renders_matched_saved_generalized_spectra(tmp_path: Pat
     assert manifest.figures[0].name == "gaussian_spectrum"
     assert manifest.figures[0].png.is_file()
     assert manifest.figures[0].pdf.is_file()
+
+
+def test_attention_saved_artifact_replay_is_deterministic_and_read_only(
+    tmp_path: Path,
+):
+    run = run_attention_experiment(_attention_config(tmp_path / "runs"))
+    bundle_before = _bundle_hashes(run.run_dir)
+
+    first = render_run(
+        run.run_dir,
+        tmp_path / "figures-first",
+        requested=("attention_composition",),
+    )
+    second = render_run(
+        run.run_dir,
+        tmp_path / "figures-second",
+        requested=("attention_composition",),
+    )
+
+    assert first.status == "complete"
+    assert first.requested == ("attention_composition",)
+    assert tuple(record.name for record in first.figures) == (
+        "attention_composition",
+    )
+    assert first.figures[0].png.stat().st_size > 0
+    assert first.figures[0].pdf.stat().st_size > 0
+    assert _png_dimensions(first.figures[0].png)[0] == 1050
+    assert _pdf_media_box(first.figures[0].pdf)[0] == pytest.approx(252.0)
+    assert _sha256(first.figures[0].png) == _sha256(second.figures[0].png)
+    assert _sha256(first.figures[0].pdf) == _sha256(second.figures[0].pdf)
+    assert _bundle_hashes(run.run_dir) == bundle_before
+    payload = json.loads(first.manifest_path.read_text("utf-8"))
+    assert payload["figures"][0]["png_dpi"] == 300
+    assert payload["figures"][0]["png_sha256"] == _sha256(
+        first.figures[0].png
+    )
+    assert "exact finite marked-event" in payload["caption"].lower()
+    assert "no sampling" in payload["caption"].lower()
+
+
+def test_categorical_dqm_saved_artifact_replay_has_numerical_scope_caption(
+    tmp_path: Path,
+):
+    run = run_categorical_dqm_experiment(
+        _categorical_dqm_config(tmp_path / "runs")
+    )
+    bundle_before = _bundle_hashes(run.run_dir)
+
+    manifest = render_run(
+        run.run_dir,
+        tmp_path / "figures",
+        requested=("categorical_dqm",),
+    )
+
+    assert manifest.status == "complete"
+    assert manifest.figures[0].png.read_bytes().startswith(b"\x89PNG")
+    assert manifest.figures[0].pdf.read_bytes().startswith(b"%PDF")
+    assert _png_dimensions(manifest.figures[0].png)[0] == 1050
+    assert _pdf_media_box(manifest.figures[0].pdf)[0] == pytest.approx(252.0)
+    payload = json.loads(manifest.manifest_path.read_text("utf-8"))
+    assert payload["figures"][0]["png_dpi"] == 300
+    assert "categorical dqm numerical diagnostic" in payload["caption"].lower()
+    assert "theta=" in payload["caption"].lower()
+    assert "not an analytic proof" in payload["caption"].lower()
+    assert payload["caption"] != "n=1 exact fixture"
+    assert _bundle_hashes(run.run_dir) == bundle_before
+
+
+def test_new_replay_bundle_preserves_the_requested_figure_order(tmp_path: Path):
+    attention = run_attention_experiment(_attention_config(tmp_path / "attention"))
+    dqm = run_categorical_dqm_experiment(_categorical_dqm_config(tmp_path / "dqm"))
+    run_dir = tmp_path / "combined-run"
+    _write_combined_run(run_dir, attention.run_dir, dqm.run_dir)
+
+    manifest = render_run(
+        run_dir,
+        tmp_path / "figures",
+        requested=("categorical_dqm", "attention_composition"),
+    )
+
+    assert manifest.status == "complete"
+    assert manifest.requested == ("categorical_dqm", "attention_composition")
+    assert tuple(record.name for record in manifest.figures) == manifest.requested
+    payload = json.loads(manifest.manifest_path.read_text("utf-8"))
+    assert tuple(payload["requested"]) == manifest.requested
+    assert tuple(record["name"] for record in payload["figures"]) == manifest.requested
+
+
+def test_attention_replay_rejects_a_missing_saved_array(tmp_path: Path):
+    run = run_attention_experiment(_attention_config(tmp_path / "runs"))
+    _replace_npz_array(
+        run.run_dir / "arrays.npz", "staged_coarse_eta", remove=True
+    )
+
+    manifest = render_run(
+        run.run_dir,
+        tmp_path / "figures",
+        requested=("attention_composition",),
+    )
+
+    assert manifest.status == "failed"
+    assert "staged_coarse_eta" in str(manifest.message)
+    assert list((tmp_path / "figures").glob("*.png")) == []
+    assert list((tmp_path / "figures").glob("*.pdf")) == []
+
+
+def test_categorical_dqm_replay_rejects_a_nonfinite_saved_array(tmp_path: Path):
+    run = run_categorical_dqm_experiment(
+        _categorical_dqm_config(tmp_path / "runs")
+    )
+    _replace_npz_array(
+        run.run_dir / "arrays.npz",
+        "dqm_remainder_positive",
+        replacement=np.array([0.1, 0.05, np.nan, 0.01]),
+    )
+
+    manifest = render_run(
+        run.run_dir,
+        tmp_path / "figures",
+        requested=("categorical_dqm",),
+    )
+
+    assert manifest.status == "failed"
+    assert "dqm_remainder_positive" in str(manifest.message)
+    assert "finite" in str(manifest.message)
+    assert list((tmp_path / "figures").glob("*.png")) == []
+    assert list((tmp_path / "figures").glob("*.pdf")) == []
+
+
+def test_new_replay_rejects_a_corrupt_complete_figure_hash(tmp_path: Path):
+    run = run_categorical_dqm_experiment(
+        _categorical_dqm_config(tmp_path / "runs")
+    )
+    output_dir = tmp_path / "figures"
+    complete = render_run(
+        run.run_dir, output_dir, requested=("categorical_dqm",)
+    )
+    payload = json.loads(complete.manifest_path.read_text("utf-8"))
+    payload["figures"][0]["png_sha256"] = "0" * 64
+    complete.manifest_path.write_text(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")), "utf-8"
+    )
+
+    replay = render_run(
+        run.run_dir, output_dir, requested=("categorical_dqm",)
+    )
+
+    assert replay.status == "failed"
+    assert "image identity does not match" in str(replay.message)
+    assert complete.figures[0].png.is_file()
+    assert (output_dir / "figure-failure.json").is_file()
+
+
+def test_new_replay_bundle_rolls_back_if_the_second_renderer_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import multiagent_elbo.figures as figures_module
+
+    attention = run_attention_experiment(_attention_config(tmp_path / "attention"))
+    dqm = run_categorical_dqm_experiment(_categorical_dqm_config(tmp_path / "dqm"))
+    run_dir = tmp_path / "combined-run"
+    _write_combined_run(run_dir, attention.run_dir, dqm.run_dir)
+    original = figures_module._render_requested_figure
+    calls: list[str] = []
+
+    def fail_second(name, *args, **kwargs):
+        calls.append(name)
+        if len(calls) == 2:
+            raise RuntimeError("injected second new-renderer failure")
+        return original(name, *args, **kwargs)
+
+    monkeypatch.setattr(figures_module, "_render_requested_figure", fail_second)
+    output_dir = tmp_path / "figures"
+
+    manifest = render_run(
+        run_dir,
+        output_dir,
+        requested=("categorical_dqm", "attention_composition"),
+    )
+
+    assert calls == ["categorical_dqm", "attention_composition"]
+    assert manifest.status == "failed"
+    assert "injected second new-renderer failure" in str(manifest.message)
+    assert list(output_dir.glob("*.png")) == []
+    assert list(output_dir.glob("*.pdf")) == []
+
+
+@pytest.mark.parametrize("experiment", ["attention", "categorical_dqm"])
+def test_new_renderer_construction_keeps_final_size_text_inside_exact_width(
+    tmp_path: Path, experiment: str
+):
+    import multiagent_elbo.figures as figures_module
+
+    with matplotlib.rc_context(figures_module._STYLE):
+        if experiment == "attention":
+            run = run_attention_experiment(_attention_config(tmp_path / "runs"))
+            figure = figures_module._attention_composition_figure(run.arrays)
+        else:
+            run = run_categorical_dqm_experiment(
+                _categorical_dqm_config(tmp_path / "runs")
+            )
+            figure = figures_module._categorical_dqm_figure(run.arrays)
+        try:
+            assert figure.get_figwidth() == pytest.approx(3.5)
+            canvas = FigureCanvasAgg(figure)
+            canvas.draw()
+            renderer = canvas.get_renderer()
+            figure_box = figure.bbox
+            for axis in figure.axes:
+                artists = [
+                    axis.title,
+                    axis.xaxis.label,
+                    axis.yaxis.label,
+                    *axis.texts,
+                ]
+                legend = axis.get_legend()
+                if legend is not None:
+                    artists.append(legend)
+                for artist in artists:
+                    if hasattr(artist, "get_text") and not artist.get_text():
+                        continue
+                    box = artist.get_window_extent(renderer)
+                    assert box.x0 >= figure_box.x0 - 1.0
+                    assert box.x1 <= figure_box.x1 + 1.0
+                    assert box.y0 >= figure_box.y0 - 1.0
+                    assert box.y1 <= figure_box.y1 + 1.0
+            if experiment == "attention":
+                left = figure.axes[0].title.get_window_extent(renderer)
+                right = figure.axes[1].title.get_window_extent(renderer)
+                assert not left.overlaps(right)
+        finally:
+            figure.clear()
 
 
 def test_complete_figure_output_is_immutable_under_a_later_renderer_failure(

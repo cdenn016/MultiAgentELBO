@@ -94,6 +94,36 @@ commit `e4cbf97` supplied the reachable 2-by-2 toggle matrix and sanitized
 fresh-checkout launchers. The final ledger therefore binds current revision
 `51480cf`, not the superseded Task 3 ledger.
 
+## Attention and categorical-DQM task reviews
+
+Range reviewed before shared Task 8 integration: `b9d6f04..b5ffae7`.
+
+The task-scoped specification and code-quality passes checked the state-conditioned
+marked-event law, nested state/node composition, local-frame metamorphics, the
+positive categorical family, centered finite differences, DQM remainder evaluation,
+Fisher-loss analysis, experiment artifact publication, and click-to-run launchers.
+Three material review findings were resolved before Task 8:
+
+1. A gauge-frame test could have accepted a validation-preserving no-op or an
+   alternative transform. Commit `d2153d0` pinned every transformed vector,
+   covector, source, and link entry to hand-derived values in addition to the scalar
+   invariance assertions.
+2. Centered quotients formed an overflowing doubled step for representable extreme
+   steps, and an expected subnormal quotient emitted a warning. Commits `09ebd3c`
+   and `394083d` hardened the finite-difference boundary and made the expected
+   underflow path explicit without changing the mathematical result.
+3. The categorical experiment's aggregate status did not initially make a zero
+   Fisher-loss trace or flat remainder ladders fail the registered controls. Commit
+   `b5ffae7` made the positive-loss predicate and both strict default monotonicity
+   checks status-bearing.
+
+The shared Task 8 integration adds saved-artifact-only attention/DQM figures,
+package exports, and sanitized launcher coverage. Its implementation self-review and
+machine evidence are recorded in the attention/DQM results document. The required
+broad whole-branch review occurs after this implementation/evidence commit; it is not
+preemptively claimed here. Any later source fix requires refreshed JUnit/run evidence
+and final-revision ledger rebinding.
+
 ## Residual limitations
 
 - The current Windows account cannot create a symbolic link for the dynamic
@@ -101,6 +131,12 @@ fresh-checkout launchers. The final ledger therefore binds current revision
   and reparse/junction logic has static and adversarial evidence.
 - Crash recovery and concurrent/distributed writers are outside the current
   single-owner `RunStore` contract.
+- The categorical DQM remainder ladder is numerical corroboration of this exact
+  implementation; the finite-support Taylor derivation, not the decreasing plot,
+  supplies the analytic DQM argument for the declared positive family.
+- The concrete categorical kernel records a declared-fixed,
+  parameter-independent scope. A single kernel object does not mechanically prove
+  independence across an arbitrary parameter family.
 - These reviews establish readiness of the declared implementation scope. They
   do not establish universal mathematical claims, Gaussian family membership
   for external data, or RG universality.

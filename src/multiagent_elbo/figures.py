@@ -45,6 +45,8 @@ _STYLE: Mapping[str, object] = {
 }
 
 _FIGURE_FILENAMES = {
+    "attention_composition": "attention-composition",
+    "categorical_dqm": "categorical-dqm-diagnostic",
     "finite_identity": "finite-identity-residuals",
     "gaussian_spectrum": "gaussian-generalized-spectrum",
 }
@@ -101,6 +103,10 @@ def render_run(
             return existing
         metrics, arrays = _load_finalized_artifacts(source)
         destination.mkdir(parents=True, exist_ok=True)
+        caption = " | ".join(
+            _figure_caption(name, metrics, arrays)
+            for name in normalized_requested
+        )
         publications: list[tuple[str, Path, Path, Path, Path]] = []
         for name in normalized_requested:
             stem = _FIGURE_FILENAMES[name]
@@ -132,7 +138,7 @@ def render_run(
         _atomic_json(
             manifest_path,
             {
-                "caption": "n=1 exact fixture",
+                "caption": caption,
                 "figures": [
                     {
                         "name": record.name,
@@ -330,6 +336,10 @@ def _render_requested_figure(
             figure = _finite_identity_figure(metrics)
         elif name == "gaussian_spectrum":
             figure = _gaussian_spectrum_figure(metrics, arrays)
+        elif name == "attention_composition":
+            figure = _attention_composition_figure(arrays)
+        elif name == "categorical_dqm":
+            figure = _categorical_dqm_figure(arrays)
         else:  # guarded by _normalize_requested
             raise ValueError(f"unsupported figure: {name}")
         try:
@@ -482,6 +492,283 @@ def _gaussian_spectrum_figure(
     axis.legend(frameon=False)
     figure.supxlabel("n=1 exact fixture", x=0.02, ha="left", fontsize=7)
     return figure
+
+
+def _attention_composition_figure(arrays: Mapping[str, np.ndarray]) -> Figure:
+    direct = _saved_array(arrays, "direct_coarse_eta", ndim=3)
+    staged = _saved_array(arrays, "staged_coarse_eta", ndim=3)
+    beta_only = _saved_array(arrays, "beta_only_direct_beta", ndim=2)
+    correct_beta = _saved_array(arrays, "beta_only_correct_beta", ndim=2)
+    state_probability = _saved_array(
+        arrays, "direct_coarse_state_probability", ndim=1
+    )
+    if direct.shape[0] != 2:
+        raise ValueError("array direct_coarse_eta must contain exactly two final states")
+    if staged.shape != direct.shape:
+        raise ValueError("staged_coarse_eta must match direct_coarse_eta")
+    if beta_only.shape != correct_beta.shape:
+        raise ValueError("beta_only_direct_beta must match beta_only_correct_beta")
+    if state_probability.shape != (2,):
+        raise ValueError(
+            "direct_coarse_state_probability must match the two final states"
+        )
+
+    figure = Figure(figsize=(3.5, 3.25), layout="constrained")
+    axes = np.asarray(figure.subplots(2, 2), dtype=object)
+    receiver_styles = (
+        (OKABE_ITO[5], "-", "o"),
+        (OKABE_ITO[1], "--", "s"),
+        (OKABE_ITO[3], ":", "^"),
+        (OKABE_ITO[6], "-.", "D"),
+    )
+    source_count = direct.shape[2]
+    for state_index, axis in enumerate(axes[0]):
+        for receiver_index, values in enumerate(direct[state_index]):
+            color, linestyle, marker = receiver_styles[
+                receiver_index % len(receiver_styles)
+            ]
+            positions = (
+                np.arange(source_count, dtype=np.int64)
+                + receiver_index * source_count
+            )
+            axis.plot(
+                positions,
+                values,
+                color=color,
+                linestyle=linestyle,
+                marker=marker,
+                markersize=3.2,
+                linewidth=0.9,
+                label=f"Receiver {receiver_index}",
+            )
+        axis.set_title(f"Direct eta | z={state_index}")
+        axis.set_ylabel("Event mass")
+        axis.set_xticks(np.arange(direct.shape[1] * source_count))
+        axis.tick_params(axis="x", labelbottom=False)
+    axes[0, 0].legend(frameon=False, loc="best")
+
+    positions = np.arange(direct.shape[1] * source_count)
+    composition_residual = staged - direct
+    for state_index, values in enumerate(composition_residual):
+        color, linestyle, marker = receiver_styles[state_index]
+        axes[1, 0].plot(
+            positions,
+            values.ravel(),
+            color=color,
+            linestyle=linestyle,
+            marker=marker,
+            markersize=3.2,
+            linewidth=0.9,
+            label=f"State {state_index}",
+        )
+    axes[1, 0].axhline(0.0, color=OKABE_ITO[0], linewidth=0.6, linestyle=":")
+    axes[1, 0].set_title("Staged - direct eta")
+    axes[1, 0].set_xlabel("Event cell")
+    axes[1, 0].set_ylabel("Residual")
+    axes[1, 0].legend(frameon=False, loc="best")
+
+    beta_residual = (beta_only - correct_beta).ravel()
+    axes[1, 1].plot(
+        np.arange(beta_residual.size),
+        beta_residual,
+        color=OKABE_ITO[6],
+        linestyle="--",
+        marker="D",
+        markerfacecolor="none",
+        markersize=3.6,
+        linewidth=0.9,
+    )
+    axes[1, 1].axhline(0.0, color=OKABE_ITO[0], linewidth=0.6, linestyle=":")
+    axes[1, 1].set_title("Beta-only residual")
+    axes[1, 1].set_xlabel("Attention cell")
+    axes[1, 1].set_ylabel("Residual")
+
+    for label, axis in zip("ABCD", axes.ravel(), strict=True):
+        axis.text(
+            -0.18,
+            1.08,
+            label,
+            transform=axis.transAxes,
+            fontsize=9,
+            fontweight="bold",
+            va="top",
+        )
+    return figure
+
+
+def _categorical_dqm_figure(arrays: Mapping[str, np.ndarray]) -> Figure:
+    analytic_fine = _saved_array(arrays, "analytic_fine_score", ndim=2)
+    finite_difference_fine = _saved_array(
+        arrays, "finite_difference_fine_score", ndim=2
+    )
+    analytic_coarse = _saved_array(arrays, "analytic_coarse_score", ndim=2)
+    finite_difference_coarse = _saved_array(
+        arrays, "finite_difference_coarse_score", ndim=2
+    )
+    steps = _saved_array(arrays, "dqm_step_sizes", ndim=1)
+    positive = _saved_array(arrays, "dqm_remainder_positive", ndim=1)
+    negative = _saved_array(arrays, "dqm_remainder_negative", ndim=1)
+    if finite_difference_fine.shape != analytic_fine.shape:
+        raise ValueError(
+            "finite_difference_fine_score must match analytic_fine_score"
+        )
+    if finite_difference_coarse.shape != analytic_coarse.shape:
+        raise ValueError(
+            "finite_difference_coarse_score must match analytic_coarse_score"
+        )
+    if analytic_fine.shape[1] != analytic_coarse.shape[1]:
+        raise ValueError("fine and coarse scores must share a parameter dimension")
+    if positive.shape != steps.shape or negative.shape != steps.shape or steps.size == 0:
+        raise ValueError("DQM remainder ladders must match the nonempty step ladder")
+    if np.any(steps <= 0.0):
+        raise ValueError("array dqm_step_sizes must be strictly positive")
+    if np.any(positive <= 0.0):
+        raise ValueError("array dqm_remainder_positive must be strictly positive")
+    if np.any(negative <= 0.0):
+        raise ValueError("array dqm_remainder_negative must be strictly positive")
+
+    figure = Figure(figsize=(3.5, 3.15), layout="constrained")
+    grid = figure.add_gridspec(2, 2)
+    fine_axis = figure.add_subplot(grid[0, 0])
+    coarse_axis = figure.add_subplot(grid[0, 1])
+    remainder_axis = figure.add_subplot(grid[1, :])
+
+    def score_panel(
+        axis: object,
+        analytic: np.ndarray,
+        finite_difference: np.ndarray,
+        title: str,
+    ) -> None:
+        positions = np.arange(analytic.size)
+        axis.plot(
+            positions,
+            analytic.ravel(),
+            color=OKABE_ITO[0],
+            linestyle="-",
+            marker="o",
+            markersize=3.2,
+            linewidth=0.9,
+            label="Analytic",
+        )
+        axis.plot(
+            positions,
+            finite_difference.ravel(),
+            color=OKABE_ITO[5],
+            linestyle="--",
+            marker="x",
+            markersize=3.8,
+            linewidth=0.9,
+            label="Finite difference",
+        )
+        axis.axhline(0.0, color=OKABE_ITO[0], linewidth=0.5, linestyle=":")
+        axis.set_title(title)
+        axis.set_xlabel("Component")
+        axis.set_ylabel("Score")
+
+    score_panel(fine_axis, analytic_fine, finite_difference_fine, "Fine score")
+    score_panel(
+        coarse_axis, analytic_coarse, finite_difference_coarse, "Coarse score"
+    )
+    fine_axis.legend(frameon=False, loc="best")
+
+    order = np.argsort(steps)
+    remainder_axis.loglog(
+        steps[order],
+        positive[order],
+        color=OKABE_ITO[5],
+        linestyle="-",
+        marker="o",
+        markersize=3.2,
+        linewidth=0.9,
+        label="Positive perturbation",
+    )
+    remainder_axis.loglog(
+        steps[order],
+        negative[order],
+        color=OKABE_ITO[6],
+        linestyle="--",
+        marker="s",
+        markerfacecolor="none",
+        markersize=3.5,
+        linewidth=0.9,
+        label="Negative perturbation",
+    )
+    remainder_axis.set_title("Two-sided normalized DQM remainder")
+    remainder_axis.set_xlabel("Step size")
+    remainder_axis.set_ylabel("Remainder")
+    remainder_axis.legend(frameon=False, loc="best")
+    for label, axis in zip(
+        "ABC", (fine_axis, coarse_axis, remainder_axis), strict=True
+    ):
+        axis.text(
+            -0.16 if axis is not remainder_axis else -0.08,
+            1.08,
+            label,
+            transform=axis.transAxes,
+            fontsize=9,
+            fontweight="bold",
+            va="top",
+        )
+    return figure
+
+
+def _figure_caption(
+    name: str,
+    metrics: Mapping[str, object],
+    arrays: Mapping[str, np.ndarray],
+) -> str:
+    del metrics
+    if name in {"finite_identity", "gaussian_spectrum"}:
+        return "n=1 exact fixture"
+    if name == "attention_composition":
+        probabilities = _saved_array(
+            arrays, "direct_coarse_state_probability", ndim=1
+        )
+        if probabilities.shape != (2,):
+            raise ValueError(
+                "direct_coarse_state_probability must match the two final states"
+            )
+        values = ", ".join(f"{value:.6g}" for value in probabilities)
+        return (
+            "Exact finite marked-event composition diagnostic from finalized saved "
+            f"artifacts at final-state probabilities ({values}); no sampling, error "
+            "bars, or significance tests."
+        )
+    if name == "categorical_dqm":
+        theta = _saved_array(arrays, "theta", ndim=1)
+        direction = _saved_array(arrays, "direction", ndim=1)
+        steps = _saved_array(arrays, "dqm_step_sizes", ndim=1)
+        if theta.size == 0 or direction.shape != theta.shape or steps.size == 0:
+            raise ValueError(
+                "categorical DQM theta, direction, and step ladder are inconsistent"
+            )
+        theta_text = ", ".join(f"{value:.6g}" for value in theta)
+        direction_text = ", ".join(f"{value:.6g}" for value in direction)
+        return (
+            "Categorical DQM numerical diagnostic from finalized saved artifacts at "
+            f"theta=({theta_text}), direction=({direction_text}), and step range "
+            f"[{steps.min():.6g}, {steps.max():.6g}]; analytic/finite-difference "
+            "agreement and the finite remainder ladder are implementation checks, "
+            "not an analytic proof."
+        )
+    raise ValueError(f"unsupported figure: {name}")
+
+
+def _saved_array(
+    arrays: Mapping[str, np.ndarray], name: str, *, ndim: int
+) -> np.ndarray:
+    values = arrays.get(name)
+    if values is None:
+        raise ValueError(f"arrays.npz lacks {name}")
+    try:
+        array = np.asarray(values, dtype=np.float64)
+    except (TypeError, ValueError) as error:
+        raise ValueError(f"array {name} must be numeric") from error
+    if array.ndim != ndim or array.size == 0:
+        raise ValueError(f"array {name} must be a nonempty {ndim}-dimensional array")
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"array {name} must be finite")
+    return array
 
 
 def _finite_number(value: object) -> bool:
