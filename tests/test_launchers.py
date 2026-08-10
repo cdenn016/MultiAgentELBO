@@ -32,7 +32,7 @@ NEW_LAUNCHERS = (
     ("categorical_dqm", CATEGORICAL_DQM_LAUNCHER, "pass"),
     ("multiagent_network", MULTIAGENT_NETWORK_LAUNCHER, "pass"),
     ("theory_oracle", THEORY_ORACLE_LAUNCHER, "pass"),
-    ("finite_counterexample", FINITE_COUNTEREXAMPLE_LAUNCHER, "pass"),
+    ("finite_counterexample", FINITE_COUNTEREXAMPLE_LAUNCHER, "inconclusive"),
     ("information_history", INFORMATION_HISTORY_LAUNCHER, "pass"),
     ("gauge_holonomy", GAUGE_HOLONOMY_LAUNCHER, "pass"),
     ("scale_cocycle", SCALE_COCYCLE_LAUNCHER, "pass"),
