@@ -932,8 +932,42 @@ def test_preregistration_digest_is_stable_across_windows_line_endings(tmp_path: 
 
     assert (
         _validate_preregistration(windows_copy)
-        == "30c9b98cec1d6a5f266265157ae805c2ba0afe24cf1d0982aa4da7827858b015"
+        == "b86265e89d4a324385e7f412c03500422fe0f54cd3402a960d82c1364ff8c2aa"
     )
+
+
+def test_preregistration_freezes_confirmatory_analysis_amendment(tmp_path: Path):
+    from multiagent_elbo.realizations.gaussian.fixed_ray_experiment import (
+        _validate_preregistration,
+    )
+
+    repository = Path(__file__).resolve().parents[1]
+    preregistration = (
+        repository
+        / "docs"
+        / "experiments"
+        / "2026-08-09-gaussian-fixed-ray-preregistration.md"
+    )
+    source = preregistration.read_text(encoding="utf-8")
+    assert "2026-08-09-gaussian-fixed-ray-v1a" in source
+    for endpoint_id in (
+        "construction_residual",
+        "retained_beta_trend",
+        "basin_exit_rate",
+        "scheme_dispersion",
+        "conditioning_trend",
+        "rejection_rate",
+    ):
+        assert f"`{endpoint_id}`" in source
+    assert _validate_preregistration(preregistration)
+
+    mutated = tmp_path / "mutated.md"
+    mutated.write_text(
+        source.replace("exact one-sided sign test", "unspecified test", 1),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="frozen"):
+        _validate_preregistration(mutated)
 
 
 def test_gaussian_launcher_is_click_to_run_from_fresh_uninstalled_checkout(

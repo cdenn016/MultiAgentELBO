@@ -48,7 +48,7 @@ from .fixed_ray import (
 
 MetricStatus = Literal["pass", "fail", "inconclusive"]
 _PREREGISTRATION_SHA256 = (
-    "30c9b98cec1d6a5f266265157ae805c2ba0afe24cf1d0982aa4da7827858b015"
+    "b86265e89d4a324385e7f412c03500422fe0f54cd3402a960d82c1364ff8c2aa"
 )
 
 
@@ -1155,6 +1155,15 @@ def _validate_preregistration(path: Path) -> str:
         "`C001`-`C030`",
         "`H001`-`H010`",
         "Mathematical `REFUTED` requires",
+        "2026-08-09-gaussian-fixed-ray-v1a",
+        "`construction_residual`",
+        "`retained_beta_trend`",
+        "`basin_exit_rate`",
+        "`scheme_dispersion`",
+        "`conditioning_trend`",
+        "`rejection_rate`",
+        "exact one-sided sign test",
+        "confirmatory-analysis-bootstrap-v1",
     )
     if any(literal not in text for literal in required_literals):
         raise ValueError("preregistration is missing a frozen decision literal")

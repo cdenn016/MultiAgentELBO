@@ -93,6 +93,65 @@ Scientific confirmation uses float64. Float32 is a screening/throughput lane onl
 
 A run is rejected only for a nonfinite input/output, failure of exact job/manifest/hash identity, loss of symmetry or positive definiteness of `M0`, matrix-direction condition number above `1e12`, a coefficient leaving the strictly positive domain, or a worker protocol/backend/dtype mismatch. Threshold misses, basin exits, and nonattraction are outcomes, not exclusions. Every planned, completed, rejected, retried, and missing job remains in the manifest.
 
+## Confirmatory analysis amendment
+
+Amendment date: 2026-08-10
+Amended protocol ID: `2026-08-09-gaussian-fixed-ray-v1a`
+
+This amendment was frozen before any confirmatory `C` or `H` execution. One
+master-seed job is the independent unit. Its two schemes and eight map
+applications are repeated measurements. For every lower-is-better paired
+endpoint, the per-job statistic is the larger, least favorable value across the
+two schemes. For a Boolean event, the paired statistic is true when either
+scheme has the event.
+
+The primary per-job statistic is the larger of the two ordinary-least-squares
+projective-angle slopes over scales `4,...,8`. Primary inference is the median
+of those 30 `C` statistics with a two-sided 95% percentile interval from exactly
+10,000 immutable whole-job bootstrap resamples. The supporting scale-8
+normalized-distance statistic is reduced and resampled in the same paired way.
+Neither schemes nor scales are counted as independent replicates.
+
+The Holm family contains exactly these six one-sided secondary tests:
+
+| Endpoint ID | Per-job statistic | Composite null boundary | P-value construction |
+|---|---|---|---|
+| `construction_residual` | maximum residual over both schemes and all scales | population median is at least `1e-12` | exact one-sided sign test |
+| `retained_beta_trend` | larger retained-beta-residual slope over labeled scales `4,...,8` | population median slope is at least `0` | exact one-sided sign test |
+| `basin_exit_rate` | either scheme exits at any scale | event probability is at least `0.05` | exact lower-tail binomial test at `p=0.05` |
+| `scheme_dispersion` | paired normalized-ray dispersion at scale 8 | population median is at least `0.02` | exact one-sided sign test |
+| `conditioning_trend` | larger slope of log coefficient conditioning over scales `4,...,8` | population median slope is at least `0` | exact one-sided sign test |
+| `rejection_rate` | either scheme is rejected | event probability is at least `0.05` | exact lower-tail binomial test at `p=0.05` |
+
+For an exact one-sided sign test, equality with the boundary is not favorable.
+If `k` of `n` finite, available job summaries are strictly below the boundary,
+the raw p-value is `P(Binomial(n,1/2) >= k)`. For an event-rate test with `x`
+events, it is `P(Binomial(n,0.05) <= x)`. Holm adjustment sorts by raw p-value
+and then endpoint ID, multiplies by the number of remaining hypotheses, applies
+the ordered cumulative maximum, and caps at one. All raw values, adjusted
+values, ranks, and decisions at familywise alpha `0.05` are retained. Holm
+significance is reported evidence and does not change the already frozen
+support or counterevidence rules.
+
+Each bootstrap substream is derived from the amended protocol ID, exact planned
+job-table hash, literal `confirmatory-analysis-bootstrap-v1`, and endpoint ID.
+Every resample draws complete job indices with replacement. The unsigned 64-bit
+seed, endpoint label, sample count, input hash, resampled-index hash, and output
+hash are retained.
+
+Rejected jobs remain in the 30-job denominator. A rejected job counts toward
+`rejection_rate`; an unavailable continuous endpoint is ordered as least
+favorable and explicitly recorded as a censored worst-case observation. An
+exhausted infrastructure retry is missing, and any missing `C` job makes the
+overall classification inconclusive.
+
+All `C` jobs and the primary analysis must be complete, canonicalized, and
+SHA-256-bound before the `H` population is released. The holdout receives the
+same paired reductions, estimators, intervals, and thresholds once, but no
+p-values, no Holm decisions, no tuning, and no revision of the primary
+classification. Prior sentinel executions remain parity-only and cannot be
+reused as scientific `C` or `H` observations.
+
 ## Compute budget, sentinel parity, and stopping rule
 
 The pilot budget is four paired CPU initial conditions, eight steps, float64, and at most 2 GB resident memory. It may run with `heavy_sweep_enabled=False`. The confirmatory budget is the 40 paired `C`/`H` initial conditions, eight steps, float64, one heavy job at a time, at most 5 minutes and 8 GB allocated GPU memory per paired job, with one retry only for infrastructure failure under the identical immutable job ID and explicit retry lineage. OOM is a failed job and never triggers silent batch adaptation.
