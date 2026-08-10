@@ -243,6 +243,28 @@ def test_preregistration_validation_precedes_rng_worker_and_artifact_creation(
     assert not output_root.exists()
 
 
+def test_preregistration_digest_is_stable_across_windows_line_endings(tmp_path: Path):
+    from multiagent_elbo.realizations.gaussian.fixed_ray_experiment import (
+        _validate_preregistration,
+    )
+
+    repository = Path(__file__).resolve().parents[1]
+    source = (
+        repository
+        / "docs"
+        / "experiments"
+        / "2026-08-09-gaussian-fixed-ray-preregistration.md"
+    )
+    canonical = source.read_bytes().replace(b"\r\n", b"\n")
+    windows_copy = tmp_path / "preregistration-crlf.md"
+    windows_copy.write_bytes(canonical.replace(b"\n", b"\r\n"))
+
+    assert (
+        _validate_preregistration(windows_copy)
+        == "b9eeac423f9181feff6847c99abaae8865fc95b754fda85f7b87fc0b636c0186"
+    )
+
+
 def test_gaussian_launcher_is_click_to_run_from_fresh_uninstalled_checkout(
     tmp_path: Path,
 ):

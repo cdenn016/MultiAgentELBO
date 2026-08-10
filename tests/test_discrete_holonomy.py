@@ -109,6 +109,25 @@ def test_interaction_complex_rejects_a_reversal_that_is_not_fixed_point_free():
         )
 
 
+def test_interaction_complex_defensively_copies_two_cell_boundaries():
+    """Mutation caught: retaining a caller-owned mutable boundary list."""
+    boundary = ["ab", "bc", "ca"]
+    complex_ = hol.InteractionComplex(
+        vertices=("a", "b", "c"),
+        edges=(
+            *_edge_pair("ab", "a", "b", "ba"),
+            *_edge_pair("bc", "b", "c", "cb"),
+            *_edge_pair("ca", "c", "a", "ac"),
+        ),
+        two_cells=(hol.OrientedTwoCell("abc", boundary),),
+    )
+
+    boundary[:] = ["ab"]
+
+    assert complex_.two_cells[0].boundary == ("ab", "bc", "ca")
+    assert isinstance(complex_.two_cells[0].boundary, tuple)
+
+
 @pytest.mark.parametrize(
     ("complex_", "message"),
     [

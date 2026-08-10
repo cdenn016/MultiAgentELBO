@@ -52,6 +52,7 @@ def _file_sha256(path: Path) -> str:
 
 
 def _canonical_text_sha256(path: Path) -> str:
+    """Hash text with Git's LF representation as the canonical form."""
     raw = path.read_bytes()
     canonical = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
     return hashlib.sha256(canonical).hexdigest()
