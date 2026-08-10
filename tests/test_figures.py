@@ -216,6 +216,107 @@ def _write_combined_run(run_dir: Path, *source_dirs: Path) -> None:
     )
 
 
+def _write_buildout_metric_run(run_dir: Path) -> None:
+    metric_names = (
+        "elbo_gap_residual",
+        "evidence_residual",
+        "hoeffding_reconstruction_residual",
+        "local_collective_residual",
+        "pairwise_retained_residual",
+        "recognition_lift_residual",
+        "elbo_oracle_residual",
+        "fisher_defect_oracle_residual",
+        "gaussian_linear_algebra_oracle_residual",
+        "hoeffding_oracle_residual",
+        "marked_event_associativity_residual",
+        "marked_event_source_mass_gap",
+        "pairwise_truncation_residual",
+        "parameter_dependent_channel_gap",
+        "single_law_relabeling_gap",
+        "support_violation_count",
+        "arc_length_reparameterization_residual",
+        "fisher_defect_residual",
+        "natural_gradient_range_residual",
+        "score_finite_difference_residual",
+        "semiconjugacy_defect_norm",
+        "broken_link_negative_control",
+        "cycle_conjugacy_invariant_residual",
+        "operational_observable_residual",
+        "passive_covariance_residual",
+        "trivialization_residual",
+        "cocycle_composition_residual",
+        "direct_staged_pushforward_residual",
+        "generated_higher_order_coefficient",
+        "pairwise_truncation_control",
+        "retained_beta_residual",
+        "wrong_order_negative_control",
+        "basin_exit_rate",
+        "blocking_scheme_dispersion",
+        "cpu_cuda_parity_residual",
+        "normalized_coupling_distance",
+        "off_family_nonlinear_remainder",
+        "projective_ray_angle",
+    )
+    metrics = {
+        name: {
+            "value": float(index) * 1.0e-6,
+            "tolerance": 1.0e-9,
+            "status": (
+                "inconclusive" if name == "cpu_cuda_parity_residual" else "pass"
+            ),
+        }
+        for index, name in enumerate(metric_names)
+    }
+    run_dir.mkdir(parents=True)
+    (run_dir / "config.json").write_text("{}", "utf-8")
+    (run_dir / "metrics.json").write_text(
+        json.dumps(metrics, sort_keys=True, separators=(",", ":")), "utf-8"
+    )
+    with (run_dir / "laboratory_arrays.npz").open("wb") as handle:
+        np.savez(handle, witness=np.array([1.0]))
+    (run_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "complete": True,
+                "artifacts": {
+                    "config.json": "complete",
+                    "laboratory_arrays.npz": "complete",
+                    "manifest.json": "complete",
+                    "metrics.json": "complete",
+                },
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ),
+        "utf-8",
+    )
+
+
+def test_buildout_replay_supports_split_numeric_archives_and_all_lab_figures(
+    tmp_path: Path,
+):
+    run_dir = tmp_path / "buildout-run"
+    _write_buildout_metric_run(run_dir)
+    requested = (
+        "multiagent_network",
+        "theory_oracles",
+        "finite_counterexamples",
+        "information_history",
+        "gauge_holonomy",
+        "scale_cocycle",
+        "gaussian_fixed_ray",
+    )
+
+    manifest = render_run(run_dir, tmp_path / "figures", requested=requested)
+
+    assert manifest.status == "complete", manifest.message
+    assert tuple(record.name for record in manifest.figures) == requested
+    assert all(record.png.is_file() and record.pdf.is_file() for record in manifest.figures)
+    caption = json.loads(manifest.manifest_path.read_text("utf-8"))["caption"]
+    assert "heterogeneous units" in caption
+    assert "cuda parity remains inconclusive" in caption.lower()
+
+
 def test_finite_replay_uses_finalized_saved_artifacts_and_local_style(tmp_path: Path):
     run = run_finite_experiment(_finite_config(tmp_path / "runs"))
     output_dir = tmp_path / "figures"

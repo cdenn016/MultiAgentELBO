@@ -47,8 +47,91 @@ _STYLE: Mapping[str, object] = {
 _FIGURE_FILENAMES = {
     "attention_composition": "attention-composition",
     "categorical_dqm": "categorical-dqm-diagnostic",
+    "finite_counterexamples": "finite-counterexample-diagnostics",
     "finite_identity": "finite-identity-residuals",
+    "gauge_holonomy": "gauge-holonomy-diagnostics",
+    "gaussian_fixed_ray": "gaussian-fixed-ray-diagnostics",
     "gaussian_spectrum": "gaussian-generalized-spectrum",
+    "information_history": "information-history-diagnostics",
+    "multiagent_network": "multiagent-network-diagnostics",
+    "scale_cocycle": "scale-cocycle-diagnostics",
+    "theory_oracles": "theory-oracle-diagnostics",
+}
+
+_LABORATORY_FIGURES = {
+    "multiagent_network": (
+        "Multi-agent network identities",
+        (
+            "elbo_gap_residual",
+            "evidence_residual",
+            "hoeffding_reconstruction_residual",
+            "local_collective_residual",
+            "pairwise_retained_residual",
+            "recognition_lift_residual",
+        ),
+    ),
+    "theory_oracles": (
+        "Independent theory-oracle residuals",
+        (
+            "elbo_oracle_residual",
+            "fisher_defect_oracle_residual",
+            "gaussian_linear_algebra_oracle_residual",
+            "hoeffding_oracle_residual",
+            "marked_event_associativity_residual",
+        ),
+    ),
+    "finite_counterexamples": (
+        "Finite counterexample witnesses",
+        (
+            "marked_event_source_mass_gap",
+            "pairwise_truncation_residual",
+            "parameter_dependent_channel_gap",
+            "single_law_relabeling_gap",
+            "support_violation_count",
+        ),
+    ),
+    "information_history": (
+        "Information-history diagnostics",
+        (
+            "arc_length_reparameterization_residual",
+            "fisher_defect_residual",
+            "natural_gradient_range_residual",
+            "score_finite_difference_residual",
+            "semiconjugacy_defect_norm",
+        ),
+    ),
+    "gauge_holonomy": (
+        "Gauge and holonomy diagnostics",
+        (
+            "broken_link_negative_control",
+            "cycle_conjugacy_invariant_residual",
+            "operational_observable_residual",
+            "passive_covariance_residual",
+            "trivialization_residual",
+        ),
+    ),
+    "scale_cocycle": (
+        "Scale-cocycle diagnostics",
+        (
+            "cocycle_composition_residual",
+            "direct_staged_pushforward_residual",
+            "generated_higher_order_coefficient",
+            "pairwise_truncation_control",
+            "retained_beta_residual",
+            "wrong_order_negative_control",
+        ),
+    ),
+    "gaussian_fixed_ray": (
+        "Gaussian fixed-ray pilot diagnostics",
+        (
+            "basin_exit_rate",
+            "blocking_scheme_dispersion",
+            "cpu_cuda_parity_residual",
+            "normalized_coupling_distance",
+            "off_family_nonlinear_remainder",
+            "projective_ray_angle",
+        ),
+    ),
 }
 
 
@@ -306,20 +389,44 @@ def _load_finalized_artifacts(
     inventory = manifest.get("artifacts")
     if not isinstance(inventory, dict):
         raise ValueError("finalized numerical manifest has no artifact inventory")
-    for filename in ("metrics.json", "arrays.npz"):
-        if inventory.get(filename) != "complete" or not (run_dir / filename).is_file():
-            raise ValueError(f"finalized numerical run lacks {filename}")
+    if inventory.get("metrics.json") != "complete" or not (
+        run_dir / "metrics.json"
+    ).is_file():
+        raise ValueError("finalized numerical run lacks metrics.json")
+    numeric_archives = tuple(
+        sorted(
+            filename
+            for filename, status in inventory.items()
+            if filename.endswith(".npz") and status == "complete"
+        )
+    )
+    if not numeric_archives:
+        raise ValueError("finalized numerical run lacks a complete numeric archive")
     try:
         metrics = json.loads((run_dir / "metrics.json").read_text("utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise ValueError("metrics.json is not readable JSON") from error
     if not isinstance(metrics, dict):
         raise ValueError("metrics.json must contain an object")
+    arrays: dict[str, np.ndarray] = {}
     try:
-        with np.load(run_dir / "arrays.npz", allow_pickle=False) as archive:
-            arrays = {name: np.array(archive[name], copy=True) for name in archive.files}
+        for filename in numeric_archives:
+            archive_path = run_dir / filename
+            if not archive_path.is_file():
+                raise ValueError(f"finalized numerical run lacks {filename}")
+            prefix = "" if filename == "arrays.npz" else f"{archive_path.stem}__"
+            with np.load(archive_path, allow_pickle=False) as archive:
+                for name in archive.files:
+                    qualified = f"{prefix}{name}"
+                    if qualified in arrays:
+                        raise ValueError(
+                            f"duplicate saved numeric array name: {qualified}"
+                        )
+                    arrays[qualified] = np.array(archive[name], copy=True)
     except (OSError, ValueError) as error:
-        raise ValueError("arrays.npz is not a readable numeric archive") from error
+        if str(error).startswith(("finalized numerical run", "duplicate saved")):
+            raise
+        raise ValueError("saved NPZ artifact is not a readable numeric archive") from error
     return metrics, arrays
 
 
@@ -340,6 +447,9 @@ def _render_requested_figure(
             figure = _attention_composition_figure(arrays)
         elif name == "categorical_dqm":
             figure = _categorical_dqm_figure(arrays)
+        elif name in _LABORATORY_FIGURES:
+            title, keys = _LABORATORY_FIGURES[name]
+            figure = _laboratory_metric_figure(metrics, title, keys)
         else:  # guarded by _normalize_requested
             raise ValueError(f"unsupported figure: {name}")
         try:
@@ -727,12 +837,73 @@ def _categorical_dqm_figure(arrays: Mapping[str, np.ndarray]) -> Figure:
     return figure
 
 
+def _laboratory_metric_figure(
+    metrics: Mapping[str, object], title: str, keys: Sequence[str]
+) -> Figure:
+    values: list[float] = []
+    statuses: list[str] = []
+    for key in keys:
+        record = metrics.get(key)
+        if not isinstance(record, dict):
+            raise ValueError(f"metrics.json lacks {key}")
+        value = record.get("value")
+        status = record.get("status")
+        if not _finite_number(value):
+            raise ValueError(f"metric {key} has a nonfinite value")
+        if status not in {"pass", "fail", "inconclusive"}:
+            raise ValueError(f"metric {key} has an unsupported status")
+        values.append(float(value))
+        statuses.append(str(status))
+
+    colors = {
+        "pass": OKABE_ITO[3],
+        "inconclusive": OKABE_ITO[1],
+        "fail": OKABE_ITO[6],
+    }
+    labels = tuple(key.replace("_", " ") for key in keys)
+    positions = np.arange(len(values))
+    figure = Figure(figsize=(4.5, 3.15), layout="constrained")
+    axis = figure.subplots()
+    bars = axis.bar(
+        positions,
+        values,
+        color=[colors[status] for status in statuses],
+        edgecolor=OKABE_ITO[0],
+        linewidth=0.6,
+        width=0.7,
+    )
+    for bar, status in zip(bars, statuses, strict=True):
+        if status == "inconclusive":
+            bar.set_hatch("//")
+        elif status == "fail":
+            bar.set_hatch("xx")
+    nonzero = [abs(value) for value in values if value != 0.0]
+    linthresh = min(nonzero) / 10.0 if nonzero else 1.0e-12
+    axis.set_yscale("symlog", linthresh=max(linthresh, 1.0e-16))
+    axis.axhline(0.0, color=OKABE_ITO[0], linewidth=0.7)
+    axis.set_xticks(positions, labels, rotation=32, ha="right")
+    axis.set_ylabel("Reported scalar value (symlog)")
+    axis.set_title(title)
+    for position, value, status in zip(positions, values, statuses, strict=True):
+        if status != "pass":
+            axis.annotate(
+                status,
+                (position, value),
+                xytext=(0, 4),
+                textcoords="offset points",
+                ha="center",
+                va="bottom",
+                fontsize=6,
+                rotation=90,
+            )
+    return figure
+
+
 def _figure_caption(
     name: str,
     metrics: Mapping[str, object],
     arrays: Mapping[str, np.ndarray],
 ) -> str:
-    del metrics
     if name in {"finite_identity", "gaussian_spectrum"}:
         return "n=1 exact fixture"
     if name == "attention_composition":
@@ -765,6 +936,21 @@ def _figure_caption(
             f"[{steps.min():.6g}, {steps.max():.6g}]; analytic/finite-difference "
             "agreement and the finite remainder ladder are implementation checks, "
             "not an analytic proof."
+        )
+    if name in _LABORATORY_FIGURES:
+        title, keys = _LABORATORY_FIGURES[name]
+        for key in keys:
+            if not isinstance(metrics.get(key), dict):
+                raise ValueError(f"metrics.json lacks {key}")
+        scope = (
+            " CUDA parity remains inconclusive and the heavy sweep was not run."
+            if name == "gaussian_fixed_ray"
+            else ""
+        )
+        return (
+            f"{title} from finalized saved metrics. Values have heterogeneous units "
+            "and are not comparable across bars; colors encode recorded metric status. "
+            f"Numerical diagnostics are not analytic proofs.{scope}"
         )
     raise ValueError(f"unsupported figure: {name}")
 
