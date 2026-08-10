@@ -369,3 +369,113 @@ kernel is parameter-independent across an unexamined family, or establish RG uni
 - **Theory source pointer:** `Theory/10_renormalization.tex`, scalarized restrictions and open
   universality boundary; `Theory/07_general_renormalization.tex`, comparison data and limiting
   obligations.
+
+## Six-session buildout registry supplement
+
+The following experiment-level entries bind the seven frozen laboratory
+discriminators to their claim boundary. Exact metric names, artifact inventories,
+fixtures, and thresholds are frozen in
+`docs/superpowers/specs/2026-08-09-six-session-laboratory-contract.md`; the lane
+result records contain the realized values. A passing finite run closes only the
+named implementation or fixture claim.
+
+### BUILD-01 — Multi-agent network application
+
+- **Epistemic status:** Exact finite application identities are established under
+  the checked premises; consensus, frustration, and higher-order interpretations
+  outside the fixture remain hypotheses.
+- **Prediction:** The frozen application tuple preserves evidence, reconstructs the
+  Hoeffding action, and matches the declared local/collective and recognition-lift
+  identities.
+- **Null and controls:** Any registered residual exceeds its exact or scale-aware
+  bound; the overlapping-local-objective and recognition-lift mutations must remain
+  detectably nonzero.
+- **Inconclusive rule:** A changed application digest, failed premise, unsupported
+  scenario, or incomplete artifact prevents application-level closure.
+- **Current state:** `EVIDENCE_VERIFIED` for the registered CPU fixture checks.
+
+### BUILD-02 — Independent theory oracles
+
+- **Epistemic status:** Standard finite identities with independent exact-arithmetic
+  derivations; agreement is an implementation check, not a new theorem.
+- **Prediction:** Production ELBO, Fisher-defect, Gaussian linear-algebra,
+  Hoeffding, and marked-event values agree with independently constructed oracles.
+- **Null and controls:** A production/oracle residual exceeds its registered bound;
+  literal commuting-diagram mutations must be rejected or remain separated.
+- **Inconclusive rule:** A missing theorem premise, changed frozen application, or
+  incomplete exact numerator/denominator record prevents closure.
+- **Current state:** `EVIDENCE_VERIFIED` for all five registered CPU oracles.
+
+### BUILD-03 — Minimal finite counterexamples
+
+- **Epistemic status:** Explicit in-domain witnesses can refute an overbroad claim;
+  bounded enumeration cannot prove the absence of other counterexamples.
+- **Prediction:** The pinned catalog exhibits support failure, marked-event source
+  mismatch, parameter-dependent-channel score failure, relabeling mismatch, and
+  pairwise-truncation failure within the declared bounds.
+- **Null and controls:** A witness collapses, is not minimal under the frozen search
+  order, or fails exact rational replay; relabeling and retained-order metamorphics
+  guard catalog construction.
+- **Inconclusive rule:** Search outside the enumerated state/denominator bounds or a
+  changed ordering rule is not covered by the catalog.
+- **Current state:** `EVIDENCE_VERIFIED` for the five pinned finite witnesses.
+
+### BUILD-04 — Information histories
+
+- **Epistemic status:** Fisher pullback and range identities are established under
+  their regularity premises; the finite history and semiconjugacy values are
+  application-specific numerical diagnostics.
+- **Prediction:** Analytic and finite-difference scores agree, Fisher defects and
+  natural-gradient range residuals meet tolerance, information duration is chart
+  invariant, and the declared semiconjugacy defect remains measurable.
+- **Null and controls:** Any identity residual exceeds tolerance; rank-deficient,
+  sign-mutation, and same-endpoint path controls must retain their registered
+  separation.
+- **Inconclusive rule:** Rank, support, smoothness, or comparison-map premise failure
+  makes the corresponding identity inapplicable rather than refuted.
+- **Current state:** `EVIDENCE_VERIFIED` for the registered deterministic CPU history.
+
+### BUILD-05 — Gauge holonomy and operational records
+
+- **Epistemic status:** Finite graph-link covariance and conjugacy statements are
+  established under typed frame changes; physical or continuum interpretation is
+  limited to the declared operational fixture.
+- **Prediction:** Passive frame changes preserve the registered observables and cycle
+  invariants, flat cases trivialize, and a broken link remains detectably different.
+- **Null and controls:** Covariance, conjugacy, or operational residuals exceed their
+  bounds; the broken-link control collapses or a nonflat cycle is mislabeled flat.
+- **Inconclusive rule:** Ill-conditioned frames, absent comparison data, or a claim
+  about continuum connection geometry lies outside this finite experiment.
+- **Current state:** `EVIDENCE_VERIFIED` for the five finite scenarios and controls.
+
+### BUILD-06 — Exact scale cocycle
+
+- **Epistemic status:** The finite three-level composition and retained-residual
+  identities are exact under the frozen extension; generated higher-order values are
+  numerical/application-specific.
+- **Prediction:** Direct and staged pushforwards, posterior bridges, derivative
+  cocycles, and equivalent beta-residual forms agree, while wrong-order and fixed-
+  projection mutations remain separated.
+- **Null and controls:** Any exact residual is nonzero, the generated triple term
+  collapses, or a typed wrong-order mutation is silently accepted.
+- **Inconclusive rule:** A changed comparison isomorphism, interaction basis, or
+  extension digest requires a new preregistration and evidence run.
+- **Current state:** `EVIDENCE_VERIFIED` for the registered CPU scale identities and
+  finite generated-interaction diagnostics.
+
+### BUILD-07 — Gaussian fixed-ray pilot and CUDA parity
+
+- **Epistemic status:** Finite CPU trajectories are `NUMERICAL`; attraction and
+  universality remain open. CUDA parity is a separate open implementation claim.
+- **Prediction:** Within the frozen pilot population, projective angle and normalized
+  distance are reported across scales without basin exit, blocking-scheme dispersion
+  remains measured, and a float64 CUDA sentinel eventually agrees with the CPU
+  controller and worker within the preregistered bound.
+- **Null and controls:** Noncommuting blocking schemes must remain distinguishable,
+  the commuting mutation must collapse, and an injected parity mutation must fail.
+- **Inconclusive rule:** Pilot-only execution, absent CUDA gate, missing operator
+  opt-in, an unverified worker/environment hash, or an unrun confirmatory job table
+  leaves the CUDA and attraction claims inconclusive.
+- **Current state:** CPU pilot diagnostics are `EVIDENCE_VERIFIED`; CUDA parity and
+  confirmatory attraction remain `INCONCLUSIVE`. `heavy_sweep_enabled=false` and
+  `confirmatory_executed=false`.

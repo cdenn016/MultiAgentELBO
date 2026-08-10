@@ -158,3 +158,30 @@ evidence. Final verification-ledger binding remains intentionally pending.
 - These reviews establish readiness of the declared implementation scope. They
   do not establish universal mathematical claims, Gaussian family membership
   for external data, or RG universality.
+
+## Six-session buildout review index and integration disposition
+
+The six implementation lanes carry durable review records written before serial
+integration:
+
+- [Session 1 multi-agent network](reviews/2026-08-09-multiagent-network-review.md)
+- [Session 2 exact theory oracles](reviews/2026-08-09-theory-oracle-review.md)
+- [Session 3 finite counterexamples](reviews/2026-08-09-finite-counterexample-review.md)
+- [Session 4 information histories](reviews/2026-08-09-information-history-review.md)
+- [Session 5 gauge holonomy](reviews/2026-08-09-gauge-holonomy-review.md)
+- [Session 6 scale, RG, and CUDA](reviews/2026-08-09-scale-rg-cuda-review.md)
+
+The integration coordinator independently reproduced each lane's full CPU suite
+at its committed head, verified clean allowlisted diffs, and then ran a fresh
+full suite after every merge in the prescribed order. Cross-lane launcher tests
+exposed and fixed two Session 6 launcher integration defects. The Session 6
+merge also exposed a Windows LF/CRLF preregistration-digest defect; its focused
+regression and full merged suite are green. Saved-artifact replay was exercised
+against actual finalized outputs from all seven new laboratories.
+
+Disposition: **CPU integration ready; final closure pending.** No unresolved
+Critical or Important finding is recorded in the six lane reviews, but those
+reviews do not substitute for an independent review of the final integration
+SHA. The final-SHA review, final ledger rebinding, and CUDA sentinel remain open
+gates. CUDA parity is `INCONCLUSIVE`, and the heavy confirmatory sweep was not
+run because the required operator opt-in was absent.
