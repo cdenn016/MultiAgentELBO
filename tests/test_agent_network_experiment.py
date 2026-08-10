@@ -67,7 +67,7 @@ def test_run_publishes_frozen_inventory_with_orthogonal_claim_fields(
     )
     assert all(metric.status == "pass" for metric in result.metrics.values())
     assert all(
-        metric.verification_state == "EVIDENCE_VERIFIED"
+        metric.verification_state == "CANDIDATE"
         for metric in result.metrics.values()
     )
     assert result.metrics["recognition_lift_residual"].theorem_status == "HYPOTHESIS"
@@ -103,9 +103,7 @@ def test_run_publishes_frozen_inventory_with_orthogonal_claim_fields(
     )
     assert manifest["provenance"]["performance_record"]["runtime_seconds"] > 0.0
     assert manifest["provenance"]["performance_record"]["tracemalloc_peak_bytes"] > 0
-    assert claims["fixed_channel_premise"]["verification_state"] == (
-        "EVIDENCE_VERIFIED"
-    )
+    assert claims["fixed_channel_premise"]["verification_state"] == "CANDIDATE"
 
 
 @pytest.mark.parametrize(

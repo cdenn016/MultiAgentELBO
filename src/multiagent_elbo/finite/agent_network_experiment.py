@@ -108,7 +108,7 @@ def _metric(
         target=target,
         interpretation=interpretation,
         theorem_status=theorem_status,
-        verification_state="EVIDENCE_VERIFIED" if verified else "INCONCLUSIVE",
+        verification_state="CANDIDATE" if verified else "INCONCLUSIVE",
         claim_origin=claim_origin,
     )
 
@@ -320,9 +320,10 @@ def _evaluate(
     claims: Mapping[str, object] = MappingProxyType(
         {
             "application_id": fixture.application_id,
-            "fixed_channel_premise": asdict(
-                assess_fixed_channel_premise(recognition_independent=True)
-            ),
+            "fixed_channel_premise": {
+                **asdict(assess_fixed_channel_premise(recognition_independent=True)),
+                "verification_state": "CANDIDATE",
+            },
             "parameter_dependent_control": asdict(parameter_dependent),
             "record_names": list(record_names),
             "scenario": application.scenario,

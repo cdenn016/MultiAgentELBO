@@ -10,12 +10,206 @@ import numpy as np
 import pytest
 
 import multiagent_elbo.experiment_support as experiment_support
+from multiagent_elbo.config import ExperimentConfig
 from multiagent_elbo.experiment_support import (
     lower_bounded_metric,
     readonly_array,
     target_metric,
 )
+from multiagent_elbo.finite.agent_network_experiment import (
+    run_agent_network_experiment,
+)
+from multiagent_elbo.finite.attention_experiment import run_attention_experiment
+from multiagent_elbo.finite.categorical_dqm_experiment import (
+    run_categorical_dqm_experiment,
+)
+from multiagent_elbo.finite.counterexample_experiment import (
+    run_finite_counterexample_experiment,
+)
+from multiagent_elbo.finite.information_history_experiment import (
+    run_information_history_experiment,
+)
+from multiagent_elbo.finite.scale_cocycle_experiment import (
+    run_scale_cocycle_experiment,
+)
+from multiagent_elbo.finite.theory_oracle_experiment import (
+    run_theory_oracle_experiment,
+)
+from multiagent_elbo.geometry.holonomy_experiment import run_holonomy_experiment
+from multiagent_elbo.realizations.gaussian.fixed_ray_experiment import (
+    run_gaussian_fixed_ray_experiment,
+)
 from multiagent_elbo.rendering import validated_renderer_status
+
+
+_NUMERICS = {
+    "dtype": "float64",
+    "atol": 1.0e-12,
+    "rtol": 1.0e-10,
+    "min_spd_rcond": 1.0e-12,
+    "max_frame_condition": 1.0e6,
+}
+_CPU_COMPUTE = {
+    "backend": "cpu",
+    "dtype": "float64",
+    "device_index": 0,
+    "batch_size": 3,
+    "deterministic": True,
+    "allow_tf32": False,
+    "cpu_cuda_parity": True,
+    "cuda_worker_python": r"C:\anaconda\python.exe",
+    "heavy_sweep_enabled": False,
+}
+
+
+def _lab_config(
+    root: Path,
+    theory: dict[str, object],
+    *,
+    diagnostics: bool = False,
+    compute: dict[str, object] | None = None,
+) -> ExperimentConfig:
+    arguments: list[dict[str, object]] = [
+        {"name": f"candidate state {theory['experiment']}", "seed": 20260809},
+        theory,
+        dict(_NUMERICS),
+        {
+            "root": str(root),
+            "collect_diagnostics": diagnostics,
+            "render_figures": False,
+        },
+    ]
+    if compute is not None:
+        arguments.append(compute)
+    return ExperimentConfig.from_dicts(*arguments)
+
+
+def _network_config(root: Path) -> ExperimentConfig:
+    return _lab_config(
+        root,
+        {
+            "experiment": "multiagent_network",
+            "fixture": "two_scale_application_v1",
+            "scenario": "aligned",
+            "arithmetic": "exact_rational",
+        },
+        diagnostics=True,
+    )
+
+
+def _attention_config(root: Path) -> ExperimentConfig:
+    return _lab_config(
+        root,
+        {"experiment": "attention_marked_event", "fixture": "nested_nonuniform_v1"},
+    )
+
+
+def _categorical_dqm_config(root: Path) -> ExperimentConfig:
+    return _lab_config(
+        root,
+        {
+            "experiment": "categorical_dqm",
+            "fixture": "three_category_softmax_v1",
+            "theta": (0.6931471805599453, 1.0986122886681098),
+            "finite_difference_step": 1.0e-5,
+            "dqm_step_sizes": (0.1, 0.05, 0.025, 0.0125),
+        },
+    )
+
+
+def _counterexample_config(root: Path) -> ExperimentConfig:
+    return _lab_config(
+        root,
+        {
+            "experiment": "finite_counterexample",
+            "fixture": "counterexample_catalog_v1",
+            "max_states": 4,
+            "max_denominator": 8,
+            "arithmetic": "exact_rational",
+        },
+    )
+
+
+def _information_history_config(root: Path) -> ExperimentConfig:
+    return _lab_config(
+        root,
+        {
+            "experiment": "information_history",
+            "fixture": "two_scale_application_v1",
+            "family": "categorical_softmax",
+            "history_steps": 16,
+            "step_size": 0.05,
+        },
+        diagnostics=True,
+    )
+
+
+def _scale_cocycle_config(root: Path) -> ExperimentConfig:
+    return _lab_config(
+        root,
+        {
+            "experiment": "scale_cocycle",
+            "fixture": "two_scale_application_v1",
+            "extension": "three_level_composition_v1",
+            "retained_interaction_order": 2,
+            "arithmetic": "exact_rational",
+        },
+        diagnostics=True,
+    )
+
+
+def _theory_oracle_config(root: Path) -> ExperimentConfig:
+    return _lab_config(
+        root,
+        {
+            "experiment": "theory_oracle",
+            "fixture": "two_scale_application_v1",
+            "oracle_set": "core_identities",
+            "arithmetic": "exact_rational",
+        },
+        diagnostics=True,
+        compute={**_CPU_COMPUTE, "batch_size": 4096},
+    )
+
+
+def _holonomy_config(root: Path) -> ExperimentConfig:
+    return _lab_config(
+        root,
+        {
+            "experiment": "gauge_holonomy",
+            "fixture": "two_scale_application_v1",
+            "scenario": "nonflat_plaquette",
+            "group": "GL+(2)",
+        },
+    )
+
+
+def _gaussian_fixed_ray_config(root: Path) -> ExperimentConfig:
+    return _lab_config(
+        root,
+        {
+            "experiment": "gaussian_fixed_ray",
+            "fixture": "gaussian_fixed_ray_v1",
+            "preregistration": "2026-08-09-gaussian-fixed-ray-v1",
+            "blocking_schemes": ("adjacent_pairs", "balanced_alternating"),
+            "matrix_dimension": 2,
+        },
+        diagnostics=True,
+        compute=dict(_CPU_COMPUTE),
+    )
+
+
+ALL_LAB_RUNNERS = (
+    (run_agent_network_experiment, _network_config),
+    (run_attention_experiment, _attention_config),
+    (run_categorical_dqm_experiment, _categorical_dqm_config),
+    (run_finite_counterexample_experiment, _counterexample_config),
+    (run_information_history_experiment, _information_history_config),
+    (run_scale_cocycle_experiment, _scale_cocycle_config),
+    (run_theory_oracle_experiment, _theory_oracle_config),
+    (run_holonomy_experiment, _holonomy_config),
+    (run_gaussian_fixed_ray_experiment, _gaussian_fixed_ray_config),
+)
 
 
 def test_target_and_lower_bound_metrics_keep_established_json_schema():
@@ -43,6 +237,22 @@ def test_target_and_lower_bound_metrics_keep_established_json_schema():
     assert control.status == "pass"
     assert exact.verification_state == "CANDIDATE"
     assert exact.claim_origin == "PROJECT_NOVEL"
+
+
+@pytest.mark.parametrize(
+    ("runner", "config_factory"),
+    ALL_LAB_RUNNERS,
+    ids=[runner.__name__ for runner, _ in ALL_LAB_RUNNERS],
+)
+def test_laboratory_producers_do_not_self_promote(
+    runner, config_factory, tmp_path: Path
+):
+    result = runner(config_factory(tmp_path))
+
+    assert all(
+        metric.verification_state != "EVIDENCE_VERIFIED"
+        for metric in result.metrics.values()
+    )
 
 
 def test_readonly_array_makes_a_c_contiguous_float64_copy():

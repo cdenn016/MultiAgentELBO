@@ -123,7 +123,7 @@ def _metric(
     status: MetricStatus,
     interpretation: str,
     theorem_status: str = "NUMERICAL",
-    verification_state: str = "EVIDENCE_VERIFIED",
+    verification_state: str = "CANDIDATE",
     tolerance: float = 0.0,
 ) -> MetricRecord:
     return MetricRecord(
@@ -311,7 +311,7 @@ def _run_pilot(
             target=0.0,
             interpretation="Roundoff consistency of the constructed W_e=c_e M0 ray; unrestricted matrix dynamics are not implemented.",
             theorem_status="NUMERICAL",
-            verification_state="EVIDENCE_VERIFIED",
+            verification_state="CANDIDATE",
             claim_origin="APPLICATION_SPECIFIC",
         ),
         "retained_beta_residual": _metric(
@@ -335,7 +335,7 @@ def _run_pilot(
             target=0.0,
             interpretation="No pilot coefficient left the frozen positive coefficient basin.",
             theorem_status="NUMERICAL",
-            verification_state="EVIDENCE_VERIFIED",
+            verification_state="CANDIDATE",
             claim_origin="APPLICATION_SPECIFIC",
         ),
         "blocking_scheme_dispersion": _metric(
@@ -357,7 +357,7 @@ def _run_pilot(
             target=0.01,
             interpretation="Independent literal oracle detects the frozen noncommuting map pair.",
             theorem_status="NUMERICAL",
-            verification_state="EVIDENCE_VERIFIED",
+            verification_state="CANDIDATE",
             claim_origin="APPLICATION_SPECIFIC",
         ),
         "commuting_mutation_control": target_metric(
@@ -375,7 +375,7 @@ def _run_pilot(
             target=0.0,
             interpretation="Replacing the second scheme by the first destroys the noncommuting control as pinned.",
             theorem_status="NUMERICAL",
-            verification_state="EVIDENCE_VERIFIED",
+            verification_state="CANDIDATE",
             claim_origin="APPLICATION_SPECIFIC",
         ),
         "parity_mutation_negative_control": _metric(

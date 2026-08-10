@@ -97,7 +97,7 @@ def _metric(
         target=target,
         interpretation=interpretation,
         theorem_status="ESTABLISHED",
-        verification_state="EVIDENCE_VERIFIED",
+        verification_state="CANDIDATE",
         claim_origin=claim_origin,
     )
 
@@ -122,7 +122,7 @@ def _record(
         observed_residual,
         classification,
         "ESTABLISHED",
-        "EVIDENCE_VERIFIED",
+        "CANDIDATE",
         origin,
     )
 
@@ -166,13 +166,22 @@ def _enumerate_candidates(
                 records.append(
                     _record(
                         "support_boundary",
-                        {"states": 2, "q": q.masses, "p": p.masses},
+                        {
+                            "states": 2,
+                            "q": q.masses,
+                            "p": p.masses,
+                            "applicability": (
+                                "KL(q || p) requires absolute continuity of q "
+                                "with respect to p; this support violation is "
+                                "outside that applicability domain."
+                            ),
+                        },
                         str(len(support.support_violations)),
-                        inside=True,
-                        assumptions=True,
+                        inside=False,
+                        assumptions=False,
                         origin="PROJECT_NOVEL",
                         exact_or_numeric="exact",
-                        classification="catalog",
+                        classification="assumption_boundary",
                     )
                 )
     for theta in sorted(

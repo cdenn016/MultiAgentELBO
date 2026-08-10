@@ -87,7 +87,7 @@ def test_scale_experiment_publishes_recomputable_exact_extension_and_canonical_m
     assert all(result.metrics[name].status == "pass" for name in required_metrics)
     assert all(result.metrics[name].theorem_status.isupper() for name in result.metrics)
     assert all(
-        result.metrics[name].verification_state == "EVIDENCE_VERIFIED"
+        result.metrics[name].verification_state == "CANDIDATE"
         for name in result.metrics
     )
     assert all(result.metrics[name].claim_origin in {"PROJECT_NOVEL", "APPLICATION_SPECIFIC"} for name in result.metrics)

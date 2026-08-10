@@ -89,7 +89,7 @@ def test_pilot_publishes_recomputable_artifacts_with_incomplete_cuda_gate(
         for metric in result.metrics.values()
     )
     assert all(
-        metric.verification_state in {"EVIDENCE_VERIFIED", "INCONCLUSIVE"}
+        metric.verification_state in {"CANDIDATE", "INCONCLUSIVE"}
         for metric in result.metrics.values()
     )
     assert result.metrics["cpu_cuda_parity_residual"].status == "inconclusive"

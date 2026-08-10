@@ -960,7 +960,7 @@ def run_theory_oracle_experiment(
                 f"oracle for {name}; numerical agreement is not mathematical proof."
             ),
             theorem_status="ESTABLISHED",
-            verification_state="EVIDENCE_VERIFIED",
+            verification_state="CANDIDATE",
             claim_origin="PROJECT_NOVEL",
         )
         for name, (oracle, production) in _METRIC_ARRAY_PAIRS.items()

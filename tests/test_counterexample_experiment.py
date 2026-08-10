@@ -144,6 +144,27 @@ def _fractions(numerators: np.ndarray, denominators: np.ndarray) -> tuple[Fracti
     return tuple(Fraction(int(num), int(den)) for num, den in zip(numerators.flat, denominators.flat))
 
 
+def test_support_violations_serialize_as_explicit_assumption_boundaries(
+    tmp_path: Path,
+):
+    result = run_finite_counterexample_experiment(config(tmp_path))
+    records = json.loads(
+        (result.run_dir / "candidate_records.json").read_text("utf-8")
+    )
+    support = [record for record in records if record["claim_id"] == "support_boundary"]
+
+    assert support
+    assert all(record["inside_declared_domain"] is False for record in support)
+    assert all(record["assumptions_satisfied"] is False for record in support)
+    assert all(
+        record["classification"] == "assumption_boundary" for record in support
+    )
+    assert all(
+        "absolute continuity" in record["smallest_witness"]["applicability"].lower()
+        for record in support
+    )
+
+
 def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provenance(tmp_path: Path):
     result = run_finite_counterexample_experiment(config(tmp_path, diagnostics=True))
     assert isinstance(result, FiniteCounterexampleExperimentResult)
@@ -165,6 +186,9 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     assert {metric.claim_origin for metric in result.metrics.values()} == {
         "APPLICATION_SPECIFIC",
         "PROJECT_NOVEL",
+    }
+    assert {metric.verification_state for metric in result.metrics.values()} == {
+        "CANDIDATE"
     }
     expected = {"config.json", "manifest.json", "metrics.json", "arrays.npz", "enumeration_bounds.json", "candidate_records.json", "minimal_witnesses.json", "stress_matrix.json", "diagnostics.npz"}
     assert {path.name for path in result.run_dir.iterdir()} == expected
@@ -207,7 +231,7 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     for record in candidates + minimal:
         assert set(record) == fields
         assert record["theorem_status"] == "ESTABLISHED"
-        assert record["verification_state"] == "EVIDENCE_VERIFIED"
+        assert record["verification_state"] == "CANDIDATE"
         assert record["claim_origin"] in {
             "STANDARD",
             "PROJECT_NOVEL",
@@ -250,6 +274,19 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
         ["1/2", "-1/2"],
         ["1/2", "-1/2"],
     ]
+    support = [
+        record for record in candidates if record["claim_id"] == "support_boundary"
+    ]
+    assert support
+    assert all(record["inside_declared_domain"] is False for record in support)
+    assert all(record["assumptions_satisfied"] is False for record in support)
+    assert all(
+        record["classification"] == "assumption_boundary" for record in support
+    )
+    assert all(
+        "absolute continuity" in record["smallest_witness"]["applicability"].lower()
+        for record in support
+    )
     for record in candidates:
         if record["exact_or_numeric"] != "numeric_log":
             continue

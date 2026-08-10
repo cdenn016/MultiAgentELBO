@@ -197,7 +197,7 @@ def _metrics(
                     "scores agree with centered finite differences in their declared charts."
                 ),
                 theorem_status="ESTABLISHED",
-                verification_state="EVIDENCE_VERIFIED",
+                verification_state="CANDIDATE",
                 claim_origin="STANDARD",
             ),
             "fisher_defect_residual": target_metric(
@@ -209,7 +209,7 @@ def _metrics(
                     "equals pushed Fisher plus conditional score covariance."
                 ),
                 theorem_status="ESTABLISHED",
-                verification_state="EVIDENCE_VERIFIED",
+                verification_state="CANDIDATE",
                 claim_origin="STANDARD",
             ),
             "natural_gradient_range_residual": target_metric(
@@ -221,7 +221,7 @@ def _metrics(
                     "Moore--Penrose identifiable-tangent quotient rule."
                 ),
                 theorem_status="HYPOTHESIS",
-                verification_state="EVIDENCE_VERIFIED",
+                verification_state="CANDIDATE",
                 claim_origin="APPLICATION_SPECIFIC",
             ),
             "arc_length_reparameterization_residual": target_metric(
@@ -234,7 +234,7 @@ def _metrics(
                     "Fisher tensor is transformed covariantly."
                 ),
                 theorem_status="ESTABLISHED",
-                verification_state="EVIDENCE_VERIFIED",
+                verification_state="CANDIDATE",
                 claim_origin="STANDARD",
             ),
             "semiconjugacy_defect_norm": MetricRecord(

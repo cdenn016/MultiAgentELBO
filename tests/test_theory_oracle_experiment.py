@@ -156,7 +156,7 @@ def test_run_publishes_exact_contract_and_returns_immutable_result(tmp_path: Pat
         assert metric.status == "pass"
         assert metric.assessment_scope == "implementation_check"
         assert metric.theorem_status == "ESTABLISHED"
-        assert metric.verification_state == "EVIDENCE_VERIFIED"
+        assert metric.verification_state == "CANDIDATE"
         assert metric.claim_origin == "PROJECT_NOVEL"
 
     expected_artifacts = {

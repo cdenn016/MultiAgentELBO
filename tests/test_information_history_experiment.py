@@ -145,7 +145,7 @@ def test_default_run_publishes_exact_registered_artifacts_and_typed_metrics(tmp_
     for metric in result.metrics.values():
         assert metric.status in {"pass", "fail", "inconclusive"}
         assert metric.theorem_status in {"ESTABLISHED", "HYPOTHESIS", "CONJECTURE", "NUMERICAL", "OPEN"}
-        assert metric.verification_state in {"CANDIDATE", "LLM_SUPPORTED", "EVIDENCE_VERIFIED", "REFUTED", "INCONCLUSIVE"}
+        assert metric.verification_state in {"CANDIDATE", "INCONCLUSIVE"}
         assert metric.claim_origin in {"STANDARD", "PROJECT_NOVEL", "APPLICATION_SPECIFIC"}
     assert result.metrics["semiconjugacy_defect_norm"].status == "pass"
     assert result.metrics["semiconjugacy_defect_norm"].theorem_status == "OPEN"

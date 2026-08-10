@@ -525,7 +525,7 @@ def parameter_dependent_channel_witness(theta: Fraction) -> CandidateRecord:
         str(gap.numerator) if gap.denominator == 1 else f"{gap.numerator}/{gap.denominator}",
         "assumption_boundary",
         "ESTABLISHED",
-        "EVIDENCE_VERIFIED",
+        "CANDIDATE",
         "APPLICATION_SPECIFIC",
     )
 

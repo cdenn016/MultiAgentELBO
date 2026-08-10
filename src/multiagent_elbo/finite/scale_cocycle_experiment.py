@@ -403,7 +403,7 @@ def _exact_fixtures(
             target=float(target),
             interpretation=interpretation,
             theorem_status=theorem_status,  # type: ignore[arg-type]
-            verification_state="EVIDENCE_VERIFIED",
+            verification_state="CANDIDATE",
             claim_origin=origin,  # type: ignore[arg-type]
         )
 
@@ -460,7 +460,7 @@ def _exact_fixtures(
             target=0.0,
             interpretation="The full coarse Möbius hierarchy reconstructs the generated action.",
             theorem_status="NUMERICAL",
-            verification_state="EVIDENCE_VERIFIED",
+            verification_state="CANDIDATE",
             claim_origin="PROJECT_NOVEL",
         ),
         "wrong_order_negative_control": exact_metric(
@@ -481,7 +481,7 @@ def _exact_fixtures(
             target=-0.32394711573301693,
             interpretation="A declared pairwise fine action generates the pinned coarse triple coefficient.",
             theorem_status="NUMERICAL",
-            verification_state="EVIDENCE_VERIFIED",
+            verification_state="CANDIDATE",
             claim_origin="PROJECT_NOVEL",
         ),
         "pairwise_truncation_control": target_metric(
@@ -490,7 +490,7 @@ def _exact_fixtures(
             target=0.32394711573301693,
             interpretation="Pairwise truncation omits the coarse three-body term generated after channel action.",
             theorem_status="NUMERICAL",
-            verification_state="EVIDENCE_VERIFIED",
+            verification_state="CANDIDATE",
             claim_origin="PROJECT_NOVEL",
         ),
     }
