@@ -255,11 +255,12 @@ def enumerate_rational_actions(
         yield ExactAction(checked, action_values)
 
 
-def enumerate_relabelings(state_count: int) -> Iterable[tuple[int, ...]]:
+def enumerate_relabelings(state_count: int) -> Iterable[FinitePermutation]:
     """Yield all state relabelings in deterministic lexicographic order."""
     if type(state_count) is not int or state_count < 1:
         raise ValueError("state_count must be a positive int")
-    yield from permutations(range(state_count))
+    for old_to_new in permutations(range(state_count)):
+        yield FinitePermutation.from_old_to_new(old_to_new)
 
 
 def enumerate_rational_channels(
@@ -402,6 +403,8 @@ def retained_projection_residual(
     retained_order: int,
 ) -> Fraction:
     """Return the exact retained-action discrepancy under a typed relabeling."""
+    if transformed_action.cardinalities != action.cardinalities:
+        raise ValueError("action and transformed_action must have matching cardinalities")
     original = project_action(hoeffding_decompose_action(action), retained_order)
     transformed = project_action(
         hoeffding_decompose_action(transformed_action), retained_order

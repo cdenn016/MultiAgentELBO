@@ -115,6 +115,14 @@ def test_projection_residual_is_the_canonical_omitted_action_sup_norm():
     ) == 0
 
 
+def test_projection_residual_rejects_mismatched_action_domains():
+    source = ExactAction((2,), (Fraction(0), Fraction(0)))
+    transformed = ExactAction((3,), (Fraction(0), Fraction(0), Fraction(100)))
+
+    with pytest.raises(ValueError, match="matching cardinalities"):
+        retained_projection_residual(source, transformed, (IDENTITY,), 1)
+
+
 def test_joint_marked_event_coarsening_differs_from_beta_alone_control():
     source = ExactLaw((Fraction(3, 4), Fraction(1, 4)))
     beta = ((Fraction(1), Fraction(0)), (Fraction(0), Fraction(1)))
@@ -175,7 +183,12 @@ def test_pairwise_retention_and_parameter_dependent_channel_controls_are_nonzero
 
 
 def test_bounded_action_and_relabeling_enumerators_have_literal_outputs():
-    assert tuple(enumerate_relabelings(3)) == ((0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0))
+    relabelings = tuple(enumerate_relabelings(3))
+    assert all(isinstance(relabeling, FinitePermutation) for relabeling in relabelings)
+    assert relabelings[0] == FinitePermutation.from_old_to_new((0, 1, 2))
+    assert tuple(relabeling.old_to_new for relabeling in relabelings) == (
+        (0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)
+    )
     actions = tuple(enumerate_rational_actions((2,), max_denominator=1, value_bound=1))
     assert [action.values for action in actions] == [
         (Fraction(-1), Fraction(-1)), (Fraction(-1), Fraction(0)), (Fraction(-1), Fraction(1)),
