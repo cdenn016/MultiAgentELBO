@@ -957,12 +957,20 @@ def test_click_launcher_gate_mode_publishes_digest_for_two_phase_acceptance(
     )
     monkeypatch.setattr(launcher, "OPERATOR_CONTROL_PATH", control_path)
     monkeypatch.setattr(launcher, "CUDA_GATE_PATH", gate_path)
-    monkeypatch.setattr(launcher, "build_cuda_gate_record", lambda *_args, **_kwargs: gate)
+    monkeypatch.setattr(launcher, "_current_git_revision", lambda: "a" * 40)
+    captured: dict[str, object] = {}
+
+    def build(config: ExperimentConfig, **_kwargs: object) -> dict[str, object]:
+        captured["run_name"] = config.run.name
+        return gate
+
+    monkeypatch.setattr(launcher, "build_cuda_gate_record", build)
 
     published = launcher.main()
 
     assert published == gate
     assert json.loads(gate_path.read_text("utf-8")) == gate
+    assert captured["run_name"] == "gaussian-fixed-ray-sentinel-aaaaaaaaaaaa"
 
 
 def test_click_launcher_namespaces_sentinel_staging_by_accepted_gate_digest(
@@ -975,7 +983,10 @@ def test_click_launcher_namespaces_sentinel_staging_by_accepted_gate_digest(
     launcher = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(launcher)
     accepted_digest = "a" * 64
-    gate = {"schema_version": "cuda-idle-operator-gate-v1"}
+    gate = {
+        "schema_version": "cuda-idle-operator-gate-v1",
+        "source_identity": {"git_revision": "b" * 40},
+    }
     gate_path = tmp_path / "cuda-gate.json"
     gate_path.write_text(json.dumps(gate), encoding="utf-8")
     control_path = tmp_path / "operator-control.json"
@@ -993,6 +1004,7 @@ def test_click_launcher_namespaces_sentinel_staging_by_accepted_gate_digest(
     captured = {}
 
     def publish(*_args: object, **kwargs: object) -> object:
+        captured["config"] = _args[0]
         captured.update(kwargs)
         return SimpleNamespace(run_dir=tmp_path / "run", status="pass", metrics={})
 
@@ -1004,6 +1016,7 @@ def test_click_launcher_namespaces_sentinel_staging_by_accepted_gate_digest(
     launcher.main()
 
     assert captured["staging_root"] == staging_base / accepted_digest
+    assert captured["config"].run.name == "gaussian-fixed-ray-sentinel-bbbbbbbbbbbb"
 
 
 @pytest.mark.parametrize(

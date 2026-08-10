@@ -3,6 +3,7 @@
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 
 
@@ -65,6 +66,28 @@ COMPUTE = {
     "cuda_worker_python": r"C:\anaconda\python.exe",
     "heavy_sweep_enabled": False,
 }
+
+
+def _current_git_revision() -> str:
+    completed = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    revision = completed.stdout.strip()
+    if completed.returncode != 0 or len(revision) != 40:
+        raise RuntimeError("sentinel launcher requires a resolved Git revision")
+    return revision
+
+
+def _sentinel_run(revision: str) -> dict[str, object]:
+    if not isinstance(revision, str) or len(revision) != 40:
+        raise ValueError("sentinel run requires a full source revision")
+    run = dict(RUN)
+    run["name"] = f"gaussian-fixed-ray-sentinel-{revision[:12]}"
+    return run
 
 
 def _print_result(result: GaussianFixedRayExperimentResult) -> None:
@@ -202,7 +225,13 @@ def main() -> GaussianFixedRayExperimentResult | dict[str, object]:
         compute = dict(COMPUTE)
         compute["backend"] = "cuda"
         compute["heavy_sweep_enabled"] = False
-        config = ExperimentConfig.from_dicts(RUN, THEORY, NUMERICS, OUTPUT, compute)
+        config = ExperimentConfig.from_dicts(
+            _sentinel_run(_current_git_revision()),
+            THEORY,
+            NUMERICS,
+            OUTPUT,
+            compute,
+        )
         gate = build_cuda_gate_record(config, operator_opt_in=operator_opt_in)
         CUDA_GATE_PATH.parent.mkdir(parents=True, exist_ok=True)
         payload = json.dumps(
@@ -225,7 +254,16 @@ def main() -> GaussianFixedRayExperimentResult | dict[str, object]:
         if not accepted_gate_sha256:
             raise ValueError("cuda_sentinel requires an accepted gate SHA-256")
         gate = json.loads(CUDA_GATE_PATH.read_text(encoding="utf-8"))
-        config = ExperimentConfig.from_dicts(RUN, THEORY, NUMERICS, OUTPUT, compute)
+        source_identity = gate.get("source_identity")
+        if not isinstance(source_identity, dict):
+            raise ValueError("cuda_sentinel gate is missing its source identity")
+        config = ExperimentConfig.from_dicts(
+            _sentinel_run(str(source_identity.get("git_revision"))),
+            THEORY,
+            NUMERICS,
+            OUTPUT,
+            compute,
+        )
         result = publish_cuda_sentinel(
             config,
             operator_opt_in=operator_opt_in,
