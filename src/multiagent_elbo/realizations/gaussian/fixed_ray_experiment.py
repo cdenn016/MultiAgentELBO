@@ -51,6 +51,12 @@ def _file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _canonical_text_sha256(path: Path) -> str:
+    raw = path.read_bytes()
+    canonical = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(canonical).hexdigest()
+
+
 def _readonly(values: object, *, dtype: object = np.float64) -> np.ndarray:
     array = np.array(values, dtype=dtype, copy=True, order="C")
     array.setflags(write=False)
@@ -60,7 +66,7 @@ def _readonly(values: object, *, dtype: object = np.float64) -> np.ndarray:
 def _validate_preregistration(path: Path) -> str:
     if not path.is_file():
         raise ValueError(f"preregistration does not exist: {path}")
-    digest = _file_sha256(path)
+    digest = _canonical_text_sha256(path)
     if digest != _PREREGISTRATION_SHA256:
         raise ValueError("preregistration does not match the frozen file SHA-256")
     text = path.read_text(encoding="utf-8")

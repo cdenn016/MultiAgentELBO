@@ -191,6 +191,29 @@ def test_pilot_is_same_seed_deterministic_across_output_roots(tmp_path: Path):
         np.testing.assert_array_equal(first.arrays[name], second.arrays[name])
 
 
+def test_preregistration_identity_is_stable_across_git_text_line_endings(
+    tmp_path: Path,
+):
+    repository = Path(__file__).resolve().parents[1]
+    frozen_text = (
+        repository
+        / "docs"
+        / "experiments"
+        / "2026-08-09-gaussian-fixed-ray-preregistration.md"
+    ).read_text(encoding="utf-8")
+    crlf_preregistration = tmp_path / "frozen-crlf.md"
+    crlf_preregistration.write_bytes(
+        frozen_text.replace("\n", "\r\n").encode("utf-8")
+    )
+
+    result = run_gaussian_fixed_ray_experiment(
+        fixed_ray_config(tmp_path / "output"),
+        preregistration_path=crlf_preregistration,
+    )
+
+    assert result.status == "inconclusive"
+
+
 def test_preregistration_validation_precedes_rng_worker_and_artifact_creation(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
