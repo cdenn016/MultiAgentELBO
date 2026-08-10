@@ -3,17 +3,17 @@
 ## Review identity and verdicts
 
 - Contract base: `b80df01f239c2f9a18842f6887cdeca67dff508f`
-- Reviewed branch head: `66c72600d437955d80cea92118748701fd7a7266`
-- Scientific implementation revision: `2016042a0f10b13e9fbfc44b8f0741b4ed09eb95`
+- Reviewed branch head: `54e7faaa139f73a053c4be5463545dc4df9f780c`
+- Scientific implementation revision: `54e7faaa139f73a053c4be5463545dc4df9f780c`
 - Review role: independent reviewer-author; no production, test, launcher, result, theory, fixture, or scientific-evidence file was edited.
 
 **Spec-compliance verdict: PASS WITH FINAL-GATE OBLIGATIONS.** The reviewed branch implements the frozen Session 5 artifact and metric inventories, all five scenarios, the required negative controls, no-argument launcher, scope exclusions, and exact lane allowlist. The unresolved shared-ledger and final-integration test obligations are not lane implementation failures, but they prevent program-level closure at this branch head.
 
-**Code/scientific-quality verdict: APPROVE WITH CONCERNS.** I found no load-bearing gauge-theory, mathematical, or implementation defect in the declared finite `GL+(2)` laboratory. Exact symbolic recomputation agrees with the executable source and saved default bundle. The concerns at the end are explicit and nonblocking for the lane review.
+**Code/scientific-quality verdict: APPROVE WITH FINAL-GATE OBLIGATIONS.** I found no remaining load-bearing gauge-theory, mathematical, or implementation defect in the declared finite `GL+(2)` laboratory. Exact rational recomputation agrees with the executable source and saved default bundle. Program-level approval remains contingent on the parent-owned fresh broad JUnit, coverage, artifact-reproduction, and revision-bound ledger gate; TDD RED chronology remains report-only process evidence.
 
 ## Sources and evidence reviewed
 
-I read the full `b80df01..66c7260` review package once, the governing plan and frozen contract, all Task 1–3 reports, the result record, the relevant graph-link and trivialization sections of `Theory/SPEC.md` and `Theory/02_geometry.tex`, the operational-base-holonomy item in `Theory/appendix_claim_ledger.tex`, and the Research-vault pages `[[Holonomy]]`, `[[Gauge transformation]]`, and `[[Gauge equivariance and geometric deep learning]]`.
+I read the full `b80df01..66c7260` review package once, the governing plan and frozen contract, all Task 1–3 reports, the result record, the relevant graph-link and trivialization sections of `Theory/SPEC.md` and `Theory/02_geometry.tex`, the operational-base-holonomy item in `Theory/appendix_claim_ledger.tex`, the Research-vault pages `[[Holonomy]]`, `[[Gauge transformation]]`, and `[[Gauge equivariance and geometric deep learning]]`, and the focused frame-condition fix at `54e7faaa139f73a053c4be5463545dc4df9f780c`.
 
 The controlling convention is the frozen theory's endpoint-frame transformation of a transporter and conjugation of closed-loop graph holonomy (`Theory/02_geometry.tex:561-616`). The Research wiki correctly warns that vertex-coboundary links telescope while independent edge links can carry nontrivial graph holonomy. I treated the wiki as context and verified the load-bearing statements against the frozen theory and executable source.
 
@@ -22,7 +22,8 @@ Current mechanical evidence inspected read-only:
 - `.verification/gauge-holonomy/pytest-focused.xml`: `36` tests, `0` failures, `0` errors, `0` skipped, suite time `3.084 s`.
 - `.verification/gauge-holonomy/coverage.xml`: `discrete_holonomy.py` `346/395 = 87.59%` lines and `121/164 = 73.78%` branches; `holonomy_experiment.py` `188/193 = 97.41%` lines and `39/44 = 88.64%` branches. Both modules pass the frozen 80% line gate.
 - `.verification/gauge-holonomy/reproduction-evidence.json`: SHA-256 `069206202c1bfbd5894138238edcaec78619e52c00a6029c040ee6404b117e2c`; launcher exit `0`; source and replay manifests complete; all seven semantic files byte-identical; all 53 saved arrays name- and value-identical.
-- Historical broad evidence: `.superpowers/sdd/2026-08-09-six-session-theory-simulation-buildout/task-2-full.xml` records `471` tests, `0` failures, `0` errors, `2` skipped at the initial Task 2 implementation revision. The final two implementation fixes have focused, not broad, post-commit JUnit evidence.
+- `.superpowers/sdd/2026-08-09-six-session-theory-simulation-buildout/task-2-fix3-regression.xml` and `task-2-fix3-postcommit.xml`: each records `37` tests, `0` failures, `0` errors, `0` skipped at `54e7faaa`; suite times are `2.926 s` and `2.992 s`, and each includes the frame-condition fail-fast test.
+- Historical broad evidence: `.superpowers/sdd/2026-08-09-six-session-theory-simulation-buildout/task-2-full.xml` records `471` tests, `0` failures, `0` errors, `2` skipped at the initial Task 2 implementation revision. The later implementation fixes have focused, not broad, post-commit JUnit evidence.
 
 I did not rerun the broad suite, as required by the review brief. No numerical output below is used to close a general mathematical claim.
 
@@ -146,10 +147,11 @@ numerically `0.071777048844550775`. The saved floating result is `0.071777048844
 
 | Requirement | Verdict | Evidence and falsification condition |
 | --- | --- | --- |
-| Exact Session 5 allowlist | PASS | Before this review, `git diff --name-only b80df01..66c7260` contained exactly the two production modules, two tests, launcher, and result document. This review adds only the seventh allowed path. Any additional tracked path is a failure. |
+| Exact Session 5 allowlist | PASS | `git diff --name-only b80df01..54e7faaa` contains exactly the seven Session 5 paths: two production modules, two tests, launcher, result document, and this review. Any additional tracked path is a failure. |
 | Frozen fixture reachability | PASS | `_load_fixture` validates the fixture and frozen application ID before use (`holonomy_experiment.py:77-88`); `_scenario_fixture` consumes its vertices, oriented edges, and 2-cell (`:99-151`). Independent canonical hashing reproduced application ID `30a4bd...20cd` and physical SHA-256 `a207...f567`. A mismatched hash or unused replacement fixture falsifies this. |
 | Scenario/group reachability | PASS | All five frozen scenarios affect edge/cell construction or scenario-specific arrays (`holonomy_experiment.py:42-49, 99-151, 319-426`); group and scenario are rejected unless exact (`:624-640`). Focused JUnit contains all five scenario cases. |
-| Validation before RNG/artifacts | PASS | Type, discriminator, fixture, group, scenario, renderer, fixture identity, complex, link, and scenario calculations occur at `holonomy_experiment.py:624-651`; RNG begins at `:653` and `RunStore.create` at `:675`. The fail-fast test at `tests/test_holonomy_experiment.py:348-408` replaces all runtime seams with forbidden sentinels. Any invalid input reaching those sentinels or creating output falsifies this. |
+| Validation before RNG/artifacts | PASS | Type, discriminator, fixture, group, scenario, renderer, fixture identity, complex, link, frame-condition, and scenario calculations occur before RNG begins at `holonomy_experiment.py:667` and `RunStore.create` later in the same method. The general fail-fast test at `tests/test_holonomy_experiment.py:348-408` and frame-condition test at `:411-436` replace runtime seams with forbidden sentinels. Any invalid input reaching those sentinels or creating output falsifies this. |
+| Frame-condition configuration reachability | PASS | Commit `54e7faaa` passes the full `NumericsConfig` into `_scenario_arrays` and tolerance-aware checks every scenario vertex frame before passive transformation (`holonomy_experiment.py:178-208`). A ceiling of `1.0` rejects vertex `0`, whose condition number is `2.0`; both 37-test fix XML files are clean. Acceptance above the configured ceiling or reaching RNG/provenance/RunStore falsifies this. |
 | Ordered transport and passive covariance | PASS | Source implements last-link-leftmost path composition and the endpoint-frame law (`discrete_holonomy.py:282-306, 521-536`). Exact recomputation above agrees. |
 | Trivialization/cycle criterion | PASS | Tree frames, fundamental cycles, every-edge residual, and identity test are all executed at `discrete_holonomy.py:424-508`; the literal flat/nonflat test is `tests/test_discrete_holonomy.py:235-257`. |
 | Normalized operational law | PASS | Stable softmax normalization and typed observable are implemented at `discrete_holonomy.py:575-636`; coherent/broken literals are pinned at `tests/test_discrete_holonomy.py:303-379`. |
@@ -188,13 +190,13 @@ The current serialized metrics remain `CANDIDATE`, as they should. The only vali
 
 **Resolved when:** the final integration revision has a validated ignored ledger and no stale activation; otherwise every attempted closure remains `INCONCLUSIVE`.
 
-### C2 — Broad regression evidence predates the last two implementation fixes
+### C2 — Final integration evidence is not revision-bound to the frame-condition fix
 
-**Impact:** final-integration test obligation; focused Session 5 behavior is current.
+**Impact:** parent-owned final-integration gate; focused Session 5 behavior is current.
 
-The `471`-test broad JUnit was produced at the initial Task 2 implementation revision. Commits `fe15a43` and `2016042` then changed `holonomy_experiment.py` and its tests. Current focused JUnit and coverage exercise those fixes, but there is no broad-suite JUnit bound to `2016042` or `66c7260`. Per the review brief, I did not rerun the broad suite.
+The `471`-test broad JUnit was produced at the initial Task 2 implementation revision. Commits `fe15a43`, `2016042`, and `54e7faaa` then changed `holonomy_experiment.py` and its tests. The two fresh 37-test XML files close the focused frame-condition regression at `54e7faaa`, but the existing coverage XML and launcher/replay bundle predate this fix, and no broad-suite JUnit is bound to it. Per the review brief, I did not rerun the broad suite, coverage, or artifact harness.
 
-**Resolved when:** the integration owner runs and mechanically parses the complete CPU suite at the final integration SHA. Any failure, error, or unexplained skip reopens this approval.
+**Resolved when:** the integration owner runs and mechanically parses the complete CPU suite and coverage, reproduces the published artifact bundle, and validates the ledger at the final integration SHA. Any failure, error, unexplained skip, threshold regression, replay mismatch, or stale ledger binding reopens this approval.
 
 ### C3 — RED history is documented but not mechanically reproducible
 
@@ -204,16 +206,16 @@ The reports give specific RED failure counts and messages, but the pre-productio
 
 **Resolved when:** future lanes retain revision-bound RED artifacts or patch snapshots, or explicitly classify TDD chronology as report-only process evidence.
 
-### C4 — `max_frame_condition` is recorded but not enforced by this laboratory
+## Resolved and superseded finding
 
-**Impact:** low-risk configuration-reachability gap outside the frozen default.
+### R1 — RESOLVED: `max_frame_condition` is enforced by the laboratory
 
-The editable launcher exposes `max_frame_condition` (`run_gauge_holonomy_lab.py:34-40`), but the Session 5 modules never read it. `_gl_positive_2` checks finite shape and positive determinant only (`discrete_holonomy.py:116-122`). The default literal frames and links are well conditioned, so the reviewed run is unaffected; however, an otherwise valid configuration with a stricter maximum would still publish the same run.
+The earlier C4 concern was correctly reclassified as blocking and is superseded by commit `54e7faaa139f73a053c4be5463545dc4df9f780c`. `_scenario_arrays` now receives `NumericsConfig`, computes every declared vertex-frame condition number, and applies the configured ceiling with the contract tolerances before passive transformation, RNG, provenance, `RunStore.create`, or artifact publication (`holonomy_experiment.py:178-208, 638-667`).
 
-`min_spd_rcond` is inapplicable because this laboratory has no SPD input. The seed reaches named-stream provenance but not scientific arrays because the declared experiment is deterministic.
+The focused mutation test sets `max_frame_condition=1.0`, rejects vertex `0` with condition number `2.0`, forbids all three runtime seams, and proves no artifact root is created (`tests/test_holonomy_experiment.py:411-436`). Mechanical parsing of both `task-2-fix3-regression.xml` and `task-2-fix3-postcommit.xml` gives `37` tests, `0` failures, `0` errors, and `0` skipped. This resolves the configuration-reachability and fail-fast obligations for the declared scenario frames.
 
-**Resolved when:** the runner enforces the configured frame-condition ceiling before RNG/artifact creation, or the contract explicitly declares `max_frame_condition` inapplicable to this fixed-literal laboratory. A default run containing a frame above the recorded maximum would falsify the present configuration claim.
+`min_spd_rcond` remains inapplicable because this laboratory has no SPD input. The seed reaches named-stream provenance but not scientific arrays because the declared experiment is deterministic.
 
 ## Final decision
 
-**APPROVE WITH CONCERNS.** The finite graph-link implementation, exact literal oracles, passive covariance, spanning-tree criterion, normalized operational law, isolated broken-pair control, artifact reconstruction, and scientific scope all agree. No critical, high, or medium gauge-theory defect survives review. C1 and C2 remain mandatory final-integration gates; C3 and C4 are nonblocking auditability/configuration-quality follow-ups.
+**APPROVE WITH FINAL-GATE OBLIGATIONS.** The finite graph-link implementation, exact literal oracles, passive covariance, spanning-tree criterion, normalized operational law, isolated broken-pair control, frame-condition preflight, artifact reconstruction, and scientific scope agree. No load-bearing code, gauge-theory, mathematical, or scientific defect remains. C1 and C2 are mandatory parent-owned final-integration gates; C3 is a report-only TDD chronology limitation. The former C4 is resolved and superseded by `54e7faaa`.
