@@ -21,6 +21,14 @@ SECONDARY_ENDPOINT_IDS = (
 _SCHEME_IDS = ("adjacent_pairs", "balanced_alternating")
 _SCALES_4_8 = np.arange(4.0, 9.0, dtype=np.float64)
 _SHA256_HEX = re.compile(r"[0-9a-f]{64}")
+_CENSORED_VALUES = {
+    "primary_angle_slope": float(np.pi),
+    "scale_8_normalized_distance": 2.0,
+    "construction_residual": 1.0,
+    "retained_beta_trend": 1.0,
+    "scheme_dispersion": 2.0,
+    "conditioning_trend": float(np.log(1.0e12)),
+}
 
 
 def _finite_vector(values: object, *, length: int, label: str) -> np.ndarray:
@@ -246,7 +254,15 @@ def _bootstrap_statistics(
         size=(resamples, sample.size),
         dtype=np.int64,
     )
-    statistics = np.median(sample[indices], axis=1).astype(np.float64, copy=False)
+    resampled = np.sort(sample[indices], axis=1)
+    midpoint = resampled.shape[1] // 2
+    if resampled.shape[1] % 2:
+        statistics = resampled[:, midpoint]
+    else:
+        lower = resampled[:, midpoint - 1]
+        upper = resampled[:, midpoint]
+        statistics = lower + (upper - lower) / 2.0
+    statistics = statistics.astype(np.float64, copy=False)
     return statistics, {
         "seed_u64": seed,
         "resamples": resamples,
@@ -270,11 +286,21 @@ def percentile_interval(
         sample, seed=seed, resamples=resamples
     )
     return {
-        "estimate": float(np.median(sample)),
+        "estimate": float(_safe_median(sample)),
         "lower": float(np.percentile(statistics, 2.5)),
         "upper": float(np.percentile(statistics, 97.5)),
         **identity,
     }
+
+
+def _safe_median(values: np.ndarray) -> float:
+    ordered = np.sort(np.asarray(values, dtype=np.float64))
+    midpoint = ordered.size // 2
+    if ordered.size % 2:
+        return float(ordered[midpoint])
+    lower = float(ordered[midpoint - 1])
+    upper = float(ordered[midpoint])
+    return lower + (upper - lower) / 2.0
 
 
 def analyze_primary(
@@ -285,6 +311,10 @@ def analyze_primary(
     decision_stability: bool,
     premises_passed: bool,
     gpu_gate_complete: bool,
+    primary_execution_sha256: str | None = None,
+    config_sha256: str | None = None,
+    source_revision: str | None = None,
+    accepted_gate_sha256: str | None = None,
 ) -> dict[str, object]:
     """Analyze exactly the 30 frozen primary jobs without pseudo-replication."""
     if type(decision_stability) is not bool or type(premises_passed) is not bool:
@@ -298,25 +328,40 @@ def analyze_primary(
     ):
         raise ValueError("primary analysis requires between one and 30 job records")
     records_by_id: dict[str, Mapping[str, object]] = {}
+    terminal_missing_ids: set[str] = set()
     for record in job_records:
         if not isinstance(record, Mapping):
             raise ValueError("primary job record must be a mapping")
         job_id = record.get("job_id")
+        terminal_status = record.get("terminal_status", "completed")
+        is_missing = terminal_status == "missing"
         if (
             not isinstance(job_id, str)
             or record.get("role") != "confirmatory_primary"
-            or record.get("scientific_analysis_eligibility") is not True
+            or terminal_status not in {"completed", "rejected", "missing"}
+            or (
+                record.get("scientific_analysis_eligibility")
+                is not (False if is_missing else True)
+            )
         ):
             raise ValueError("primary analysis received a non-primary record")
         if job_id in records_by_id:
             raise ValueError("primary analysis job IDs must be unique")
         records_by_id[job_id] = record
+        if is_missing:
+            terminal_missing_ids.add(job_id)
     expected_ids = [f"C{index:03d}" for index in range(1, 31)]
     if not set(records_by_id).issubset(set(expected_ids)):
         raise ValueError("primary analysis job table is drifted")
-    missing_job_ids = [job_id for job_id in expected_ids if job_id not in records_by_id]
+    missing_job_ids = [
+        job_id
+        for job_id in expected_ids
+        if job_id not in records_by_id or job_id in terminal_missing_ids
+    ]
     ordered_records = [
-        records_by_id[job_id] for job_id in expected_ids if job_id in records_by_id
+        records_by_id[job_id]
+        for job_id in expected_ids
+        if job_id in records_by_id and job_id not in terminal_missing_ids
     ]
     summaries = [summarize_paired_job(record) for record in ordered_records]
     censored_count = int(
@@ -325,14 +370,57 @@ def analyze_primary(
             for summary in summaries
         )
     )
-    worst_case = np.finfo(np.float64).max
-
+    if not summaries:
+        secondary_tests = holm_adjust(
+            {endpoint_id: 1.0 for endpoint_id in SECONDARY_ENDPOINT_IDS}
+        )
+        for row in secondary_tests:
+            row["available_trials"] = 0
+            row["test_available"] = False
+        result: dict[str, object] = {
+            "schema_version": "gaussian-fixed-ray-primary-analysis-v1",
+            "protocol_id": protocol_id,
+            "job_table_sha256": job_table_sha256,
+            "primary_job_ids": expected_ids,
+            "independent_job_count": 30,
+            "completed_job_count": 0,
+            "missing_job_ids": missing_job_ids,
+            "censored_worst_case_count": 0,
+            "paired_reduction": "least_favorable_across_two_frozen_schemes",
+            "primary_endpoint": None,
+            "supporting_distance": None,
+            "scheme_dispersion_interval": None,
+            "secondary_tests": secondary_tests,
+            "basin_exit_events": 0,
+            "basin_exit_rate": None,
+            "rejection_events": 0,
+            "rejection_rate": None,
+            "decision_stability": decision_stability,
+            "premises_passed": premises_passed,
+            "gpu_gate_complete": gpu_gate_complete,
+            "distinct_projective_rays": False,
+            "primary_interval_half_width": None,
+            "classification": "inconclusive",
+            "theorem_status": "NUMERICAL",
+            "verification_state": "CANDIDATE",
+            "mathematical_verification_state": "INCONCLUSIVE",
+            "claim_origin": "APPLICATION_SPECIFIC",
+            "job_summaries": [],
+        }
+        for name, value in {
+            "primary_execution_sha256": primary_execution_sha256,
+            "config_sha256": config_sha256,
+            "source_revision": source_revision,
+            "accepted_gate_sha256": accepted_gate_sha256,
+        }.items():
+            if value is not None:
+                result[name] = value
+        return result
     def values(name: str) -> np.ndarray:
         observed = [
-            worst_case if summary[name] is None else summary[name]
+            _CENSORED_VALUES[name] if summary[name] is None else summary[name]
             for summary in summaries
         ]
-        observed.extend([worst_case] * len(missing_job_ids))
         return np.asarray(observed, dtype=np.float64)
 
     primary_values = values("primary_angle_slope")
@@ -342,7 +430,7 @@ def analyze_primary(
     primary_statistics, primary_identity = _bootstrap_statistics(
         primary_values, seed=primary_seed, resamples=10_000
     )
-    primary_estimate = float(np.median(primary_values))
+    primary_estimate = _safe_median(primary_values)
     primary_interval = {
         "estimate": primary_estimate,
         "lower": float(np.percentile(primary_statistics, 2.5)),
@@ -368,6 +456,7 @@ def analyze_primary(
 
     basin_events = int(sum(bool(summary["basin_exit"]) for summary in summaries))
     rejection_events = int(sum(bool(summary["rejected"]) for summary in summaries))
+    available_trials = len(summaries)
     raw_secondary = {
         "construction_residual": exact_sign_pvalue(
             values("construction_residual"), 1.0e-12
@@ -375,19 +464,24 @@ def analyze_primary(
         "retained_beta_trend": exact_sign_pvalue(
             values("retained_beta_trend"), 0.0
         ),
-        "basin_exit_rate": exact_binomial_lower_tail(basin_events, 30, 0.05),
+        "basin_exit_rate": exact_binomial_lower_tail(
+            basin_events, available_trials, 0.05
+        ),
         "scheme_dispersion": exact_sign_pvalue(dispersion_values, 0.02),
         "conditioning_trend": exact_sign_pvalue(
             values("conditioning_trend"), 0.0
         ),
-        "rejection_rate": exact_binomial_lower_tail(rejection_events, 30, 0.05),
+        "rejection_rate": exact_binomial_lower_tail(
+            rejection_events, available_trials, 0.05
+        ),
     }
     secondary_tests = holm_adjust(raw_secondary)
-    basin_rate = basin_events / 30.0
-    rejection_rate = rejection_events / 30.0
-    distinct_rays = any(
-        record.get("distinct_projective_rays") is True for record in ordered_records
-    )
+    for row in secondary_tests:
+        row["available_trials"] = available_trials
+        row["test_available"] = True
+    basin_rate = basin_events / available_trials
+    rejection_rate = rejection_events / available_trials
+    distinct_rays = float(dispersion_interval["lower"]) > 0.05
     interval_half_width = (
         float(primary_interval["upper"]) - float(primary_interval["lower"])
     ) / 2.0
@@ -403,7 +497,7 @@ def analyze_primary(
     )
     counterevidence = (
         float(primary_interval["lower"]) >= 0.0
-        or float(dispersion_interval["lower"]) > 0.05
+        or distinct_rays
         or basin_rate > 0.20
         or rejection_rate > 0.20
         or distinct_rays
@@ -422,7 +516,7 @@ def analyze_primary(
     else:
         classification = "inconclusive"
 
-    return {
+    result: dict[str, object] = {
         "schema_version": "gaussian-fixed-ray-primary-analysis-v1",
         "protocol_id": protocol_id,
         "job_table_sha256": job_table_sha256,
@@ -452,9 +546,20 @@ def analyze_primary(
         "classification": classification,
         "theorem_status": "NUMERICAL",
         "verification_state": "CANDIDATE",
+        "mathematical_verification_state": "INCONCLUSIVE",
         "claim_origin": "APPLICATION_SPECIFIC",
         "job_summaries": summaries,
     }
+    bound_fields = {
+        "primary_execution_sha256": primary_execution_sha256,
+        "config_sha256": config_sha256,
+        "source_revision": source_revision,
+        "accepted_gate_sha256": accepted_gate_sha256,
+    }
+    for name, value in bound_fields.items():
+        if value is not None:
+            result[name] = value
+    return result
 
 
 def analyze_holdout(

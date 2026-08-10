@@ -112,10 +112,14 @@ No rejected or failed job is silently dropped. A job with a scientifically
 defined rejection contributes true to `rejection_rate`. When its continuous
 endpoint is unavailable, it is ordered as least favorable for threshold and
 sign-test decisions. Numeric summaries explicitly report the number of such
-right-censored worst-case observations rather than serializing infinity.
+right-censored worst-case observations rather than serializing infinity. The
+finite censor values are frozen in the preregistration amendment. Missing jobs
+are excluded from available-unit exact-test denominators and force the primary
+classification inconclusive; they are never imputed as favorable non-events.
 
-Infrastructure failures receive only the single preregistered retry under the
-same immutable job ID and exact input identity. An exhausted infrastructure
+Infrastructure failures receive only the single preregistered retry for the
+entire paired outer job under the same immutable job ID and exact input identity;
+the 16 scheme-step exchanges do not receive independent retry budgets. An exhausted infrastructure
 failure is missing. Any missing `C` job forces the overall classification to
 `inconclusive`, while completed data and the full failure manifest remain
 published.
@@ -123,9 +127,11 @@ published.
 ## Two-stage primary and holdout release
 
 The controller first executes and publishes all `C` jobs. It then computes the
-primary analysis and writes a canonical primary-analysis record whose digest is
-bound into the manifest. Only after that record exists may `H001`-`H010` become
-analysis-eligible.
+primary analysis and writes canonical primary-execution and primary-analysis
+records whose digests and source/config/gate/job-table identities are bound into
+the manifest. The controller recomputes the analysis from the bound execution
+record before release. Only after all 30 primary jobs are terminal-complete with
+no missing IDs may `H001`-`H010` become analysis-eligible.
 
 The holdout is analyzed once with the same reductions, estimators, intervals,
 and frozen thresholds. Holdout results are descriptive replication: no p-values,
@@ -150,6 +156,9 @@ revision:
 - explicit operator opt-in for the heavy sweep, separate from sentinel opt-in;
 - exact executable, worker, environment-lock, config, job-table, and analysis
   contract hashes;
+- an accepted sentinel manifest that cryptographically binds the exact artifact
+  inventory and validates all five IDs, five rechecks, 240 worker exchanges,
+  400 step comparisons, 30 endpoint comparisons, and both mutation controls;
 - `C` completion and hash-bound primary analysis before holdout release.
 
 The initial confirmatory record contains five samples at one-second intervals

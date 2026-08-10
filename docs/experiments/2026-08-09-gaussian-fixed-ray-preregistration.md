@@ -85,6 +85,11 @@ The finite numerical result is classified as support only if all of the followin
 
 Finite counterevidence is recorded if any one of these prespecified events occurs in-domain: the lower 95% confidence endpoint for the median angle slope is nonnegative; the lower 95% confidence endpoint for median scheme dispersion exceeds `0.05`; either basin-exit or rejection rate exceeds `0.20`; or the two schemes approach distinct projective rays under the paired endpoint rule. Floating-point counterevidence has mathematical `verification_state=INCONCLUSIVE`. Mathematical `REFUTED` requires a separate exact rational/analytic witness or a rigorously interval-certified in-domain witness satisfying every premise above.
 
+Here mathematical `verification_state=INCONCLUSIVE` is distinct from the
+artifact producer's lifecycle `verification_state=CANDIDATE` while a run awaits
+ledger adjudication. The producer state is not theorem promotion or mathematical
+closure.
+
 The result is inconclusive if neither support nor counterevidence thresholds are met, the primary 95% interval half-width exceeds `0.02` radians per scale, any planned `C` job is missing after authorized retries, float64 decision stability fails, the preregistered premises fail, or the GPU/worker evidence gate is incomplete.
 
 ## Precision, uncertainty, multiplicity, and exclusions
@@ -141,9 +146,23 @@ hash are retained.
 
 Rejected jobs remain in the 30-job denominator. A rejected job counts toward
 `rejection_rate`; an unavailable continuous endpoint is ordered as least
-favorable and explicitly recorded as a censored worst-case observation. An
+favorable and explicitly recorded as a censored worst-case observation. The
+frozen finite censor values are `pi` for angle slope, `2` for normalized
+distance, `1` for construction residual, `1` for retained-beta slope, `2` for
+scheme dispersion, and `log(1e12)` for log-conditioning slope. Missing jobs are
+not imputed as favorable events or continuous observations; exact secondary
+tests use the finite available-job denominator, and any missing `C` still forces
+the overall classification inconclusive. An
 exhausted infrastructure retry is missing, and any missing `C` job makes the
 overall classification inconclusive.
+
+The phrase "the two schemes approach distinct projective rays under the paired
+endpoint rule" is an alias for the already frozen dispersion counterevidence
+criterion: with scale-8 normalized-ray dispersion `D_i` for each primary job,
+the event is true exactly when the lower endpoint of the frozen 10,000-resample
+95% whole-job percentile interval for `median_i D_i` is strictly greater than
+`0.05`. Equality is not counterevidence. There is no additional per-job Boolean
+or post hoc stability tolerance.
 
 All `C` jobs and the primary analysis must be complete, canonicalized, and
 SHA-256-bound before the `H` population is released. The holdout receives the
@@ -154,7 +173,7 @@ reused as scientific `C` or `H` observations.
 
 ## Compute budget, sentinel parity, and stopping rule
 
-The pilot budget is four paired CPU initial conditions, eight steps, float64, and at most 2 GB resident memory. It may run with `heavy_sweep_enabled=False`. The confirmatory budget is the 40 paired `C`/`H` initial conditions, eight steps, float64, one heavy job at a time, at most 5 minutes and 8 GB allocated GPU memory per paired job, with one retry only for infrastructure failure under the identical immutable job ID and explicit retry lineage. OOM is a failed job and never triggers silent batch adaptation.
+The pilot budget is four paired CPU initial conditions, eight steps, float64, and at most 2 GB resident memory. It may run with `heavy_sweep_enabled=False`. The confirmatory budget is the 40 paired `C`/`H` initial conditions, eight steps, float64, one heavy job at a time, at most 5 minutes and 8 GB allocated GPU memory per paired job, with one retry only for infrastructure failure under the identical immutable paired-job ID and explicit retry lineage. The retry budget applies once to the entire paired outer job, not independently to its 16 scheme-step worker exchanges. OOM is a failed job and never triggers silent batch adaptation.
 
 Before confirmatory execution, the controller must record a fresh idle-GPU check, explicit operator opt-in, the frozen environment-lock digest, executable and worker hashes, requested/effective backend and dtype, Torch/CUDA/device/capability and library records, deterministic controls, peak allocated/reserved memory, and a full Python 3.14 CPU / Python 3.12 worker CPU / Python 3.12 worker CUDA float64 parity matrix. The sentinel subset is exactly `C001`, `C015`, `C030`, `H001`, and `H010`, including threshold-near and worst-conditioned realized strata. A fixed parity mutation must fail.
 

@@ -731,6 +731,12 @@ def test_cuda_sentinel_publishes_manifest_bound_runstore_bundle(
     assert expected <= {path.name for path in result.run_dir.iterdir()}
     manifest = json.loads((result.run_dir / "manifest.json").read_text("utf-8"))
     assert manifest["provenance"]["input_hashes"]["operator_gate_sha256"] == gate_digest
+    artifact_hashes = manifest["provenance"]["artifact_sha256"]
+    assert set(artifact_hashes) == (expected | {"config.json"}) - {"manifest.json"}
+    assert all(
+        hashlib.sha256((result.run_dir / name).read_bytes()).hexdigest() == digest
+        for name, digest in artifact_hashes.items()
+    )
 
 
 def test_click_launcher_gate_mode_publishes_digest_for_two_phase_acceptance(
@@ -932,7 +938,7 @@ def test_preregistration_digest_is_stable_across_windows_line_endings(tmp_path: 
 
     assert (
         _validate_preregistration(windows_copy)
-        == "57be7aa49af8c9fa56585879fa394ca93517cc1b58269596e53293d350a07dd5"
+        == "9e22f239be93ad574c46b5ce36846df2b6e61353b6a0852146df2f155600bde0"
     )
 
 

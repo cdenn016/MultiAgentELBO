@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from math import isfinite
+
 import numpy as np
 import pytest
 
@@ -298,6 +300,93 @@ def test_missing_primary_job_forces_inconclusive_without_replacement():
 
     assert result["missing_job_ids"] == ["C030"]
     assert result["classification"] == "inconclusive"
+    basin = next(
+        row for row in result["secondary_tests"] if row["endpoint_id"] == "basin_exit_rate"
+    )
+    assert basin["unadjusted_p"] == pytest.approx(0.95**29)
+    assert basin["available_trials"] == 29
+
+
+def test_terminal_missing_record_is_not_analyzed_as_a_favorable_event():
+    records = [_primary_record(index) for index in range(29)]
+    records.append(
+        {
+            "schema_version": "gaussian-fixed-ray-confirmatory-job-v1",
+            "job_id": "C030",
+            "role": "confirmatory_primary",
+            "terminal_status": "missing",
+            "scientific_analysis_eligibility": False,
+            "failure_reason": "infrastructure retry exhausted",
+        }
+    )
+
+    result = analyze_primary(
+        records,
+        protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
+        job_table_sha256="a" * 64,
+        decision_stability=True,
+        premises_passed=True,
+        gpu_gate_complete=True,
+    )
+
+    assert result["missing_job_ids"] == ["C030"]
+    assert result["completed_job_count"] == 29
+    assert result["classification"] == "inconclusive"
+
+
+def test_many_rejected_jobs_use_finite_frozen_censor_values():
+    records = [_primary_record(index) for index in range(30)]
+    for index in range(16):
+        records[index]["schemes"] = {
+            scheme_id: {
+                "projective_ray_angles": None,
+                "normalized_coupling_distances": None,
+                "retained_beta_residuals": None,
+                "scalarized_ray_construction_residuals": None,
+                "coefficient_conditioning": None,
+                "basin_exit": False,
+                "rejected": True,
+                "rejection_reason": "frozen rejection",
+            }
+            for scheme_id in ("adjacent_pairs", "balanced_alternating")
+        }
+
+    result = analyze_primary(
+        records,
+        protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
+        job_table_sha256="a" * 64,
+        decision_stability=True,
+        premises_passed=True,
+        gpu_gate_complete=True,
+    )
+
+    for interval_name in (
+        "primary_endpoint",
+        "supporting_distance",
+        "scheme_dispersion_interval",
+    ):
+        interval = result[interval_name]
+        assert all(isfinite(float(interval[key])) for key in ("estimate", "lower", "upper"))
+
+
+def test_distinct_projective_rays_is_the_frozen_dispersion_counterevidence_alias():
+    records = [_primary_record(index) for index in range(30)]
+    for record in records:
+        record["blocking_scheme_dispersion"] = [0.1] * 9
+        record["distinct_projective_rays"] = False
+
+    result = analyze_primary(
+        records,
+        protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
+        job_table_sha256="a" * 64,
+        decision_stability=True,
+        premises_passed=True,
+        gpu_gate_complete=True,
+    )
+
+    assert result["scheme_dispersion_interval"]["lower"] > 0.05
+    assert result["distinct_projective_rays"] is True
+    assert result["classification"] == "counterevidence"
 
 
 def test_holdout_analysis_is_descriptive_and_bound_to_primary_digest():

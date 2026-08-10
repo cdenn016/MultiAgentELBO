@@ -136,6 +136,11 @@ def test_confirmatory_job_runs_two_schemes_eight_steps_after_one_idle_recheck(
     )
     monkeypatch.setattr(
         fixed_ray_experiment,
+        "_validate_staged_confirmatory_job_record",
+        lambda *_, **__: None,
+    )
+    monkeypatch.setattr(
+        fixed_ray_experiment,
         "_capture_idle_gpu_gate_after_cooldown",
         lambda **_: recheck,
     )
@@ -176,6 +181,8 @@ def test_confirmatory_job_runs_two_schemes_eight_steps_after_one_idle_recheck(
 
     assert len(calls) == 16
     assert {call["requested_backend"] for call in calls} == {"cuda"}
+    assert {call["max_attempts"] for call in calls} == {1}
+    assert all(0.0 < float(call["timeout_seconds"]) <= 300.0 for call in calls)
     assert result["job_id"] == "C001"
     assert result["terminal_status"] == "completed"
     assert result["scientific_analysis_eligibility"] is True
@@ -183,6 +190,109 @@ def test_confirmatory_job_runs_two_schemes_eight_steps_after_one_idle_recheck(
     assert result["worker_exchange_count"] == 16
     assert result["peak_allocated_bytes"] == 1024
     assert result["peak_reserved_bytes"] == 2048
+
+
+def test_paired_job_has_one_outer_retry_and_terminalizes_exhaustion(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    config = confirmatory_config(tmp_path)
+    gate = {
+        "source_identity": {"git_revision": "a" * 40},
+    }
+    job = {
+        "job_id": "C001",
+        "master_seed": 202608090101,
+        "role": "confirmatory_primary",
+        "schemes": ["adjacent_pairs", "balanced_alternating"],
+        "steps": 8,
+    }
+    calls: list[Path] = []
+
+    def always_timeout(*_: object, **kwargs: object) -> dict[str, object]:
+        calls.append(Path(kwargs["work_root"]))
+        raise TimeoutError("fixture timeout")
+
+    monkeypatch.setattr(fixed_ray_experiment, "run_confirmatory_job", always_timeout)
+
+    record = fixed_ray_experiment._run_confirmatory_job_with_terminal_retry(
+        config,
+        job=job,
+        operator_opt_in=True,
+        operator_gate=gate,
+        accepted_gate_sha256="g" * 64,
+        work_root=tmp_path / "paired",
+    )
+
+    assert len(calls) == 2
+    assert calls[0] != calls[1]
+    assert record["terminal_status"] == "missing"
+    assert record["scientific_analysis_eligibility"] is False
+    assert record["outer_attempt_count"] == 2
+
+
+def test_8gb_allocation_ceiling_produces_a_terminal_rejection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    config = confirmatory_config(tmp_path)
+    gate = _idle_record("cuda-confirmatory-operator-gate-v1")
+    gate.update(
+        {
+            "execution_scope": "gaussian_fixed_ray_confirmatory_40_job",
+            "heavy_sweep_enabled": True,
+            "config_sha256": "b" * 64,
+            "source_identity": {"git_revision": "a" * 40, "tracked_worktree_clean": True},
+        }
+    )
+    accepted_gate_sha256 = _digest(gate)
+    monkeypatch.setattr(
+        fixed_ray_experiment, "_validate_confirmatory_gate_bindings", lambda *_: None
+    )
+    monkeypatch.setattr(
+        fixed_ray_experiment,
+        "_capture_idle_gpu_gate_after_cooldown",
+        lambda **_: _idle_record("cuda-idle-operator-gate-v1"),
+    )
+
+    def oversized_worker(**kwargs: object):
+        arrays = kwargs["arrays"]
+        updated = np.asarray(arrays["coefficients"]) @ np.asarray(
+            arrays["spatial_map"]
+        ).T
+        return SimpleNamespace(
+            arrays=MappingProxyType({"updated_coefficients": updated}),
+            request_manifest=MappingProxyType({"job_id": kwargs["job_id"]}),
+            response_manifest=MappingProxyType({"job_id": kwargs["job_id"]}),
+            provenance=MappingProxyType(
+                {
+                    "peak_allocated_bytes": 8 * 1024**3 + 1,
+                    "peak_reserved_bytes": 8 * 1024**3 + 1,
+                }
+            ),
+        ), MappingProxyType(dict(kwargs["execution_context"]))
+
+    monkeypatch.setattr(
+        fixed_ray_experiment, "_run_or_resume_worker_job", oversized_worker
+    )
+    job = {
+        "job_id": "C001",
+        "master_seed": 202608090101,
+        "role": "confirmatory_primary",
+        "schemes": ["adjacent_pairs", "balanced_alternating"],
+        "steps": 8,
+    }
+
+    record = fixed_ray_experiment._run_confirmatory_job_with_terminal_retry(
+        config,
+        job=job,
+        operator_opt_in=True,
+        operator_gate=gate,
+        accepted_gate_sha256=accepted_gate_sha256,
+        work_root=tmp_path / "paired",
+    )
+
+    assert record["terminal_status"] == "rejected"
+    assert record["scientific_analysis_eligibility"] is True
+    assert "8-GB" in record["failure_reason"]
 
 
 def test_confirmatory_primary_runs_only_c_jobs_in_order_and_resumes_terminal_records(
@@ -223,6 +333,11 @@ def test_confirmatory_primary_runs_only_c_jobs_in_order_and_resumes_terminal_rec
         }
 
     monkeypatch.setattr(fixed_ray_experiment, "run_confirmatory_job", fake_job)
+    monkeypatch.setattr(
+        fixed_ray_experiment,
+        "_validate_staged_confirmatory_job_record",
+        lambda *_, **__: None,
+    )
     staging = tmp_path / "primary-staging"
 
     first = run_confirmatory_primary(
@@ -264,6 +379,11 @@ def test_holdout_requires_hash_bound_primary_analysis_before_any_h_job(
     monkeypatch.setattr(
         fixed_ray_experiment, "_validate_confirmatory_gate_bindings", lambda *_: None
     )
+    monkeypatch.setattr(
+        fixed_ray_experiment,
+        "_validate_staged_confirmatory_job_record",
+        lambda *_, **__: None,
+    )
     calls: list[str] = []
 
     def fake_job(_: ExperimentConfig, **kwargs: object) -> dict[str, object]:
@@ -285,8 +405,9 @@ def test_holdout_requires_hash_bound_primary_analysis_before_any_h_job(
 
     monkeypatch.setattr(fixed_ray_experiment, "run_confirmatory_job", fake_job)
     primary_path = tmp_path / "primary_analysis.json"
+    primary_execution_path = tmp_path / "primary_execution.json"
 
-    with pytest.raises(ValueError, match="primary analysis"):
+    with pytest.raises(ValueError, match="primary execution"):
         run_confirmatory_holdout(
             config,
             operator_opt_in=True,
@@ -294,6 +415,10 @@ def test_holdout_requires_hash_bound_primary_analysis_before_any_h_job(
             accepted_gate_sha256=accepted_gate_sha256,
             primary_analysis_path=primary_path,
             primary_analysis_sha256="0" * 64,
+            primary_execution_path=primary_execution_path,
+            primary_execution_sha256="0" * 64,
+            protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
+            job_table_sha256="j" * 64,
             work_root=tmp_path / "holdout-staging",
         )
     assert calls == []
@@ -312,6 +437,62 @@ def test_holdout_requires_hash_bound_primary_analysis_before_any_h_job(
     )
     primary_sha256 = hashlib.sha256(primary_path.read_bytes()).hexdigest()
 
+    with pytest.raises(ValueError, match="primary execution"):
+        run_confirmatory_holdout(
+            config,
+            operator_opt_in=True,
+            operator_gate=gate,
+            accepted_gate_sha256=accepted_gate_sha256,
+            primary_analysis_path=primary_path,
+            primary_analysis_sha256=primary_sha256,
+            primary_execution_path=primary_execution_path,
+            primary_execution_sha256="0" * 64,
+            protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
+            job_table_sha256="a" * 64,
+            work_root=tmp_path / "holdout-staging",
+        )
+    assert calls == []
+
+    primary_records = [
+        _published_job(f"C{index:03d}", "confirmatory_primary")
+        for index in range(1, 31)
+    ]
+    expected_primary_ids = [f"C{index:03d}" for index in range(1, 31)]
+    primary_execution = {
+        "schema_version": "gaussian-fixed-ray-confirmatory-primary-execution-v1",
+        "planned_job_ids": expected_primary_ids,
+        "completed_job_ids": expected_primary_ids,
+        "rejected_job_ids": [],
+        "missing_job_ids": [],
+        "job_records": primary_records,
+        "accepted_gate_sha256": accepted_gate_sha256,
+        "config_sha256": fixed_ray_experiment.config_sha256(config),
+        "source_revision": "a" * 40,
+    }
+    primary_execution_path.write_text(
+        json.dumps(primary_execution, sort_keys=True, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    primary_execution_sha256 = hashlib.sha256(
+        primary_execution_path.read_bytes()
+    ).hexdigest()
+    primary = fixed_ray_experiment.analyze_primary(
+        primary_records,
+        protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
+        job_table_sha256="a" * 64,
+        decision_stability=True,
+        premises_passed=True,
+        gpu_gate_complete=True,
+        primary_execution_sha256=primary_execution_sha256,
+        config_sha256=fixed_ray_experiment.config_sha256(config),
+        source_revision="a" * 40,
+        accepted_gate_sha256=accepted_gate_sha256,
+    )
+    primary_path.write_text(
+        json.dumps(primary, sort_keys=True, separators=(",", ":")), encoding="utf-8"
+    )
+    primary_sha256 = hashlib.sha256(primary_path.read_bytes()).hexdigest()
+
     result = run_confirmatory_holdout(
         config,
         operator_opt_in=True,
@@ -319,6 +500,10 @@ def test_holdout_requires_hash_bound_primary_analysis_before_any_h_job(
         accepted_gate_sha256=accepted_gate_sha256,
         primary_analysis_path=primary_path,
         primary_analysis_sha256=primary_sha256,
+        primary_execution_path=primary_execution_path,
+        primary_execution_sha256=primary_execution_sha256,
+        protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
+        job_table_sha256="a" * 64,
         work_root=tmp_path / "holdout-staging",
     )
 
@@ -351,6 +536,7 @@ def _published_job(job_id: str, role: str) -> dict[str, object]:
         "accepted_gate_sha256": "g" * 64,
         "config_sha256": "h" * 64,
         "source_revision": "a" * 40,
+        "outer_attempt_count": 1,
         "schemes": {
             "adjacent_pairs": dict(scheme),
             "balanced_alternating": dict(scheme),
@@ -413,7 +599,17 @@ def test_confirmatory_publication_writes_complete_two_stage_artifact_contract(
     monkeypatch.setattr(
         fixed_ray_experiment,
         "run_confirmatory_primary",
-        lambda *_, **__: {"job_records": primary_records, "completed_job_ids": [r["job_id"] for r in primary_records], "missing_job_ids": []},
+        lambda *_, **__: {
+            "schema_version": "gaussian-fixed-ray-confirmatory-primary-execution-v1",
+            "planned_job_ids": [r["job_id"] for r in primary_records],
+            "job_records": primary_records,
+            "completed_job_ids": [r["job_id"] for r in primary_records],
+            "rejected_job_ids": [],
+            "missing_job_ids": [],
+            "accepted_gate_sha256": gate_sha256,
+            "config_sha256": fixed_ray_experiment.config_sha256(config),
+            "source_revision": "a" * 40,
+        },
     )
     monkeypatch.setattr(
         fixed_ray_experiment, "analyze_primary", lambda *_, **__: primary_analysis
@@ -465,6 +661,7 @@ def test_confirmatory_publication_writes_complete_two_stage_artifact_contract(
         "confirmatory_job_table.json",
         "confirmatory_endpoints.json",
         "primary_analysis.json",
+        "primary_execution.json",
         "holdout_analysis.json",
         "confirmatory_execution.json",
         "confirmatory_arrays.npz",
@@ -474,6 +671,28 @@ def test_confirmatory_publication_writes_complete_two_stage_artifact_contract(
     metrics = json.loads((result.run_dir / "metrics.json").read_text(encoding="utf-8"))
     assert metrics["confirmatory_primary_classification"]["theorem_status"] == "NUMERICAL"
     assert metrics["confirmatory_primary_classification"]["verification_state"] == "CANDIDATE"
+
+
+@pytest.mark.parametrize("operator_opt_in", ["false", 1, 0, None])
+def test_launcher_rejects_non_boolean_confirmatory_opt_in(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, operator_opt_in: object
+):
+    control_path = tmp_path / "confirmatory-control.json"
+    control_path.write_text(
+        json.dumps(
+            {
+                "mode": "confirmatory_run",
+                "operator_opt_in": operator_opt_in,
+                "accepted_gate_sha256": "g" * 64,
+                "accepted_sentinel_manifest_sha256": "s" * 64,
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(launcher, "CONFIRMATORY_CONTROL_PATH", control_path)
+
+    with pytest.raises(ValueError, match="JSON Boolean"):
+        launcher.main()
 
 
 def test_launcher_confirmatory_gate_uses_separate_control_and_heavy_config(

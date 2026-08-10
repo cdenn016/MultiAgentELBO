@@ -107,6 +107,12 @@ def _confirmatory_control() -> dict[str, object]:
         "accepted_sentinel_manifest_sha256",
     }:
         raise ValueError("confirmatory operator control does not match the frozen schema")
+    if type(control["operator_opt_in"]) is not bool:
+        raise ValueError("confirmatory operator opt-in must be a JSON Boolean")
+    if control["mode"] in {"confirmatory_gate", "confirmatory_run"} and (
+        control["operator_opt_in"] is not True
+    ):
+        raise ValueError("confirmatory execution requires literal operator_opt_in=true")
     return control
 
 
@@ -172,7 +178,7 @@ def main() -> GaussianFixedRayExperimentResult | dict[str, object]:
         )
         result = publish_confirmatory_experiment(
             config,
-            operator_opt_in=bool(operator_opt_in),
+            operator_opt_in=operator_opt_in,
             operator_gate=gate,
             accepted_gate_sha256=str(accepted_gate_sha256),
             sentinel_run_dir=sentinel_run_dir,

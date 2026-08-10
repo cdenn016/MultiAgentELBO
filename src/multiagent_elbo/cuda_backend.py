@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import time
 from types import MappingProxyType
 from typing import Literal, Mapping
 
@@ -528,6 +529,9 @@ def run_worker_job(
     timeout_seconds: float = 120.0,
 ) -> WorkerJobResult:
     """Run one validated immutable worker job without importing Torch."""
+    if not np.isfinite(timeout_seconds) or timeout_seconds <= 0.0:
+        raise ValueError("worker timeout must be finite and positive")
+    deadline = time.perf_counter() + float(timeout_seconds)
     worker_python = Path(worker_python).resolve(strict=True)
     worker_script = Path(worker_script).resolve(strict=True)
     environment_lock = Path(environment_lock).resolve(strict=True)
@@ -554,7 +558,7 @@ def run_worker_job(
             worker_script=worker_script,
             environment=environment,
             lock_records=lock_records,
-            timeout_seconds=timeout_seconds,
+            timeout_seconds=max(0.001, deadline - time.perf_counter()),
         )
 
     work_root = Path(work_root)
@@ -595,7 +599,7 @@ def run_worker_job(
         env=environment,
         capture_output=True,
         text=True,
-        timeout=timeout_seconds,
+        timeout=max(0.001, deadline - time.perf_counter()),
         check=False,
     )
     if completed.returncode != 0:

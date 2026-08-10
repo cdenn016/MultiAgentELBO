@@ -247,7 +247,7 @@ Expected: FAIL because `run_confirmatory_job` is absent.
 
 - [ ] **Step 7: Implement single-job execution**
 
-Use one CUDA worker exchange per scheme/step, immutable IDs `confirmatory.<job_id>.<scheme>.stepNN.cuda`, and the existing single infrastructure retry. Bind every attempt context to the accepted confirmatory gate, the immediate outer-job recheck, source/config/job-table/preregistration identities, and the original job literal hash.
+Use one CUDA worker exchange per scheme/step and immutable IDs `confirmatory.<job_id>.<scheme>.stepNN.cuda`. Disable exchange-local retries in this path; the one authorized infrastructure retry applies to the entire paired outer job. Bind every attempt context to the accepted confirmatory gate, the immediate outer-job recheck, source/config/job-table/preregistration identities, and the original job literal hash.
 
 - [ ] **Step 8: Write failing primary-sequence and resume tests**
 
@@ -290,7 +290,7 @@ Expected: FAIL because two-stage publication is absent.
 
 - [ ] **Step 3: Implement primary finalization and holdout release**
 
-Canonicalize primary JSON with sorted keys, compact separators, ASCII, and `allow_nan=False`. Atomically write it in staging, hash the exact bytes, validate it by recomputation, and only then enable the ten `H` jobs. Analyze holdout descriptively with identical frozen summaries and 10,000-job bootstrap intervals but no p-values, no Holm family, and no classification rewrite.
+Canonicalize both primary execution and primary analysis JSON with sorted keys, compact separators, ASCII, and `allow_nan=False`. Atomically write and hash the exact bytes, validate the primary analysis by recomputation from the execution record, require all 30 primary IDs terminal-complete with no missing IDs, and only then enable the ten `H` jobs. Analyze holdout descriptively with identical frozen summaries and 10,000-job bootstrap intervals but no p-values, no Holm family, and no classification rewrite.
 
 - [ ] **Step 4: Write failing final artifact-contract tests**
 

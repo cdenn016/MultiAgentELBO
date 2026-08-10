@@ -20,6 +20,7 @@ import numpy as np
 from multiagent_elbo.artifacts import RunStore
 from multiagent_elbo.config import ExperimentConfig, config_sha256
 from multiagent_elbo.cuda_backend import (
+    WorkerBackendError,
     WorkerJobResult,
     _parse_environment_lock,
     _run_cuda_preflight,
@@ -49,7 +50,7 @@ from .confirmatory_analysis import analyze_holdout, analyze_primary
 
 MetricStatus = Literal["pass", "fail", "inconclusive"]
 _PREREGISTRATION_SHA256 = (
-    "57be7aa49af8c9fa56585879fa394ca93517cc1b58269596e53293d350a07dd5"
+    "9e22f239be93ad574c46b5ce36846df2b6e61353b6a0852146df2f155600bde0"
 )
 
 
@@ -487,6 +488,8 @@ def _run_or_resume_worker_job(
     arrays: Mapping[str, np.ndarray],
     environment_lock: Path,
     execution_context: Mapping[str, object],
+    max_attempts: Literal[1, 2] = 2,
+    timeout_seconds: float = 120.0,
 ) -> tuple[WorkerJobResult, Mapping[str, object]]:
     """Resume a valid attempt or make one infrastructure retry with bound context."""
     exchange_root = Path(work_root)
@@ -567,7 +570,7 @@ def _run_or_resume_worker_job(
             MappingProxyType(stored_context),
         )
 
-    for attempt in (2, 1):
+    for attempt in range(max_attempts, 0, -1):
         attempt_root = exchange_root / f"attempt-{attempt}"
         context_path = exchange_root / f"attempt-{attempt}-context.json"
         if attempt_root.is_dir() and context_path.is_file():
@@ -578,6 +581,8 @@ def _run_or_resume_worker_job(
         exchange_root / "attempt-1-context.json"
     ).exists()
     attempt = 2 if attempt_1_started else 1
+    if attempt > max_attempts:
+        raise RuntimeError(f"worker exchange exhausted retry budget: {job_id}")
     attempt_root = exchange_root / f"attempt-{attempt}"
     context_path = exchange_root / f"attempt-{attempt}-context.json"
     if attempt_root.exists() or context_path.exists():
@@ -596,6 +601,7 @@ def _run_or_resume_worker_job(
         requested_dtype=requested_dtype,
         arrays=arrays,
         environment_lock=environment_lock,
+        timeout_seconds=timeout_seconds,
     )
     _atomic_json(attempt_root / "provenance.json", dict(result.provenance))
     return result, MappingProxyType(context)
@@ -729,7 +735,8 @@ def run_confirmatory_job(
     for scheme in config.theory.blocking_schemes:
         spatial_map = system.spatial_maps[scheme]
         for step in range(1, 9):
-            if time.perf_counter() - started > deadline_seconds:
+            remaining_seconds = deadline_seconds - (time.perf_counter() - started)
+            if remaining_seconds <= 0.0:
                 raise TimeoutError(f"confirmatory paired job exceeded five minutes: {job_id}")
             if datetime.now(timezone.utc) >= datetime.fromisoformat(
                 str(recheck["expires_at_utc"])
@@ -763,14 +770,26 @@ def run_confirmatory_job(
                 },
                 environment_lock=environment_lock,
                 execution_context=execution_context,
+                max_attempts=1,
+                timeout_seconds=remaining_seconds,
             )
             updated = np.asarray(result.arrays["updated_coefficients"], dtype=np.float64)
-            if updated.shape != (1, initial.size) or not np.all(np.isfinite(updated)):
-                raise RuntimeError(f"confirmatory worker output is invalid: {immutable_id}")
+            if (
+                updated.shape != (1, initial.size)
+                or not np.all(np.isfinite(updated))
+                or np.any(updated <= 0.0)
+            ):
+                raise WorkerBackendError(
+                    f"confirmatory worker output is invalid: {immutable_id}"
+                )
             trajectories[scheme][step, :] = updated[0]
             provenance = dict(result.provenance)
             peak_allocated = max(peak_allocated, int(provenance["peak_allocated_bytes"]))
             peak_reserved = max(peak_reserved, int(provenance["peak_reserved_bytes"]))
+            if peak_allocated > 8 * 1024**3:
+                raise WorkerBackendError(
+                    f"confirmatory paired job exceeded 8-GB allocation budget: {job_id}"
+                )
             worker_records.append(
                 {
                     "job_id": immutable_id,
@@ -809,7 +828,6 @@ def run_confirmatory_job(
             for scheme in config.theory.blocking_schemes
         },
         "blocking_scheme_dispersion": dispersion.tolist(),
-        "distinct_projective_rays": False,
         "worker_exchange_count": len(worker_records),
         "worker_exchanges": worker_records,
         "elapsed_seconds": elapsed,
@@ -820,6 +838,360 @@ def run_confirmatory_job(
             for scheme in config.theory.blocking_schemes
         },
     }
+
+
+def _terminal_confirmatory_failure_record(
+    config: ExperimentConfig,
+    *,
+    job: Mapping[str, object],
+    gate: Mapping[str, object],
+    accepted_gate_sha256: str,
+    terminal_status: Literal["rejected", "missing"],
+    failure_reason: str,
+    outer_attempt_count: int,
+    paired_jobs_root: Path | None = None,
+) -> dict[str, object]:
+    worker_exchanges: list[dict[str, object]] = []
+    if paired_jobs_root is not None:
+        job_root = Path(paired_jobs_root) / str(job["job_id"])
+        for outer_attempt in range(1, outer_attempt_count + 1):
+            exchange_parent = (
+                job_root / f"outer-attempt-{outer_attempt}" / "worker-exchanges"
+            )
+            if not exchange_parent.is_dir():
+                continue
+            for exchange_root in sorted(exchange_parent.iterdir()):
+                if not exchange_root.is_dir():
+                    continue
+                attempt_root = exchange_root / "attempt-1"
+                context_path = exchange_root / "attempt-1-context.json"
+                required = {
+                    "request.json",
+                    "response.json",
+                    "provenance.json",
+                }
+                if (
+                    not attempt_root.is_dir()
+                    or not context_path.is_file()
+                    or not required.issubset(
+                        {path.name for path in attempt_root.iterdir()}
+                    )
+                ):
+                    continue
+                worker_exchanges.append(
+                    {
+                        "job_id": exchange_root.name,
+                        "execution_context": json.loads(
+                            context_path.read_text(encoding="utf-8")
+                        ),
+                        "request_manifest": json.loads(
+                            (attempt_root / "request.json").read_text(encoding="utf-8")
+                        ),
+                        "response_manifest": json.loads(
+                            (attempt_root / "response.json").read_text(encoding="utf-8")
+                        ),
+                        "provenance": json.loads(
+                            (attempt_root / "provenance.json").read_text(encoding="utf-8")
+                        ),
+                    }
+                )
+    peak_allocated = max(
+        (
+            int(worker["provenance"].get("peak_allocated_bytes", 0))  # type: ignore[union-attr]
+            for worker in worker_exchanges
+        ),
+        default=0,
+    )
+    peak_reserved = max(
+        (
+            int(worker["provenance"].get("peak_reserved_bytes", 0))  # type: ignore[union-attr]
+            for worker in worker_exchanges
+        ),
+        default=0,
+    )
+    last_context = (
+        worker_exchanges[-1]["execution_context"] if worker_exchanges else {}
+    )
+    record: dict[str, object] = {
+        "schema_version": "gaussian-fixed-ray-confirmatory-job-v1",
+        "job_id": job["job_id"],
+        "master_seed": job["master_seed"],
+        "role": job["role"],
+        "terminal_status": terminal_status,
+        "scientific_analysis_eligibility": terminal_status == "rejected",
+        "accepted_gate_sha256": accepted_gate_sha256,
+        "config_sha256": config_sha256(config),
+        "source_revision": gate["source_identity"]["git_revision"],  # type: ignore[index]
+        "failure_reason": failure_reason,
+        "outer_attempt_count": outer_attempt_count,
+        "retry_lineage": [
+            {"outer_attempt": attempt, "parent_attempt": None if attempt == 1 else 1}
+            for attempt in range(1, outer_attempt_count + 1)
+        ],
+        "operator_gate_recheck": last_context.get("operator_gate_recheck_record"),  # type: ignore[union-attr]
+        "operator_gate_recheck_sha256": last_context.get(  # type: ignore[union-attr]
+            "operator_gate_recheck_sha256"
+        ),
+        "worker_exchange_count": len(worker_exchanges),
+        "worker_exchanges": worker_exchanges,
+        "elapsed_seconds": 0.0,
+        "peak_allocated_bytes": peak_allocated,
+        "peak_reserved_bytes": peak_reserved,
+    }
+    if terminal_status == "rejected":
+        rejected_scheme = {
+            "projective_ray_angles": None,
+            "normalized_coupling_distances": None,
+            "retained_beta_residuals": None,
+            "scalarized_ray_construction_residuals": None,
+            "coefficient_conditioning": None,
+            "matrix_condition": None,
+            "basin_exit": False,
+            "rejected": True,
+            "rejection_reason": failure_reason,
+        }
+        record["schemes"] = {
+            scheme: dict(rejected_scheme) for scheme in config.theory.blocking_schemes
+        }
+        record["blocking_scheme_dispersion"] = None
+    return record
+
+
+def _run_confirmatory_job_with_terminal_retry(
+    config: ExperimentConfig,
+    *,
+    job: Mapping[str, object],
+    operator_opt_in: bool,
+    operator_gate: Mapping[str, object],
+    accepted_gate_sha256: str,
+    work_root: Path,
+) -> dict[str, object]:
+    """Give one paired job one outer infrastructure retry, then terminalize it."""
+    last_error: BaseException | None = None
+    for outer_attempt in (1, 2):
+        try:
+            record = run_confirmatory_job(
+                config,
+                job=job,
+                operator_opt_in=operator_opt_in,
+                operator_gate=operator_gate,
+                accepted_gate_sha256=accepted_gate_sha256,
+                work_root=(
+                    Path(work_root)
+                    / str(job["job_id"])
+                    / f"outer-attempt-{outer_attempt}"
+                    / "worker-exchanges"
+                ),
+            )
+        except (subprocess.TimeoutExpired, TimeoutError, OSError) as error:
+            last_error = error
+            continue
+        except WorkerBackendError as error:
+            message = str(error)
+            if "worker failed with exit" in message and "out of memory" not in message.lower():
+                last_error = error
+                continue
+            return _terminal_confirmatory_failure_record(
+                config,
+                job=job,
+                gate=operator_gate,
+                accepted_gate_sha256=accepted_gate_sha256,
+                terminal_status="rejected",
+                failure_reason=message,
+                outer_attempt_count=outer_attempt,
+                paired_jobs_root=work_root,
+            )
+        record["outer_attempt_count"] = outer_attempt
+        record["retry_lineage"] = [
+            {"outer_attempt": attempt, "parent_attempt": None if attempt == 1 else 1}
+            for attempt in range(1, outer_attempt + 1)
+        ]
+        return record
+    return _terminal_confirmatory_failure_record(
+        config,
+        job=job,
+        gate=operator_gate,
+        accepted_gate_sha256=accepted_gate_sha256,
+        terminal_status="missing",
+        failure_reason=f"infrastructure retry exhausted: {last_error}",
+        outer_attempt_count=2,
+        paired_jobs_root=work_root,
+    )
+
+
+def _validate_staged_confirmatory_job_record(
+    config: ExperimentConfig,
+    *,
+    job: Mapping[str, object],
+    gate: Mapping[str, object],
+    accepted_gate_sha256: str,
+    paired_jobs_root: Path,
+    record: Mapping[str, object],
+) -> None:
+    """Recompute a completed record from its immutable exchange artifacts."""
+    terminal_status = record.get("terminal_status")
+    expected_eligibility = terminal_status != "missing"
+    if (
+        record.get("schema_version") != "gaussian-fixed-ray-confirmatory-job-v1"
+        or record.get("job_id") != job["job_id"]
+        or record.get("master_seed") != job["master_seed"]
+        or record.get("role") != job["role"]
+        or terminal_status not in {"completed", "rejected", "missing"}
+        or record.get("scientific_analysis_eligibility") is not expected_eligibility
+        or record.get("accepted_gate_sha256") != accepted_gate_sha256
+        or record.get("config_sha256") != config_sha256(config)
+        or record.get("source_revision")
+        != gate["source_identity"]["git_revision"]  # type: ignore[index]
+    ):
+        raise RuntimeError(f"staged job identity drifted: {job['job_id']}")
+    if terminal_status != "completed":
+        outer_attempt_count = record.get("outer_attempt_count")
+        if (
+            not isinstance(record.get("failure_reason"), str)
+            or type(outer_attempt_count) is not int
+            or outer_attempt_count not in {1, 2}
+        ):
+            raise RuntimeError(f"staged terminal failure is incomplete: {job['job_id']}")
+        reconstructed = _terminal_confirmatory_failure_record(
+            config,
+            job=job,
+            gate=gate,
+            accepted_gate_sha256=accepted_gate_sha256,
+            terminal_status=terminal_status,  # type: ignore[arg-type]
+            failure_reason=str(record["failure_reason"]),
+            outer_attempt_count=outer_attempt_count,
+            paired_jobs_root=paired_jobs_root,
+        )
+        if any(
+            record.get(field) != reconstructed.get(field)
+            for field in (
+                "retry_lineage",
+                "worker_exchange_count",
+                "worker_exchanges",
+                "operator_gate_recheck",
+                "operator_gate_recheck_sha256",
+                "peak_allocated_bytes",
+                "peak_reserved_bytes",
+                "schemes",
+                "blocking_scheme_dispersion",
+            )
+        ):
+            raise RuntimeError(f"staged terminal failure drifted: {job['job_id']}")
+        return
+
+    outer_attempt = record.get("outer_attempt_count")
+    if outer_attempt not in {1, 2}:
+        raise RuntimeError(f"staged completed job retry lineage drifted: {job['job_id']}")
+    system = build_preregistered_system()
+    initial = generate_initial_coefficients(int(job["master_seed"]), str(job["job_id"]))
+    initial_sha256 = hashlib.sha256(initial.tobytes(order="C")).hexdigest()
+    if (
+        record.get("initial_coefficients_sha256") != initial_sha256
+        or not np.array_equal(np.asarray(record.get("initial_coefficients")), initial)
+    ):
+        raise RuntimeError(f"staged initial coefficients drifted: {job['job_id']}")
+    trajectories_payload = record.get("trajectory_coefficients")
+    if not isinstance(trajectories_payload, Mapping):
+        raise RuntimeError(f"staged trajectories are missing: {job['job_id']}")
+    trajectories = {
+        scheme: np.asarray(trajectories_payload.get(scheme), dtype=np.float64)
+        for scheme in config.theory.blocking_schemes
+    }
+    if any(
+        trajectory.shape != (9, initial.size)
+        or not np.all(np.isfinite(trajectory))
+        or np.any(trajectory <= 0.0)
+        or not np.array_equal(trajectory[0], initial)
+        for trajectory in trajectories.values()
+    ):
+        raise RuntimeError(f"staged trajectories drifted: {job['job_id']}")
+
+    stored_workers = record.get("worker_exchanges")
+    if not isinstance(stored_workers, list) or len(stored_workers) != 16:
+        raise RuntimeError(f"staged worker inventory drifted: {job['job_id']}")
+    workers_by_id = {
+        str(worker.get("job_id")): worker
+        for worker in stored_workers
+        if isinstance(worker, Mapping)
+    }
+    if len(workers_by_id) != 16:
+        raise RuntimeError(f"staged worker IDs drifted: {job['job_id']}")
+    repo_root = Path(__file__).resolve().parents[4]
+    worker_script = repo_root / "tools" / "cuda_worker.py"
+    environment_lock = repo_root / "environments" / "cuda-rtx5090-cu128.lock.txt"
+    peak_allocated = 0
+    peak_reserved = 0
+    for scheme in config.theory.blocking_schemes:
+        for step in range(1, 9):
+            immutable_id = f"confirmatory.{job['job_id']}.{scheme}.step{step:02d}.cuda"
+            stored_worker = workers_by_id.get(immutable_id)
+            if not isinstance(stored_worker, Mapping):
+                raise RuntimeError(f"staged worker exchange is missing: {immutable_id}")
+            context = stored_worker.get("execution_context")
+            if (
+                not isinstance(context, Mapping)
+                or context.get("accepted_gate_sha256") != accepted_gate_sha256
+                or context.get("accepted_gate_record") != gate
+            ):
+                raise RuntimeError(f"staged worker context drifted: {immutable_id}")
+            result, validated_context = _run_or_resume_worker_job(
+                worker_python=config.compute.cuda_worker_python,
+                worker_script=worker_script,
+                work_root=(
+                    Path(paired_jobs_root)
+                    / str(job["job_id"])
+                    / f"outer-attempt-{outer_attempt}"
+                    / "worker-exchanges"
+                    / immutable_id
+                ),
+                job_id=immutable_id,
+                requested_backend="cuda",
+                requested_dtype="float64",
+                arrays={
+                    "coefficients": trajectories[scheme][step - 1 : step, :],
+                    "spatial_map": system.spatial_maps[scheme],
+                    "matrix_direction": system.matrix_direction,
+                    "batch_size": np.array(config.compute.batch_size, dtype=np.int64),
+                },
+                environment_lock=environment_lock,
+                execution_context=context,
+                max_attempts=1,
+            )
+            if (
+                dict(validated_context) != dict(context)
+                or dict(result.request_manifest) != stored_worker.get("request_manifest")
+                or dict(result.response_manifest) != stored_worker.get("response_manifest")
+                or dict(result.provenance) != stored_worker.get("provenance")
+                or not np.array_equal(
+                    result.arrays["updated_coefficients"],
+                    trajectories[scheme][step : step + 1, :],
+                )
+            ):
+                raise RuntimeError(f"staged worker exchange drifted: {immutable_id}")
+            peak_allocated = max(
+                peak_allocated, int(result.provenance["peak_allocated_bytes"])
+            )
+            peak_reserved = max(
+                peak_reserved, int(result.provenance["peak_reserved_bytes"])
+            )
+    expected_schemes = {
+        scheme: _confirmatory_scheme_record(trajectories[scheme], system=system)
+        for scheme in config.theory.blocking_schemes
+    }
+    expected_dispersion = blocking_scheme_dispersion(
+        trajectories[config.theory.blocking_schemes[0]],
+        trajectories[config.theory.blocking_schemes[1]],
+    ).tolist()
+    if (
+        record.get("schemes") != expected_schemes
+        or record.get("blocking_scheme_dispersion") != expected_dispersion
+        or record.get("worker_exchange_count") != 16
+        or record.get("peak_allocated_bytes") != peak_allocated
+        or record.get("peak_reserved_bytes") != peak_reserved
+        or not np.isfinite(float(record.get("elapsed_seconds", np.nan)))
+        or not 0.0 <= float(record["elapsed_seconds"]) <= 300.0
+    ):
+        raise RuntimeError(f"staged scientific record drifted: {job['job_id']}")
 
 
 def run_confirmatory_primary(
@@ -865,29 +1237,52 @@ def run_confirmatory_primary(
                 or record.get("job_id") != job_id
                 or record.get("master_seed") != job["master_seed"]
                 or record.get("role") != "confirmatory_primary"
-                or record.get("terminal_status") != "completed"
-                or record.get("scientific_analysis_eligibility") is not True
+                or record.get("terminal_status")
+                not in {"completed", "rejected", "missing"}
+                or record.get("scientific_analysis_eligibility")
+                is not (record.get("terminal_status") != "missing")
                 or record.get("accepted_gate_sha256") != accepted_gate_sha256
                 or record.get("config_sha256") != config_hash
                 or record.get("source_revision") != source_revision
             ):
                 raise RuntimeError(f"staged primary job identity drifted: {job_id}")
+            _validate_staged_confirmatory_job_record(
+                config,
+                job=job,
+                gate=gate,
+                accepted_gate_sha256=accepted_gate_sha256,
+                paired_jobs_root=Path(work_root) / "paired-jobs",
+                record=record,
+            )
         else:
-            record = run_confirmatory_job(
+            record = _run_confirmatory_job_with_terminal_retry(
                 config,
                 job=job,
                 operator_opt_in=operator_opt_in,
                 operator_gate=gate,
                 accepted_gate_sha256=accepted_gate_sha256,
-                work_root=Path(work_root) / "worker-exchanges",
+                work_root=Path(work_root) / "paired-jobs",
             )
             _atomic_json(path, record)
         records.append(record)
     return {
         "schema_version": "gaussian-fixed-ray-confirmatory-primary-execution-v1",
         "planned_job_ids": expected_ids,
-        "completed_job_ids": [str(record["job_id"]) for record in records],
-        "missing_job_ids": [],
+        "completed_job_ids": [
+            str(record["job_id"])
+            for record in records
+            if record["terminal_status"] in {"completed", "rejected"}
+        ],
+        "rejected_job_ids": [
+            str(record["job_id"])
+            for record in records
+            if record["terminal_status"] == "rejected"
+        ],
+        "missing_job_ids": [
+            str(record["job_id"])
+            for record in records
+            if record["terminal_status"] == "missing"
+        ],
         "job_records": records,
         "accepted_gate_sha256": accepted_gate_sha256,
         "config_sha256": config_hash,
@@ -903,31 +1298,88 @@ def run_confirmatory_holdout(
     accepted_gate_sha256: str,
     primary_analysis_path: Path,
     primary_analysis_sha256: str,
+    primary_execution_path: Path,
+    primary_execution_sha256: str,
+    protocol_id: str,
+    job_table_sha256: str,
     work_root: Path,
 ) -> dict[str, object]:
     """Release and run the ten holdouts only after primary analysis is bound."""
     primary_path = Path(primary_analysis_path)
+    execution_path = Path(primary_execution_path)
     if (
         not primary_path.is_file()
         or _file_sha256(primary_path) != primary_analysis_sha256
+        or not execution_path.is_file()
+        or _file_sha256(execution_path) != primary_execution_sha256
     ):
-        raise ValueError("holdout release requires the exact primary analysis digest")
+        raise ValueError("holdout release requires exact primary execution and analysis digests")
     try:
         primary = json.loads(primary_path.read_text(encoding="utf-8"))
+        primary_execution = json.loads(execution_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise ValueError("primary analysis record is invalid") from error
+    gate = dict(operator_gate)
+    config_hash = config_sha256(config)
+    source_revision = gate.get("source_identity", {}).get("git_revision")  # type: ignore[union-attr]
+    expected_primary_ids = [f"C{index:03d}" for index in range(1, 31)]
     if (
         not isinstance(primary, dict)
+        or not isinstance(primary_execution, dict)
         or primary.get("schema_version")
         != "gaussian-fixed-ray-primary-analysis-v1"
-        or primary.get("primary_job_ids")
-        != [f"C{index:03d}" for index in range(1, 31)]
+        or primary.get("protocol_id") != protocol_id
+        or primary.get("job_table_sha256") != job_table_sha256
+        or primary.get("primary_job_ids") != expected_primary_ids
+        or primary.get("completed_job_count") != 30
+        or primary.get("missing_job_ids") != []
+        or primary.get("primary_execution_sha256") != primary_execution_sha256
+        or primary.get("config_sha256") != config_hash
+        or primary.get("source_revision") != source_revision
+        or primary.get("accepted_gate_sha256") != accepted_gate_sha256
         or primary.get("classification")
         not in {"support", "counterevidence", "inconclusive"}
+        or primary_execution.get("schema_version")
+        != "gaussian-fixed-ray-confirmatory-primary-execution-v1"
+        or primary_execution.get("planned_job_ids") != expected_primary_ids
+        or primary_execution.get("completed_job_ids") != expected_primary_ids
+        or primary_execution.get("missing_job_ids") != []
+        or primary_execution.get("accepted_gate_sha256") != accepted_gate_sha256
+        or primary_execution.get("config_sha256") != config_hash
+        or primary_execution.get("source_revision") != source_revision
     ):
         raise ValueError("primary analysis record does not authorize holdout release")
+    primary_jobs = {
+        str(job["job_id"]): job
+        for job in _job_table(config)["jobs"]  # type: ignore[index]
+        if job["role"] == "confirmatory_primary"
+    }
+    for record in primary_execution["job_records"]:
+        if not isinstance(record, Mapping) or record.get("job_id") not in primary_jobs:
+            raise ValueError("primary execution record inventory drifted")
+        _validate_staged_confirmatory_job_record(
+            config,
+            job=primary_jobs[str(record["job_id"])],
+            gate=gate,
+            accepted_gate_sha256=accepted_gate_sha256,
+            paired_jobs_root=Path(work_root) / "paired-jobs",
+            record=record,
+        )
+    recomputed = analyze_primary(
+        primary_execution.get("job_records"),
+        protocol_id=protocol_id,
+        job_table_sha256=job_table_sha256,
+        decision_stability=bool(primary.get("decision_stability")),
+        premises_passed=bool(primary.get("premises_passed")),
+        gpu_gate_complete=bool(primary.get("gpu_gate_complete")),
+        primary_execution_sha256=primary_execution_sha256,
+        config_sha256=config_hash,
+        source_revision=str(source_revision),
+        accepted_gate_sha256=accepted_gate_sha256,
+    )
+    if recomputed != primary:
+        raise ValueError("primary analysis record does not match recomputation")
 
-    gate = dict(operator_gate)
     if (
         operator_opt_in is not True
         or _record_sha256(gate) != accepted_gate_sha256
@@ -946,8 +1398,6 @@ def run_confirmatory_holdout(
         raise RuntimeError("holdout job table drifted from the frozen sequence")
     staging = Path(work_root) / "holdout-jobs"
     staging.mkdir(parents=True, exist_ok=True)
-    config_hash = config_sha256(config)
-    source_revision = gate["source_identity"]["git_revision"]  # type: ignore[index]
     records: list[dict[str, object]] = []
     for job in jobs:
         job_id = str(job["job_id"])
@@ -961,29 +1411,52 @@ def run_confirmatory_holdout(
                 or record.get("job_id") != job_id
                 or record.get("master_seed") != job["master_seed"]
                 or record.get("role") != "confirmatory_holdout"
-                or record.get("terminal_status") != "completed"
-                or record.get("scientific_analysis_eligibility") is not True
+                or record.get("terminal_status")
+                not in {"completed", "rejected", "missing"}
+                or record.get("scientific_analysis_eligibility")
+                is not (record.get("terminal_status") != "missing")
                 or record.get("accepted_gate_sha256") != accepted_gate_sha256
                 or record.get("config_sha256") != config_hash
                 or record.get("source_revision") != source_revision
             ):
                 raise RuntimeError(f"staged holdout job identity drifted: {job_id}")
+            _validate_staged_confirmatory_job_record(
+                config,
+                job=job,
+                gate=gate,
+                accepted_gate_sha256=accepted_gate_sha256,
+                paired_jobs_root=Path(work_root) / "paired-jobs",
+                record=record,
+            )
         else:
-            record = run_confirmatory_job(
+            record = _run_confirmatory_job_with_terminal_retry(
                 config,
                 job=job,
                 operator_opt_in=operator_opt_in,
                 operator_gate=gate,
                 accepted_gate_sha256=accepted_gate_sha256,
-                work_root=Path(work_root) / "worker-exchanges",
+                work_root=Path(work_root) / "paired-jobs",
             )
             _atomic_json(path, record)
         records.append(record)
     return {
         "schema_version": "gaussian-fixed-ray-confirmatory-holdout-execution-v1",
         "planned_job_ids": expected_ids,
-        "completed_job_ids": [str(record["job_id"]) for record in records],
-        "missing_job_ids": [],
+        "completed_job_ids": [
+            str(record["job_id"])
+            for record in records
+            if record["terminal_status"] in {"completed", "rejected"}
+        ],
+        "rejected_job_ids": [
+            str(record["job_id"])
+            for record in records
+            if record["terminal_status"] == "rejected"
+        ],
+        "missing_job_ids": [
+            str(record["job_id"])
+            for record in records
+            if record["terminal_status"] == "missing"
+        ],
         "job_records": records,
         "primary_analysis_sha256": primary_analysis_sha256,
         "accepted_gate_sha256": accepted_gate_sha256,
@@ -1554,6 +2027,21 @@ def publish_cuda_sentinel(
         },
     )
     store.write_json("metrics", {name: asdict(value) for name, value in metrics.items()})
+    manifest_path = store.run_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["provenance"]["artifact_sha256"] = {
+        name: _file_sha256(store.run_dir / name)
+        for name in (
+            "config.json",
+            "cuda_gate.json",
+            "preregistered_job_table.json",
+            "sentinel_parity.json",
+            "sentinel_arrays.npz",
+            "worker_exchange_index.json",
+            "metrics.json",
+        )
+    }
+    _atomic_json(manifest_path, manifest)
     store.finalize(
         (
             "cuda_gate.json",
@@ -1574,6 +2062,7 @@ def publish_cuda_sentinel(
 
 
 def _validate_confirmatory_sentinel_bundle(
+    config: ExperimentConfig,
     sentinel_run_dir: Path,
     accepted_manifest_sha256: str,
     operator_gate: Mapping[str, object],
@@ -1581,19 +2070,86 @@ def _validate_confirmatory_sentinel_bundle(
     run_dir = Path(sentinel_run_dir)
     manifest_path = run_dir / "manifest.json"
     parity_path = run_dir / "sentinel_parity.json"
+    gate_path = run_dir / "cuda_gate.json"
+    config_path = run_dir / "config.json"
+    table_path = run_dir / "preregistered_job_table.json"
+    workers_path = run_dir / "worker_exchange_index.json"
     if (
         not manifest_path.is_file()
         or _file_sha256(manifest_path) != accepted_manifest_sha256
-        or not parity_path.is_file()
+        or any(
+            not path.is_file()
+            for path in (parity_path, gate_path, config_path, table_path, workers_path)
+        )
     ):
         raise ValueError("accepted current-revision sentinel bundle is missing or drifted")
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         parity = json.loads(parity_path.read_text(encoding="utf-8"))
+        sentinel_gate = json.loads(gate_path.read_text(encoding="utf-8"))
+        sentinel_config = json.loads(config_path.read_text(encoding="utf-8"))
+        job_table = json.loads(table_path.read_text(encoding="utf-8"))
+        worker_index = json.loads(workers_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise ValueError("accepted sentinel bundle is invalid") from error
     provenance = manifest.get("provenance") if isinstance(manifest, dict) else None
     source = operator_gate.get("source_identity")
+    expected_artifacts = {
+        "config.json",
+        "manifest.json",
+        "cuda_gate.json",
+        "preregistered_job_table.json",
+        "sentinel_parity.json",
+        "sentinel_arrays.npz",
+        "worker_exchange_index.json",
+        "metrics.json",
+    }
+    artifact_hashes = provenance.get("artifact_sha256") if isinstance(provenance, Mapping) else None
+    input_hashes = provenance.get("input_hashes") if isinstance(provenance, Mapping) else None
+    expected_ids = ["C001", "C015", "C030", "H001", "H010"]
+    worker_records = worker_index.get("records") if isinstance(worker_index, Mapping) else None
+    resolved_sentinel_config = (
+        sentinel_config.get("resolved_config") if isinstance(sentinel_config, Mapping) else None
+    )
+    current_theory = json.loads(json.dumps(asdict(config.theory), default=str))
+    current_numerics = json.loads(json.dumps(asdict(config.numerics), default=str))
+    current_compute = json.loads(json.dumps(asdict(config.compute), default=str))
+    current_compute["heavy_sweep_enabled"] = False
+    sentinel_gate_sha256 = _record_sha256(sentinel_gate)
+    rechecks_valid = True
+    recheck_digests: set[str] = set()
+    try:
+        for recheck in parity.get("operator_gate_rechecks", []):
+            _validate_gate_recheck(sentinel_gate, recheck)
+            recheck_digests.add(_record_sha256(recheck))
+    except (TypeError, ValueError, RuntimeError, KeyError):
+        rechecks_valid = False
+    worker_bindings_valid = isinstance(worker_records, list)
+    if worker_bindings_valid:
+        try:
+            for worker in worker_records:
+                if not isinstance(worker, Mapping):
+                    raise ValueError("worker record must be a mapping")
+                request = worker.get("request_manifest")
+                response = worker.get("response_manifest")
+                context = worker.get("execution_context")
+                if not isinstance(request, Mapping) or not isinstance(response, Mapping):
+                    raise ValueError("worker manifests are missing")
+                validate_worker_protocol_manifest(request, expected_message_type="request")
+                validate_worker_protocol_manifest(
+                    response,
+                    expected_message_type="response",
+                    request_manifest=request,
+                )
+                if (
+                    not isinstance(context, Mapping)
+                    or context.get("accepted_gate_sha256") != sentinel_gate_sha256
+                    or context.get("accepted_gate_record") != sentinel_gate
+                    or context.get("operator_gate_recheck_sha256") not in recheck_digests
+                ):
+                    raise ValueError("worker context binding drifted")
+        except (TypeError, ValueError, RuntimeError, KeyError):
+            worker_bindings_valid = False
     if (
         manifest.get("complete") is not True
         or not isinstance(provenance, Mapping)
@@ -1602,16 +2158,61 @@ def _validate_confirmatory_sentinel_bundle(
         or provenance.get("git_dirty") is not False
         or provenance.get("experiment_scope") != "cuda_float64_parity_sentinel_only"
         or provenance.get("confirmatory_executed") is not False
+        or set(manifest.get("artifacts", {})) != expected_artifacts
+        or not isinstance(artifact_hashes, Mapping)
+        or set(artifact_hashes) != expected_artifacts - {"manifest.json"}
+        or any(
+            _file_sha256(run_dir / name) != digest
+            for name, digest in artifact_hashes.items()
+        )
+        or not isinstance(input_hashes, Mapping)
+        or input_hashes.get("preregistration_sha256") != _PREREGISTRATION_SHA256
+        or input_hashes.get("operator_gate_sha256") != sentinel_gate_sha256
+        or input_hashes.get("environment_lock_sha256")
+        != operator_gate.get("environment_lock_identity", {}).get("sha256")  # type: ignore[union-attr]
+        or input_hashes.get("worker_script_sha256")
+        != operator_gate.get("worker_script_identity", {}).get("sha256")  # type: ignore[union-attr]
+        or input_hashes.get("job_table_sha256") != _record_sha256(job_table)
+        or sentinel_gate.get("source_identity") != source
+        or sentinel_gate.get("preregistration_sha256") != _PREREGISTRATION_SHA256
+        or sentinel_gate.get("environment_lock_identity")
+        != operator_gate.get("environment_lock_identity")
+        or sentinel_gate.get("worker_python_identity")
+        != operator_gate.get("worker_python_identity")
+        or sentinel_gate.get("worker_script_identity")
+        != operator_gate.get("worker_script_identity")
+        or parity.get("operator_gate_sha256") != sentinel_gate_sha256
+        or parity.get("accepted_gate_sha256") != sentinel_gate_sha256
+        or not isinstance(resolved_sentinel_config, Mapping)
+        or resolved_sentinel_config.get("theory") != current_theory
+        or resolved_sentinel_config.get("numerics") != current_numerics
+        or resolved_sentinel_config.get("compute") != current_compute
+        or parity.get("sentinel_job_ids") != expected_ids
+        or parity.get("scientific_analysis_eligibility")
+        != {job_id: False for job_id in expected_ids}
         or parity.get("all_parity_passed") is not True
         or parity.get("scientific_decision_parity_passed") is not True
-        or set(parity.get("scientific_analysis_eligibility", {}).values()) != {False}
+        or len(parity.get("operator_gate_rechecks", [])) != 5
+        or not rechecks_valid
+        or len(parity.get("parity_records", [])) != 400
+        or len(parity.get("endpoint_parity_records", [])) != 30
+        or not isinstance(worker_records, list)
+        or len(worker_records) != 240
+        or len({record.get("job_id") for record in worker_records if isinstance(record, Mapping)})
+        != 240
+        or not worker_bindings_valid
+        or parity.get("threshold_mutation_negative_control", {}).get(  # type: ignore[union-attr]
+            "negative_control_passed"
+        )
+        is not True
+        or parity.get("mutation_negative_control", {}).get("passed") is not False  # type: ignore[union-attr]
     ):
         raise ValueError("accepted sentinel bundle is not eligible for confirmation")
     return {
         "manifest_sha256": accepted_manifest_sha256,
         "git_commit": provenance["git_commit"],
         "scientific_decision_parity_passed": True,
-        "sentinel_job_ids": list(parity["sentinel_job_ids"]),
+        "sentinel_job_ids": expected_ids,
     }
 
 
@@ -1637,7 +2238,7 @@ def publish_confirmatory_experiment(
         raise ValueError("confirmatory publication requires exact operator acceptance")
     _validate_confirmatory_gate_bindings(config, gate)
     sentinel_identity = _validate_confirmatory_sentinel_bundle(
-        Path(sentinel_run_dir), accepted_sentinel_manifest_sha256, gate
+        config, Path(sentinel_run_dir), accepted_sentinel_manifest_sha256, gate
     )
 
     staging = Path(staging_root)
@@ -1654,6 +2255,14 @@ def publish_confirmatory_experiment(
         accepted_gate_sha256=accepted_gate_sha256,
         work_root=staging,
     )
+    primary_execution_path = staging / "primary_execution.json"
+    if primary_execution_path.is_file():
+        stored_execution = json.loads(primary_execution_path.read_text(encoding="utf-8"))
+        if stored_execution != primary_execution:
+            raise RuntimeError("staged primary execution drifted from recomputation")
+    else:
+        _atomic_json(primary_execution_path, primary_execution)
+    primary_execution_sha256 = _file_sha256(primary_execution_path)
     primary_records = primary_execution["job_records"]
     primary_analysis = analyze_primary(
         primary_records,
@@ -1664,6 +2273,10 @@ def publish_confirmatory_experiment(
         ),
         premises_passed=True,
         gpu_gate_complete=True,
+        primary_execution_sha256=primary_execution_sha256,
+        config_sha256=config_sha256(config),
+        source_revision=str(gate["source_identity"]["git_revision"]),  # type: ignore[index]
+        accepted_gate_sha256=accepted_gate_sha256,
     )
     primary_path = staging / "primary_analysis.json"
     if primary_path.is_file():
@@ -1674,33 +2287,71 @@ def publish_confirmatory_experiment(
         _atomic_json(primary_path, primary_analysis)
     primary_sha256 = _file_sha256(primary_path)
 
-    holdout_execution = run_confirmatory_holdout(
-        config,
-        operator_opt_in=operator_opt_in,
-        operator_gate=gate,
-        accepted_gate_sha256=accepted_gate_sha256,
-        primary_analysis_path=primary_path,
-        primary_analysis_sha256=primary_sha256,
-        work_root=staging,
-    )
+    if primary_execution.get("missing_job_ids"):
+        holdout_records = [
+            _terminal_confirmatory_failure_record(
+                config,
+                job=job,
+                gate=gate,
+                accepted_gate_sha256=accepted_gate_sha256,
+                terminal_status="missing",
+                failure_reason="holdout not released because primary execution is incomplete",
+                outer_attempt_count=0,
+            )
+            for job in table["jobs"]  # type: ignore[index]
+            if job["role"] == "confirmatory_holdout"
+        ]
+        holdout_execution = {
+            "schema_version": "gaussian-fixed-ray-confirmatory-holdout-execution-v1",
+            "planned_job_ids": [f"H{index:03d}" for index in range(1, 11)],
+            "completed_job_ids": [],
+            "rejected_job_ids": [],
+            "missing_job_ids": [f"H{index:03d}" for index in range(1, 11)],
+            "job_records": holdout_records,
+            "release_status": "blocked_by_incomplete_primary",
+            "primary_analysis_sha256": primary_sha256,
+            "accepted_gate_sha256": accepted_gate_sha256,
+            "config_sha256": config_sha256(config),
+            "source_revision": gate["source_identity"]["git_revision"],  # type: ignore[index]
+        }
+    else:
+        holdout_execution = run_confirmatory_holdout(
+            config,
+            operator_opt_in=operator_opt_in,
+            operator_gate=gate,
+            accepted_gate_sha256=accepted_gate_sha256,
+            primary_analysis_path=primary_path,
+            primary_analysis_sha256=primary_sha256,
+            primary_execution_path=primary_execution_path,
+            primary_execution_sha256=primary_execution_sha256,
+            protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
+            job_table_sha256=job_table_sha256,
+            work_root=staging,
+        )
     holdout_records = holdout_execution["job_records"]
-    holdout_analysis = analyze_holdout(
-        holdout_records,
-        protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
-        job_table_sha256=job_table_sha256,
-        primary_analysis_sha256=primary_sha256,
-    )
+    if holdout_execution.get("missing_job_ids"):
+        holdout_analysis = {
+            "schema_version": "gaussian-fixed-ray-holdout-analysis-v1",
+            "analysis_scope": "descriptive_replication_unavailable",
+            "primary_analysis_sha256": primary_sha256,
+            "missing_job_ids": list(holdout_execution["missing_job_ids"]),
+        }
+    else:
+        holdout_analysis = analyze_holdout(
+            holdout_records,
+            protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
+            job_table_sha256=job_table_sha256,
+            primary_analysis_sha256=primary_sha256,
+        )
     all_records = [*primary_records, *holdout_records]
-    if (
-        len(all_records) != 40
-        or primary_execution.get("missing_job_ids")
-        or holdout_execution.get("missing_job_ids")
-    ):
+    if len(all_records) != 40:
         raise RuntimeError("confirmatory publication requires 40 terminal job records")
 
     arrays: dict[str, np.ndarray] = {}
     for record in all_records:
         job_id = str(record["job_id"])
+        if record.get("terminal_status") != "completed":
+            continue
         arrays[f"{job_id}_initial_coefficients"] = _readonly(
             record["initial_coefficients"]
         )
@@ -1735,14 +2386,18 @@ def publish_confirmatory_experiment(
         "accepted_sentinel_manifest_sha256": accepted_sentinel_manifest_sha256,
         "primary_analysis_sha256": primary_sha256,
         "planned_job_count": 40,
-        "completed_job_count": 40,
+        "completed_job_count": int(
+            sum(record.get("terminal_status") == "completed" for record in all_records)
+        ),
         "rejected_job_count": int(
             sum(
-                any(bool(scheme["rejected"]) for scheme in record["schemes"].values())
+                record.get("terminal_status") == "rejected"
                 for record in all_records
             )
         ),
-        "missing_job_count": 0,
+        "missing_job_count": int(
+            sum(record.get("terminal_status") == "missing" for record in all_records)
+        ),
         "worker_exchange_count": len(worker_exchanges),
         "worker_exchanges": worker_exchanges,
         "operator_gate_rechecks": gate_rechecks,
@@ -1755,16 +2410,21 @@ def publish_confirmatory_experiment(
         "peak_reserved_bytes": max(
             int(record.get("peak_reserved_bytes", 0)) for record in all_records
         ),
-        "stopping_reason": "planned_table_complete",
+        "stopping_reason": (
+            "planned_table_complete"
+            if not primary_execution.get("missing_job_ids")
+            and not holdout_execution.get("missing_job_ids")
+            else "planned_table_terminalized_with_failures"
+        ),
     }
     published_table = dict(table)
     published_table["confirmatory_executed"] = True
-    published_table["executed_primary_job_ids"] = [
-        f"C{index:03d}" for index in range(1, 31)
-    ]
-    published_table["executed_holdout_job_ids"] = [
-        f"H{index:03d}" for index in range(1, 11)
-    ]
+    published_table["executed_primary_job_ids"] = list(
+        primary_execution["completed_job_ids"]
+    )
+    published_table["executed_holdout_job_ids"] = list(
+        holdout_execution["completed_job_ids"]
+    )
 
     classification = str(primary_analysis["classification"])
     metric = _metric(
@@ -1796,6 +2456,7 @@ def publish_confirmatory_experiment(
     input_hashes["preregistration_sha256"] = _PREREGISTRATION_SHA256  # type: ignore[index]
     input_hashes["job_table_sha256"] = job_table_sha256  # type: ignore[index]
     input_hashes["primary_analysis_sha256"] = primary_sha256  # type: ignore[index]
+    input_hashes["primary_execution_sha256"] = primary_execution_sha256  # type: ignore[index]
 
     store = RunStore.create(config, provenance)
     store.write_json("confirmatory_job_table", published_table)
@@ -1807,6 +2468,7 @@ def publish_confirmatory_experiment(
         },
     )
     store.write_json("primary_analysis", primary_analysis)
+    store.write_json("primary_execution", primary_execution)
     store.write_json("holdout_analysis", holdout_analysis)
     store.write_json("confirmatory_execution", execution)
     store.write_npz("confirmatory_arrays", arrays)
@@ -1816,6 +2478,7 @@ def publish_confirmatory_experiment(
             "confirmatory_job_table.json",
             "confirmatory_endpoints.json",
             "primary_analysis.json",
+            "primary_execution.json",
             "holdout_analysis.json",
             "confirmatory_execution.json",
             "confirmatory_arrays.npz",
