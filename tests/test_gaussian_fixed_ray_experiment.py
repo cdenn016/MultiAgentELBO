@@ -727,6 +727,47 @@ def test_click_launcher_gate_mode_publishes_digest_for_two_phase_acceptance(
     assert json.loads(gate_path.read_text("utf-8")) == gate
 
 
+def test_click_launcher_namespaces_sentinel_staging_by_accepted_gate_digest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repository = Path(__file__).resolve().parents[1]
+    launcher_path = repository / "run_gaussian_fixed_ray_lab.py"
+    spec = importlib.util.spec_from_file_location("fixed_ray_launcher", launcher_path)
+    assert spec is not None and spec.loader is not None
+    launcher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(launcher)
+    accepted_digest = "a" * 64
+    gate = {"schema_version": "cuda-idle-operator-gate-v1"}
+    gate_path = tmp_path / "cuda-gate.json"
+    gate_path.write_text(json.dumps(gate), encoding="utf-8")
+    control_path = tmp_path / "operator-control.json"
+    control_path.write_text(
+        json.dumps(
+            {
+                "mode": "cuda_sentinel",
+                "operator_opt_in": True,
+                "accepted_gate_sha256": accepted_digest,
+            }
+        ),
+        encoding="utf-8",
+    )
+    staging_base = tmp_path / "sentinel-staging"
+    captured = {}
+
+    def publish(*_args: object, **kwargs: object) -> object:
+        captured.update(kwargs)
+        return SimpleNamespace(run_dir=tmp_path / "run", status="pass", metrics={})
+
+    monkeypatch.setattr(launcher, "OPERATOR_CONTROL_PATH", control_path)
+    monkeypatch.setattr(launcher, "CUDA_GATE_PATH", gate_path)
+    monkeypatch.setattr(launcher, "SENTINEL_STAGING_ROOT", staging_base)
+    monkeypatch.setattr(launcher, "publish_cuda_sentinel", publish)
+
+    launcher.main()
+
+    assert captured["staging_root"] == staging_base / accepted_digest
+
+
 @pytest.mark.parametrize(
     "mutated_key",
     (

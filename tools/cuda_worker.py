@@ -384,6 +384,7 @@ def compute_cuda(
         raise ProtocolError("requested CUDA device is unavailable")
     device = torch.device("cuda:0")
     torch_dtype = {"float64": torch.float64, "float32": torch.float32}[requested_dtype]
+    torch.cuda.init()
     torch.cuda.reset_peak_memory_stats(device)
     coefficients = torch.as_tensor(arrays["coefficients"], dtype=torch_dtype, device=device)
     spatial_map = torch.as_tensor(arrays["spatial_map"], dtype=torch_dtype, device=device)

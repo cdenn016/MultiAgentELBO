@@ -118,7 +118,7 @@ def main() -> GaussianFixedRayExperimentResult | dict[str, object]:
             operator_opt_in=operator_opt_in,
             operator_gate=gate,
             accepted_gate_sha256=accepted_gate_sha256,
-            staging_root=SENTINEL_STAGING_ROOT,
+            staging_root=SENTINEL_STAGING_ROOT / accepted_gate_sha256,
         )
         _print_result(result)
         return result
