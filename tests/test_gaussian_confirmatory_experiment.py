@@ -80,6 +80,36 @@ def _idle_record(schema_version: str) -> dict[str, object]:
     }
 
 
+def test_persisted_worker_context_is_reduced_to_live_schema_for_replay():
+    gate = {
+        "config_sha256": "c" * 64,
+        "source_identity": {"git_revision": "a" * 40},
+    }
+    recheck = {"schema_version": "cuda-idle-operator-gate-v1"}
+    persisted = {
+        "accepted_gate_sha256": _digest(gate),
+        "accepted_gate_record": gate,
+        "operator_gate_recheck_sha256": _digest(recheck),
+        "operator_gate_recheck_record": recheck,
+        "sentinel_job_id": "C001",
+        "scheme": "adjacent_pairs",
+        "step": 1,
+        "lane": "worker_cuda_confirmatory",
+        "config_sha256": "c" * 64,
+        "source_revision": "a" * 40,
+        "outer_attempt": 1,
+        "parent_attempt": None,
+    }
+
+    live = fixed_ray_experiment._live_execution_context(persisted)
+
+    assert live == {
+        key: value
+        for key, value in persisted.items()
+        if key not in {"outer_attempt", "parent_attempt"}
+    }
+
+
 def _digest(record: object) -> str:
     return hashlib.sha256(
         json.dumps(record, sort_keys=True, separators=(",", ":")).encode("utf-8")

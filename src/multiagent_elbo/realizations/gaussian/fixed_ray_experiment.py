@@ -447,6 +447,20 @@ def _validate_execution_context(
         raise RuntimeError("worker execution context retry lineage drifted")
 
 
+def _live_execution_context(
+    persisted_context: Mapping[str, object],
+) -> Mapping[str, object]:
+    """Recover the lineage-free context used to replay an immutable exchange."""
+    _validate_execution_context(persisted_context, persisted=True)
+    live_context = {
+        key: value
+        for key, value in persisted_context.items()
+        if key not in {"outer_attempt", "parent_attempt"}
+    }
+    _validate_execution_context(live_context, persisted=False)
+    return MappingProxyType(live_context)
+
+
 def _validate_execution_context_compatibility(
     stored: Mapping[str, object], current: Mapping[str, object]
 ) -> None:
@@ -1133,13 +1147,15 @@ def _validate_staged_confirmatory_job_record(
             stored_worker = workers_by_id.get(immutable_id)
             if not isinstance(stored_worker, Mapping):
                 raise RuntimeError(f"staged worker exchange is missing: {immutable_id}")
-            context = stored_worker.get("execution_context")
+            persisted_context = stored_worker.get("execution_context")
             if (
-                not isinstance(context, Mapping)
-                or context.get("accepted_gate_sha256") != accepted_gate_sha256
-                or context.get("accepted_gate_record") != gate
+                not isinstance(persisted_context, Mapping)
+                or persisted_context.get("accepted_gate_sha256")
+                != accepted_gate_sha256
+                or persisted_context.get("accepted_gate_record") != gate
             ):
                 raise RuntimeError(f"staged worker context drifted: {immutable_id}")
+            live_context = _live_execution_context(persisted_context)
             result, validated_context = _run_or_resume_worker_job(
                 worker_python=config.compute.cuda_worker_python,
                 worker_script=worker_script,
@@ -1160,11 +1176,11 @@ def _validate_staged_confirmatory_job_record(
                     "batch_size": np.array(config.compute.batch_size, dtype=np.int64),
                 },
                 environment_lock=environment_lock,
-                execution_context=context,
+                execution_context=live_context,
                 max_attempts=1,
             )
             if (
-                dict(validated_context) != dict(context)
+                dict(validated_context) != dict(persisted_context)
                 or dict(result.request_manifest) != stored_worker.get("request_manifest")
                 or dict(result.response_manifest) != stored_worker.get("response_manifest")
                 or dict(result.provenance) != stored_worker.get("provenance")
