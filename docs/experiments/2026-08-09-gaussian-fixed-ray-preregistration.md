@@ -158,4 +158,11 @@ The pilot budget is four paired CPU initial conditions, eight steps, float64, an
 
 Before confirmatory execution, the controller must record a fresh idle-GPU check, explicit operator opt-in, the frozen environment-lock digest, executable and worker hashes, requested/effective backend and dtype, Torch/CUDA/device/capability and library records, deterministic controls, peak allocated/reserved memory, and a full Python 3.14 CPU / Python 3.12 worker CPU / Python 3.12 worker CUDA float64 parity matrix. The sentinel subset is exactly `C001`, `C015`, `C030`, `H001`, and `H010`, including threshold-near and worst-conditioned realized strata. A fixed parity mutation must fail.
 
+The separate confirmatory gate uses five occupancy samples at one-second
+intervals and a 21,600-second authorization TTL, which exceeds the fixed
+40-job worst-case compute budget. The controller captures a new one-sample idle
+recheck immediately before every outer `C` or `H` job. Every recheck must retain
+the accepted GPU identity and exact process signature, zero utilization, `P8`,
+and memory within the frozen drift tolerance.
+
 No job may stop early because the conjecture looks supported or unsupported. Execution stops only after the planned table is complete, after the single authorized infrastructure retry is exhausted, on protocol/provenance invalidity, on non-idle GPU detection, on operator withdrawal, or when the fixed compute budget is exhausted. None of those safety stops authorizes selective reporting or replacement jobs.

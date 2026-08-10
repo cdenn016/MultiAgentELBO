@@ -5,6 +5,7 @@ import pytest
 
 from multiagent_elbo.realizations.gaussian.confirmatory_analysis import (
     SECONDARY_ENDPOINT_IDS,
+    analyze_holdout,
     analyze_primary,
     bootstrap_seed,
     exact_binomial_lower_tail,
@@ -297,3 +298,26 @@ def test_missing_primary_job_forces_inconclusive_without_replacement():
 
     assert result["missing_job_ids"] == ["C030"]
     assert result["classification"] == "inconclusive"
+
+
+def test_holdout_analysis_is_descriptive_and_bound_to_primary_digest():
+    records = []
+    for index in range(10):
+        record = _primary_record(index)
+        record["job_id"] = f"H{index + 1:03d}"
+        record["role"] = "confirmatory_holdout"
+        records.append(record)
+
+    result = analyze_holdout(
+        records,
+        protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
+        job_table_sha256="a" * 64,
+        primary_analysis_sha256="b" * 64,
+    )
+
+    assert result["holdout_job_ids"] == [f"H{index:03d}" for index in range(1, 11)]
+    assert result["primary_analysis_sha256"] == "b" * 64
+    assert result["analysis_scope"] == "descriptive_replication_only"
+    assert "secondary_tests" not in result
+    assert "classification" not in result
+    assert "two_sided_p" not in result["primary_endpoint"]

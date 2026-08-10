@@ -457,8 +457,110 @@ def analyze_primary(
     }
 
 
+def analyze_holdout(
+    job_records: object,
+    *,
+    protocol_id: str,
+    job_table_sha256: str,
+    primary_analysis_sha256: str,
+) -> dict[str, object]:
+    """Apply the frozen estimators once as descriptive holdout replication."""
+    if _SHA256_HEX.fullmatch(primary_analysis_sha256) is None:
+        raise ValueError("holdout primary-analysis SHA-256 is invalid")
+    if not isinstance(job_records, (list, tuple)) or len(job_records) != 10:
+        raise ValueError("holdout analysis requires exactly ten job records")
+    records_by_id: dict[str, Mapping[str, object]] = {}
+    for record in job_records:
+        if not isinstance(record, Mapping):
+            raise ValueError("holdout job record must be a mapping")
+        job_id = record.get("job_id")
+        if (
+            not isinstance(job_id, str)
+            or record.get("role") != "confirmatory_holdout"
+            or record.get("scientific_analysis_eligibility") is not True
+            or job_id in records_by_id
+        ):
+            raise ValueError("holdout analysis received an ineligible record")
+        records_by_id[job_id] = record
+    expected_ids = [f"H{index:03d}" for index in range(1, 11)]
+    if set(records_by_id) != set(expected_ids):
+        raise ValueError("holdout analysis job table is incomplete or drifted")
+    summaries = [
+        summarize_paired_job(records_by_id[job_id]) for job_id in expected_ids
+    ]
+    worst_case = np.finfo(np.float64).max
+
+    def endpoint_interval(name: str, endpoint_id: str) -> dict[str, object]:
+        sample = np.asarray(
+            [
+                worst_case if summary[name] is None else summary[name]
+                for summary in summaries
+            ],
+            dtype=np.float64,
+        )
+        return percentile_interval(
+            sample,
+            seed=bootstrap_seed(protocol_id, job_table_sha256, endpoint_id),
+        )
+
+    primary_endpoint = endpoint_interval(
+        "primary_angle_slope", "holdout_primary_angle_slope"
+    )
+    supporting_distance = endpoint_interval(
+        "scale_8_normalized_distance", "holdout_supporting_distance"
+    )
+    dispersion = endpoint_interval(
+        "scheme_dispersion", "holdout_scheme_dispersion"
+    )
+    continuous_endpoints = {
+        "construction_residual": endpoint_interval(
+            "construction_residual", "holdout_construction_residual"
+        ),
+        "retained_beta_trend": endpoint_interval(
+            "retained_beta_trend", "holdout_retained_beta_trend"
+        ),
+        "conditioning_trend": endpoint_interval(
+            "conditioning_trend", "holdout_conditioning_trend"
+        ),
+    }
+    basin_events = int(sum(bool(summary["basin_exit"]) for summary in summaries))
+    rejection_events = int(sum(bool(summary["rejected"]) for summary in summaries))
+    return {
+        "schema_version": "gaussian-fixed-ray-holdout-analysis-v1",
+        "analysis_scope": "descriptive_replication_only",
+        "protocol_id": protocol_id,
+        "job_table_sha256": job_table_sha256,
+        "primary_analysis_sha256": primary_analysis_sha256,
+        "holdout_job_ids": expected_ids,
+        "independent_job_count": 10,
+        "paired_reduction": "least_favorable_across_two_frozen_schemes",
+        "primary_endpoint": primary_endpoint,
+        "supporting_distance": supporting_distance,
+        "scheme_dispersion_interval": dispersion,
+        "continuous_endpoints": continuous_endpoints,
+        "basin_exit_events": basin_events,
+        "basin_exit_rate": basin_events / 10.0,
+        "rejection_events": rejection_events,
+        "rejection_rate": rejection_events / 10.0,
+        "threshold_replication": {
+            "primary_upper_at_most_minus_0_02": float(primary_endpoint["upper"])
+            <= -0.02,
+            "distance_median_at_most_0_05": float(supporting_distance["estimate"])
+            <= 0.05,
+            "dispersion_upper_at_most_0_02": float(dispersion["upper"]) <= 0.02,
+            "basin_exit_rate_at_most_0_05": basin_events / 10.0 <= 0.05,
+            "rejection_rate_at_most_0_05": rejection_events / 10.0 <= 0.05,
+        },
+        "theorem_status": "NUMERICAL",
+        "verification_state": "CANDIDATE",
+        "claim_origin": "APPLICATION_SPECIFIC",
+        "job_summaries": summaries,
+    }
+
+
 __all__ = [
     "SECONDARY_ENDPOINT_IDS",
+    "analyze_holdout",
     "analyze_primary",
     "bootstrap_seed",
     "exact_binomial_lower_tail",

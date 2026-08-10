@@ -44,11 +44,12 @@ from .fixed_ray import (
     projective_ray_angle,
     scalarized_ray_construction_residual,
 )
+from .confirmatory_analysis import analyze_holdout, analyze_primary
 
 
 MetricStatus = Literal["pass", "fail", "inconclusive"]
 _PREREGISTRATION_SHA256 = (
-    "b86265e89d4a324385e7f412c03500422fe0f54cd3402a960d82c1364ff8c2aa"
+    "57be7aa49af8c9fa56585879fa394ca93517cc1b58269596e53293d350a07dd5"
 )
 
 
@@ -328,7 +329,12 @@ def build_confirmatory_gate_record(
     if config.compute.heavy_sweep_enabled is not True:
         raise ValueError("confirmatory gate requires heavy_sweep_enabled=True")
     bindings = _live_cuda_common_bindings(config)
-    gate = capture_idle_gpu_gate(operator_opt_in=operator_opt_in)
+    gate = capture_idle_gpu_gate(
+        operator_opt_in=operator_opt_in,
+        sample_count=5,
+        sample_interval_seconds=1.0,
+        freshness_ttl_seconds=21_600.0,
+    )
     gate.update(bindings)
     gate["schema_version"] = "cuda-confirmatory-operator-gate-v1"
     gate["execution_scope"] = "gaussian_fixed_ray_confirmatory_40_job"
@@ -883,6 +889,103 @@ def run_confirmatory_primary(
         "completed_job_ids": [str(record["job_id"]) for record in records],
         "missing_job_ids": [],
         "job_records": records,
+        "accepted_gate_sha256": accepted_gate_sha256,
+        "config_sha256": config_hash,
+        "source_revision": source_revision,
+    }
+
+
+def run_confirmatory_holdout(
+    config: ExperimentConfig,
+    *,
+    operator_opt_in: bool,
+    operator_gate: Mapping[str, object],
+    accepted_gate_sha256: str,
+    primary_analysis_path: Path,
+    primary_analysis_sha256: str,
+    work_root: Path,
+) -> dict[str, object]:
+    """Release and run the ten holdouts only after primary analysis is bound."""
+    primary_path = Path(primary_analysis_path)
+    if (
+        not primary_path.is_file()
+        or _file_sha256(primary_path) != primary_analysis_sha256
+    ):
+        raise ValueError("holdout release requires the exact primary analysis digest")
+    try:
+        primary = json.loads(primary_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError("primary analysis record is invalid") from error
+    if (
+        not isinstance(primary, dict)
+        or primary.get("schema_version")
+        != "gaussian-fixed-ray-primary-analysis-v1"
+        or primary.get("primary_job_ids")
+        != [f"C{index:03d}" for index in range(1, 31)]
+        or primary.get("classification")
+        not in {"support", "counterevidence", "inconclusive"}
+    ):
+        raise ValueError("primary analysis record does not authorize holdout release")
+
+    gate = dict(operator_gate)
+    if (
+        operator_opt_in is not True
+        or _record_sha256(gate) != accepted_gate_sha256
+        or gate.get("operator_opt_in") is not True
+    ):
+        raise ValueError("holdout execution requires the accepted confirmatory gate")
+    _validate_confirmatory_gate_bindings(config, gate)
+    table = _job_table(config)
+    jobs = [
+        job
+        for job in table["jobs"]  # type: ignore[union-attr]
+        if job["role"] == "confirmatory_holdout"
+    ]
+    expected_ids = [f"H{index:03d}" for index in range(1, 11)]
+    if [job["job_id"] for job in jobs] != expected_ids:
+        raise RuntimeError("holdout job table drifted from the frozen sequence")
+    staging = Path(work_root) / "holdout-jobs"
+    staging.mkdir(parents=True, exist_ok=True)
+    config_hash = config_sha256(config)
+    source_revision = gate["source_identity"]["git_revision"]  # type: ignore[index]
+    records: list[dict[str, object]] = []
+    for job in jobs:
+        job_id = str(job["job_id"])
+        path = staging / f"{job_id}.json"
+        if path.is_file():
+            record = json.loads(path.read_text(encoding="utf-8"))
+            if (
+                not isinstance(record, dict)
+                or record.get("schema_version")
+                != "gaussian-fixed-ray-confirmatory-job-v1"
+                or record.get("job_id") != job_id
+                or record.get("master_seed") != job["master_seed"]
+                or record.get("role") != "confirmatory_holdout"
+                or record.get("terminal_status") != "completed"
+                or record.get("scientific_analysis_eligibility") is not True
+                or record.get("accepted_gate_sha256") != accepted_gate_sha256
+                or record.get("config_sha256") != config_hash
+                or record.get("source_revision") != source_revision
+            ):
+                raise RuntimeError(f"staged holdout job identity drifted: {job_id}")
+        else:
+            record = run_confirmatory_job(
+                config,
+                job=job,
+                operator_opt_in=operator_opt_in,
+                operator_gate=gate,
+                accepted_gate_sha256=accepted_gate_sha256,
+                work_root=Path(work_root) / "worker-exchanges",
+            )
+            _atomic_json(path, record)
+        records.append(record)
+    return {
+        "schema_version": "gaussian-fixed-ray-confirmatory-holdout-execution-v1",
+        "planned_job_ids": expected_ids,
+        "completed_job_ids": [str(record["job_id"]) for record in records],
+        "missing_job_ids": [],
+        "job_records": records,
+        "primary_analysis_sha256": primary_analysis_sha256,
         "accepted_gate_sha256": accepted_gate_sha256,
         "config_sha256": config_hash,
         "source_revision": source_revision,
@@ -1470,6 +1573,264 @@ def publish_cuda_sentinel(
     )
 
 
+def _validate_confirmatory_sentinel_bundle(
+    sentinel_run_dir: Path,
+    accepted_manifest_sha256: str,
+    operator_gate: Mapping[str, object],
+) -> dict[str, object]:
+    run_dir = Path(sentinel_run_dir)
+    manifest_path = run_dir / "manifest.json"
+    parity_path = run_dir / "sentinel_parity.json"
+    if (
+        not manifest_path.is_file()
+        or _file_sha256(manifest_path) != accepted_manifest_sha256
+        or not parity_path.is_file()
+    ):
+        raise ValueError("accepted current-revision sentinel bundle is missing or drifted")
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        parity = json.loads(parity_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError("accepted sentinel bundle is invalid") from error
+    provenance = manifest.get("provenance") if isinstance(manifest, dict) else None
+    source = operator_gate.get("source_identity")
+    if (
+        manifest.get("complete") is not True
+        or not isinstance(provenance, Mapping)
+        or not isinstance(source, Mapping)
+        or provenance.get("git_commit") != source.get("git_revision")
+        or provenance.get("git_dirty") is not False
+        or provenance.get("experiment_scope") != "cuda_float64_parity_sentinel_only"
+        or provenance.get("confirmatory_executed") is not False
+        or parity.get("all_parity_passed") is not True
+        or parity.get("scientific_decision_parity_passed") is not True
+        or set(parity.get("scientific_analysis_eligibility", {}).values()) != {False}
+    ):
+        raise ValueError("accepted sentinel bundle is not eligible for confirmation")
+    return {
+        "manifest_sha256": accepted_manifest_sha256,
+        "git_commit": provenance["git_commit"],
+        "scientific_decision_parity_passed": True,
+        "sentinel_job_ids": list(parity["sentinel_job_ids"]),
+    }
+
+
+def publish_confirmatory_experiment(
+    config: ExperimentConfig,
+    *,
+    operator_opt_in: bool,
+    operator_gate: Mapping[str, object],
+    accepted_gate_sha256: str,
+    sentinel_run_dir: Path,
+    accepted_sentinel_manifest_sha256: str,
+    staging_root: Path,
+) -> GaussianFixedRayExperimentResult:
+    """Execute, analyze, and atomically publish the two-stage 40-job bundle."""
+    if (
+        config.compute.backend != "cuda"
+        or config.compute.dtype != "float64"
+        or config.compute.heavy_sweep_enabled is not True
+    ):
+        raise ValueError("confirmatory publication requires heavy CUDA float64")
+    gate = dict(operator_gate)
+    if operator_opt_in is not True or _record_sha256(gate) != accepted_gate_sha256:
+        raise ValueError("confirmatory publication requires exact operator acceptance")
+    _validate_confirmatory_gate_bindings(config, gate)
+    sentinel_identity = _validate_confirmatory_sentinel_bundle(
+        Path(sentinel_run_dir), accepted_sentinel_manifest_sha256, gate
+    )
+
+    staging = Path(staging_root)
+    staging.mkdir(parents=True, exist_ok=True)
+    table = _job_table(config)
+    planned_table_bytes = json.dumps(
+        table, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode("utf-8")
+    job_table_sha256 = hashlib.sha256(planned_table_bytes).hexdigest()
+    primary_execution = run_confirmatory_primary(
+        config,
+        operator_opt_in=operator_opt_in,
+        operator_gate=gate,
+        accepted_gate_sha256=accepted_gate_sha256,
+        work_root=staging,
+    )
+    primary_records = primary_execution["job_records"]
+    primary_analysis = analyze_primary(
+        primary_records,
+        protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
+        job_table_sha256=job_table_sha256,
+        decision_stability=bool(
+            sentinel_identity.get("scientific_decision_parity_passed", True)
+        ),
+        premises_passed=True,
+        gpu_gate_complete=True,
+    )
+    primary_path = staging / "primary_analysis.json"
+    if primary_path.is_file():
+        stored_primary = json.loads(primary_path.read_text(encoding="utf-8"))
+        if stored_primary != primary_analysis:
+            raise RuntimeError("staged primary analysis drifted from recomputation")
+    else:
+        _atomic_json(primary_path, primary_analysis)
+    primary_sha256 = _file_sha256(primary_path)
+
+    holdout_execution = run_confirmatory_holdout(
+        config,
+        operator_opt_in=operator_opt_in,
+        operator_gate=gate,
+        accepted_gate_sha256=accepted_gate_sha256,
+        primary_analysis_path=primary_path,
+        primary_analysis_sha256=primary_sha256,
+        work_root=staging,
+    )
+    holdout_records = holdout_execution["job_records"]
+    holdout_analysis = analyze_holdout(
+        holdout_records,
+        protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
+        job_table_sha256=job_table_sha256,
+        primary_analysis_sha256=primary_sha256,
+    )
+    all_records = [*primary_records, *holdout_records]
+    if (
+        len(all_records) != 40
+        or primary_execution.get("missing_job_ids")
+        or holdout_execution.get("missing_job_ids")
+    ):
+        raise RuntimeError("confirmatory publication requires 40 terminal job records")
+
+    arrays: dict[str, np.ndarray] = {}
+    for record in all_records:
+        job_id = str(record["job_id"])
+        arrays[f"{job_id}_initial_coefficients"] = _readonly(
+            record["initial_coefficients"]
+        )
+        trajectory_payload = record["trajectory_coefficients"]
+        for scheme in config.theory.blocking_schemes:
+            arrays[f"{job_id}_{scheme}_coefficients"] = _readonly(
+                trajectory_payload[scheme]  # type: ignore[index]
+            )
+
+    endpoint_records = []
+    worker_exchanges: list[object] = []
+    gate_rechecks: list[dict[str, object]] = []
+    for record in all_records:
+        endpoint_records.append(
+            {
+                key: value
+                for key, value in record.items()
+                if key not in {"trajectory_coefficients", "worker_exchanges"}
+            }
+        )
+        worker_exchanges.extend(record.get("worker_exchanges", []))
+        gate_rechecks.append(
+            {
+                "job_id": record["job_id"],
+                "gate_sha256": record.get("operator_gate_recheck_sha256"),
+                "gate": record.get("operator_gate_recheck"),
+            }
+        )
+    execution = {
+        "schema_version": "gaussian-fixed-ray-confirmatory-execution-v1",
+        "accepted_gate_sha256": accepted_gate_sha256,
+        "accepted_sentinel_manifest_sha256": accepted_sentinel_manifest_sha256,
+        "primary_analysis_sha256": primary_sha256,
+        "planned_job_count": 40,
+        "completed_job_count": 40,
+        "rejected_job_count": int(
+            sum(
+                any(bool(scheme["rejected"]) for scheme in record["schemes"].values())
+                for record in all_records
+            )
+        ),
+        "missing_job_count": 0,
+        "worker_exchange_count": len(worker_exchanges),
+        "worker_exchanges": worker_exchanges,
+        "operator_gate_rechecks": gate_rechecks,
+        "total_elapsed_seconds": float(
+            sum(float(record.get("elapsed_seconds", 0.0)) for record in all_records)
+        ),
+        "peak_allocated_bytes": max(
+            int(record.get("peak_allocated_bytes", 0)) for record in all_records
+        ),
+        "peak_reserved_bytes": max(
+            int(record.get("peak_reserved_bytes", 0)) for record in all_records
+        ),
+        "stopping_reason": "planned_table_complete",
+    }
+    published_table = dict(table)
+    published_table["confirmatory_executed"] = True
+    published_table["executed_primary_job_ids"] = [
+        f"C{index:03d}" for index in range(1, 31)
+    ]
+    published_table["executed_holdout_job_ids"] = [
+        f"H{index:03d}" for index in range(1, 11)
+    ]
+
+    classification = str(primary_analysis["classification"])
+    metric = _metric(
+        {"counterevidence": -1.0, "inconclusive": 0.0, "support": 1.0}[
+            classification
+        ],
+        status={
+            "counterevidence": "fail",
+            "inconclusive": "inconclusive",
+            "support": "pass",
+        }[classification],  # type: ignore[arg-type]
+        interpretation=(
+            "Finite preregistered 30-job primary classification; the 10-job "
+            "holdout is descriptive and unrestricted attraction/universality remain open."
+        ),
+    )
+    metrics = {"confirmatory_primary_classification": metric}
+    repo_root = Path(__file__).resolve().parents[4]
+    config_hash = config_sha256(config)
+    streams = RngStreams.from_seed(config.run.seed)
+    provenance = collect_provenance(repo_root, repo_root / "Theory", config_hash, streams)
+    provenance["experiment_scope"] = "gaussian_fixed_ray_confirmatory_40_job"
+    provenance["confirmatory_executed"] = True
+    provenance["effective_backend"] = "cuda_worker"
+    provenance["effective_dtype"] = "float64"
+    input_hashes = provenance["input_hashes"]
+    input_hashes["operator_gate_sha256"] = accepted_gate_sha256  # type: ignore[index]
+    input_hashes["sentinel_manifest_sha256"] = accepted_sentinel_manifest_sha256  # type: ignore[index]
+    input_hashes["preregistration_sha256"] = _PREREGISTRATION_SHA256  # type: ignore[index]
+    input_hashes["job_table_sha256"] = job_table_sha256  # type: ignore[index]
+    input_hashes["primary_analysis_sha256"] = primary_sha256  # type: ignore[index]
+
+    store = RunStore.create(config, provenance)
+    store.write_json("confirmatory_job_table", published_table)
+    store.write_json(
+        "confirmatory_endpoints",
+        {
+            "schema_version": "gaussian-fixed-ray-confirmatory-endpoints-v1",
+            "records": endpoint_records,
+        },
+    )
+    store.write_json("primary_analysis", primary_analysis)
+    store.write_json("holdout_analysis", holdout_analysis)
+    store.write_json("confirmatory_execution", execution)
+    store.write_npz("confirmatory_arrays", arrays)
+    store.write_json("metrics", {name: asdict(value) for name, value in metrics.items()})
+    store.finalize(
+        (
+            "confirmatory_job_table.json",
+            "confirmatory_endpoints.json",
+            "primary_analysis.json",
+            "holdout_analysis.json",
+            "confirmatory_execution.json",
+            "confirmatory_arrays.npz",
+            "metrics.json",
+        )
+    )
+    return GaussianFixedRayExperimentResult(
+        run_dir=store.run_dir,
+        config_hash=store.config_hash,
+        status=metric.status,
+        metrics=MappingProxyType(metrics),
+        arrays=MappingProxyType(arrays),
+    )
+
+
 def _validate_preregistration(path: Path) -> str:
     if not path.is_file():
         raise ValueError(f"preregistration does not exist: {path}")
@@ -1493,6 +1854,7 @@ def _validate_preregistration(path: Path) -> str:
         "`rejection_rate`",
         "exact one-sided sign test",
         "confirmatory-analysis-bootstrap-v1",
+        "21,600-second authorization TTL",
     )
     if any(literal not in text for literal in required_literals):
         raise ValueError("preregistration is missing a frozen decision literal")
@@ -1994,8 +2356,10 @@ __all__ = [
     "build_confirmatory_gate_record",
     "build_cuda_gate_record",
     "capture_idle_gpu_gate",
+    "publish_confirmatory_experiment",
     "publish_cuda_sentinel",
     "run_confirmatory_job",
+    "run_confirmatory_holdout",
     "run_confirmatory_primary",
     "run_cuda_sentinel",
     "run_gaussian_fixed_ray_experiment",

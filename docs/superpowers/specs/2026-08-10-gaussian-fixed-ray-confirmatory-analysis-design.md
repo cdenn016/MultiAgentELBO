@@ -152,6 +152,11 @@ revision:
   contract hashes;
 - `C` completion and hash-bound primary analysis before holdout release.
 
+The initial confirmatory record contains five samples at one-second intervals
+and has a 21,600-second authorization TTL. Each outer-job recheck contains one
+fresh sample. This duration covers the fixed 40-job worst-case budget while the
+per-job rechecks enforce continuing idle occupancy.
+
 Observed resident processes may remain only when their exact PID set was
 explicitly accepted by the operator and stays stable with zero utilization and
 stable memory across the frozen samples. The controller never kills processes.

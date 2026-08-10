@@ -932,7 +932,7 @@ def test_preregistration_digest_is_stable_across_windows_line_endings(tmp_path: 
 
     assert (
         _validate_preregistration(windows_copy)
-        == "b86265e89d4a324385e7f412c03500422fe0f54cd3402a960d82c1364ff8c2aa"
+        == "57be7aa49af8c9fa56585879fa394ca93517cc1b58269596e53293d350a07dd5"
     )
 
 
