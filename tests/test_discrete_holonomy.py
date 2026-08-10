@@ -171,6 +171,34 @@ def test_open_path_transport_is_not_accepted_as_a_conjugacy_invariant_scalar():
         hol.conjugacy_invariants(transport)
 
 
+def test_open_path_cannot_be_rewrapped_as_a_cycle_holonomy():
+    """Mutation caught: exposing a constructor that blesses open transport."""
+    transport = hol.open_path_transport(_tree_complex(), _tree_links(), ("ab",))
+
+    with pytest.raises(TypeError, match="cycle_holonomy factory"):
+        hol.CycleHolonomy(
+            base_vertex=transport.source,
+            edge_labels=transport.edge_labels,
+            matrix=transport.matrix,
+        )
+
+
+@pytest.mark.parametrize(
+    ("base_vertex", "edge_labels", "matrix"),
+    [
+        ("a", ("ab", "ba"), np.eye(3)),
+        ("a", ("ab", "ba"), [[1.0, np.nan], [0.0, 1.0]]),
+        ("ghost", ("undeclared",), np.eye(2)),
+    ],
+)
+def test_cycle_constructor_rejects_wrong_shape_nonfinite_and_undeclared_cycles(
+    base_vertex: str, edge_labels: tuple[str, ...], matrix: np.ndarray
+):
+    """Mutation caught: accepting an unvalidated public cycle value."""
+    with pytest.raises(TypeError, match="cycle_holonomy factory"):
+        hol.CycleHolonomy(base_vertex, edge_labels, matrix)
+
+
 def test_flat_cycle_has_literal_identity_holonomy_and_conjugacy_invariants():
     """Mutation caught: reversing the ordered cycle product."""
     complex_, links = _flat_cycle()

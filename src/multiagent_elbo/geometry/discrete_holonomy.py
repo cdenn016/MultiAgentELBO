@@ -10,7 +10,7 @@ finite mathematical criterion.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Mapping
 
@@ -165,13 +165,22 @@ class PathTransport:
     matrix: np.ndarray
 
 
-@dataclass(frozen=True)
+_CYCLE_FACTORY_TOKEN = object()
+
+
+@dataclass(frozen=True, init=False)
 class CycleHolonomy:
-    """Ordered graph-link holonomy based at one declared vertex."""
+    """Factory-controlled ordered holonomy of a declared closed graph walk."""
 
     base_vertex: str
     edge_labels: tuple[str, ...]
     matrix: np.ndarray
+    _complex: InteractionComplex = field(repr=False, compare=False)
+    _factory_token: object = field(repr=False, compare=False)
+
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        del args, kwargs
+        raise TypeError("CycleHolonomy values require the cycle_holonomy factory")
 
 
 @dataclass(frozen=True)
@@ -307,19 +316,60 @@ def cycle_holonomy(
     transport = open_path_transport(complex_, links, edge_labels)
     if transport.source != transport.target:
         raise ValueError("cycle holonomy requires a closed oriented walk")
-    return CycleHolonomy(
-        base_vertex=transport.source,
-        edge_labels=transport.edge_labels,
-        matrix=transport.matrix,
+    return _make_cycle_holonomy(
+        complex_, transport.source, transport.edge_labels, transport.matrix
+    )
+
+
+def _make_cycle_holonomy(
+    complex_: InteractionComplex,
+    base_vertex: str,
+    edge_labels: tuple[str, ...],
+    matrix: object,
+) -> CycleHolonomy:
+    """Construct a cycle value after independently rechecking its public data."""
+    edge_by_label = _edge_map(complex_)
+    labels = tuple(edge_labels)
+    if not labels:
+        raise ValueError("cycle holonomy requires a nonempty declared walk")
+    try:
+        edges = tuple(edge_by_label[label] for label in labels)
+    except KeyError as error:
+        raise ValueError("cycle holonomy edges must be declared") from error
+    if base_vertex != edges[0].source:
+        raise ValueError("cycle base vertex must equal the walk source")
+    for current, following in zip(edges, edges[1:]):
+        if current.target != following.source:
+            raise ValueError("cycle edges must form an endpoint-compatible walk")
+    if edges[-1].target != base_vertex:
+        raise ValueError("cycle holonomy requires a closed oriented walk")
+    checked_matrix = _gl_positive_2(matrix, name="cycle holonomy")
+    result = object.__new__(CycleHolonomy)
+    object.__setattr__(result, "base_vertex", base_vertex)
+    object.__setattr__(result, "edge_labels", labels)
+    object.__setattr__(result, "matrix", checked_matrix)
+    object.__setattr__(result, "_complex", complex_)
+    object.__setattr__(result, "_factory_token", _CYCLE_FACTORY_TOKEN)
+    return result
+
+
+def _validated_cycle_holonomy(cycle: object) -> CycleHolonomy:
+    if not isinstance(cycle, CycleHolonomy) or (
+        getattr(cycle, "_factory_token", None) is not _CYCLE_FACTORY_TOKEN
+    ):
+        raise TypeError(
+            "conjugacy invariants require a closed CycleHolonomy from the factory"
+        )
+    return _make_cycle_holonomy(
+        cycle._complex, cycle.base_vertex, cycle.edge_labels, cycle.matrix
     )
 
 
 def conjugacy_invariants(cycle: CycleHolonomy) -> ConjugacyInvariants:
     """Return trace, determinant, and discriminant for a closed holonomy."""
-    if not isinstance(cycle, CycleHolonomy):
-        raise TypeError("conjugacy invariants require a closed CycleHolonomy")
-    trace = float(np.trace(cycle.matrix))
-    determinant = float(np.linalg.det(cycle.matrix))
+    checked_cycle = _validated_cycle_holonomy(cycle)
+    trace = float(np.trace(checked_cycle.matrix))
+    determinant = float(np.linalg.det(checked_cycle.matrix))
     return ConjugacyInvariants(
         trace=trace,
         determinant=determinant,
@@ -402,21 +452,41 @@ def trivialization_via_spanning_tree(
                 queue.append(neighbor)
 
     fundamentals: list[CycleHolonomy] = []
+
+    def tree_path(start: str, target: str) -> tuple[str, ...]:
+        previous: dict[str, tuple[str | None, str | None]] = {
+            start: (None, None)
+        }
+        queue = [start]
+        while queue and target not in previous:
+            current = queue.pop(0)
+            for neighbor, label, pair in adjacency[current]:
+                if pair not in tree_pairs or neighbor in previous:
+                    continue
+                previous[neighbor] = (current, label)
+                queue.append(neighbor)
+        if target not in previous:
+            raise RuntimeError("spanning-tree path construction failed")
+        reverse_labels: list[str] = []
+        current = target
+        while previous[current][0] is not None:
+            predecessor, label = previous[current]
+            if predecessor is None or label is None:
+                raise RuntimeError("spanning-tree predecessor is incomplete")
+            reverse_labels.append(label)
+            current = predecessor
+        return tuple(reversed(reverse_labels))
+
     for edge in representatives:
         pair = frozenset((edge.label, edge.inverse))
         if pair in tree_pairs:
             continue
-        loop_matrix = (
-            frames[edge.source]
-            @ np.linalg.inv(frames[edge.target])
-            @ links.matrices[edge.label]
+        cycle_labels = (
+            edge.label,
+            *tree_path(edge.target, edge.source),
         )
         fundamentals.append(
-            CycleHolonomy(
-                base_vertex=edge.source,
-                edge_labels=(f"fundamental:{edge.label}",),
-                matrix=_readonly(loop_matrix),
-            )
+            cycle_holonomy(complex_, links, cycle_labels)
         )
 
     residuals = []
@@ -568,6 +638,7 @@ def operational_observable(
 
 def link_only_diagnostic(cycle: CycleHolonomy) -> LinkOnlyHolonomyDiagnostic:
     """Describe link holonomy while explicitly withholding an operational claim."""
-    if not isinstance(cycle, CycleHolonomy):
-        raise TypeError("link diagnostic requires a CycleHolonomy")
-    return LinkOnlyHolonomyDiagnostic(cycle, conjugacy_invariants(cycle))
+    checked_cycle = _validated_cycle_holonomy(cycle)
+    return LinkOnlyHolonomyDiagnostic(
+        checked_cycle, conjugacy_invariants(checked_cycle)
+    )
