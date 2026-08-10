@@ -6,6 +6,7 @@ worker process behind click-to-run controllers, not a user-facing CLI.
 
 from __future__ import annotations
 
+import ctypes
 import hashlib
 import json
 import os
@@ -73,7 +74,7 @@ def _windows_file_version(path: Path) -> str:
             "powershell.exe",
             "-NoProfile",
             "-Command",
-            "(Get-Item -LiteralPath $args[0]).VersionInfo.FileVersion",
+            "& { param([string]$p) (Get-Item -LiteralPath $p).VersionInfo.FileVersion }",
             str(path),
         ],
         capture_output=True,
@@ -82,7 +83,7 @@ def _windows_file_version(path: Path) -> str:
     )
     if completed.returncode != 0 or not completed.stdout.strip():
         raise ProtocolError(f"library version query failed: {path.name}")
-    return completed.stdout.strip().replace(", ", ".")
+    return completed.stdout.strip().replace(",", ".").replace(" ", "")
 
 
 def _cuda_library_records(torch: object) -> dict[str, object]:
@@ -102,6 +103,20 @@ def _cuda_library_records(torch: object) -> dict[str, object]:
     }
 
 
+def _cuda_runtime_version(cudart_path: Path) -> int:
+    if not cudart_path.is_file():
+        raise ProtocolError("pinned CUDA runtime library is missing")
+    cudart = ctypes.WinDLL(str(cudart_path))
+    get_version = cudart.cudaRuntimeGetVersion
+    get_version.argtypes = [ctypes.POINTER(ctypes.c_int)]
+    get_version.restype = ctypes.c_int
+    runtime_version = ctypes.c_int()
+    runtime_error = int(get_version(ctypes.byref(runtime_version)))
+    if runtime_error != 0:
+        raise ProtocolError("CUDA runtime version query failed")
+    return int(runtime_version.value)
+
+
 def cuda_preflight() -> dict[str, object]:
     """Return live CUDA identity without creating scientific job artifacts."""
     import torch
@@ -109,13 +124,8 @@ def cuda_preflight() -> dict[str, object]:
     if not torch.cuda.is_available() or torch.cuda.device_count() < 1:
         raise ProtocolError("requested CUDA device is unavailable")
     capability = torch.cuda.get_device_capability(0)
-    runtime_result = torch.cuda.cudart().cudaRuntimeGetVersion()
-    if isinstance(runtime_result, tuple):
-        runtime_error, runtime_version = runtime_result
-        if runtime_error != 0:
-            raise ProtocolError("CUDA runtime version query failed")
-    else:
-        runtime_version = runtime_result
+    library_root = Path(torch.__file__).resolve().parent / "lib"
+    runtime_version = _cuda_runtime_version(library_root / "cudart64_12.dll")
     libraries = _cuda_library_records(torch)
     return {
         "schema_version": PREFLIGHT_SCHEMA,
@@ -397,13 +407,8 @@ def compute_cuda(
         dtype=np.float64,
     )
     capability = torch.cuda.get_device_capability(0)
-    runtime_result = torch.cuda.cudart().cudaRuntimeGetVersion()
-    if isinstance(runtime_result, tuple):
-        runtime_error, runtime_version = runtime_result
-        if runtime_error != 0:
-            raise ProtocolError("CUDA runtime version query failed")
-    else:
-        runtime_version = runtime_result
+    library_root = Path(torch.__file__).resolve().parent / "lib"
+    runtime_version = _cuda_runtime_version(library_root / "cudart64_12.dll")
     libraries = _cuda_library_records(torch)
     provenance = {
         "torch_version": torch.__version__,

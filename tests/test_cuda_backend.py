@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -448,6 +449,45 @@ def test_requested_cuda_on_unpinned_cpu_interpreter_fails_before_artifacts(tmp_p
             environment_lock=ENVIRONMENT_LOCK,
         )
     assert not output.exists()
+
+
+def test_worker_queries_runtime_version_through_pinned_cudart(monkeypatch: pytest.MonkeyPatch):
+    spec = importlib.util.spec_from_file_location("session6_cuda_worker", WORKER)
+    assert spec is not None and spec.loader is not None
+    worker = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(worker)
+
+    class RuntimeVersionFunction:
+        argtypes = None
+        restype = None
+
+        def __call__(self, version_pointer: object) -> int:
+            version_pointer._obj.value = 12080
+            return 0
+
+    class CudartLibrary:
+        cudaRuntimeGetVersion = RuntimeVersionFunction()
+
+    loaded_paths = []
+    monkeypatch.setattr(
+        worker.ctypes,
+        "WinDLL",
+        lambda path: loaded_paths.append(Path(path)) or CudartLibrary(),
+    )
+    pinned_cudart = ANACONDA.parent / "Lib" / "site-packages" / "torch" / "lib" / "cudart64_12.dll"
+
+    assert worker._cuda_runtime_version(pinned_cudart) == 12080
+    assert loaded_paths == [pinned_cudart]
+
+
+def test_worker_reads_pinned_cublas_file_version():
+    spec = importlib.util.spec_from_file_location("session6_cuda_worker", WORKER)
+    assert spec is not None and spec.loader is not None
+    worker = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(worker)
+    pinned_cublas = ANACONDA.parent / "Lib" / "site-packages" / "torch" / "lib" / "cublas64_12.dll"
+
+    assert worker._windows_file_version(pinned_cublas) == "6.14.11.1284"
 
 
 def test_pinned_cuda_preflight_rejects_hidden_device_before_job_artifacts(
