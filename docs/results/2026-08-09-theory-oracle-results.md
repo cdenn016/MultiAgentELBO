@@ -89,13 +89,22 @@ C:\Python314\python.exe -m coverage xml `
   -o .verification/session2-results-draft/9f9425f/coverage-lane.xml
 ```
 
-The no-argument launcher was invoked from a fresh working directory with an
-empty `PYTHONPATH`:
+The following path-safe recipe invokes the no-argument launcher from a fresh
+working directory with an empty `PYTHONPATH`:
 
 ```powershell
-$env:PYTHONPATH = ''
-C:\Python314\python.exe `
-  <absolute-repository-path>\run_theory_oracle_lab.py
+$repo = (Resolve-Path '.').Path
+$token = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+$launchCwd = Join-Path $repo ".verification/session2-results-draft/9f9425f/launcher-sanitized-$token"
+New-Item -ItemType Directory -Path $launchCwd | Out-Null
+Push-Location $launchCwd
+try {
+  $env:PYTHONPATH = ''
+  & 'C:\Python314\python.exe' (Join-Path $repo 'run_theory_oracle_lab.py')
+  if ($LASTEXITCODE -ne 0) { throw "launcher exit code $LASTEXITCODE" }
+} finally {
+  Pop-Location
+}
 ```
 
 The editable `RUN`, `THEORY`, `NUMERICS`, `OUTPUT`, and `COMPUTE` dictionaries
@@ -160,11 +169,32 @@ five-metric reconstruction layout. The theorem-assumption artifact contains
 the metric-file SHA-256 is
 `8d8efca46866e5c549a18e541db7956c6b49bbb1c386f73be014e9ae88d59c1e`.
 
-A separate no-argument profile run used Python's standard-library
+A fresh no-argument profile at commit `cd5740b` used Python's standard-library
 `subprocess` and `time.perf_counter`, plus `ctypes` access to Windows
-`GetProcessMemoryInfo`. It completed in 0.529136 seconds with a peak working
-set of 62,558,208 bytes (59.660 MiB), measured over 197 samples. This is a
+`GetProcessMemoryInfo`. It completed in 0.535613 seconds with a peak working
+set of 62,509,056 bytes (59.613 MiB), measured over 190 samples. This is a
 process peak-working-set measurement, not a claim about asymptotic memory.
+
+The machine-readable record is
+`.verification/session2-results-draft/9f9425f/launcher-profile-latest.json`,
+SHA-256
+`c8953e884d827eeff0964fa07d575d312ae9fe2cf543a57a5d6e0b0288c24a5f`.
+It records the exact two-element command, absolute working directory,
+`PYTHONPATH` override, interpreter, exit code, elapsed seconds, peak bytes,
+sample count, launcher stdout and stderr, parsed launcher and figure statuses,
+metric count, manifest completeness, measurement method, and manifest Git
+commit. PowerShell reparsing confirmed exit code zero, empty stderr,
+`status=pass`, `figures=not_exposed`, five metrics, a complete manifest, and
+manifest revision `cd5740b774fb8f5f61611900dbc6d55be204fa53`.
+
+The retained ignored probe makes the profile command exact and path safe:
+
+```powershell
+$repo = (Resolve-Path '.').Path
+& 'C:\Python314\python.exe' `
+  (Join-Path $repo '.verification/session2-results-draft/9f9425f/profile_launcher_probe.py')
+if ($LASTEXITCODE -ne 0) { throw "profile probe exit code $LASTEXITCODE" }
+```
 
 ## Metric results
 
@@ -246,18 +276,40 @@ were byte-identical:
 because each records its distinct output root and resulting configuration
 hash.
 
+The replay is recorded as machine-readable JSON at
+`.verification/session2-results-draft/9f9425f/deterministic-replay-latest.json`,
+SHA-256
+`68ca11295805804c0cbe05f4e353a8b3ae98434379e63494fb0fa35cf2b3f5c0`.
+The record contains both absolute run directories, both complete hash maps,
+all five metric-equality booleans, the seed, interpreter, semantic inventory,
+and probe command. It was generated with:
+
+```powershell
+$repo = (Resolve-Path '.').Path
+& 'C:\Python314\python.exe' `
+  (Join-Path $repo '.verification/session2-results-draft/9f9425f/deterministic_replay_probe.py')
+if ($LASTEXITCODE -ne 0) { throw "replay probe exit code $LASTEXITCODE" }
+```
+
 ## Claim, evidence, and falsifier table
 
-| Claim | `theorem_status` | `verification_state` | `claim_origin` | Evidence type | Falsification condition |
+Verification and falsification run in opposite, explicitly separated
+directions. A derivation or proof verifies the precisely stated conditional
+mathematical claim. A failing test or residual refutes only implementation
+conformance unless it also supplies a premise-satisfying, in-domain
+counterexample to that exact mathematical claim. Missing premises yield
+`INCONCLUSIVE`, not a refutation.
+
+| Claim | `theorem_status` | `verification_state` | `claim_origin` | Evidence type | Failure or refutation condition |
 |---|---|---|---|---|---|
-| Finite evidence/ELBO decomposition, including its extended-support qualification | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Exact derivation plus Fraction/formal-log witness | A nonzero canonical finite residual, a finite result on the singular branch, or formation of an undefined `-inf+inf` residual |
-| Fixed-channel finite Fisher-defect algebra | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Exact derivation and joint-weighted rational witness | Defect differs from conditional covariance, or a transposed/nonnormalized channel is accepted |
-| Marked-event direct/staged pushforward | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Finite-sum derivation and exact asymmetric witness | Direct and staged joint laws differ, or agreement requires dropping source mass or reversing composition |
-| Full product-reference Hoeffding/Mobius reconstruction | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Mobius derivation and exact three-way witness | Full reconstruction has nonzero residual, omits the empty component, or loses the triple residual under order-two truncation |
-| Inverse congruence, Galerkin restriction, and algebraic Schur complement as distinct operations | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Exact matrix derivations and rational literals | Congruence square fails, Galerkin differs from `S^T A S`, Schur differs from its block formula, or the two reductions are identified |
-| The project comparison lab reproduces all five exact-oracle vectors at revision `9f9425f` | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `PROJECT_NOVEL` | JUnit, branch-aware coverage, exact serialized reconstruction, and reproduced output | A residual exceeds tolerance, exact JSON corruption is not detected, replay changes a semantic hash, or the artifact manifest is incomplete |
-| The frozen two-scale application satisfies all premises needed for the application theorem | `HYPOTHESIS` | `INCONCLUSIVE` | `APPLICATION_SPECIFIC` | Exact literal Jacobian/square plus review of missing witnesses | Verification requires the open right-inverse, outside-marginal, absolute-continuity/KL, local/global, and product-reference obligations; a failing supplied witness would refute the corresponding premise |
-| Continuum, infinite-volume, universality, nonlinear-attraction, or physical-time conclusions | `OPEN` | `INCONCLUSIVE` | `PROJECT_NOVEL` | No eligible evidence in this finite lane | A separate scoped proof or premise-complete certified counterexample is required; finite residuals cannot close these claims |
+| Finite evidence/ELBO decomposition, including its extended-support qualification | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Exact derivation plus Fraction/formal-log witness | Implementation failure: a nonzero canonical finite residual, a finite singular-branch result, or construction of `-inf+inf`. Mathematical refutation: a finite premise-satisfying `(p,q)` for which the stated extended identity is false. |
+| Fixed-channel finite Fisher-defect algebra | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Exact derivation and joint-weighted rational witness | Implementation failure: the defect differs from conditional covariance or accepts a transposed/nonnormalized channel. Mathematical refutation: a normalized fixed-channel finite witness satisfying the score premises but violating the matrix identity. |
+| Marked-event direct/staged pushforward | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Finite-sum derivation and exact asymmetric witness | Implementation failure: direct/staged joints differ or agreement requires dropped source mass/reversed composition. Mathematical refutation: normalized finite kernels and a marked joint law satisfying the orientation premises but violating associativity. |
+| Full product-reference Hoeffding/Mobius reconstruction | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Mobius derivation and exact three-way witness | Implementation failure: a nonzero full residual, missing empty component, or missing triple residual under order-two truncation. Mathematical refutation: a finite normalized product-reference witness satisfying the projector definition but violating reconstruction. |
+| Inverse congruence, Galerkin restriction, and algebraic Schur complement as distinct operations | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Exact matrix derivations and rational literals | Implementation failure: disagreement with the respective exact matrix formula or collapse of the two reductions. Mathematical refutation: matrices satisfying each operation's invertibility and typing premises but violating its stated identity. |
+| The project comparison lab reproduces all five exact-oracle vectors at revision `9f9425f` | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `PROJECT_NOVEL` | JUnit, branch-aware coverage, exact serialized reconstruction, and reproduced output | This is an implementation claim: a residual above tolerance, undetected exact-JSON corruption, changed semantic replay hash, or incomplete manifest refutes conformance at the bound revision. |
+| The frozen two-scale application satisfies all premises needed for the application theorem | `HYPOTHESIS` | `INCONCLUSIVE` | `APPLICATION_SPECIFIC` | Exact literal Jacobian/square plus review of missing witnesses | Verification requires proofs of every named premise. A supplied exact witness that violates one precise premise refutes only that application-premise claim; absent witnesses remain inconclusive. |
+| Continuum, infinite-volume, universality, nonlinear-attraction, or physical-time conclusions | `OPEN` | `INCONCLUSIVE` | `PROJECT_NOVEL` | No eligible evidence in this finite lane | These labels are not one claim. Each must first be scoped precisely; proof may verify it, while an in-domain premise-satisfying certified counterexample may refute it. Finite residuals do neither. |
 
 ## Unresolved assumptions and scope
 
@@ -297,6 +349,28 @@ package exports, a launcher registry entry, consolidated README/results links,
 and any saved-artifact figure integration. Those shared paths were deliberately
 not edited by Session 2. The oracle remains CPU-only and figures remain
 unexposed unless the integration owner approves a later contract change.
+
+The exact lane allowlist audit is:
+
+```powershell
+$base = 'b80df01f239c2f9a18842f6887cdeca67dff508f'
+$allowed = @(
+  'src/multiagent_elbo/finite/theory_oracles.py',
+  'src/multiagent_elbo/finite/theory_oracle_experiment.py',
+  'run_theory_oracle_lab.py',
+  'tests/test_theory_oracles.py',
+  'tests/test_theory_oracle_experiment.py',
+  'docs/results/2026-08-09-theory-oracle-results.md',
+  'docs/verification/reviews/2026-08-09-theory-oracle-review.md'
+)
+$changed = @(git diff --name-only "$base...HEAD")
+$unexpected = @($changed | Where-Object { $_ -notin $allowed })
+$missing = @($allowed | Where-Object { $_ -notin $changed })
+if ($unexpected.Count -ne 0 -or $missing.Count -ne 0) {
+  throw "allowlist mismatch: unexpected=$unexpected missing=$missing"
+}
+$changed | Sort-Object
+```
 
 This document is written after the evidence run, so the evidence above is
 revision-bound to clean source/review SHA `9f9425f`, not to the subsequent
