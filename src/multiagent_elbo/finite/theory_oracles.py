@@ -27,13 +27,17 @@ def parse_fraction_literal(literal: object) -> Fraction:
     if not isinstance(literal, str) or _RATIONAL_LITERAL.fullmatch(literal) is None:
         raise TypeError("rational literal must be a canonical string")
     if "/" not in literal:
-        return Fraction(int(literal), 1)
-    numerator_text, denominator_text = literal.split("/", 1)
-    numerator = int(numerator_text)
-    denominator = int(denominator_text)
-    if gcd(abs(numerator), denominator) != 1:
-        raise ValueError("rational literal must be reduced")
-    return Fraction(numerator, denominator)
+        value = Fraction(int(literal), 1)
+    else:
+        numerator_text, denominator_text = literal.split("/", 1)
+        numerator = int(numerator_text)
+        denominator = int(denominator_text)
+        if gcd(abs(numerator), denominator) != 1:
+            raise ValueError("rational literal must be reduced")
+        value = Fraction(numerator, denominator)
+    if str(value) != literal:
+        raise ValueError("rational literal must use canonical Fraction spelling")
+    return value
 
 
 def _require_fraction_tuple(values: object, *, name: str) -> tuple[Fraction, ...]:
@@ -418,13 +422,20 @@ THEOREM_ASSUMPTION_MATRIX = (
     ),
     TheoremAssumptionRecord(
         "gaussian_inverse_congruence",
-        ("invertible rational frame", "square rational precision"),
+        (
+            "invertible rational fine frame",
+            "square rational fine precision compatible with the fine frame",
+            "declared prolongator",
+            "compatible fine precision, prolongator, fine-frame, and coarse-frame dimensions",
+            "invertible rational coarse frame",
+            "transformed prolongator is G_f S G_c^-1",
+        ),
         "Theory/08_infogeometry.tex:424-431",
         "ESTABLISHED",
         "CANDIDATE",
         "STANDARD",
         "exact_fraction_derivation_witness",
-        "Failure of G^-T A G^-1 or its transformed coarse square falsifies the encoding.",
+        "Failure of A_f'=G_f^-T A_f G_f^-1 or S'^T A_f' S'=G_c^-T(S^T A_f S)G_c^-1 with S'=G_f S G_c^-1 falsifies the scoped conclusions.",
     ),
     TheoremAssumptionRecord(
         "gaussian_galerkin_restriction",

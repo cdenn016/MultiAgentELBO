@@ -13,7 +13,9 @@ def test_parse_fraction_literal_accepts_only_canonical_reduced_strings():
     from multiagent_elbo.finite.theory_oracles import parse_fraction_literal
 
     assert parse_fraction_literal("0") == Fraction(0)
+    assert parse_fraction_literal("12") == Fraction(12)
     assert parse_fraction_literal("-7") == Fraction(-7)
+    assert parse_fraction_literal("2/3") == Fraction(2, 3)
     assert parse_fraction_literal("-3/5") == Fraction(-3, 5)
 
 
@@ -25,6 +27,17 @@ def test_parse_fraction_literal_rejects_noncanonical_or_wrong_type(literal: obje
     from multiagent_elbo.finite.theory_oracles import parse_fraction_literal
 
     with pytest.raises((TypeError, ValueError), match="rational literal"):
+        parse_fraction_literal(literal)
+
+
+@pytest.mark.parametrize(
+    "literal",
+    ["-0", "0/1", "-0/1", "1/1", "-1/1", "2/1", "-2/1"],
+)
+def test_parse_fraction_literal_rejects_noncanonical_fraction_aliases(literal: str):
+    from multiagent_elbo.finite.theory_oracles import parse_fraction_literal
+
+    with pytest.raises(ValueError, match="canonical"):
         parse_fraction_literal(literal)
 
 
@@ -790,6 +803,27 @@ def test_assumption_matrix_splits_algebraic_and_interpretive_premises():
     )
 
 
+def test_inverse_congruence_record_scopes_transformed_coarse_square_premises():
+    from multiagent_elbo.finite.theory_oracles import THEOREM_ASSUMPTION_MATRIX
+
+    records = {record.identity_id: record for record in THEOREM_ASSUMPTION_MATRIX}
+    record = records["gaussian_inverse_congruence"]
+
+    assert record.premises == (
+        "invertible rational fine frame",
+        "square rational fine precision compatible with the fine frame",
+        "declared prolongator",
+        "compatible fine precision, prolongator, fine-frame, and coarse-frame dimensions",
+        "invertible rational coarse frame",
+        "transformed prolongator is G_f S G_c^-1",
+    )
+    assert record.falsification_condition == (
+        "Failure of A_f'=G_f^-T A_f G_f^-1 or "
+        "S'^T A_f' S'=G_c^-T(S^T A_f S)G_c^-1 with "
+        "S'=G_f S G_c^-1 falsifies the scoped conclusions."
+    )
+
+
 def test_standard_identity_origins_exclude_project_novel_packaging_label():
     from multiagent_elbo.finite.theory_oracles import THEOREM_ASSUMPTION_MATRIX
 
@@ -924,13 +958,20 @@ def test_theorem_assumption_matrix_is_immutable_complete_and_boundary_preserving
         ),
         (
             "gaussian_inverse_congruence",
-            ("invertible rational frame", "square rational precision"),
+            (
+                "invertible rational fine frame",
+                "square rational fine precision compatible with the fine frame",
+                "declared prolongator",
+                "compatible fine precision, prolongator, fine-frame, and coarse-frame dimensions",
+                "invertible rational coarse frame",
+                "transformed prolongator is G_f S G_c^-1",
+            ),
             "Theory/08_infogeometry.tex:424-431",
             "ESTABLISHED",
             "CANDIDATE",
             "STANDARD",
             "exact_fraction_derivation_witness",
-            "Failure of G^-T A G^-1 or its transformed coarse square falsifies the encoding.",
+            "Failure of A_f'=G_f^-T A_f G_f^-1 or S'^T A_f' S'=G_c^-T(S^T A_f S)G_c^-1 with S'=G_f S G_c^-1 falsifies the scoped conclusions.",
         ),
         (
             "gaussian_galerkin_restriction",
