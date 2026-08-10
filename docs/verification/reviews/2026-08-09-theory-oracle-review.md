@@ -1,8 +1,10 @@
 # Session 2 exact-theory oracle derivation and review
 
 **Review basis.** This is an independent mathematical review of the Session 2
-implementation and repaired theorem-assumption matrix at commit
-`3b4192cdea63b9e1669416d7524e5e097dc781ce`. The
+core theorem-boundary repair at commit
+`3b4192cdea63b9e1669416d7524e5e097dc781ce` and the current reviewed
+implementation, including the final inverse-congruence provenance repair, at
+commit `36d1d09131b06c7ef52ba90e0e96f45fa007ee91`. The
 reviewed implementation is `src/multiagent_elbo/finite/theory_oracles.py` and
 `src/multiagent_elbo/finite/theory_oracle_experiment.py`; the principal literal
 checks are in `tests/test_theory_oracles.py` and
