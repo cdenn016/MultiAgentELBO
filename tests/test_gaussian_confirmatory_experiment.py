@@ -230,6 +230,50 @@ def test_paired_job_has_one_outer_retry_and_terminalizes_exhaustion(
     assert record["outer_attempt_count"] == 2
 
 
+def test_crash_resume_consumes_outer_attempt_instead_of_reusing_worker_contexts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    config = confirmatory_config(tmp_path)
+    gate = {"source_identity": {"git_revision": "a" * 40}}
+    job = {
+        "job_id": "C001",
+        "master_seed": 202608090101,
+        "role": "confirmatory_primary",
+        "schemes": ["adjacent_pairs", "balanced_alternating"],
+        "steps": 8,
+    }
+    paired_root = tmp_path / "paired"
+    prior = paired_root / "C001" / "outer-attempt-1" / "worker-exchanges"
+    prior.mkdir(parents=True)
+    calls: list[Path] = []
+
+    def completed(*_: object, **kwargs: object) -> dict[str, object]:
+        calls.append(Path(kwargs["work_root"]))
+        return {
+            "schema_version": "gaussian-fixed-ray-confirmatory-job-v1",
+            "job_id": "C001",
+            "master_seed": job["master_seed"],
+            "role": job["role"],
+            "terminal_status": "completed",
+            "scientific_analysis_eligibility": True,
+        }
+
+    monkeypatch.setattr(fixed_ray_experiment, "run_confirmatory_job", completed)
+
+    record = fixed_ray_experiment._run_confirmatory_job_with_terminal_retry(
+        config,
+        job=job,
+        operator_opt_in=True,
+        operator_gate=gate,
+        accepted_gate_sha256="g" * 64,
+        work_root=paired_root,
+    )
+
+    assert len(calls) == 1
+    assert "outer-attempt-2" in str(calls[0])
+    assert record["outer_attempt_count"] == 2
+
+
 def test_8gb_allocation_ceiling_produces_a_terminal_rejection(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):

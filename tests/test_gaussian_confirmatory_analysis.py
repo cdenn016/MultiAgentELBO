@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from math import isfinite
 
 import numpy as np
@@ -410,3 +411,46 @@ def test_holdout_analysis_is_descriptive_and_bound_to_primary_digest():
     assert "secondary_tests" not in result
     assert "classification" not in result
     assert "two_sided_p" not in result["primary_endpoint"]
+
+
+def test_holdout_uses_the_same_finite_censor_contract_as_primary():
+    records = []
+    for index in range(10):
+        record = _primary_record(index)
+        record["job_id"] = f"H{index + 1:03d}"
+        record["role"] = "confirmatory_holdout"
+        records.append(record)
+    records[0]["schemes"] = {
+        scheme_id: {
+            "projective_ray_angles": None,
+            "normalized_coupling_distances": None,
+            "retained_beta_residuals": None,
+            "scalarized_ray_construction_residuals": None,
+            "coefficient_conditioning": None,
+            "basin_exit": False,
+            "rejected": True,
+            "rejection_reason": "frozen rejection",
+        }
+        for scheme_id in ("adjacent_pairs", "balanced_alternating")
+    }
+
+    result = analyze_holdout(
+        records,
+        protocol_id="2026-08-09-gaussian-fixed-ray-v1a",
+        job_table_sha256="a" * 64,
+        primary_analysis_sha256="b" * 64,
+    )
+
+    summaries = result["job_summaries"]
+    expected = np.asarray(
+        [
+            np.pi if summary["primary_angle_slope"] is None else summary["primary_angle_slope"]
+            for summary in summaries
+        ],
+        dtype=np.float64,
+    )
+    assert result["censored_worst_case_count"] == 1
+    assert result["primary_endpoint"]["input_sha256"] == hashlib.sha256(
+        expected.tobytes(order="C")
+    ).hexdigest()
+    assert result["mathematical_verification_state"] == "INCONCLUSIVE"

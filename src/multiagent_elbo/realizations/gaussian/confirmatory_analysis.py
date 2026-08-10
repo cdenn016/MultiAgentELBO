@@ -500,7 +500,6 @@ def analyze_primary(
         or distinct_rays
         or basin_rate > 0.20
         or rejection_rate > 0.20
-        or distinct_rays
     )
     forced_inconclusive = (
         interval_half_width > 0.02
@@ -593,12 +592,10 @@ def analyze_holdout(
     summaries = [
         summarize_paired_job(records_by_id[job_id]) for job_id in expected_ids
     ]
-    worst_case = np.finfo(np.float64).max
-
     def endpoint_interval(name: str, endpoint_id: str) -> dict[str, object]:
         sample = np.asarray(
             [
-                worst_case if summary[name] is None else summary[name]
+                _CENSORED_VALUES[name] if summary[name] is None else summary[name]
                 for summary in summaries
             ],
             dtype=np.float64,
@@ -630,6 +627,12 @@ def analyze_holdout(
     }
     basin_events = int(sum(bool(summary["basin_exit"]) for summary in summaries))
     rejection_events = int(sum(bool(summary["rejected"]) for summary in summaries))
+    censored_count = int(
+        sum(
+            bool(summary["continuous_endpoint_censored_worst_case"])
+            for summary in summaries
+        )
+    )
     return {
         "schema_version": "gaussian-fixed-ray-holdout-analysis-v1",
         "analysis_scope": "descriptive_replication_only",
@@ -638,6 +641,7 @@ def analyze_holdout(
         "primary_analysis_sha256": primary_analysis_sha256,
         "holdout_job_ids": expected_ids,
         "independent_job_count": 10,
+        "censored_worst_case_count": censored_count,
         "paired_reduction": "least_favorable_across_two_frozen_schemes",
         "primary_endpoint": primary_endpoint,
         "supporting_distance": supporting_distance,
@@ -658,6 +662,7 @@ def analyze_holdout(
         },
         "theorem_status": "NUMERICAL",
         "verification_state": "CANDIDATE",
+        "mathematical_verification_state": "INCONCLUSIVE",
         "claim_origin": "APPLICATION_SPECIFIC",
         "job_summaries": summaries,
     }

@@ -739,6 +739,163 @@ def test_cuda_sentinel_publishes_manifest_bound_runstore_bundle(
     )
 
 
+def test_published_sentinel_schema_is_admitted_by_confirmatory_validator(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import multiagent_elbo.realizations.gaussian.fixed_ray_experiment as experiment
+
+    sentinel_config = fixed_ray_config(tmp_path / "artifacts", name="sentinel-admission")
+    sentinel_config = replace(
+        sentinel_config,
+        compute=replace(
+            sentinel_config.compute, backend="cuda", heavy_sweep_enabled=False
+        ),
+    )
+    confirmatory_config = replace(
+        sentinel_config,
+        compute=replace(sentinel_config.compute, heavy_sweep_enabled=True),
+    )
+    repository = Path(__file__).resolve().parents[1]
+    environment_lock = repository / "environments" / "cuda-rtx5090-cu128.lock.txt"
+    worker_script = repository / "tools" / "cuda_worker.py"
+    common = {
+        "source_identity": {
+            "git_revision": "a" * 40,
+            "tracked_worktree_clean": True,
+        },
+        "preregistration_sha256": experiment._PREREGISTRATION_SHA256,
+        "environment_lock_identity": {
+            "path": str(environment_lock),
+            "sha256": experiment._file_sha256(environment_lock),
+        },
+        "worker_python_identity": {"path": "python", "sha256": "c" * 64},
+        "worker_script_identity": {
+            "path": str(worker_script),
+            "sha256": experiment._file_sha256(worker_script),
+        },
+        "preflight": {"effective_backend": "cuda", "effective_dtype": "float64"},
+    }
+    sentinel_gate = {
+        "schema_version": "cuda-idle-operator-gate-v1",
+        "operator_opt_in": True,
+        "idle_observation_passed": True,
+        "config_sha256": config_sha256(sentinel_config),
+        **common,
+    }
+    sentinel_gate_sha256 = experiment._record_sha256(sentinel_gate)
+    confirmatory_gate = {
+        "schema_version": "cuda-confirmatory-operator-gate-v1",
+        "operator_opt_in": True,
+        "idle_observation_passed": True,
+        "config_sha256": config_sha256(confirmatory_config),
+        **common,
+    }
+    sentinel_ids = ["C001", "C015", "C030", "H001", "H010"]
+    rechecks = []
+    recheck_digests = []
+    for sentinel_id in sentinel_ids:
+        gate = {"schema_version": "cuda-idle-operator-gate-v1", "job": sentinel_id}
+        digest = experiment._record_sha256(gate)
+        rechecks.append({"sentinel_job_id": sentinel_id, "gate_sha256": digest, "gate": gate})
+        recheck_digests.append(digest)
+    comparison_ids = (
+        "controller_cpu_vs_worker_cpu",
+        "controller_cpu_vs_worker_cuda",
+        "controller_cpu_vs_worker_cuda_repeat",
+        "worker_cpu_vs_worker_cuda",
+        "worker_cuda_repeatability",
+    )
+    parity_records = [
+        {
+            "sentinel_job_id": sentinel_id,
+            "scheme": scheme,
+            "step": step,
+            "comparisons": {name: {"passed": True} for name in comparison_ids},
+        }
+        for sentinel_id in sentinel_ids
+        for scheme in ("adjacent_pairs", "balanced_alternating")
+        for step in range(1, 9)
+    ]
+    worker_jobs = [
+        {
+            "job_id": f"sentinel.worker.{index:03d}",
+            "execution_context": {
+                "accepted_gate_sha256": sentinel_gate_sha256,
+                "accepted_gate_record": sentinel_gate,
+                "operator_gate_recheck_sha256": recheck_digests[index % 5],
+            },
+            "request_manifest": {},
+            "response_manifest": {},
+            "provenance": {},
+        }
+        for index in range(240)
+    ]
+    trajectories = {
+        scheme: {
+            lane: np.ones((5, 9, 6), dtype=np.float64)
+            for lane in (
+                "controller_cpu",
+                "worker_cpu",
+                "worker_cuda",
+                "worker_cuda_repeat",
+            )
+        }
+        for scheme in ("adjacent_pairs", "balanced_alternating")
+    }
+    fake = {
+        "schema_version": "gaussian-fixed-ray-cuda-sentinel-v1",
+        "sentinel_job_ids": sentinel_ids,
+        "scientific_analysis_eligibility": {job_id: False for job_id in sentinel_ids},
+        "operator_gate": sentinel_gate,
+        "operator_gate_sha256": sentinel_gate_sha256,
+        "accepted_gate_sha256": sentinel_gate_sha256,
+        "operator_gate_rechecks": rechecks,
+        "all_parity_passed": True,
+        "scientific_decision_parity_passed": True,
+        "parity_records": parity_records,
+        "endpoint_parity_records": [{"passed": True} for _ in range(30)],
+        "threshold_mutation_negative_control": {"negative_control_passed": True},
+        "mutation_negative_control": {"passed": False},
+        "worker_jobs": worker_jobs,
+        "trajectories": trajectories,
+    }
+    monkeypatch.setattr(experiment, "run_cuda_sentinel", lambda *_args, **_kwargs: fake)
+    monkeypatch.setattr(experiment, "_validate_gate_recheck", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        experiment, "validate_worker_protocol_manifest", lambda *_args, **_kwargs: None
+    )
+    monkeypatch.setattr(
+        experiment,
+        "collect_provenance",
+        lambda *_args, **_kwargs: {
+            "git_commit": "a" * 40,
+            "git_dirty": False,
+            "input_hashes": {},
+        },
+    )
+
+    published = publish_cuda_sentinel(
+        sentinel_config,
+        operator_opt_in=True,
+        operator_gate=sentinel_gate,
+        accepted_gate_sha256=sentinel_gate_sha256,
+        staging_root=tmp_path / "staging",
+    )
+    manifest_sha256 = hashlib.sha256(
+        (published.run_dir / "manifest.json").read_bytes()
+    ).hexdigest()
+
+    identity = experiment._validate_confirmatory_sentinel_bundle(
+        confirmatory_config,
+        published.run_dir,
+        manifest_sha256,
+        confirmatory_gate,
+    )
+
+    assert identity["manifest_sha256"] == manifest_sha256
+    assert identity["sentinel_job_ids"] == sentinel_ids
+
+
 def test_click_launcher_gate_mode_publishes_digest_for_two_phase_acceptance(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):

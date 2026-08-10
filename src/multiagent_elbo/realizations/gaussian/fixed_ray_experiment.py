@@ -969,6 +969,15 @@ def _run_confirmatory_job_with_terminal_retry(
     """Give one paired job one outer infrastructure retry, then terminalize it."""
     last_error: BaseException | None = None
     for outer_attempt in (1, 2):
+        outer_attempt_root = (
+            Path(work_root) / str(job["job_id"]) / f"outer-attempt-{outer_attempt}"
+        )
+        if outer_attempt_root.exists():
+            last_error = RuntimeError(
+                f"prior outer attempt is present without a terminal job record: "
+                f"{job['job_id']} attempt {outer_attempt}"
+            )
+            continue
         try:
             record = run_confirmatory_job(
                 config,
@@ -977,10 +986,7 @@ def _run_confirmatory_job_with_terminal_retry(
                 operator_gate=operator_gate,
                 accepted_gate_sha256=accepted_gate_sha256,
                 work_root=(
-                    Path(work_root)
-                    / str(job["job_id"])
-                    / f"outer-attempt-{outer_attempt}"
-                    / "worker-exchanges"
+                    outer_attempt_root / "worker-exchanges"
                 ),
             )
         except (subprocess.TimeoutExpired, TimeoutError, OSError) as error:
@@ -2119,9 +2125,17 @@ def _validate_confirmatory_sentinel_bundle(
     rechecks_valid = True
     recheck_digests: set[str] = set()
     try:
-        for recheck in parity.get("operator_gate_rechecks", []):
+        for recheck_entry in parity.get("operator_gate_rechecks", []):
+            if not isinstance(recheck_entry, Mapping):
+                raise ValueError("sentinel recheck entry must be a mapping")
+            recheck = recheck_entry.get("gate")
+            if not isinstance(recheck, Mapping):
+                raise ValueError("sentinel recheck gate is missing")
             _validate_gate_recheck(sentinel_gate, recheck)
-            recheck_digests.add(_record_sha256(recheck))
+            digest = _record_sha256(recheck)
+            if recheck_entry.get("gate_sha256") != digest:
+                raise ValueError("sentinel recheck digest drifted")
+            recheck_digests.add(digest)
     except (TypeError, ValueError, RuntimeError, KeyError):
         rechecks_valid = False
     worker_bindings_valid = isinstance(worker_records, list)
@@ -2150,6 +2164,44 @@ def _validate_confirmatory_sentinel_bundle(
                     raise ValueError("worker context binding drifted")
         except (TypeError, ValueError, RuntimeError, KeyError):
             worker_bindings_valid = False
+    parity_step_records = parity.get("parity_records", [])
+    expected_comparison_ids = {
+        "controller_cpu_vs_worker_cpu",
+        "controller_cpu_vs_worker_cuda",
+        "controller_cpu_vs_worker_cuda_repeat",
+        "worker_cpu_vs_worker_cuda",
+        "worker_cuda_repeatability",
+    }
+    parity_records_valid = isinstance(parity_step_records, list) and len(
+        parity_step_records
+    ) == 80
+    if parity_records_valid:
+        seen_steps: set[tuple[object, object, object]] = set()
+        for step_record in parity_step_records:
+            comparisons = (
+                step_record.get("comparisons")
+                if isinstance(step_record, Mapping)
+                else None
+            )
+            identity = (
+                step_record.get("sentinel_job_id"),
+                step_record.get("scheme"),
+                step_record.get("step"),
+            ) if isinstance(step_record, Mapping) else (None, None, None)
+            if (
+                not isinstance(comparisons, Mapping)
+                or set(comparisons) != expected_comparison_ids
+                or any(
+                    not isinstance(comparison, Mapping)
+                    or comparison.get("passed") is not True
+                    for comparison in comparisons.values()
+                )
+                or identity in seen_steps
+            ):
+                parity_records_valid = False
+                break
+            seen_steps.add(identity)
+        parity_records_valid = parity_records_valid and len(seen_steps) == 80
     if (
         manifest.get("complete") is not True
         or not isinstance(provenance, Mapping)
@@ -2194,7 +2246,7 @@ def _validate_confirmatory_sentinel_bundle(
         or parity.get("scientific_decision_parity_passed") is not True
         or len(parity.get("operator_gate_rechecks", [])) != 5
         or not rechecks_valid
-        or len(parity.get("parity_records", [])) != 400
+        or not parity_records_valid
         or len(parity.get("endpoint_parity_records", [])) != 30
         or not isinstance(worker_records, list)
         or len(worker_records) != 240
@@ -2207,7 +2259,69 @@ def _validate_confirmatory_sentinel_bundle(
         is not True
         or parity.get("mutation_negative_control", {}).get("passed") is not False  # type: ignore[union-attr]
     ):
-        raise ValueError("accepted sentinel bundle is not eligible for confirmation")
+        failed_groups: list[str] = []
+        if (
+            manifest.get("complete") is not True
+            or not isinstance(provenance, Mapping)
+            or not isinstance(source, Mapping)
+            or provenance.get("git_commit") != source.get("git_revision")
+            or provenance.get("git_dirty") is not False
+            or provenance.get("experiment_scope")
+            != "cuda_float64_parity_sentinel_only"
+            or provenance.get("confirmatory_executed") is not False
+        ):
+            failed_groups.append("manifest")
+        if (
+            set(manifest.get("artifacts", {})) != expected_artifacts
+            or not isinstance(artifact_hashes, Mapping)
+            or set(artifact_hashes) != expected_artifacts - {"manifest.json"}
+            or any(
+                _file_sha256(run_dir / name) != digest
+                for name, digest in artifact_hashes.items()
+            )
+        ):
+            failed_groups.append("artifacts")
+        if (
+            not isinstance(input_hashes, Mapping)
+            or input_hashes.get("preregistration_sha256") != _PREREGISTRATION_SHA256
+            or input_hashes.get("operator_gate_sha256") != sentinel_gate_sha256
+            or input_hashes.get("environment_lock_sha256")
+            != operator_gate.get("environment_lock_identity", {}).get("sha256")  # type: ignore[union-attr]
+            or input_hashes.get("worker_script_sha256")
+            != operator_gate.get("worker_script_identity", {}).get("sha256")  # type: ignore[union-attr]
+            or input_hashes.get("job_table_sha256") != _record_sha256(job_table)
+        ):
+            failed_groups.append("inputs")
+        if (
+            sentinel_gate.get("source_identity") != source
+            or sentinel_gate.get("preregistration_sha256") != _PREREGISTRATION_SHA256
+            or sentinel_gate.get("environment_lock_identity")
+            != operator_gate.get("environment_lock_identity")
+            or sentinel_gate.get("worker_python_identity")
+            != operator_gate.get("worker_python_identity")
+            or sentinel_gate.get("worker_script_identity")
+            != operator_gate.get("worker_script_identity")
+        ):
+            failed_groups.append("gate_bindings")
+        if (
+            not isinstance(resolved_sentinel_config, Mapping)
+            or resolved_sentinel_config.get("theory") != current_theory
+            or resolved_sentinel_config.get("numerics") != current_numerics
+            or resolved_sentinel_config.get("compute") != current_compute
+        ):
+            failed_groups.append("config")
+        if not rechecks_valid or len(parity.get("operator_gate_rechecks", [])) != 5:
+            failed_groups.append("rechecks")
+        if not parity_records_valid:
+            failed_groups.append("step_parity")
+        if len(parity.get("endpoint_parity_records", [])) != 30:
+            failed_groups.append("endpoint_parity")
+        if not worker_bindings_valid or not isinstance(worker_records, list) or len(worker_records) != 240:
+            failed_groups.append("workers")
+        raise ValueError(
+            "accepted sentinel bundle is not eligible for confirmation: "
+            + ",".join(failed_groups or ["parity_or_mutation_flags"])
+        )
     return {
         "manifest_sha256": accepted_manifest_sha256,
         "git_commit": provenance["git_commit"],
