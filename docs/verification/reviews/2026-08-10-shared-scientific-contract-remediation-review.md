@@ -63,7 +63,7 @@ None.
 | Numerical-policy reachability and stress precedence | Mechanically verified | Direct calls, source trace, mutation tests, and serialized policy |
 | Producer states and support boundaries | Mechanically verified | Direct parsing of all emitted records and source trace |
 | Replay determinism | Reproduced output | Parsed semantic equality, exact array equality, byte equality, and six SHA-256 identities |
-| JUnit and focused coverage totals | Reproduced source record | Direct XML/JSON parsing and file hashing |
+| JUnit and focused coverage totals | `mechanical` / `reproduced_output` | Direct XML/JSON parsing and file hashing |
 
 ## Mathematical derivations
 
