@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fractions import Fraction
 import math
+import typing
 
 import pytest
 
@@ -35,6 +36,7 @@ from multiagent_elbo.finite.counterexamples import (
     retained_projection_invariant,
     validate_full_rank_spd,
 )
+from multiagent_elbo.conditioning import SpectralConditioningAssessment
 
 
 IDENTITY = FinitePermutation.from_old_to_new((0, 1))
@@ -310,6 +312,13 @@ def test_exact_sylvester_gate_precedes_shared_spectral_conditioning():
             atol=0.0,
             rtol=0.0,
         )
+
+
+def test_finite_spd_validator_resolves_its_public_return_type_hint():
+    assert (
+        typing.get_type_hints(validate_full_rank_spd)["return"]
+        is SpectralConditioningAssessment
+    )
 
 
 def test_exact_finite_adapter_reverses_both_determinant_proxy_decisions():

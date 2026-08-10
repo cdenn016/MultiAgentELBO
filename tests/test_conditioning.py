@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+import multiagent_elbo.conditioning as conditioning
 from multiagent_elbo.conditioning import assess_spectral_spd
 
 
@@ -59,3 +60,19 @@ def test_spectral_policy_requires_finite_strictly_positive_spectrum(
     """Shared policy does not assign conditioning to invalid SPD inputs."""
     with pytest.raises(ValueError, match="positive|finite"):
         assess_spectral_spd(matrix, min_rcond=1.0e-12, atol=0.0, rtol=0.0)
+
+
+def test_spectral_policy_rejects_nonfinite_eigensolver_output(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """An invalid eigensolver result cannot silently become a pass decision."""
+    monkeypatch.setattr(
+        conditioning.scipy.linalg,
+        "eigvalsh",
+        lambda *_args, **_kwargs: np.array([np.nan, np.nan]),
+    )
+
+    with pytest.raises(ValueError, match="eigensolver returned nonfinite eigenvalues"):
+        assess_spectral_spd(
+            np.eye(2), min_rcond=1.0e-12, atol=0.0, rtol=0.0
+        )

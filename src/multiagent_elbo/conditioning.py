@@ -64,6 +64,8 @@ def assess_spectral_spd(
         raise ValueError("matrix must be symmetric")
 
     eigenvalues = scipy.linalg.eigvalsh(values, check_finite=True)
+    if not np.all(np.isfinite(eigenvalues)):
+        raise ValueError("eigensolver returned nonfinite eigenvalues")
     minimum = float(eigenvalues[0])
     maximum = float(eigenvalues[-1])
     if minimum <= 0.0 or maximum <= 0.0:

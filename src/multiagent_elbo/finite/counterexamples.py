@@ -14,6 +14,7 @@ import math
 from types import MappingProxyType
 from typing import Iterable, Mapping, Sequence
 
+from multiagent_elbo.conditioning import SpectralConditioningAssessment
 from multiagent_elbo.finite.permutations import FinitePermutation
 
 
