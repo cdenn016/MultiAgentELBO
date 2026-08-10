@@ -15,6 +15,7 @@ import pytest
 
 from multiagent_elbo.config import ExperimentConfig
 from multiagent_elbo.finite.counterexamples import (
+    MAX_NEAR_SINGULAR_SCORE,
     ExactAction,
     ExactChannel,
     ExactLaw,
@@ -24,6 +25,7 @@ from multiagent_elbo.finite.counterexamples import (
     kl_divergence,
     project_action,
     relabel_law,
+    validate_full_rank_spd,
 )
 from multiagent_elbo.finite.counterexample_experiment import (
     FiniteCounterexampleExperimentResult,
@@ -155,7 +157,26 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     assert stress["relabeling"] == {"coherent": True, "residual": "0"}
     assert stress["retained_space"] == {"pass_residual": "1", "fails_full_reconstruction": True}
     assert stress["tolerance_scaling"] == {"base": "1/100", "states": 2, "scaled": "1/50"}
-    assert stress["conditioning"] == {"accepted_dimension": 2, "accepted_condition": "4", "rejected_near_singular": True}
+    near_singular = stress["conditioning"]["rejected_near_singular"]
+    assert stress["conditioning"]["accepted_dimension"] == 2
+    assert stress["conditioning"]["accepted_condition"] == "4"
+    assert near_singular == {
+        "matrix": [["1", "0"], ["0", "1/10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"]],
+        "minimum_diagonal": "1/10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "condition_score": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "threshold": "1000000000000",
+        "positive_definite": True,
+        "rejected": True,
+        "reason": "near-singular SPD input exceeds the exact conditioning boundary",
+    }
+    assert Fraction(near_singular["minimum_diagonal"]) > 0
+    assert Fraction(near_singular["condition_score"]) > MAX_NEAR_SINGULAR_SCORE
+    matrix = tuple(
+        tuple(Fraction(value) for value in row)
+        for row in near_singular["matrix"]
+    )
+    with pytest.raises(ValueError, match="near-singular SPD input"):
+        validate_full_rank_spd(matrix)
 
 
 def test_primitive_rational_arrays_independently_recompute_all_metrics(tmp_path: Path):

@@ -16,6 +16,7 @@ from multiagent_elbo.artifacts import RunStore
 from multiagent_elbo.config import ExperimentConfig, config_sha256
 from multiagent_elbo.experiment_support import MetricRecord, readonly_array, target_metric
 from multiagent_elbo.finite.counterexamples import (
+    MAX_NEAR_SINGULAR_SCORE,
     CandidateRecord,
     EnumerationBounds,
     ExactAction,
@@ -340,12 +341,32 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
     return metrics, arrays, candidates, bounds, stress
 
 
-def _rejected_near_singular() -> bool:
+def _rejected_near_singular() -> dict[str, object]:
+    minimum_diagonal = Fraction(1, 10**100)
+    matrix = (
+        (Fraction(1), Fraction(0)),
+        (Fraction(0), minimum_diagonal),
+    )
+    condition_score = diagonal_spd_conditioning((Fraction(1), minimum_diagonal))
     try:
-        validate_full_rank_spd(((Fraction(1), Fraction(0)), (Fraction(0), Fraction(0))))
-    except ValueError:
-        return True
-    return False
+        validate_full_rank_spd(matrix)
+    except ValueError as error:
+        reason = str(error)
+        if reason != "near-singular SPD input exceeds the exact conditioning boundary":
+            raise
+        return {
+            "matrix": [
+                [_fraction_text(value) for value in row]
+                for row in matrix
+            ],
+            "minimum_diagonal": _fraction_text(minimum_diagonal),
+            "condition_score": _fraction_text(condition_score),
+            "threshold": _fraction_text(MAX_NEAR_SINGULAR_SCORE),
+            "positive_definite": minimum_diagonal > 0,
+            "rejected": True,
+            "reason": reason,
+        }
+    raise AssertionError("near-singular SPD control was unexpectedly accepted")
 
 
 def run_finite_counterexample_experiment(config: ExperimentConfig) -> FiniteCounterexampleExperimentResult:
