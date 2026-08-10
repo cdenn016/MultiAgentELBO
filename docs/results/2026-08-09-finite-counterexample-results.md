@@ -6,7 +6,7 @@
 
 **Contract freeze:** `b80df01f239c2f9a18842f6887cdeca67dff508f`
 
-**Tested code revision:** `4b61565eec9fe02543e3ad58ab6fb3ae66ae0375`
+**Tested code revision:** `ab747008b970c0c6a162be1ee1501a9baa163cb3`
 
 **Interpreter:** `C:\Python314\python.exe` (CPython 3.14.4, CPU)
 
@@ -20,43 +20,43 @@ controls. It does not prove the frozen theory and does not make continuum,
 universality, or physical-time claims. Numerical or computational agreement
 below is implementation and experiment evidence, not mathematical proof.
 
-At the tested code revision, the five changed paths relative to the contract
+At the tested code revision, the seven changed paths relative to the contract
 freeze were:
 
+- `docs/results/2026-08-09-finite-counterexample-results.md`
+- `docs/verification/reviews/2026-08-09-finite-counterexample-review.md`
 - `run_finite_counterexample_lab.py`
 - `src/multiagent_elbo/finite/counterexample_experiment.py`
 - `src/multiagent_elbo/finite/counterexamples.py`
 - `tests/test_counterexample_experiment.py`
 - `tests/test_counterexamples.py`
 
-The result record itself is the sixth lane path. The lane allowlist check found
-zero paths outside the exact Session-3 allowlist. The independent review record
-is written separately under `docs/verification/reviews/`.
+The lane allowlist check found zero paths outside the exact Session-3 allowlist.
 
 ## Mechanical verification
 
 The focused command was:
 
 ```powershell
-C:\Python314\python.exe -m pytest tests\test_counterexamples.py tests\test_counterexample_experiment.py --basetemp=.pytest-tmp\session3-task3-focused --junitxml=.verification\session3\task3-focused.xml --cov=multiagent_elbo.finite --cov-branch --cov-report=xml:.verification\session3\task3-coverage.xml --cov-report=term-missing --cov-fail-under=0
+$env:COVERAGE_FILE='.verification\session3\refresh.coverage'; C:\Python314\python.exe -m pytest tests\test_counterexamples.py tests\test_counterexample_experiment.py --basetemp=.pytest-tmp\session3-task3-refresh-focused --junitxml=.verification\session3\task3-refresh-focused.xml --cov=multiagent_elbo.finite --cov-branch --cov-report=xml:.verification\session3\task3-refresh-coverage.xml --cov-report=term-missing --cov-fail-under=0
 ```
 
 Mechanical XML parsing reported 21 tests, 0 failures, 0 errors, 0 skips, and
-22.362 seconds. The coverage XML reported:
+22.132 seconds. The coverage XML reported:
 
 | New production module | Line coverage | Branch coverage | Required line threshold |
 |---|---:|---:|---:|
 | `counterexamples.py` | 90.24% | 75.83% | 80% |
-| `counterexample_experiment.py` | 98.10% | 95.00% | 80% |
+| `counterexample_experiment.py` | 97.56% | 92.86% | 80% |
 
 The complete CPU command was:
 
 ```powershell
-C:\Python314\python.exe -m pytest --basetemp=.pytest-tmp\session3-task3-full --junitxml=.verification\session3\task3-full.xml
+C:\Python314\python.exe -m pytest --basetemp=.pytest-tmp\session3-task3-refresh-full --junitxml=.verification\session3\task3-refresh-full.xml
 ```
 
 Mechanical JUnit parsing reported 461 tests, 0 failures, 0 errors, 2 skips, and
-40.841 seconds. The two skips are the pre-existing Windows privilege-dependent
+42.024 seconds. The two skips are the pre-existing Windows privilege-dependent
 artifact-link cases recorded in the JUnit file.
 
 ## Launcher configuration and provenance
@@ -86,30 +86,40 @@ OUTPUT = {
 }
 ```
 
-The literal no-argument command
-`C:\Python314\python.exe run_finite_counterexample_lab.py` returned exit code
-0, `status=pass`, five metrics, and `figures=not_requested` in 4.210446 seconds.
+The literal no-argument launcher execution from a fresh ignored working
+directory used:
+
+```powershell
+Push-Location .verification\session3\refresh-direct-root
+C:\Python314\python.exe 'C:\Users\chris and christine\Documents\ChatGPT\MultiAgentELBO\.superpowers\worktrees\MultiAgentELBO-finite-counterexamples-20260809\run_finite_counterexample_lab.py'
+Pop-Location
+```
+
+It returned exit code 0, `status=pass`, five metrics, and
+`figures=not_requested` in 4.299551 seconds.
 A second no-argument execution through `runpy.run_path(...,
-run_name="__main__")` measured 17.898254 seconds with tracing enabled and a
-`tracemalloc` peak of 82,134,735 bytes (78.330 MiB). This is the peak of traced
+run_name="__main__")` measured 16.871434 seconds with tracing enabled and a
+`tracemalloc` peak of 82,137,039 bytes (78.332 MiB). This is the peak of traced
 Python allocations, not process RSS; tracing overhead explains the longer run.
 
-The clean-state traced bundle is at:
+The clean-state direct bundle is at:
 
 ```text
-.verification/session3/clean-launcher-root/artifacts/finite_counterexample/ecb50ab6806a296629778ecbd9965859c4de5b99df406a7a1b408acf3efc9af0-20260809
+.verification/session3/refresh-direct-root/artifacts/finite_counterexample/ecb50ab6806a296629778ecbd9965859c4de5b99df406a7a1b408acf3efc9af0-20260809
 ```
 
 Its canonical configuration hash is
 `ecb50ab6806a296629778ecbd9965859c4de5b99df406a7a1b408acf3efc9af0`.
 The finalized manifest binds revision
-`4b61565eec9fe02543e3ad58ab6fb3ae66ae0375`, `git_dirty=false`, the empty
+`ab747008b970c0c6a162be1ee1501a9baa163cb3`, `git_dirty=false`, the empty
 Git-status SHA-256
 `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`,
 theory digest
 `a7fddfcb8c67dbec71c7a35d0e415313a38154719e05d6ccd73672a810939343`,
 CPU/float64 effective execution, exact-rational arithmetic, Python 3.14.4,
-NumPy 2.4.4, SciPy 1.17.1, and named RNG streams rooted at seed 20260809.
+NumPy 2.4.4, SciPy 1.17.1, and named RNG streams rooted at seed 20260809. The
+finalized clean manifest SHA-256 is
+`8932a9d28b0c28a67d08113dc5e94da3cc895974bebb397bcf85d9e3325dfb41`.
 
 ## Finalized artifacts and deterministic replay
 
@@ -127,13 +137,13 @@ recompute every metric independently.
 | `enumeration_bounds.json` | `005e898f09c39b2d20612bfce0a1e4a7debb2672ae746b64b6e69b793dd52b68` |
 | `candidate_records.json` | `03261b75f6b71b8df7a24c769c0c8605509e11e95bbe4ab9f39bc54d91251f79` |
 | `minimal_witnesses.json` | `d9b09e5b149e4fb3b1dcf3756d4a5318aba297f00aa45d091d5858045c8ca979` |
-| `stress_matrix.json` | `cab51437af9e27d76e18da52b6cd3d9ea34e30c82de026dc0ea9d4921f5f0c62` |
+| `stress_matrix.json` | `04ad19a198e3130118dc657acc053e4f6a3be250ed484e333c1d9de194c9c576` |
 | `arrays.npz` | `7ec5bfbfd5c1acc5de06618edfa53ee6400902b4474d0cce8bdd6ef7dfc40316` |
 
-Independent executions under `.verification/session3/replay-c` and
-`.verification/session3/replay-d` produced byte-identical copies of all six
+Independent executions under `.verification/session3/replay-refresh-a` and
+`.verification/session3/replay-refresh-b` produced byte-identical copies of all six
 semantic artifacts. Their configuration hashes differed
-(`b261034e...831a` versus `4779a8b4...dcc9`) because the output-root strings are
+(`b9ee9065...9efa` versus `68c54027...9ff0`) because the output-root strings are
 part of the canonical configuration; removing only those root values left the
 resolved configurations identical. Thus the scientific bytes, not the
 root-sensitive bundle identity, are the determinism claim.
@@ -163,7 +173,7 @@ Every candidate and minimal witness carries exactly the required fields:
 | Deep composition | Three saved nontrivial channels produce identical direct and staged rows `[[1/2,1/2],[3/8,5/8]]` with exact residual `0`. |
 | Retained-space and relabeling | The coherent retained projection reports `true` and residual `0`; holding the action fixed while requesting a nontrivial relabel reports `false`. The saved pairwise retained-space control records omitted residual `1`. |
 | Tolerance scaling | Base `1/100` across two states scales exactly to `1/50`; the focused stress oracle maps `1/1000` across eight states to `1/125`. |
-| Conditioning | `diag(1,4)` is accepted with dimension 2 and exact condition 4. Singular `diag(1,0)` and near-singular `diag(1,10^-100)` controls are rejected before downstream computation. |
+| Conditioning | `diag(1,4)` is accepted with dimension 2 and exact condition 4. The published near-singular stress matrix is the strictly positive-definite `diag(1,10^-100)`: its saved exact condition score is `10^100`, above the `10^12` boundary, so it is rejected with reason `near-singular SPD input exceeds the exact conditioning boundary`. A separate focused unit control rejects a singular matrix, but the published stress witness is SPD. |
 
 The primitive array bundle was independently reloaded as `Fraction` objects
 and used to recompute the support violation, `1/8` channel gap, `ln(3)/2`
