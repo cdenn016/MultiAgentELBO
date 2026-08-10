@@ -147,10 +147,11 @@ class FormalLogSum:
 @dataclass(frozen=True)
 class EvidenceELBOOracle:
     evidence_log: FormalLogSum
-    elbo: FormalLogSum | None
-    kl: FormalLogSum | None
+    elbo: FormalLogSum | float
+    kl: FormalLogSum | float
     residual: FormalLogSum | None
     branch: str
+    offending_support_entries: tuple[int, ...]
 
 
 @dataclass(frozen=True)
@@ -216,6 +217,23 @@ class TwoScaleApplicationOracle:
 
 
 @dataclass(frozen=True)
+class CommutingSquareOracle:
+    left: FractionMatrix
+    right: FractionMatrix
+    commutes: bool
+
+
+@dataclass(frozen=True)
+class CommutingSquareWitness:
+    packet_id: str
+    coarse_map: FractionMatrix
+    fine_comparison: FractionMatrix
+    coarse_comparison: FractionMatrix
+    lane_private: bool = True
+    replacement_application_fixture: bool = False
+
+
+@dataclass(frozen=True)
 class TheoremAssumptionRecord:
     identity_id: str
     premises: tuple[str, ...]
@@ -248,24 +266,86 @@ LANE_PRIVATE_AUXILIARY_PACKETS = (
     ),
     AuxiliaryLiteralPacket(
         "oracle_aux_marked_event_v1",
-        "state-mass and beta-only negative-control witness",
+        "asymmetric two-stage state/receiver/source marked-event witness",
         (
-            ("state_mass", ("1/4", "3/4")),
-            ("state_channel", ("1", "0", "1/3", "2/3")),
+            ("state_mass", ("1/3", "2/3")),
+            ("conditional_events", ("1", "0", "0", "0", "0", "0", "0", "1")),
+            ("state_kernel_stage_1", ("3/4", "1/4", "1/3", "2/3")),
+            ("state_kernel_stage_2", ("1/5", "4/5", "3/7", "4/7")),
+            ("receiver_kernel_stage_1", ("2/3", "1/3", "1/4", "3/4")),
+            ("receiver_kernel_stage_2", ("3/4", "1/4", "2/5", "3/5")),
+            ("source_kernel_stage_1", ("3/5", "2/5", "1/6", "5/6")),
+            ("source_kernel_stage_2", ("1/3", "2/3", "4/7", "3/7")),
+            ("intermediate_state_mass", ("17/36", "19/36")),
+            (
+                "intermediate_events",
+                (
+                    "59/255", "61/255", "14/85", "31/85",
+                    "28/285", "62/285", "13/95", "52/95",
+                ),
+            ),
         ),
     ),
     AuxiliaryLiteralPacket(
         "oracle_aux_hoeffding_v1",
         "pure three-spin interaction witness",
-        (("action", ("-1", "1", "1", "-1", "1", "-1", "-1", "1")),),
+        (
+            ("action", ("-1", "1", "1", "-1", "1", "-1", "-1", "1")),
+            ("axis_0_reference", ("1/2", "1/2")),
+            ("axis_1_reference", ("1/2", "1/2")),
+            ("axis_2_reference", ("1/2", "1/2")),
+            ("retained_order", ("2",)),
+        ),
     ),
     AuxiliaryLiteralPacket(
         "oracle_aux_gaussian_v1",
         "exact frame, Galerkin, and Schur witness",
         (
-            ("fine_precision_diagonal", ("2", "3", "4", "5")),
-            ("coarse_frame_diagonal", ("5", "2")),
+            (
+                "fine_precision",
+                (
+                    "2", "0", "0", "0", "0", "3", "0", "0",
+                    "0", "0", "4", "0", "0", "0", "0", "5",
+                ),
+            ),
+            ("prolongator", ("1", "0", "0", "1", "1", "0", "0", "1")),
+            (
+                "fine_frame",
+                (
+                    "2", "0", "0", "0", "0", "1", "0", "0",
+                    "0", "0", "1", "0", "0", "0", "0", "3",
+                ),
+            ),
+            ("coarse_frame", ("5", "0", "0", "2")),
+            (
+                "schur_precision",
+                ("4", "1", "0", "1", "3", "1", "0", "1", "2"),
+            ),
+            ("schur_retained", ("0", "2")),
+            ("schur_eliminated", ("1",)),
         ),
+    ),
+)
+
+
+LANE_PRIVATE_NONIDENTITY_COMMUTING_SQUARE = CommutingSquareWitness(
+    packet_id="oracle_aux_nonidentity_commuting_square_v1",
+    coarse_map=FractionMatrix(
+        (
+            (Fraction(1, 2), Fraction(1, 2), Fraction(0), Fraction(0)),
+            (Fraction(0), Fraction(0), Fraction(1, 2), Fraction(1, 2)),
+        )
+    ),
+    fine_comparison=FractionMatrix(
+        (
+            (Fraction(2), Fraction(0), Fraction(0), Fraction(0)),
+            (Fraction(0), Fraction(2), Fraction(0), Fraction(0)),
+            (Fraction(0), Fraction(0), Fraction(3), Fraction(0)),
+            (Fraction(0), Fraction(0), Fraction(0), Fraction(3)),
+        )
+    ),
+    coarse_comparison=FractionMatrix(
+        ((Fraction(2), Fraction(0)), (Fraction(0), Fraction(3)))
     ),
 )
 
@@ -428,13 +508,21 @@ def exact_evidence_elbo(
         raise ValueError("posterior must normalize the evidence submeasure")
 
     evidence_log = _formal_rational_log(evidence_mass)
-    if any(q > 0 and probability == 0 for q, probability in zip(recognition.values, posterior.values, strict=True)):
+    offending_support_entries = tuple(
+        index
+        for index, (q, probability) in enumerate(
+            zip(recognition.values, posterior.values, strict=True)
+        )
+        if q > 0 and probability == 0
+    )
+    if offending_support_entries:
         return EvidenceELBOOracle(
             evidence_log=evidence_log,
-            elbo=None,
-            kl=None,
+            elbo=float("-inf"),
+            kl=float("inf"),
             residual=None,
             branch="recognition_not_absolutely_continuous",
+            offending_support_entries=offending_support_entries,
         )
 
     elbo = FormalLogSum(())
@@ -453,6 +541,7 @@ def exact_evidence_elbo(
         kl=kl,
         residual=residual,
         branch="finite",
+        offending_support_entries=(),
     )
 
 
@@ -574,19 +663,38 @@ def compose_markov_kernels(
     return _matrix_from_rows(rows)
 
 
-def push_marked_event_law(
+def _validate_conditional_marked_events(
+    conditional_events: FractionTensor,
+) -> tuple[int, int, int]:
+    if len(conditional_events.shape) != 3:
+        raise ValueError(
+            "conditional marked events must have shape (state, receiver, source)"
+        )
+    state_count, receiver_count, source_count = conditional_events.shape
+    for state in range(state_count):
+        state_values = tuple(
+            conditional_events.at((state, receiver, source))
+            for receiver in range(receiver_count)
+            for source in range(source_count)
+        )
+        if sum(state_values, Fraction(0)) != 1:
+            raise ValueError("each conditional marked-event law must sum to one")
+        if any(value < 0 for value in state_values):
+            raise ValueError("marked-event probabilities must be nonnegative")
+    return state_count, receiver_count, source_count
+
+
+def _validate_marked_pushforward_inputs(
     state_mass: FractionVector,
     conditional_events: FractionTensor,
     state_kernel: FractionMatrix,
     receiver_kernel: FractionMatrix,
     source_kernel: FractionMatrix,
-) -> MarkedEventPushforward:
-    """Push ``p(y) eta(i,j|y)`` and only then form positive-mass conditionals."""
-
+) -> tuple[int, int, int]:
     _validate_probability(state_mass, name="state mass")
-    if len(conditional_events.shape) != 3:
-        raise ValueError("conditional marked events must have shape (state, receiver, source)")
-    state_count, receiver_count, source_count = conditional_events.shape
+    state_count, receiver_count, source_count = _validate_conditional_marked_events(
+        conditional_events
+    )
     if state_count != len(state_mass):
         raise ValueError("marked-event state axis must match state mass")
     if state_kernel.shape[0] != state_count:
@@ -598,47 +706,45 @@ def push_marked_event_law(
     _validate_markov_kernel(state_kernel, name="state kernel")
     _validate_markov_kernel(receiver_kernel, name="receiver kernel")
     _validate_markov_kernel(source_kernel, name="source kernel")
-    for state in range(state_count):
-        event_mass = sum(
-            (
-                conditional_events.at((state, receiver, source))
-                for receiver in range(receiver_count)
-                for source in range(source_count)
-            ),
-            Fraction(0),
-        )
-        if event_mass != 1:
-            raise ValueError("each conditional marked-event law must sum to one")
-        if any(
-            conditional_events.at((state, receiver, source)) < 0
-            for receiver in range(receiver_count)
-            for source in range(source_count)
-        ):
-            raise ValueError("marked-event probabilities must be nonnegative")
+    return state_count, receiver_count, source_count
 
+
+def _push_marked_joint(
+    state_mass: FractionVector,
+    conditional_events: FractionTensor,
+    state_kernel: FractionMatrix,
+    receiver_kernel: FractionMatrix,
+    source_kernel: FractionMatrix,
+    fine_shape: tuple[int, int, int],
+) -> FractionTensor:
+    state_count, receiver_count, source_count = fine_shape
     coarse_states = state_kernel.shape[1]
     coarse_receivers = receiver_kernel.shape[1]
     coarse_sources = source_kernel.shape[1]
-    joint_values: list[Fraction] = []
-    for coarse_state in range(coarse_states):
-        for coarse_receiver in range(coarse_receivers):
-            for coarse_source in range(coarse_sources):
-                joint_values.append(
-                    sum(
-                        state_mass.values[state]
-                        * conditional_events.at((state, receiver, source))
-                        * state_kernel.rows[state][coarse_state]
-                        * receiver_kernel.rows[receiver][coarse_receiver]
-                        * source_kernel.rows[source][coarse_source]
-                        for state in range(state_count)
-                        for receiver in range(receiver_count)
-                        for source in range(source_count)
-                    )
-                )
-    joint = FractionTensor(
-        (coarse_states, coarse_receivers, coarse_sources), tuple(joint_values)
+    coarse_shape = (coarse_states, coarse_receivers, coarse_sources)
+    return FractionTensor(
+        coarse_shape,
+        tuple(
+            sum(
+                state_mass.values[state]
+                * conditional_events.at((state, receiver, source))
+                * state_kernel.rows[state][coarse_state]
+                * receiver_kernel.rows[receiver][coarse_receiver]
+                * source_kernel.rows[source][coarse_source]
+                for state in range(state_count)
+                for receiver in range(receiver_count)
+                for source in range(source_count)
+            )
+            for coarse_state in range(coarse_states)
+            for coarse_receiver in range(coarse_receivers)
+            for coarse_source in range(coarse_sources)
+        ),
     )
-    coarse_state_values = tuple(
+
+
+def _marked_coarse_state_masses(joint: FractionTensor) -> tuple[Fraction, ...]:
+    coarse_states, coarse_receivers, coarse_sources = joint.shape
+    return tuple(
         sum(
             (
                 joint.at((coarse_state, coarse_receiver, coarse_source))
@@ -649,6 +755,54 @@ def push_marked_event_law(
         )
         for coarse_state in range(coarse_states)
     )
+
+
+def _disintegrate_marked_state(
+    joint: FractionTensor,
+    coarse_state: int,
+    mass: Fraction,
+) -> tuple[FractionTensor, FractionVector, tuple[FractionVector | None, ...]]:
+    _, coarse_receivers, coarse_sources = joint.shape
+    event = FractionTensor(
+        (coarse_receivers, coarse_sources),
+        tuple(
+            joint.at((coarse_state, coarse_receiver, coarse_source)) / mass
+            for coarse_receiver in range(coarse_receivers)
+            for coarse_source in range(coarse_sources)
+        ),
+    )
+    receiver_values = tuple(
+        sum(
+            (
+                event.at((coarse_receiver, coarse_source))
+                for coarse_source in range(coarse_sources)
+            ),
+            Fraction(0),
+        )
+        for coarse_receiver in range(coarse_receivers)
+    )
+    source_rows = tuple(
+        None
+        if receiver_mass == 0
+        else FractionVector(
+            tuple(
+                event.at((coarse_receiver, coarse_source)) / receiver_mass
+                for coarse_source in range(coarse_sources)
+            )
+        )
+        for coarse_receiver, receiver_mass in enumerate(receiver_values)
+    )
+    return event, FractionVector(receiver_values), source_rows
+
+
+def _disintegrate_marked_joint(
+    joint: FractionTensor,
+    coarse_state_values: tuple[Fraction, ...],
+) -> tuple[
+    tuple[FractionTensor | None, ...],
+    tuple[FractionVector | None, ...],
+    tuple[tuple[FractionVector | None, ...] | None, ...],
+]:
     event_conditionals: list[FractionTensor | None] = []
     receiver_masses: list[FractionVector | None] = []
     source_conditionals: list[tuple[FractionVector | None, ...] | None] = []
@@ -658,43 +812,53 @@ def push_marked_event_law(
             receiver_masses.append(None)
             source_conditionals.append(None)
             continue
-        event = FractionTensor(
-            (coarse_receivers, coarse_sources),
-            tuple(
-                joint.at((coarse_state, coarse_receiver, coarse_source)) / mass
-                for coarse_receiver in range(coarse_receivers)
-                for coarse_source in range(coarse_sources)
-            ),
+        event, receiver_mass, source_rows = _disintegrate_marked_state(
+            joint, coarse_state, mass
         )
         event_conditionals.append(event)
-        receiver_values = tuple(
-            sum(
-                (event.at((coarse_receiver, coarse_source)) for coarse_source in range(coarse_sources)),
-                Fraction(0),
-            )
-            for coarse_receiver in range(coarse_receivers)
-        )
-        receiver_masses.append(FractionVector(receiver_values))
-        rows: list[FractionVector | None] = []
-        for coarse_receiver, receiver_mass in enumerate(receiver_values):
-            if receiver_mass == 0:
-                rows.append(None)
-            else:
-                rows.append(
-                    FractionVector(
-                        tuple(
-                            event.at((coarse_receiver, coarse_source)) / receiver_mass
-                            for coarse_source in range(coarse_sources)
-                        )
-                    )
-                )
-        source_conditionals.append(tuple(rows))
+        receiver_masses.append(receiver_mass)
+        source_conditionals.append(source_rows)
+    return (
+        tuple(event_conditionals),
+        tuple(receiver_masses),
+        tuple(source_conditionals),
+    )
+
+
+def push_marked_event_law(
+    state_mass: FractionVector,
+    conditional_events: FractionTensor,
+    state_kernel: FractionMatrix,
+    receiver_kernel: FractionMatrix,
+    source_kernel: FractionMatrix,
+) -> MarkedEventPushforward:
+    """Push ``p(y) eta(i,j|y)`` and only then form positive-mass conditionals."""
+
+    fine_shape = _validate_marked_pushforward_inputs(
+        state_mass,
+        conditional_events,
+        state_kernel,
+        receiver_kernel,
+        source_kernel,
+    )
+    joint = _push_marked_joint(
+        state_mass,
+        conditional_events,
+        state_kernel,
+        receiver_kernel,
+        source_kernel,
+        fine_shape,
+    )
+    coarse_state_values = _marked_coarse_state_masses(joint)
+    event_conditionals, receiver_masses, source_conditionals = (
+        _disintegrate_marked_joint(joint, coarse_state_values)
+    )
     return MarkedEventPushforward(
         joint=joint,
         coarse_state_mass=FractionVector(coarse_state_values),
-        conditional_events=tuple(event_conditionals),
-        receiver_mass=tuple(receiver_masses),
-        conditional_source=tuple(source_conditionals),
+        conditional_events=event_conditionals,
+        receiver_mass=receiver_masses,
+        conditional_source=source_conditionals,
     )
 
 
@@ -706,13 +870,11 @@ def _all_subsets(axes: tuple[int, ...]) -> tuple[tuple[int, ...], ...]:
     )
 
 
-def exact_hoeffding_decomposition(
+def _validate_hoeffding_inputs(
     values: FractionTensor,
     product_reference: tuple[FractionVector, ...],
     retained_order: int,
-) -> HoeffdingOracle:
-    """Compute every finite Hoeffding/Mobius component over a product law."""
-
+) -> tuple[tuple[int, ...], tuple[tuple[int, ...], ...]]:
     if not isinstance(product_reference, tuple):
         raise TypeError("product reference must be a tuple")
     axis_count = len(values.shape)
@@ -730,82 +892,123 @@ def exact_hoeffding_decomposition(
         or not 0 <= retained_order <= axis_count
     ):
         raise ValueError("retained order must be an integer between zero and tensor rank")
-
     axes = tuple(range(axis_count))
     indices = tuple(product(*(range(size) for size in values.shape)))
-    conditional_cache: dict[tuple[int, ...], tuple[Fraction, ...]] = {}
+    return axes, indices
 
-    def conditional(subset: tuple[int, ...]) -> tuple[Fraction, ...]:
-        cached = conditional_cache.get(subset)
-        if cached is not None:
-            return cached
-        active = frozenset(subset)
-        output: list[Fraction] = []
-        for fixed_index in indices:
-            total = Fraction(0)
-            for integrated_index in indices:
-                if any(
-                    integrated_index[axis] != fixed_index[axis] for axis in active
-                ):
-                    continue
-                weight = prod(
-                    product_reference[axis].values[integrated_index[axis]]
-                    for axis in axes
-                    if axis not in active
-                )
-                total += values.at(integrated_index) * weight
-            output.append(total)
-        result = tuple(output)
-        conditional_cache[subset] = result
-        return result
 
+def _conditional_projection(
+    values: FractionTensor,
+    product_reference: tuple[FractionVector, ...],
+    axes: tuple[int, ...],
+    indices: tuple[tuple[int, ...], ...],
+    subset: tuple[int, ...],
+) -> tuple[Fraction, ...]:
+    active = frozenset(subset)
+    return tuple(
+        sum(
+            values.at(integrated_index)
+            * prod(
+                product_reference[axis].values[integrated_index[axis]]
+                for axis in axes
+                if axis not in active
+            )
+            for integrated_index in indices
+            if all(
+                integrated_index[axis] == fixed_index[axis] for axis in active
+            )
+        )
+        for fixed_index in indices
+    )
+
+
+def _build_hoeffding_components(
+    values: FractionTensor,
+    product_reference: tuple[FractionVector, ...],
+    axes: tuple[int, ...],
+    indices: tuple[tuple[int, ...], ...],
+) -> tuple[HoeffdingComponent, ...]:
+    projections = {
+        subset: _conditional_projection(
+            values, product_reference, axes, indices, subset
+        )
+        for subset in _all_subsets(axes)
+    }
     components: list[HoeffdingComponent] = []
     for subset in _all_subsets(axes):
         component_values = [Fraction(0) for _ in indices]
         for inner in _all_subsets(subset):
             sign = -1 if (len(subset) - len(inner)) % 2 else 1
-            conditional_values = conditional(inner)
-            for position, value in enumerate(conditional_values):
+            for position, value in enumerate(projections[inner]):
                 component_values[position] += sign * value
         components.append(
-            HoeffdingComponent(subset, FractionTensor(values.shape, tuple(component_values)))
+            HoeffdingComponent(
+                subset, FractionTensor(values.shape, tuple(component_values))
+            )
         )
+    return tuple(components)
 
-    reconstruction_values = tuple(
-        sum((component.values.values[position] for component in components), Fraction(0))
-        for position in range(len(values.values))
+
+def _sum_hoeffding_components(
+    components: tuple[HoeffdingComponent, ...],
+    value_count: int,
+    *,
+    maximum_order: int | None = None,
+) -> tuple[Fraction, ...]:
+    included = tuple(
+        component
+        for component in components
+        if maximum_order is None or len(component.subset) <= maximum_order
     )
-    retained_values = tuple(
+    return tuple(
         sum(
-            (
-                component.values.values[position]
-                for component in components
-                if len(component.subset) <= retained_order
-            ),
+            (component.values.values[position] for component in included),
             Fraction(0),
         )
-        for position in range(len(values.values))
+        for position in range(value_count)
+    )
+
+
+def _tensor_value_difference(
+    left: tuple[Fraction, ...], right: tuple[Fraction, ...]
+) -> tuple[Fraction, ...]:
+    return tuple(
+        left_value - right_value
+        for left_value, right_value in zip(left, right, strict=True)
+    )
+
+
+def exact_hoeffding_decomposition(
+    values: FractionTensor,
+    product_reference: tuple[FractionVector, ...],
+    retained_order: int,
+) -> HoeffdingOracle:
+    """Compute every finite Hoeffding/Mobius component over a product law."""
+
+    axes, indices = _validate_hoeffding_inputs(
+        values, product_reference, retained_order
+    )
+    components = _build_hoeffding_components(
+        values, product_reference, axes, indices
+    )
+    reconstruction_values = _sum_hoeffding_components(
+        components, len(values.values)
+    )
+    retained_values = _sum_hoeffding_components(
+        components, len(values.values), maximum_order=retained_order
     )
     return HoeffdingOracle(
-        components=tuple(components),
+        components=components,
         reconstruction=FractionTensor(values.shape, reconstruction_values),
         reconstruction_residual=FractionTensor(
             values.shape,
-            tuple(
-                original - reconstructed
-                for original, reconstructed in zip(
-                    values.values, reconstruction_values, strict=True
-                )
-            ),
+            _tensor_value_difference(values.values, reconstruction_values),
         ),
         retained_order=retained_order,
         retained_values=FractionTensor(values.shape, retained_values),
         retained_residual=FractionTensor(
             values.shape,
-            tuple(
-                original - retained
-                for original, retained in zip(values.values, retained_values, strict=True)
-            ),
+            _tensor_value_difference(values.values, retained_values),
         ),
     )
 
@@ -837,6 +1040,22 @@ def matrix_multiply(left: FractionMatrix, right: FractionMatrix) -> FractionMatr
             for row in range(left.shape[0])
         )
     )
+
+
+def evaluate_commuting_square(
+    coarse_map: FractionMatrix,
+    fine_comparison: FractionMatrix,
+    coarse_comparison: FractionMatrix,
+) -> CommutingSquareOracle:
+    """Evaluate ``I_c C`` and ``C I_f`` without assuming they commute."""
+
+    if coarse_comparison.shape[1] != coarse_map.shape[0]:
+        raise ValueError("coarse comparison cannot left-compose with coarse map")
+    if coarse_map.shape[1] != fine_comparison.shape[0]:
+        raise ValueError("fine comparison cannot right-compose with coarse map")
+    left = matrix_multiply(coarse_comparison, coarse_map)
+    right = matrix_multiply(coarse_map, fine_comparison)
+    return CommutingSquareOracle(left=left, right=right, commutes=left == right)
 
 
 def exact_matrix_inverse(matrix: FractionMatrix) -> FractionMatrix:
@@ -1002,9 +1221,26 @@ def _literal_matrix(raw: object, *, name: str) -> FractionMatrix:
     )
 
 
-def load_two_scale_application(path: Path) -> TwoScaleApplicationOracle:
-    """Parse and validate the frozen two-scale application as exact literals."""
+@dataclass(frozen=True)
+class _TwoScaleFixtureLiterals:
+    channel: FractionMatrix
+    coarse_jacobian: FractionMatrix
+    fine_comparison: FractionMatrix
+    coarse_comparison: FractionMatrix
+    fine_factors: FractionMatrix
+    coarse_factors: FractionMatrix
+    fine_reference: FractionVector
+    coarse_reference: FractionVector
+    baseline: FractionVector
+    observation_kernel: FractionMatrix
+    evidence: FractionVector
+    evidence_mass: Fraction
+    posterior: FractionVector
+    fine_recognition: FractionVector
+    coarse_recognition: FractionVector
 
+
+def _read_two_scale_payload(path: Path) -> dict[str, object]:
     if not isinstance(path, Path):
         raise TypeError("fixture path must be pathlib.Path")
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -1012,99 +1248,126 @@ def load_two_scale_application(path: Path) -> TwoScaleApplicationOracle:
         raise ValueError("fixture root must be a JSON object")
     if payload.get("schema_version") != "two-scale-application-v1":
         raise ValueError("unexpected two-scale application schema")
+    return payload
 
+
+def _single_scale_arrow(payload: dict[str, object]) -> dict[str, object]:
     arrows = payload["channel"]["arrows"]
     if not isinstance(arrows, list) or len(arrows) != 1:
         raise ValueError("fixture must declare exactly one scale arrow")
     arrow = arrows[0]
-    channel = _literal_matrix(arrow["rows"], name="fine-to-coarse channel")
-    coarse_jacobian = _literal_matrix(
-        payload["configuration"]["coarse_map_matrix"],
-        name="coarse coordinate Jacobian",
-    )
-    fine_comparison = _literal_matrix(
-        payload["configuration"]["comparison_isomorphisms"]["fine"],
-        name="fine comparison isomorphism",
-    )
-    coarse_comparison = _literal_matrix(
-        payload["configuration"]["comparison_isomorphisms"]["coarse"],
-        name="coarse comparison isomorphism",
+    if not isinstance(arrow, dict):
+        raise ValueError("scale arrow must be a JSON object")
+    return arrow
+
+
+def _parse_two_scale_literals(
+    payload: dict[str, object], arrow: dict[str, object]
+) -> _TwoScaleFixtureLiterals:
+    configuration = payload["configuration"]
+    comparisons = configuration["comparison_isomorphisms"]
+    references = payload["reference_laws"]
+    generative = payload["generative_structure"]
+    recognition = payload["recognition"]
+    return _TwoScaleFixtureLiterals(
+        channel=_literal_matrix(arrow["rows"], name="fine-to-coarse channel"),
+        coarse_jacobian=_literal_matrix(
+            configuration["coarse_map_matrix"], name="coarse coordinate Jacobian"
+        ),
+        fine_comparison=_literal_matrix(
+            comparisons["fine"], name="fine comparison isomorphism"
+        ),
+        coarse_comparison=_literal_matrix(
+            comparisons["coarse"], name="coarse comparison isomorphism"
+        ),
+        fine_factors=_literal_matrix(
+            references["fine"]["factor_values"], name="fine product factors"
+        ),
+        coarse_factors=_literal_matrix(
+            references["coarse"]["factor_values"], name="coarse product factors"
+        ),
+        fine_reference=_literal_vector(
+            references["fine"]["values"], name="fine reference"
+        ),
+        coarse_reference=_literal_vector(
+            references["coarse"]["values"], name="coarse reference"
+        ),
+        baseline=_literal_vector(
+            generative["correlated_baseline"], name="correlated baseline"
+        ),
+        observation_kernel=_literal_matrix(
+            generative["observation_record_kernel"], name="observation record kernel"
+        ),
+        evidence=_literal_vector(
+            generative["evidence_submeasure"], name="evidence submeasure"
+        ),
+        evidence_mass=parse_fraction_literal(generative["evidence_mass"]),
+        posterior=_literal_vector(generative["posterior"], name="posterior"),
+        fine_recognition=_literal_vector(
+            recognition["fine_law"], name="fine recognition law"
+        ),
+        coarse_recognition=_literal_vector(
+            recognition["coarse_law"], name="coarse recognition law"
+        ),
     )
 
-    fine_factors = _literal_matrix(
-        payload["reference_laws"]["fine"]["factor_values"],
-        name="fine product factors",
-    )
-    coarse_factors = _literal_matrix(
-        payload["reference_laws"]["coarse"]["factor_values"],
-        name="coarse product factors",
-    )
-    fine_reference = _literal_vector(
-        payload["reference_laws"]["fine"]["values"], name="fine reference"
-    )
-    coarse_reference = _literal_vector(
-        payload["reference_laws"]["coarse"]["values"], name="coarse reference"
-    )
-    baseline = _literal_vector(
-        payload["generative_structure"]["correlated_baseline"],
-        name="correlated baseline",
-    )
-    observation_kernel = _literal_matrix(
-        payload["generative_structure"]["observation_record_kernel"],
-        name="observation record kernel",
-    )
-    evidence = _literal_vector(
-        payload["generative_structure"]["evidence_submeasure"],
-        name="evidence submeasure",
-    )
-    evidence_mass = parse_fraction_literal(
-        payload["generative_structure"]["evidence_mass"]
-    )
-    posterior = _literal_vector(
-        payload["generative_structure"]["posterior"], name="posterior"
-    )
-    fine_recognition = _literal_vector(
-        payload["recognition"]["fine_law"], name="fine recognition law"
-    )
-    coarse_recognition = _literal_vector(
-        payload["recognition"]["coarse_law"], name="coarse recognition law"
-    )
 
+def _validate_fixture_channel_and_shapes(
+    arrow: dict[str, object], literals: _TwoScaleFixtureLiterals
+) -> None:
     source_labels = arrow["source_labels"]
     target_labels = arrow["target_labels"]
-    if channel.shape != (len(source_labels), len(target_labels)):
+    if literals.channel.shape != (len(source_labels), len(target_labels)):
         raise ValueError("fine-to-coarse channel must use source-row orientation")
-    _validate_markov_kernel(channel, name="fine-to-coarse channel")
+    _validate_markov_kernel(literals.channel, name="fine-to-coarse channel")
+    if literals.coarse_jacobian.shape != (2, 4):
+        raise ValueError("coarse coordinate Jacobian must have shape (2, 4)")
+    if (
+        literals.fine_comparison.shape != (4, 4)
+        or literals.coarse_comparison.shape != (2, 2)
+    ):
+        raise ValueError("declared comparison map shapes do not match the coordinates")
+
+
+def _validate_fixture_probability_literals(
+    literals: _TwoScaleFixtureLiterals,
+) -> None:
     for factors, name in (
-        (fine_factors, "fine product factors"),
-        (coarse_factors, "coarse product factors"),
+        (literals.fine_factors, "fine product factors"),
+        (literals.coarse_factors, "coarse product factors"),
     ):
         if any(sum(row, Fraction(0)) != 1 for row in factors.rows):
             raise ValueError(f"{name} rows must sum to one")
     for law, name in (
-        (fine_reference, "fine reference"),
-        (coarse_reference, "coarse reference"),
-        (baseline, "correlated baseline"),
-        (posterior, "posterior"),
-        (fine_recognition, "fine recognition law"),
-        (coarse_recognition, "coarse recognition law"),
+        (literals.fine_reference, "fine reference"),
+        (literals.coarse_reference, "coarse reference"),
+        (literals.baseline, "correlated baseline"),
+        (literals.posterior, "posterior"),
+        (literals.fine_recognition, "fine recognition law"),
+        (literals.coarse_recognition, "coarse recognition law"),
     ):
         _validate_probability(law, name=name)
-    _validate_markov_kernel(observation_kernel, name="observation record kernel")
-    if evidence_mass <= 0 or sum(evidence.values, Fraction(0)) != evidence_mass:
+    _validate_markov_kernel(
+        literals.observation_kernel, name="observation record kernel"
+    )
+
+
+def _validate_fixture_evidence(literals: _TwoScaleFixtureLiterals) -> None:
+    if (
+        literals.evidence_mass <= 0
+        or sum(literals.evidence.values, Fraction(0)) != literals.evidence_mass
+    ):
         raise ValueError("evidence submeasure does not match evidence mass")
     if any(
-        evidence_value != evidence_mass * posterior_value
+        evidence_value != literals.evidence_mass * posterior_value
         for evidence_value, posterior_value in zip(
-            evidence.values, posterior.values, strict=True
+            literals.evidence.values, literals.posterior.values, strict=True
         )
     ):
         raise ValueError("posterior does not normalize the evidence submeasure")
-    if coarse_jacobian.shape != (2, 4):
-        raise ValueError("coarse coordinate Jacobian must have shape (2, 4)")
-    if fine_comparison.shape != (4, 4) or coarse_comparison.shape != (2, 2):
-        raise ValueError("declared comparison map shapes do not match the coordinates")
 
+
+def _canonical_fixture_digest(payload: dict[str, object]) -> str:
     canonical_payload = {
         key: value for key, value in payload.items() if key != "application_id"
     }
@@ -1118,11 +1381,12 @@ def load_two_scale_application(path: Path) -> TwoScaleApplicationOracle:
     ).hexdigest()
     if payload.get("application_id") != digest or digest != TWO_SCALE_APPLICATION_ID:
         raise ValueError("two-scale application ID does not match canonical fixture digest")
+    return digest
 
-    fine_inverse = exact_matrix_inverse(fine_comparison)
-    coarse_inverse = exact_matrix_inverse(coarse_comparison)
-    left_square = matrix_multiply(coarse_comparison, coarse_jacobian)
-    right_square = matrix_multiply(coarse_jacobian, fine_comparison)
+
+def _fixture_boundary_metadata(
+    payload: dict[str, object],
+) -> tuple[str, dict[str, str]]:
     right_inverse_state = payload["recognition"]["right_inverse"]["check_state"]
     conclusion = payload["claims"]["checked_conclusions"][0]
     if right_inverse_state != "NOT_CHECKED":
@@ -1134,16 +1398,37 @@ def load_two_scale_application(path: Path) -> TwoScaleApplicationOracle:
         or conclusion["claim_origin"] != "APPLICATION_SPECIFIC"
     ):
         raise ValueError("application premise metadata crossed its frozen boundary")
+    return right_inverse_state, conclusion
+
+
+def load_two_scale_application(path: Path) -> TwoScaleApplicationOracle:
+    """Parse and validate the frozen two-scale application as exact literals."""
+
+    payload = _read_two_scale_payload(path)
+    arrow = _single_scale_arrow(payload)
+    literals = _parse_two_scale_literals(payload, arrow)
+    _validate_fixture_channel_and_shapes(arrow, literals)
+    _validate_fixture_probability_literals(literals)
+    _validate_fixture_evidence(literals)
+    digest = _canonical_fixture_digest(payload)
+    right_inverse_state, conclusion = _fixture_boundary_metadata(payload)
+    fine_inverse = exact_matrix_inverse(literals.fine_comparison)
+    coarse_inverse = exact_matrix_inverse(literals.coarse_comparison)
+    square = evaluate_commuting_square(
+        literals.coarse_jacobian,
+        literals.fine_comparison,
+        literals.coarse_comparison,
+    )
     return TwoScaleApplicationOracle(
         application_id=digest,
-        coarse_jacobian=coarse_jacobian,
-        fine_comparison=fine_comparison,
-        coarse_comparison=coarse_comparison,
+        coarse_jacobian=literals.coarse_jacobian,
+        fine_comparison=literals.fine_comparison,
+        coarse_comparison=literals.coarse_comparison,
         fine_comparison_inverse=fine_inverse,
         coarse_comparison_inverse=coarse_inverse,
-        left_square=left_square,
-        right_square=right_square,
-        commutes=left_square == right_square,
+        left_square=square.left,
+        right_square=square.right,
+        commutes=square.commutes,
         recognition_right_inverse_state=right_inverse_state,
         application_theorem_status=conclusion["theorem_status"],
         application_verification_state=conclusion["verification_state"],

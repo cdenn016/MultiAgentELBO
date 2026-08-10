@@ -101,16 +101,19 @@ def test_evidence_elbo_preserves_support_violation_as_extended_branch():
     )
 
     result = exact_evidence_elbo(
-        FractionVector((Fraction(1, 2), Fraction(0))),
+        FractionVector((Fraction(1, 2), Fraction(0), Fraction(0), Fraction(0))),
         Fraction(1, 2),
-        FractionVector((Fraction(1), Fraction(0))),
-        FractionVector((Fraction(1, 2), Fraction(1, 2))),
+        FractionVector((Fraction(1), Fraction(0), Fraction(0), Fraction(0))),
+        FractionVector(
+            (Fraction(1, 4), Fraction(1, 4), Fraction(0), Fraction(1, 2))
+        ),
     )
 
     assert result.branch == "recognition_not_absolutely_continuous"
-    assert result.elbo is None
-    assert result.kl is None
+    assert result.elbo == -math.inf
+    assert result.kl == math.inf
     assert result.residual is None
+    assert result.offending_support_entries == (1, 3)
 
 
 def test_fixed_channel_fisher_defect_uses_exact_joint_conditional_weights():
@@ -238,15 +241,25 @@ def test_marked_event_direct_and_staged_pushforwards_agree_exactly():
         push_marked_event_law,
     )
 
-    identity = FractionMatrix(((Fraction(1), Fraction(0)), (Fraction(0), Fraction(1))))
     first_state = FractionMatrix(
-        ((Fraction(1), Fraction(0)), (Fraction(1, 3), Fraction(2, 3)))
+        ((Fraction(3, 4), Fraction(1, 4)), (Fraction(1, 3), Fraction(2, 3)))
     )
     second_state = FractionMatrix(
-        ((Fraction(1, 2), Fraction(1, 2)), (Fraction(0), Fraction(1)))
+        ((Fraction(1, 5), Fraction(4, 5)), (Fraction(3, 7), Fraction(4, 7)))
     )
-    collapse = FractionMatrix(((Fraction(1),), (Fraction(1),)))
-    state_mass = FractionVector((Fraction(1, 4), Fraction(3, 4)))
+    first_receiver = FractionMatrix(
+        ((Fraction(2, 3), Fraction(1, 3)), (Fraction(1, 4), Fraction(3, 4)))
+    )
+    second_receiver = FractionMatrix(
+        ((Fraction(3, 4), Fraction(1, 4)), (Fraction(2, 5), Fraction(3, 5)))
+    )
+    first_source = FractionMatrix(
+        ((Fraction(3, 5), Fraction(2, 5)), (Fraction(1, 6), Fraction(5, 6)))
+    )
+    second_source = FractionMatrix(
+        ((Fraction(1, 3), Fraction(2, 3)), (Fraction(4, 7), Fraction(3, 7)))
+    )
+    state_mass = FractionVector((Fraction(1, 3), Fraction(2, 3)))
     events = FractionTensor(
         (2, 2, 2),
         (
@@ -255,40 +268,75 @@ def test_marked_event_direct_and_staged_pushforwards_agree_exactly():
         ),
     )
     first = push_marked_event_law(
-        state_mass, events, first_state, identity, identity
+        state_mass, events, first_state, first_receiver, first_source
     )
-    assert all(event is not None for event in first.conditional_events)
+    intermediate_state_mass = FractionVector((Fraction(17, 36), Fraction(19, 36)))
     staged_events = FractionTensor(
         (2, 2, 2),
-        tuple(
-            value
-            for event in first.conditional_events
-            if event is not None
-            for value in event.values
+        (
+            Fraction(59, 255), Fraction(61, 255),
+            Fraction(14, 85), Fraction(31, 85),
+            Fraction(28, 285), Fraction(62, 285),
+            Fraction(13, 95), Fraction(52, 95),
         ),
     )
+    assert first.coarse_state_mass == intermediate_state_mass
+    assert first.conditional_events == (
+        FractionTensor((2, 2), staged_events.values[:4]),
+        FractionTensor((2, 2), staged_events.values[4:]),
+    )
     staged = push_marked_event_law(
-        first.coarse_state_mass,
+        intermediate_state_mass,
         staged_events,
         second_state,
-        collapse,
-        collapse,
+        second_receiver,
+        second_source,
     )
     composed_state = compose_markov_kernels(first_state, second_state)
     assert composed_state.rows == (
-        (Fraction(1, 2), Fraction(1, 2)),
-        (Fraction(1, 6), Fraction(5, 6)),
+        (Fraction(9, 35), Fraction(26, 35)),
+        (Fraction(37, 105), Fraction(68, 105)),
+    )
+    composed_receiver = compose_markov_kernels(first_receiver, second_receiver)
+    assert composed_receiver.rows == (
+        (Fraction(19, 30), Fraction(11, 30)),
+        (Fraction(39, 80), Fraction(41, 80)),
+    )
+    composed_source = compose_markov_kernels(first_source, second_source)
+    assert composed_source.rows == (
+        (Fraction(3, 7), Fraction(4, 7)),
+        (Fraction(67, 126), Fraction(59, 126)),
     )
     direct = push_marked_event_law(
         state_mass,
         events,
         composed_state,
-        compose_markov_kernels(identity, collapse),
-        compose_markov_kernels(identity, collapse),
+        composed_receiver,
+        composed_source,
     )
 
-    assert direct.joint.values == (Fraction(1, 4), Fraction(3, 4))
+    expected_joint = (
+        Fraction(44539, 529200), Fraction(8959, 105840),
+        Fraction(123023, 1587600), Fraction(23603, 317520),
+        Fraction(23699, 132300), Fraction(4979, 26460),
+        Fraction(62143, 396900), Fraction(12343, 79380),
+    )
+    assert direct.coarse_state_mass.values == (Fraction(101, 315), Fraction(214, 315))
+    assert direct.joint.values == expected_joint
+    assert staged.joint.values == expected_joint
     assert staged == direct
+
+    wrong_order = push_marked_event_law(
+        state_mass,
+        events,
+        compose_markov_kernels(second_state, first_state),
+        compose_markov_kernels(second_receiver, first_receiver),
+        compose_markov_kernels(second_source, first_source),
+    )
+    assert wrong_order.coarse_state_mass.values == (
+        Fraction(121, 252), Fraction(131, 252)
+    )
+    assert wrong_order.joint.values != expected_joint
 
 
 def test_marked_event_disintegration_is_absent_on_zero_coarse_state_mass():
@@ -575,6 +623,60 @@ def test_frozen_two_scale_fixture_has_literal_jacobian_and_commuting_square():
     assert result.application_claim_origin == "APPLICATION_SPECIFIC"
 
 
+def test_lane_private_nonidentity_comparison_square_and_mismatch_control():
+    from multiagent_elbo.finite.theory_oracles import (
+        FractionMatrix,
+        LANE_PRIVATE_NONIDENTITY_COMMUTING_SQUARE,
+        evaluate_commuting_square,
+    )
+
+    witness = LANE_PRIVATE_NONIDENTITY_COMMUTING_SQUARE
+    assert witness.packet_id == "oracle_aux_nonidentity_commuting_square_v1"
+    assert witness.lane_private
+    assert not witness.replacement_application_fixture
+    assert witness.coarse_map.rows == (
+        (Fraction(1, 2), Fraction(1, 2), Fraction(0), Fraction(0)),
+        (Fraction(0), Fraction(0), Fraction(1, 2), Fraction(1, 2)),
+    )
+    assert witness.fine_comparison.rows == (
+        (Fraction(2), Fraction(0), Fraction(0), Fraction(0)),
+        (Fraction(0), Fraction(2), Fraction(0), Fraction(0)),
+        (Fraction(0), Fraction(0), Fraction(3), Fraction(0)),
+        (Fraction(0), Fraction(0), Fraction(0), Fraction(3)),
+    )
+    assert witness.coarse_comparison.rows == (
+        (Fraction(2), Fraction(0)),
+        (Fraction(0), Fraction(3)),
+    )
+
+    result = evaluate_commuting_square(
+        witness.coarse_map,
+        witness.fine_comparison,
+        witness.coarse_comparison,
+    )
+    expected = FractionMatrix(
+        (
+            (Fraction(1), Fraction(1), Fraction(0), Fraction(0)),
+            (Fraction(0), Fraction(0), Fraction(3, 2), Fraction(3, 2)),
+        )
+    )
+    assert result.left == expected
+    assert result.right == expected
+    assert result.commutes
+
+    mismatch = evaluate_commuting_square(
+        witness.coarse_map,
+        witness.fine_comparison,
+        FractionMatrix(((Fraction(2), Fraction(0)), (Fraction(0), Fraction(4)))),
+    )
+    assert mismatch.left.rows == (
+        (Fraction(1), Fraction(1), Fraction(0), Fraction(0)),
+        (Fraction(0), Fraction(0), Fraction(2), Fraction(2)),
+    )
+    assert mismatch.right == expected
+    assert not mismatch.commutes
+
+
 def test_fixture_loader_rejects_transposed_channel_orientation_before_hash_check(
     tmp_path: Path,
 ):
@@ -610,36 +712,202 @@ def test_theorem_assumption_matrix_is_immutable_complete_and_boundary_preserving
         THEOREM_ASSUMPTION_MATRIX,
     )
 
-    expected_identities = {
-        "evidence_elbo",
-        "fixed_channel_fisher_defect",
-        "marked_event_associativity",
-        "full_hoeffding_mobius",
-        "gaussian_inverse_congruence",
-        "gaussian_galerkin_restriction",
-        "gaussian_schur_complement",
-        "two_scale_literal_commuting_square",
-    }
-    assert {record.identity_id for record in THEOREM_ASSUMPTION_MATRIX} == expected_identities
+    expected_records = (
+        (
+            "evidence_elbo",
+            (
+                "positive finite evidence mass",
+                "posterior is normalized evidence slice",
+                "recognition is a probability law",
+            ),
+            "Theory/05_elbo.tex:180-190,212-274",
+            "ESTABLISHED",
+            "CANDIDATE",
+            "PROJECT_NOVEL",
+            "exact_fraction_derivation_witness",
+            "A nonzero canonical formal-log residual or mishandled support violation falsifies the encoding.",
+        ),
+        (
+            "fixed_channel_fisher_defect",
+            (
+                "normalized parameter-independent source-row channel",
+                "centered declared scores",
+                "positive-mass conditional disintegration",
+            ),
+            "Theory/05c_pullback_geometry.tex:1078-1152",
+            "ESTABLISHED",
+            "CANDIDATE",
+            "PROJECT_NOVEL",
+            "exact_fraction_derivation_witness",
+            "A mismatch between the Fisher difference and joint-weighted conditional covariance falsifies the encoding.",
+        ),
+        (
+            "marked_event_associativity",
+            (
+                "normalized state law",
+                "normalized joint marked-event conditional",
+                "normalized state, receiver, and source kernels",
+            ),
+            "Theory/07b_agent_network_rg.tex:1748+",
+            "ESTABLISHED",
+            "CANDIDATE",
+            "PROJECT_NOVEL",
+            "exact_fraction_derivation_witness",
+            "A direct/staged joint-law mismatch or a conditional formed on zero mass falsifies the encoding.",
+        ),
+        (
+            "full_hoeffding_mobius",
+            (
+                "finite tensor product state space",
+                "declared normalized product reference",
+                "complete subset family including empty set",
+            ),
+            "Theory/07b_agent_network_rg.tex:1182-1250,1468-1507",
+            "ESTABLISHED",
+            "CANDIDATE",
+            "PROJECT_NOVEL",
+            "exact_fraction_derivation_witness",
+            "A nonzero full reconstruction residual or missing higher-order retained residual falsifies the encoding.",
+        ),
+        (
+            "gaussian_inverse_congruence",
+            ("invertible rational frame", "square rational precision"),
+            "Theory/09_coarsegraining.tex:50-166",
+            "ESTABLISHED",
+            "CANDIDATE",
+            "PROJECT_NOVEL",
+            "exact_fraction_derivation_witness",
+            "Failure of G^-T A G^-1 or its transformed coarse square falsifies the encoding.",
+        ),
+        (
+            "gaussian_galerkin_restriction",
+            ("declared prolongator", "compatible square precision"),
+            "Theory/09_coarsegraining.tex:50-88",
+            "ESTABLISHED",
+            "CANDIDATE",
+            "PROJECT_NOVEL",
+            "exact_fraction_derivation_witness",
+            "A result different from S^T A S falsifies the encoding.",
+        ),
+        (
+            "gaussian_schur_complement",
+            ("retained/eliminated partition", "invertible eliminated block"),
+            "Theory/09_coarsegraining.tex:90-166",
+            "ESTABLISHED",
+            "CANDIDATE",
+            "PROJECT_NOVEL",
+            "exact_fraction_derivation_witness",
+            "A result different from A_RR-A_RE A_EE^-1 A_ER falsifies the encoding.",
+        ),
+        (
+            "two_scale_literal_commuting_square",
+            (
+                "frozen application fixture",
+                "declared block-average Jacobian",
+                "declared comparison isomorphisms",
+            ),
+            "Theory/SPEC.md:207+",
+            "HYPOTHESIS",
+            "CANDIDATE",
+            "APPLICATION_SPECIFIC",
+            "exact_fraction_derivation_witness",
+            "A digest mismatch, noninvertible comparison, or I_c C != C I_f falsifies this application check.",
+        ),
+    )
+    actual_records = tuple(
+        (
+            record.identity_id,
+            record.premises,
+            record.theory_source,
+            record.theorem_status,
+            record.verification_state,
+            record.claim_origin,
+            record.evidence_kind,
+            record.falsification_condition,
+        )
+        for record in THEOREM_ASSUMPTION_MATRIX
+    )
+    assert actual_records == expected_records
     for record in THEOREM_ASSUMPTION_MATRIX:
-        assert record.premises
-        assert record.theory_source.startswith("Theory/")
-        assert record.theorem_status in {"ESTABLISHED", "HYPOTHESIS"}
-        assert record.verification_state == "CANDIDATE"
-        assert record.claim_origin in {"PROJECT_NOVEL", "APPLICATION_SPECIFIC"}
-        assert record.evidence_kind == "exact_fraction_derivation_witness"
-        assert record.falsification_condition
         with pytest.raises(FrozenInstanceError):
             record.verification_state = "EVIDENCE_VERIFIED"  # type: ignore[misc]
 
-    assert {packet.packet_id for packet in LANE_PRIVATE_AUXILIARY_PACKETS} == {
-        "oracle_aux_fisher_v1",
-        "oracle_aux_marked_event_v1",
-        "oracle_aux_hoeffding_v1",
-        "oracle_aux_gaussian_v1",
-    }
-    assert all(packet.lane_private for packet in LANE_PRIVATE_AUXILIARY_PACKETS)
-    assert all(
-        not packet.replacement_application_fixture
+    expected_packets = (
+        (
+            "oracle_aux_fisher_v1",
+            "unequal conditional-weight Fisher witness",
+            (
+                ("probability", ("1/3", "2/3")),
+                ("channel", ("1", "0", "1/4", "3/4")),
+                ("score", ("2", "-1")),
+            ),
+            True,
+            False,
+        ),
+        (
+            "oracle_aux_marked_event_v1",
+            "asymmetric two-stage state/receiver/source marked-event witness",
+            (
+                ("state_mass", ("1/3", "2/3")),
+                ("conditional_events", ("1", "0", "0", "0", "0", "0", "0", "1")),
+                ("state_kernel_stage_1", ("3/4", "1/4", "1/3", "2/3")),
+                ("state_kernel_stage_2", ("1/5", "4/5", "3/7", "4/7")),
+                ("receiver_kernel_stage_1", ("2/3", "1/3", "1/4", "3/4")),
+                ("receiver_kernel_stage_2", ("3/4", "1/4", "2/5", "3/5")),
+                ("source_kernel_stage_1", ("3/5", "2/5", "1/6", "5/6")),
+                ("source_kernel_stage_2", ("1/3", "2/3", "4/7", "3/7")),
+                ("intermediate_state_mass", ("17/36", "19/36")),
+                (
+                    "intermediate_events",
+                    ("59/255", "61/255", "14/85", "31/85", "28/285", "62/285", "13/95", "52/95"),
+                ),
+            ),
+            True,
+            False,
+        ),
+        (
+            "oracle_aux_hoeffding_v1",
+            "pure three-spin interaction witness",
+            (
+                ("action", ("-1", "1", "1", "-1", "1", "-1", "-1", "1")),
+                ("axis_0_reference", ("1/2", "1/2")),
+                ("axis_1_reference", ("1/2", "1/2")),
+                ("axis_2_reference", ("1/2", "1/2")),
+                ("retained_order", ("2",)),
+            ),
+            True,
+            False,
+        ),
+        (
+            "oracle_aux_gaussian_v1",
+            "exact frame, Galerkin, and Schur witness",
+            (
+                (
+                    "fine_precision",
+                    ("2", "0", "0", "0", "0", "3", "0", "0", "0", "0", "4", "0", "0", "0", "0", "5"),
+                ),
+                ("prolongator", ("1", "0", "0", "1", "1", "0", "0", "1")),
+                (
+                    "fine_frame",
+                    ("2", "0", "0", "0", "0", "1", "0", "0", "0", "0", "1", "0", "0", "0", "0", "3"),
+                ),
+                ("coarse_frame", ("5", "0", "0", "2")),
+                ("schur_precision", ("4", "1", "0", "1", "3", "1", "0", "1", "2")),
+                ("schur_retained", ("0", "2")),
+                ("schur_eliminated", ("1",)),
+            ),
+            True,
+            False,
+        ),
+    )
+    actual_packets = tuple(
+        (
+            packet.packet_id,
+            packet.purpose,
+            packet.literals,
+            packet.lane_private,
+            packet.replacement_application_fixture,
+        )
         for packet in LANE_PRIVATE_AUXILIARY_PACKETS
     )
+    assert actual_packets == expected_packets
