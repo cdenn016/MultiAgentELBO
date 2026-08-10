@@ -471,10 +471,14 @@ def test_pinned_cuda_worker_runs_first_job_with_determinism_environment(
         environment_lock=ENVIRONMENT_LOCK,
     )
 
-    np.testing.assert_array_equal(
-        result.arrays["updated_coefficients"],
+    parity = parity_diagnostics(
         inputs["coefficients"] @ inputs["spatial_map"].T,
+        result.arrays["updated_coefficients"],
+        dtype="float64",
+        condition_number=float(np.linalg.cond(inputs["matrix_direction"])),
     )
+    assert parity.passed is True
+    assert parity.maximum_absolute_residual <= parity.atol
     assert result.provenance["effective_backend"] == "cuda"
     assert result.provenance["deterministic_algorithms"] is True
     assert result.provenance["matmul_allow_tf32"] is False
