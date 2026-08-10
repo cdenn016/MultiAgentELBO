@@ -353,14 +353,36 @@ Every array descriptor has exactly `name`, `shape`, `dtype`, and `sha256`.
 Names follow the job-ID character rule and are unique. Shape entries are
 nonnegative integers so explicit zero-support cases remain representable.
 Descriptor dtypes are `float64`, `float32`, `bfloat16`, `int64`, or `bool`.
-All digests are lowercase 64-hex SHA-256 strings.
+All digests are lowercase 64-hex SHA-256 strings. The NPZ digest hashes the
+exact NPZ file bytes. A descriptor digest hashes this byte sequence, with `||`
+denoting concatenation:
 
-The response `output_identity` hashes canonical UTF-8 JSON of the complete
-response after replacing only `output_identity` with null. Both sides validate
-the schema, message role, job ID, environment digest, NPZ digest, descriptors,
-requested/effective identity, and response self-hash before accepting output.
-This freeze supplies validation only; it implements no worker or scientific
-CUDA kernel.
+```text
+UTF-8("cuda-worker-array-v1\0")
+|| UTF-8(name) || 0x00
+|| ASCII(dtype) || 0x00
+|| UTF-8(canonical shape JSON) || 0x00
+|| canonical C-order data bytes
+```
+
+Canonical shape JSON uses no whitespace. Floating values use their IEEE-754
+little-endian bit patterns (`bfloat16` uses its little-endian 16-bit pattern),
+`int64` uses little-endian two's-complement bytes, and `bool` uses one byte per
+element, `0x00` or `0x01`. Empty arrays have an empty data-byte suffix.
+
+A response is validated only together with the original validated request.
+Its job ID, requested backend/dtype, and environment digest must match that
+request directly. The response `output_identity` is the SHA-256 of canonical
+UTF-8 JSON for the object `{"request": request, "response": response}` after
+replacing `output_identity` with null in both embedded manifests. Canonical JSON
+uses `sort_keys=true`, `separators=(',', ':')`, `ensure_ascii=true`, no byte-order
+mark, and no trailing newline. Consequently the identity also binds the exact
+input NPZ digest and all input descriptors from the original request, as well
+as the complete response. A response without its original request is rejected.
+Both sides validate the schema, message role, job ID, environment digest, NPZ
+digest, descriptors, request binding, requested/effective identity, and bound
+response identity before accepting output. This freeze supplies validation
+only; it implements no worker or scientific CUDA kernel.
 
 ## CUDA environment record
 

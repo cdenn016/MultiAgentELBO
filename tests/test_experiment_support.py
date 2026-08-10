@@ -255,6 +255,28 @@ def test_canonical_metric_metadata_cannot_be_omitted_or_misspelled():
         )
 
 
+@pytest.mark.parametrize(
+    ("verification_state", "claim_origin", "message"),
+    [
+        ("", "APPLICATION_SPECIFIC", "invalid verification_state"),
+        ("CANDIDATE", "", "invalid claim_origin"),
+    ],
+)
+def test_supplied_empty_canonical_metric_metadata_is_invalid(
+    verification_state: str, claim_origin: str, message: str
+):
+    with pytest.raises(ValueError, match=message):
+        target_metric(
+            0.0,
+            1.0e-12,
+            target=0.0,
+            interpretation="explicit empty metadata is not legacy omission",
+            theorem_status="NUMERICAL",
+            verification_state=verification_state,  # type: ignore[arg-type]
+            claim_origin=claim_origin,  # type: ignore[arg-type]
+        )
+
+
 def test_experiment_registry_is_complete_typed_and_immutable():
     registry = experiment_support.EXPERIMENT_REGISTRY
 
@@ -281,7 +303,11 @@ def test_experiment_registry_is_complete_typed_and_immutable():
         registry["multiagent_network"].launcher = "changed.py"  # type: ignore[misc]
 
 
-def _valid_worker_manifest(message_type: str) -> dict[str, object]:
+def _valid_worker_manifest(
+    message_type: str,
+    *,
+    request_manifest: dict[str, object] | None = None,
+) -> dict[str, object]:
     response = message_type == "response"
     manifest: dict[str, object] = {
         "schema_version": "cuda-worker-protocol-v1",
@@ -304,26 +330,107 @@ def _valid_worker_manifest(message_type: str) -> dict[str, object]:
         "output_identity": None,
     }
     if response:
+        if request_manifest is None:
+            request_manifest = _valid_worker_manifest("request")
         manifest["output_identity"] = experiment_support.worker_output_identity(
-            manifest
+            manifest, request_manifest=request_manifest
         )
     return manifest
 
 
 def test_worker_protocol_validates_request_and_self_hashed_response():
     request = _valid_worker_manifest("request")
-    response = _valid_worker_manifest("response")
+    response = _valid_worker_manifest("response", request_manifest=request)
 
     validated_request = experiment_support.validate_worker_protocol_manifest(
         request, expected_message_type="request"
     )
     validated_response = experiment_support.validate_worker_protocol_manifest(
-        response, expected_message_type="response"
+        response,
+        expected_message_type="response",
+        request_manifest=request,
     )
 
     assert validated_request.message_type == "request"
     assert validated_request.arrays[0].shape == (2, 3)
     assert validated_response.output_identity == response["output_identity"]
+
+
+def test_worker_output_identity_has_a_pinned_request_response_byte_domain():
+    request = _valid_worker_manifest("request")
+    response = _valid_worker_manifest("response", request_manifest=request)
+
+    assert response["output_identity"] == (
+        "b6ca8c4d7c65218e109c01471f03f45b456554031c01a60de39cd0beab4b5a29"
+    )
+
+
+def test_worker_protocol_rejects_a_self_hashed_response_without_its_request():
+    request = _valid_worker_manifest("request")
+    response = _valid_worker_manifest("response", request_manifest=request)
+
+    with pytest.raises(ValueError, match="original request"):
+        experiment_support.validate_worker_protocol_manifest(
+            response, expected_message_type="response"
+        )
+
+
+@pytest.mark.parametrize(
+    ("request_mutation", "response_mutation", "message"),
+    [
+        ({"job_id": "job-forged"}, {"job_id": "job-forged"}, "job_id"),
+        (
+            {"requested_backend": "cpu"},
+            {"requested_backend": "cpu", "effective_backend": "cpu"},
+            "requested_backend",
+        ),
+        (
+            {"requested_dtype": "float32"},
+            {"requested_dtype": "float32", "effective_dtype": "float32"},
+            "requested_dtype",
+        ),
+        (
+            {"environment_sha256": "4" * 64},
+            {"environment_sha256": "4" * 64},
+            "environment_sha256",
+        ),
+        ({"npz_sha256": "5" * 64}, {}, "output_identity"),
+        (
+            {
+                "arrays": [
+                    {
+                        "name": "couplings",
+                        "shape": [2, 3],
+                        "dtype": "float64",
+                        "sha256": "6" * 64,
+                    }
+                ]
+            },
+            {},
+            "output_identity",
+        ),
+    ],
+)
+def test_worker_protocol_binds_response_to_original_request(
+    request_mutation: dict[str, object],
+    response_mutation: dict[str, object],
+    message: str,
+):
+    original_request = _valid_worker_manifest("request")
+    forged_request = json.loads(json.dumps(original_request))
+    forged_request.update(request_mutation)
+    response = _valid_worker_manifest("response", request_manifest=forged_request)
+    response.update(response_mutation)
+    response["output_identity"] = experiment_support.worker_output_identity(
+        response, request_manifest=forged_request
+    )
+
+    with pytest.raises(ValueError, match=message):
+        experiment_support.validate_worker_protocol_manifest(
+            response,
+            expected_message_type="response",
+            request_manifest=original_request,
+        )
 
 
 @pytest.mark.parametrize(
@@ -342,12 +449,15 @@ def test_worker_protocol_validates_request_and_self_hashed_response():
 def test_worker_protocol_rejects_malformed_or_mismatched_response(
     mutation: dict[str, object], message: str
 ):
-    manifest = _valid_worker_manifest("response")
+    request = _valid_worker_manifest("request")
+    manifest = _valid_worker_manifest("response", request_manifest=request)
     manifest.update(mutation)
 
     with pytest.raises(ValueError, match=message):
         experiment_support.validate_worker_protocol_manifest(
-            manifest, expected_message_type="response"
+            manifest,
+            expected_message_type="response",
+            request_manifest=request,
         )
 
 
@@ -357,14 +467,17 @@ def test_worker_protocol_rejects_bad_shape_dtype_and_array_hash():
         ("dtype", "float16", "dtype"),
         ("sha256", "bad", "sha256"),
     ):
-        manifest = _valid_worker_manifest("response")
+        request = _valid_worker_manifest("request")
+        manifest = _valid_worker_manifest("response", request_manifest=request)
         manifest["arrays"][0][key] = value  # type: ignore[index]
         manifest["output_identity"] = experiment_support.worker_output_identity(
-            manifest
+            manifest, request_manifest=request
         )
         with pytest.raises(ValueError, match=message):
             experiment_support.validate_worker_protocol_manifest(
-                manifest, expected_message_type="response"
+                manifest,
+                expected_message_type="response",
+                request_manifest=request,
             )
 
 
@@ -376,7 +489,12 @@ def test_two_scale_literal_fixture_has_valid_digest_and_typed_sections():
         payload
     )
 
-    assert application_id == payload["application_id"]
+    assert payload["application_id"] == (
+        "30a4bd77e738fbb73b3326ec009995ec7b2bc94f20c96e9e286644bdeec620cd"
+    )
+    assert application_id == (
+        "30a4bd77e738fbb73b3326ec009995ec7b2bc94f20c96e9e286644bdeec620cd"
+    )
     assert payload["state_spaces"]["fine"]["labels"] == [
         f"{value:04b}" for value in range(16)
     ]
@@ -415,3 +533,14 @@ def test_fixture_validation_rejects_digest_numeric_literal_and_bad_channel():
     )
     with pytest.raises(ValueError, match="normalized"):
         experiment_support.validate_two_scale_application_fixture(bad_channel)
+
+
+def test_fixture_validation_rejects_a_self_consistent_nonfrozen_application():
+    fixture_path = Path(__file__).parent / "fixtures" / "two_scale_application_v1.json"
+    payload = json.loads(fixture_path.read_text(encoding="utf-8"))
+    rows = payload["channel"]["arrows"][0]["rows"]
+    rows[0], rows[1] = rows[1], rows[0]
+    payload["application_id"] = experiment_support.fixture_application_id(payload)
+
+    with pytest.raises(ValueError, match="frozen application_id"):
+        experiment_support.validate_two_scale_application_fixture(payload)

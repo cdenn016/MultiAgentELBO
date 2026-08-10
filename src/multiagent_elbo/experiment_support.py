@@ -145,8 +145,10 @@ def _resolve_metric_metadata(
         raise ValueError(
             "canonical metrics require explicit verification_state and claim_origin"
         )
-    resolved_verification = verification_state or "CANDIDATE"
-    resolved_origin = claim_origin or "PROJECT_NOVEL"
+    resolved_verification = (
+        "CANDIDATE" if verification_state is None else verification_state
+    )
+    resolved_origin = "PROJECT_NOVEL" if claim_origin is None else claim_origin
     if resolved_verification not in _VERIFICATION_STATES:
         raise ValueError("invalid verification_state")
     if resolved_origin not in _CLAIM_ORIGINS:
@@ -350,6 +352,9 @@ EXPERIMENT_REGISTRY: Mapping[str, ExperimentContract] = MappingProxyType(
 
 
 CUDA_WORKER_PROTOCOL_VERSION = "cuda-worker-protocol-v1"
+_TWO_SCALE_APPLICATION_ID = (
+    "30a4bd77e738fbb73b3326ec009995ec7b2bc94f20c96e9e286644bdeec620cd"
+)
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 _JOB_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}\Z")
 _WORKER_DTYPES = frozenset({"float64", "float32", "bfloat16", "int64", "bool"})
@@ -378,10 +383,17 @@ class WorkerProtocolManifest:
     output_identity: str | None
 
 
-def worker_output_identity(manifest: Mapping[str, object]) -> str:
-    """Hash a response manifest after replacing its self-hash with null."""
-    payload = dict(manifest)
-    payload["output_identity"] = None
+def worker_output_identity(
+    manifest: Mapping[str, object],
+    *,
+    request_manifest: Mapping[str, object],
+) -> str:
+    """Hash the canonical request/response pair with response self-hash null."""
+    request_payload = dict(request_manifest)
+    request_payload["output_identity"] = None
+    response_payload = dict(manifest)
+    response_payload["output_identity"] = None
+    payload = {"request": request_payload, "response": response_payload}
     canonical = json.dumps(
         payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True
     )
@@ -389,7 +401,10 @@ def worker_output_identity(manifest: Mapping[str, object]) -> str:
 
 
 def validate_worker_protocol_manifest(
-    manifest: Mapping[str, object], *, expected_message_type: str
+    manifest: Mapping[str, object],
+    *,
+    expected_message_type: str,
+    request_manifest: Mapping[str, object] | None = None,
 ) -> WorkerProtocolManifest:
     """Validate the frozen JSON/NPZ controller-worker envelope without I/O."""
     _require_mapping_keys(
@@ -475,12 +490,39 @@ def validate_worker_protocol_manifest(
         if output_identity is not None:
             raise ValueError("request output_identity must be null")
     else:
-        if effective_backend != requested_backend:
+        if request_manifest is None:
+            raise ValueError("response validation requires the original request")
+        validated_request = validate_worker_protocol_manifest(
+            request_manifest, expected_message_type="request"
+        )
+        for field, response_value, request_value in (
+            ("job_id", job_id, validated_request.job_id),
+            (
+                "requested_backend",
+                requested_backend,
+                validated_request.requested_backend,
+            ),
+            (
+                "requested_dtype",
+                requested_dtype,
+                validated_request.requested_dtype,
+            ),
+            (
+                "environment_sha256",
+                environment_sha256,
+                validated_request.environment_sha256,
+            ),
+        ):
+            if response_value != request_value:
+                raise ValueError(f"response {field} does not match original request")
+        if effective_backend != validated_request.requested_backend:
             raise ValueError("effective backend must equal requested backend")
-        if effective_dtype != requested_dtype:
+        if effective_dtype != validated_request.requested_dtype:
             raise ValueError("effective dtype must equal requested dtype")
         _require_sha256(output_identity, "output_identity")
-        if output_identity != worker_output_identity(manifest):
+        if output_identity != worker_output_identity(
+            manifest, request_manifest=request_manifest
+        ):
             raise ValueError("output_identity does not match canonical response")
 
     return WorkerProtocolManifest(
@@ -677,6 +719,8 @@ def validate_two_scale_application_fixture(payload: Mapping[str, object]) -> str
                 raise ValueError("claim verification_state is invalid")
             if metadata.get("claim_origin") not in _CLAIM_ORIGINS:
                 raise ValueError("claim claim_origin is invalid")
+    if application_id != _TWO_SCALE_APPLICATION_ID:
+        raise ValueError("fixture does not match frozen application_id")
     return application_id
 
 
