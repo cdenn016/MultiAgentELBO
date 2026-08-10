@@ -227,11 +227,9 @@ def _capture_idle_gpu_gate_after_cooldown(
     raise AssertionError("unreachable CUDA idle-wait state")
 
 
-def _live_cuda_gate_bindings(config: ExperimentConfig) -> dict[str, object]:
+def _live_cuda_common_bindings(config: ExperimentConfig) -> dict[str, object]:
     if config.compute.backend != "cuda" or config.compute.dtype != "float64":
         raise ValueError("CUDA gate requires a CUDA float64 configuration")
-    if config.compute.heavy_sweep_enabled:
-        raise ValueError("CUDA gate precedes heavy-sweep enablement")
     repo_root = Path(__file__).resolve().parents[4]
     revision = subprocess.run(
         ["git", "rev-parse", "HEAD"],
@@ -298,6 +296,12 @@ def _live_cuda_gate_bindings(config: ExperimentConfig) -> dict[str, object]:
     }
 
 
+def _live_cuda_gate_bindings(config: ExperimentConfig) -> dict[str, object]:
+    if config.compute.heavy_sweep_enabled:
+        raise ValueError("CUDA gate precedes heavy-sweep enablement")
+    return _live_cuda_common_bindings(config)
+
+
 def _validate_cuda_gate_bindings(
     config: ExperimentConfig, gate: Mapping[str, object]
 ) -> None:
@@ -315,6 +319,37 @@ def build_cuda_gate_record(
     gate.update(bindings)
     gate["decision"] = "PENDING_OPERATOR_PROCESS_ACCEPTANCE"
     return gate
+
+
+def build_confirmatory_gate_record(
+    config: ExperimentConfig, *, operator_opt_in: bool
+) -> dict[str, object]:
+    """Bind a fresh idle observation to the heavy confirmatory configuration."""
+    if config.compute.heavy_sweep_enabled is not True:
+        raise ValueError("confirmatory gate requires heavy_sweep_enabled=True")
+    bindings = _live_cuda_common_bindings(config)
+    gate = capture_idle_gpu_gate(operator_opt_in=operator_opt_in)
+    gate.update(bindings)
+    gate["schema_version"] = "cuda-confirmatory-operator-gate-v1"
+    gate["execution_scope"] = "gaussian_fixed_ray_confirmatory_40_job"
+    gate["heavy_sweep_enabled"] = True
+    gate["decision"] = "PENDING_OPERATOR_PROCESS_ACCEPTANCE"
+    return gate
+
+
+def _validate_confirmatory_gate_bindings(
+    config: ExperimentConfig, gate: Mapping[str, object]
+) -> None:
+    if (
+        config.compute.heavy_sweep_enabled is not True
+        or gate.get("schema_version") != "cuda-confirmatory-operator-gate-v1"
+        or gate.get("execution_scope") != "gaussian_fixed_ray_confirmatory_40_job"
+        or gate.get("heavy_sweep_enabled") is not True
+    ):
+        raise ValueError("accepted confirmatory gate scope is invalid")
+    live = _live_cuda_common_bindings(config)
+    if any(gate.get(key) != value for key, value in live.items()):
+        raise ValueError("accepted confirmatory gate identity drifted from live execution")
 
 
 def _validate_gate_recheck(
@@ -558,6 +593,300 @@ def _run_or_resume_worker_job(
     )
     _atomic_json(attempt_root / "provenance.json", dict(result.provenance))
     return result, MappingProxyType(context)
+
+
+def _confirmatory_scheme_record(
+    coefficients: np.ndarray, *, system: object
+) -> dict[str, object]:
+    ray = system.perron_ray
+    normalized_ray = ray / np.linalg.norm(ray)
+    angles = np.array(
+        [projective_ray_angle(row, ray) for row in coefficients], dtype=np.float64
+    )
+    distances = np.array(
+        [
+            np.linalg.norm(row / np.linalg.norm(row) - normalized_ray)
+            for row in coefficients
+        ],
+        dtype=np.float64,
+    )
+    projection = np.outer(ray, ray) / float(np.dot(ray, ray))
+    beta_vectors = np.array(
+        [
+            (np.eye(ray.size) - projection) @ difference / system.log_block_scale
+            for difference in np.diff(coefficients, axis=0)
+        ],
+        dtype=np.float64,
+    )
+    beta_residuals = np.linalg.norm(beta_vectors, axis=1)
+    construction = np.array(
+        [
+            scalarized_ray_construction_residual(
+                row[:, None, None] * system.matrix_direction,
+                system.matrix_direction,
+            )
+            for row in coefficients
+        ],
+        dtype=np.float64,
+    )
+    basin_exits = np.any(
+        (coefficients < system.basin_lower) | (coefficients > system.basin_upper),
+        axis=1,
+    )
+    conditioning = np.max(coefficients, axis=1) / np.min(coefficients, axis=1)
+    return {
+        "projective_ray_angles": angles.tolist(),
+        "normalized_coupling_distances": distances.tolist(),
+        "retained_beta_residuals": beta_residuals.tolist(),
+        "scalarized_ray_construction_residuals": construction.tolist(),
+        "coefficient_conditioning": conditioning.tolist(),
+        "matrix_condition": float(np.linalg.cond(system.matrix_direction)),
+        "basin_exit": bool(np.any(basin_exits)),
+        "rejected": False,
+        "rejection_reason": None,
+    }
+
+
+def run_confirmatory_job(
+    config: ExperimentConfig,
+    *,
+    job: Mapping[str, object],
+    operator_opt_in: bool,
+    operator_gate: Mapping[str, object],
+    accepted_gate_sha256: str,
+    work_root: Path,
+    deadline_seconds: float = 300.0,
+) -> dict[str, object]:
+    """Run one preregistered paired job through 16 serial CUDA exchanges."""
+    if not isinstance(config, ExperimentConfig):
+        raise TypeError("config must be an ExperimentConfig")
+    if (
+        config.theory.experiment != "gaussian_fixed_ray"
+        or config.compute.backend != "cuda"
+        or config.compute.dtype != "float64"
+        or config.compute.heavy_sweep_enabled is not True
+    ):
+        raise ValueError("confirmatory job requires heavy CUDA float64 configuration")
+    if operator_opt_in is not True:
+        raise ValueError("confirmatory job requires explicit operator opt-in")
+    if not np.isfinite(deadline_seconds) or not 0.0 < deadline_seconds <= 300.0:
+        raise ValueError("confirmatory paired-job deadline must lie in (0, 300]")
+    gate = dict(operator_gate)
+    if (
+        gate.get("schema_version") != "cuda-confirmatory-operator-gate-v1"
+        or gate.get("operator_opt_in") is not True
+        or gate.get("idle_observation_passed") is not True
+        or _record_sha256(gate) != accepted_gate_sha256
+    ):
+        raise ValueError("operator acceptance does not match the confirmatory gate")
+    _validate_confirmatory_gate_bindings(config, gate)
+    try:
+        expires_at = datetime.fromisoformat(str(gate["expires_at_utc"]))
+    except (KeyError, ValueError) as error:
+        raise ValueError("confirmatory gate expiry is invalid") from error
+    if datetime.now(timezone.utc) >= expires_at:
+        raise ValueError("confirmatory gate expired before job execution")
+
+    job_id = job.get("job_id")
+    master_seed = job.get("master_seed")
+    role = job.get("role")
+    if (
+        not isinstance(job_id, str)
+        or not (job_id.startswith("C") or job_id.startswith("H"))
+        or type(master_seed) is not int
+        or role not in {"confirmatory_primary", "confirmatory_holdout"}
+        or job.get("schemes") != list(config.theory.blocking_schemes)
+        or job.get("steps") != 8
+    ):
+        raise ValueError("confirmatory job record drifted from the frozen table")
+
+    recheck = _capture_idle_gpu_gate_after_cooldown(operator_opt_in=operator_opt_in)
+    _validate_gate_recheck(gate, recheck)
+    recheck_sha256 = _record_sha256(recheck)
+    system = build_preregistered_system()
+    initial = generate_initial_coefficients(master_seed, job_id)
+    initial_sha256 = hashlib.sha256(initial.tobytes(order="C")).hexdigest()
+    trajectories = {
+        scheme: np.empty((9, initial.size), dtype=np.float64)
+        for scheme in config.theory.blocking_schemes
+    }
+    for trajectory in trajectories.values():
+        trajectory[0, :] = initial
+
+    repo_root = Path(__file__).resolve().parents[4]
+    worker_script = repo_root / "tools" / "cuda_worker.py"
+    environment_lock = repo_root / "environments" / "cuda-rtx5090-cu128.lock.txt"
+    worker_records: list[dict[str, object]] = []
+    peak_allocated = 0
+    peak_reserved = 0
+    started = time.perf_counter()
+    for scheme in config.theory.blocking_schemes:
+        spatial_map = system.spatial_maps[scheme]
+        for step in range(1, 9):
+            if time.perf_counter() - started > deadline_seconds:
+                raise TimeoutError(f"confirmatory paired job exceeded five minutes: {job_id}")
+            if datetime.now(timezone.utc) >= datetime.fromisoformat(
+                str(recheck["expires_at_utc"])
+            ):
+                raise RuntimeError(f"GPU gate expired during confirmatory job {job_id}")
+            immutable_id = f"confirmatory.{job_id}.{scheme}.step{step:02d}.cuda"
+            execution_context = {
+                "accepted_gate_sha256": accepted_gate_sha256,
+                "accepted_gate_record": gate,
+                "operator_gate_recheck_sha256": recheck_sha256,
+                "operator_gate_recheck_record": recheck,
+                "sentinel_job_id": job_id,
+                "scheme": scheme,
+                "step": step,
+                "lane": "worker_cuda_confirmatory",
+                "config_sha256": config_sha256(config),
+                "source_revision": gate["source_identity"]["git_revision"],  # type: ignore[index]
+            }
+            result, stored_context = _run_or_resume_worker_job(
+                worker_python=config.compute.cuda_worker_python,
+                worker_script=worker_script,
+                work_root=Path(work_root) / immutable_id,
+                job_id=immutable_id,
+                requested_backend="cuda",
+                requested_dtype="float64",
+                arrays={
+                    "coefficients": trajectories[scheme][step - 1 : step, :],
+                    "spatial_map": spatial_map,
+                    "matrix_direction": system.matrix_direction,
+                    "batch_size": np.array(config.compute.batch_size, dtype=np.int64),
+                },
+                environment_lock=environment_lock,
+                execution_context=execution_context,
+            )
+            updated = np.asarray(result.arrays["updated_coefficients"], dtype=np.float64)
+            if updated.shape != (1, initial.size) or not np.all(np.isfinite(updated)):
+                raise RuntimeError(f"confirmatory worker output is invalid: {immutable_id}")
+            trajectories[scheme][step, :] = updated[0]
+            provenance = dict(result.provenance)
+            peak_allocated = max(peak_allocated, int(provenance["peak_allocated_bytes"]))
+            peak_reserved = max(peak_reserved, int(provenance["peak_reserved_bytes"]))
+            worker_records.append(
+                {
+                    "job_id": immutable_id,
+                    "scheme": scheme,
+                    "step": step,
+                    "execution_context": dict(stored_context),
+                    "request_manifest": dict(result.request_manifest),
+                    "response_manifest": dict(result.response_manifest),
+                    "provenance": provenance,
+                }
+            )
+
+    elapsed = time.perf_counter() - started
+    if elapsed > deadline_seconds:
+        raise TimeoutError(f"confirmatory paired job exceeded five minutes: {job_id}")
+    first_scheme, second_scheme = config.theory.blocking_schemes
+    dispersion = blocking_scheme_dispersion(
+        trajectories[first_scheme], trajectories[second_scheme]
+    )
+    return {
+        "schema_version": "gaussian-fixed-ray-confirmatory-job-v1",
+        "job_id": job_id,
+        "master_seed": master_seed,
+        "role": role,
+        "terminal_status": "completed",
+        "scientific_analysis_eligibility": True,
+        "accepted_gate_sha256": accepted_gate_sha256,
+        "config_sha256": config_sha256(config),
+        "source_revision": gate["source_identity"]["git_revision"],  # type: ignore[index]
+        "initial_coefficients": initial.tolist(),
+        "initial_coefficients_sha256": initial_sha256,
+        "operator_gate_recheck": recheck,
+        "operator_gate_recheck_sha256": recheck_sha256,
+        "schemes": {
+            scheme: _confirmatory_scheme_record(trajectories[scheme], system=system)
+            for scheme in config.theory.blocking_schemes
+        },
+        "blocking_scheme_dispersion": dispersion.tolist(),
+        "distinct_projective_rays": False,
+        "worker_exchange_count": len(worker_records),
+        "worker_exchanges": worker_records,
+        "elapsed_seconds": elapsed,
+        "peak_allocated_bytes": peak_allocated,
+        "peak_reserved_bytes": peak_reserved,
+        "trajectory_coefficients": {
+            scheme: trajectories[scheme].tolist()
+            for scheme in config.theory.blocking_schemes
+        },
+    }
+
+
+def run_confirmatory_primary(
+    config: ExperimentConfig,
+    *,
+    operator_opt_in: bool,
+    operator_gate: Mapping[str, object],
+    accepted_gate_sha256: str,
+    work_root: Path,
+) -> dict[str, object]:
+    """Run or resume the 30 frozen primary jobs in deterministic order."""
+    gate = dict(operator_gate)
+    if (
+        operator_opt_in is not True
+        or _record_sha256(gate) != accepted_gate_sha256
+        or gate.get("operator_opt_in") is not True
+    ):
+        raise ValueError("primary execution requires the accepted confirmatory gate")
+    _validate_confirmatory_gate_bindings(config, gate)
+    table = _job_table(config)
+    jobs = [
+        job
+        for job in table["jobs"]  # type: ignore[union-attr]
+        if job["role"] == "confirmatory_primary"
+    ]
+    expected_ids = [f"C{index:03d}" for index in range(1, 31)]
+    if [job["job_id"] for job in jobs] != expected_ids:
+        raise RuntimeError("primary job table drifted from the frozen sequence")
+    staging = Path(work_root) / "primary-jobs"
+    staging.mkdir(parents=True, exist_ok=True)
+    config_hash = config_sha256(config)
+    source_revision = gate["source_identity"]["git_revision"]  # type: ignore[index]
+    records: list[dict[str, object]] = []
+    for job in jobs:
+        job_id = str(job["job_id"])
+        path = staging / f"{job_id}.json"
+        if path.is_file():
+            record = json.loads(path.read_text(encoding="utf-8"))
+            if (
+                not isinstance(record, dict)
+                or record.get("schema_version")
+                != "gaussian-fixed-ray-confirmatory-job-v1"
+                or record.get("job_id") != job_id
+                or record.get("master_seed") != job["master_seed"]
+                or record.get("role") != "confirmatory_primary"
+                or record.get("terminal_status") != "completed"
+                or record.get("scientific_analysis_eligibility") is not True
+                or record.get("accepted_gate_sha256") != accepted_gate_sha256
+                or record.get("config_sha256") != config_hash
+                or record.get("source_revision") != source_revision
+            ):
+                raise RuntimeError(f"staged primary job identity drifted: {job_id}")
+        else:
+            record = run_confirmatory_job(
+                config,
+                job=job,
+                operator_opt_in=operator_opt_in,
+                operator_gate=gate,
+                accepted_gate_sha256=accepted_gate_sha256,
+                work_root=Path(work_root) / "worker-exchanges",
+            )
+            _atomic_json(path, record)
+        records.append(record)
+    return {
+        "schema_version": "gaussian-fixed-ray-confirmatory-primary-execution-v1",
+        "planned_job_ids": expected_ids,
+        "completed_job_ids": [str(record["job_id"]) for record in records],
+        "missing_job_ids": [],
+        "job_records": records,
+        "accepted_gate_sha256": accepted_gate_sha256,
+        "config_sha256": config_hash,
+        "source_revision": source_revision,
+    }
 
 
 def _sentinel_endpoint(
@@ -1662,9 +1991,12 @@ def run_gaussian_fixed_ray_experiment(
 
 __all__ = [
     "GaussianFixedRayExperimentResult",
+    "build_confirmatory_gate_record",
     "build_cuda_gate_record",
     "capture_idle_gpu_gate",
     "publish_cuda_sentinel",
+    "run_confirmatory_job",
+    "run_confirmatory_primary",
     "run_cuda_sentinel",
     "run_gaussian_fixed_ray_experiment",
 ]

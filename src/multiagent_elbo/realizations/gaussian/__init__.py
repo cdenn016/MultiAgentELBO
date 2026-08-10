@@ -13,9 +13,12 @@ from .confirmatory_analysis import (
 )
 from .fixed_ray_experiment import (
     GaussianFixedRayExperimentResult,
+    build_confirmatory_gate_record,
     build_cuda_gate_record,
     capture_idle_gpu_gate,
     publish_cuda_sentinel,
+    run_confirmatory_job,
+    run_confirmatory_primary,
     run_cuda_sentinel,
     run_gaussian_fixed_ray_experiment,
 )
@@ -39,6 +42,7 @@ __all__ = [
     "analyze_primary",
     "apply_frame_change",
     "build_cuda_gate_record",
+    "build_confirmatory_gate_record",
     "bootstrap_seed",
     "capture_idle_gpu_gate",
     "exact_binomial_lower_tail",
@@ -47,6 +51,8 @@ __all__ = [
     "holm_adjust",
     "percentile_interval",
     "publish_cuda_sentinel",
+    "run_confirmatory_job",
+    "run_confirmatory_primary",
     "run_cuda_sentinel",
     "run_gaussian_experiment",
     "run_gaussian_fixed_ray_experiment",
