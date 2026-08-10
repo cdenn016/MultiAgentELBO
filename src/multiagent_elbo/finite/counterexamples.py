@@ -14,6 +14,8 @@ import math
 from types import MappingProxyType
 from typing import Iterable, Mapping, Sequence
 
+from multiagent_elbo.finite.permutations import FinitePermutation
+
 
 Rational = Fraction
 MAX_NEAR_SINGULAR_SCORE = Fraction(10**12)
@@ -23,6 +25,15 @@ def _fraction(value: object) -> Fraction:
     if isinstance(value, Fraction):
         return value
     return Fraction(value)  # type: ignore[arg-type]
+
+
+def _require_permutation_size(
+    permutation: FinitePermutation, size: int, object_name: str
+) -> None:
+    if not isinstance(permutation, FinitePermutation):
+        raise TypeError(f"{object_name} permutation must be a FinitePermutation")
+    if permutation.size != size:
+        raise ValueError(f"{object_name} permutation has the wrong size")
 
 
 @dataclass(frozen=True)
@@ -107,10 +118,25 @@ class ExactAction:
             index = index * cardinality + entry
         return self.values[index]
 
-    def relabel(self, axis_permutations: Sequence[Sequence[int]]) -> "ExactAction":
-        if len(axis_permutations) != len(self.cardinalities) or any(sorted(permutation) != list(range(cardinality)) for permutation, cardinality in zip(axis_permutations, self.cardinalities)):
+    def relabel(
+        self, axis_permutations: Sequence[FinitePermutation]
+    ) -> "ExactAction":
+        if len(axis_permutations) != len(self.cardinalities):
             raise ValueError("axis permutations must coherently relabel every action axis")
-        return ExactAction(self.cardinalities, tuple(self.value_at(tuple(permutation[coordinate[axis]] for axis, permutation in enumerate(axis_permutations))) for coordinate in self.coordinates()))
+        for permutation, cardinality in zip(axis_permutations, self.cardinalities):
+            _require_permutation_size(permutation, cardinality, "action axis")
+        return ExactAction(
+            self.cardinalities,
+            tuple(
+                self.value_at(
+                    tuple(
+                        permutation.new_to_old[coordinate[axis]]
+                        for axis, permutation in enumerate(axis_permutations)
+                    )
+                )
+                for coordinate in self.coordinates()
+            ),
+        )
 
 
 @dataclass(frozen=True)
@@ -283,18 +309,27 @@ def kl_divergence(q: ExactLaw, p: ExactLaw) -> ExtendedRealKL:
     return ExtendedRealKL(False, sum(float(q_i) * math.log(float(q_i / p_i)) for q_i, p_i in zip(q.masses, p.masses) if q_i), ())
 
 
-def relabel_law(law: ExactLaw, permutation: Sequence[int]) -> ExactLaw:
-    if sorted(permutation) != list(range(len(law.masses))):
-        raise ValueError("permutation must relabel every state exactly once")
-    return ExactLaw(tuple(law.masses[index] for index in permutation))
+def relabel_law(law: ExactLaw, permutation: FinitePermutation) -> ExactLaw:
+    _require_permutation_size(permutation, len(law.masses), "law")
+    return ExactLaw(permutation.pullback_law(law.masses))
 
 
 def relabel_channel(
-    channel: ExactChannel, source_permutation: Sequence[int], target_permutation: Sequence[int]
+    channel: ExactChannel,
+    source_permutation: FinitePermutation,
+    target_permutation: FinitePermutation,
 ) -> ExactChannel:
-    if sorted(source_permutation) != list(range(channel.source_states)) or sorted(target_permutation) != list(range(channel.target_states)):
-        raise ValueError("permutations must coherently cover channel states")
-    return ExactChannel(tuple(tuple(channel.rows[source][target] for target in target_permutation) for source in source_permutation), channel.target_states)
+    _require_permutation_size(source_permutation, channel.source_states, "channel source")
+    _require_permutation_size(target_permutation, channel.target_states, "channel target")
+    return ExactChannel(
+        tuple(
+            tuple(_fraction(value) for value in row)
+            for row in source_permutation.pullback_channel(
+                channel.rows, target_permutation
+            )
+        ),
+        channel.target_states,
+    )
 
 
 def _all_subsets(axis_count: int) -> Iterable[tuple[int, ...]]:
@@ -346,7 +381,7 @@ def project_action(
 def retained_projection_invariant(
     action: ExactAction,
     transformed_action: ExactAction,
-    axis_permutations: Sequence[Sequence[int]],
+    axis_permutations: Sequence[FinitePermutation],
     retained_order: int,
 ) -> bool:
     """Metamorphic check: a coherently relabeled action commutes with projection."""
@@ -357,6 +392,24 @@ def retained_projection_invariant(
         and transformed.omitted == original.omitted.relabel(axis_permutations)
         and transformed.reconstruction == original.reconstruction.relabel(axis_permutations)
         and transformed.residual == original.residual
+    )
+
+
+def retained_projection_residual(
+    action: ExactAction,
+    transformed_action: ExactAction,
+    axis_permutations: Sequence[FinitePermutation],
+    retained_order: int,
+) -> Fraction:
+    """Return the exact retained-action discrepancy under a typed relabeling."""
+    original = project_action(hoeffding_decompose_action(action), retained_order)
+    transformed = project_action(
+        hoeffding_decompose_action(transformed_action), retained_order
+    )
+    expected = original.retained.relabel(axis_permutations)
+    return max(
+        abs(left - right)
+        for left, right in zip(transformed.retained.values, expected.values)
     )
 
 
@@ -374,12 +427,6 @@ def coarsen_marked_event(
     joint = tuple(tuple(sum(source.masses[source_index] * _fraction(beta[source_index][event]) * channel.rows[source_index][target] for source_index in range(channel.source_states)) for event in range(event_count)) for target in range(channel.target_states))
     beta_only = tuple(tuple(sum(_fraction(beta[source_index][event]) * channel.rows[source_index][target] for source_index in range(channel.source_states)) / channel.source_states for event in range(event_count)) for target in range(channel.target_states))
     return joint, beta_only
-
-
-def pairwise_interaction_residual(components: Mapping[tuple[int, ...], object], retained_order: int) -> Fraction:
-    if type(retained_order) is not int or retained_order < 0:
-        raise ValueError("retained_order must be a nonnegative int")
-    return sum(max((abs(_fraction(entry)) for entry in value.values()), default=Fraction(0)) if isinstance(value, Mapping) else abs(_fraction(value)) for subset, value in components.items() if len(subset) > retained_order)
 
 
 def parameter_dependent_channel_fixture(

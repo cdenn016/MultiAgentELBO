@@ -5,6 +5,7 @@ import math
 
 import pytest
 
+from multiagent_elbo.finite.permutations import FinitePermutation
 from multiagent_elbo.finite.counterexamples import (
     CandidateRecord,
     ExactAction,
@@ -23,16 +24,26 @@ from multiagent_elbo.finite.counterexamples import (
     hoeffding_decompose_action,
     kl_divergence,
     minimize_candidates,
-    pairwise_interaction_residual,
     parameter_dependent_channel_fixture,
     parameter_dependent_channel_witness,
     project_action,
     relabel_channel,
     relabel_law,
+    retained_projection_residual,
     scale_tolerance,
     diagonal_spd_conditioning,
     retained_projection_invariant,
     validate_full_rank_spd,
+)
+
+
+IDENTITY = FinitePermutation.from_old_to_new((0, 1))
+SWAP = FinitePermutation.from_old_to_new((1, 0))
+FOUR_AXIS_LITERAL_VALUES = (
+    Fraction(0), Fraction(0), Fraction(-1), Fraction(0),
+    Fraction(1), Fraction(0), Fraction(0), Fraction(0),
+    Fraction(0), Fraction(0), Fraction(1), Fraction(-1),
+    Fraction(1), Fraction(-1), Fraction(0), Fraction(-1),
 )
 
 
@@ -72,10 +83,36 @@ def test_support_violation_is_structured_extended_real_not_numeric_residual():
 def test_coherent_relabeling_preserves_kl_but_one_sided_control_is_nonzero():
     q = ExactLaw((Fraction(3, 4), Fraction(1, 4)))
     p = ExactLaw((Fraction(3, 4), Fraction(1, 4)))
-    assert kl_divergence(relabel_law(q, (1, 0)), relabel_law(p, (1, 0))).value == kl_divergence(q, p).value
-    assert kl_divergence(relabel_law(q, (1, 0)), p).value == pytest.approx(math.log(3) / 2)
+    assert kl_divergence(relabel_law(q, SWAP), relabel_law(p, SWAP)).value == kl_divergence(q, p).value
+    assert kl_divergence(relabel_law(q, SWAP), p).value == pytest.approx(math.log(3) / 2)
     channel = ExactChannel(((Fraction(1), Fraction(0)), (Fraction(1, 2), Fraction(1, 2))))
-    assert relabel_channel(channel, (1, 0), (1, 0)).rows == ((Fraction(1, 2), Fraction(1, 2)), (Fraction(0), Fraction(1)))
+    assert relabel_channel(channel, SWAP, SWAP).rows == ((Fraction(1, 2), Fraction(1, 2)), (Fraction(0), Fraction(1)))
+
+
+def test_three_cycle_matches_geometry_pullback_for_law_channel_and_action():
+    cycle = FinitePermutation.from_old_to_new((1, 2, 0))
+    law = ExactLaw((Fraction(1, 5), Fraction(3, 10), Fraction(1, 2)))
+    channel = ExactChannel(((1, 0, 0), (0, 1, 0), (0, 0, 1)))
+    action = ExactAction((3,), (Fraction(2), Fraction(3), Fraction(5)))
+
+    assert relabel_law(law, cycle).masses == tuple(cycle.pullback_law(law.masses))
+    assert relabel_channel(channel, cycle, cycle).rows == tuple(
+        tuple(row) for row in cycle.pullback_channel(channel.rows, cycle)
+    )
+    assert action.relabel((cycle,)).values == tuple(cycle.pullback_law(action.values))
+
+
+def test_projection_residual_is_the_canonical_omitted_action_sup_norm():
+    action = ExactAction((2, 2, 2, 2), FOUR_AXIS_LITERAL_VALUES)
+    projection = project_action(hoeffding_decompose_action(action), retained_order=1)
+
+    assert projection.residual == Fraction(17, 16)
+    assert retained_projection_residual(
+        action,
+        action.relabel((SWAP, IDENTITY, IDENTITY, IDENTITY)),
+        (SWAP, IDENTITY, IDENTITY, IDENTITY),
+        1,
+    ) == 0
 
 
 def test_joint_marked_event_coarsening_differs_from_beta_alone_control():
@@ -108,7 +145,6 @@ def test_pairwise_retention_and_parameter_dependent_channel_controls_are_nonzero
     assert decomposition.components[(0, 1, 2)][(1, 1, 1)] == Fraction(1)
     assert projection.reconstruction.values == action.values
     assert projection.residual == Fraction(1)
-    assert pairwise_interaction_residual(decomposition.components, retained_order=2) == Fraction(1)
     fixture = parameter_dependent_channel_fixture(Fraction(1, 4))
     assert fixture.fine_law == (Fraction(1, 2), Fraction(1, 2))
     assert fixture.fine_derivative == (Fraction(0), Fraction(0))
@@ -150,9 +186,9 @@ def test_bounded_action_and_relabeling_enumerators_have_literal_outputs():
 
 def test_retained_projection_metamorphic_invariance_has_pass_and_fail_controls():
     action = ExactAction((2, 2, 2), (Fraction(-1), Fraction(1), Fraction(1), Fraction(-1), Fraction(1), Fraction(-1), Fraction(-1), Fraction(1)))
-    transformed = action.relabel(((1, 0), (0, 1), (0, 1)))
-    assert retained_projection_invariant(action, transformed, ((1, 0), (0, 1), (0, 1)), 2)
-    assert not retained_projection_invariant(action, action, ((1, 0), (0, 1), (0, 1)), 2)
+    transformed = action.relabel((SWAP, IDENTITY, IDENTITY))
+    assert retained_projection_invariant(action, transformed, (SWAP, IDENTITY, IDENTITY), 2)
+    assert not retained_projection_invariant(action, action, (SWAP, IDENTITY, IDENTITY), 2)
 
 
 def test_candidate_minimization_and_canonical_serialization_are_order_independent():

@@ -15,6 +15,7 @@ import numpy as np
 from multiagent_elbo.artifacts import RunStore
 from multiagent_elbo.config import ExperimentConfig, config_sha256
 from multiagent_elbo.experiment_support import MetricRecord, readonly_array, target_metric
+from multiagent_elbo.finite.permutations import FinitePermutation
 from multiagent_elbo.finite.counterexamples import (
     MAX_NEAR_SINGULAR_SCORE,
     CandidateRecord,
@@ -37,6 +38,7 @@ from multiagent_elbo.finite.counterexamples import (
     project_action,
     relabel_law,
     retained_projection_invariant,
+    retained_projection_residual,
     scale_tolerance,
     validate_full_rank_spd,
 )
@@ -163,7 +165,7 @@ def _enumerate_candidates(
         {law.masses[0] for law in laws if Fraction(0) < law.masses[0] < Fraction(1)}
     ):
         records.append(parameter_dependent_channel_witness(theta))
-    swap = (1, 0)
+    swap = FinitePermutation.from_old_to_new((1, 0))
     for law in laws:
         if all(value > 0 for value in law.masses):
             result = kl_divergence(relabel_law(law, swap), law)
@@ -173,7 +175,11 @@ def _enumerate_candidates(
                 records.append(
                     _record(
                         "single_law_relabeling",
-                        {"states": 2, "p": law.masses, "permutation": swap},
+                        {
+                            "states": 2,
+                            "p": law.masses,
+                            "permutation": swap.old_to_new,
+                        },
                         residual,
                         inside=False,
                         assumptions=False,
@@ -244,7 +250,7 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
     theta = Fraction(1, 4)
     parameter_fixture = parameter_dependent_channel_fixture(theta)
     relabel_p = ExactLaw((Fraction(3, 4), Fraction(1, 4)))
-    permutation = (1, 0)
+    permutation = FinitePermutation.from_old_to_new((1, 0))
     relabel_result = kl_divergence(relabel_law(relabel_p, permutation), relabel_p)
     source = ExactLaw((Fraction(1), Fraction(0)))
     beta = ((Fraction(1), Fraction(0)), (Fraction(0), Fraction(1)))
@@ -274,7 +280,7 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
         "pairwise_truncation_residual": _metric(_float(pairwise.residual), 1.0, "A three-axis order-three action leaves an omitted residual after order-two retention.", "PROJECT_NOVEL"),
     }
     arrays: dict[str, np.ndarray] = {
-        "relabel_permutation": np.asarray(permutation, dtype=np.int64),
+        "relabel_permutation": np.asarray(permutation.old_to_new, dtype=np.int64),
         "marked_channel_shape": np.asarray((2, 2), dtype=np.int64),
         "marked_beta_shape": np.asarray((2, 2), dtype=np.int64),
         "action_axis_sizes": np.asarray(action.cardinalities, dtype=np.int64),
@@ -357,7 +363,14 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
         for direct_row, staged_row in zip(composed_direct.rows, composed_staged.rows)
         for left, right in zip(direct_row, staged_row)
     )
-    relabeled_action = action.relabel(((1, 0), (1, 0), (1, 0)))
+    action_permutations = (permutation, permutation, permutation)
+    relabeled_action = action.relabel(action_permutations)
+    relabel_residual = retained_projection_residual(
+        action,
+        relabeled_action,
+        action_permutations,
+        retained_order,
+    )
     stress = {
         "deep_composition": {
             "channels": {
@@ -370,7 +383,15 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
             "residual": _fraction_text(composition_residual),
             "direct_equals_staged": composed_direct == composed_staged,
         },
-        "relabeling": {"coherent": retained_projection_invariant(action, relabeled_action, ((1, 0), (1, 0), (1, 0)), retained_order), "residual": "0"},
+        "relabeling": {
+            "coherent": retained_projection_invariant(
+                action,
+                relabeled_action,
+                action_permutations,
+                retained_order,
+            ),
+            "residual": _fraction_text(relabel_residual),
+        },
         "retained_space": {"pass_residual": str(pairwise.residual), "fails_full_reconstruction": pairwise.residual > 0},
         "tolerance_scaling": {"base": "1/100", "states": 2, "scaled": str(scale_tolerance(Fraction(1, 100), 2))},
         "conditioning": {"accepted_dimension": validate_full_rank_spd(((Fraction(1), Fraction(0)), (Fraction(0), Fraction(4)))), "accepted_condition": str(diagonal_spd_conditioning((Fraction(1), Fraction(4)))), "rejected_near_singular": _rejected_near_singular()},

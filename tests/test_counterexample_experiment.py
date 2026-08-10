@@ -14,6 +14,7 @@ import numpy as np
 import pytest
 
 from multiagent_elbo.config import ExperimentConfig
+from multiagent_elbo.finite.permutations import FinitePermutation
 from multiagent_elbo.finite.counterexamples import (
     MAX_NEAR_SINGULAR_SCORE,
     ExactAction,
@@ -385,7 +386,10 @@ def test_primitive_rational_arrays_independently_recompute_all_metrics(tmp_path:
         float(Fraction(16, 15))
     )
     relabel_p = ExactLaw(_fractions(arrays["relabel_p_num"], arrays["relabel_p_den"]))
-    permutation = tuple(int(value) for value in arrays["relabel_permutation"])
+    permutation = FinitePermutation.from_old_to_new(
+        tuple(int(value) for value in arrays["relabel_permutation"])
+    )
+    assert permutation.old_to_new == (1, 0)
     relabel_kl = kl_divergence(relabel_law(relabel_p, permutation), relabel_p)
     assert relabel_kl.value == pytest.approx(result.metrics["single_law_relabeling_gap"].value)
     source = ExactLaw(_fractions(arrays["marked_source_num"], arrays["marked_source_den"]))
