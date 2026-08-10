@@ -18,7 +18,7 @@ Positive finite trends are typed `NUMERICAL`. They do not select a unique matrix
 |---|---:|---|---|
 | Median scale-8 projective ray angle | `1.8964891266716035e-4` rad | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
 | Median scale-8 normalized coupling distance | `1.8964894228803603e-4` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
-| Maximum off-family nonlinear remainder | `1.7771674674387606e-16` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
+| Maximum scalarized-ray construction residual | `1.7771674674387606e-16` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
 | Median final retained beta residual norm | `1.3155508488955265e-3` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
 | Final signed retained beta component range | `[-2.409409114073506e-3, 1.5281165231984949e-3]` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
 | Basin-exit rate | `0` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
@@ -32,7 +32,7 @@ The eight preregistered-window pilot slopes ranged from approximately `-4.97e-3`
 - The independent noncommuting-map oracle was `0.010000000000000009`, matching the exact `1/100` target within `1e-15`.
 - Replacing the second map by the first made the commutator gap exactly zero, demonstrating that the control detects the pinned mutation.
 - Adding `1e-3` to one parity output produced a failed parity comparison; the negative-control metric therefore passed.
-- The scalarized coupling arrays retained every `W_e=c_e M0`, with only float64 roundoff in the Frobenius projection residual.
+- The constructor forms every coupling as `W_e=c_e M0`; the scalarized-ray construction residual therefore measures only float64 roundoff consistency and is not evidence about unrestricted matrix dynamics.
 - The signed retained beta array is `(I-P)(c_(k+1)-c_k)/log(2)`. The literal adjacent-map oracle starts with `[1.5, 0.9, 0.3, -0.3, -0.9, -1.5]/log(2)`; the former next-state mutation has different signs and fails the oracle.
 
 ## Backend and protocol evidence

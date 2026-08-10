@@ -357,7 +357,9 @@ kernel is parameter-independent across an unexamined family, or establish RG uni
 - **Null:** Residuals do not decrease, depend materially on blocking scheme, or converge to
   distinct rays under admissible initial conditions.
 - **Operationalization:** Future multi-seed, multi-scheme trajectories of ray angle, normalized
-  distance, off-family remainder, and scheme dispersion with fixed preregistered scale windows.
+  distance, scalarized-ray construction residual, and scheme dispersion with fixed preregistered
+  scale windows. The construction residual is a roundoff consistency diagnostic, not an
+  unrestricted-dynamics endpoint.
 - **Control:** Matched initial spectra outside the proposed basin, alternate blocking schemes,
   and non-scalar matrix-weight witnesses.
 - **Support threshold:** To be preregistered before execution; it must require repeatable

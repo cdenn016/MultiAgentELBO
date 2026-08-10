@@ -76,7 +76,7 @@ def test_pilot_publishes_recomputable_artifacts_with_incomplete_cuda_gate(
     required_metrics = {
         "projective_ray_angle",
         "normalized_coupling_distance",
-        "off_family_nonlinear_remainder",
+        "scalarized_ray_construction_residual",
         "retained_beta_residual",
         "basin_exit_rate",
         "blocking_scheme_dispersion",
@@ -173,7 +173,10 @@ def test_pilot_publishes_recomputable_artifacts_with_incomplete_cuda_gate(
     )
     assert arrays["blocking_scheme_dispersion"].shape == (4, 9)
     np.testing.assert_allclose(
-        arrays["off_family_nonlinear_remainders"], 0.0, rtol=0.0, atol=1.0e-12
+        arrays["scalarized_ray_construction_residuals"],
+        0.0,
+        rtol=0.0,
+        atol=1.0e-12,
     )
 
 
@@ -261,7 +264,7 @@ def test_preregistration_digest_is_stable_across_windows_line_endings(tmp_path: 
 
     assert (
         _validate_preregistration(windows_copy)
-        == "b9eeac423f9181feff6847c99abaae8865fc95b754fda85f7b87fc0b636c0186"
+        == "30c9b98cec1d6a5f266265157ae805c2ba0afe24cf1d0982aa4da7827858b015"
     )
 
 

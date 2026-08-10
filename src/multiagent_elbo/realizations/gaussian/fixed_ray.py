@@ -212,8 +212,10 @@ def projective_ray_angle(values: object, ray: object) -> float:
     return float(math.acos(cosine))
 
 
-def off_family_remainder(coupling_matrices: object, matrix_direction: object) -> float:
-    """Measure the normalized Frobenius residual outside one frozen matrix ray."""
+def scalarized_ray_construction_residual(
+    coupling_matrices: object, matrix_direction: object
+) -> float:
+    """Measure roundoff consistency of the constructed frozen matrix ray."""
     couplings = np.asarray(coupling_matrices, dtype=np.float64)
     direction = np.asarray(matrix_direction, dtype=np.float64)
     if couplings.ndim != 3 or couplings.shape[1:] != direction.shape:
@@ -234,7 +236,7 @@ class FixedRayTrajectory:
     coupling_matrices: np.ndarray
     projective_ray_angles: np.ndarray
     normalized_coupling_distances: np.ndarray
-    off_family_nonlinear_remainders: np.ndarray
+    scalarized_ray_construction_residuals: np.ndarray
     retained_beta_residual_vectors: np.ndarray
     retained_beta_residuals: np.ndarray
     basin_exits: np.ndarray
@@ -272,8 +274,11 @@ def iterate_fixed_ray(
     distances = np.array(
         [np.linalg.norm(_normalized(row) - target) for row in coefficients]
     )
-    off_family = np.array(
-        [off_family_remainder(level, system.matrix_direction) for level in couplings]
+    construction_residuals = np.array(
+        [
+            scalarized_ray_construction_residual(level, system.matrix_direction)
+            for level in couplings
+        ]
     )
     projection = np.outer(system.perron_ray, system.perron_ray) / float(
         np.dot(system.perron_ray, system.perron_ray)
@@ -300,7 +305,7 @@ def iterate_fixed_ray(
         coupling_matrices=_readonly(couplings),
         projective_ray_angles=_readonly(angles),
         normalized_coupling_distances=_readonly(distances),
-        off_family_nonlinear_remainders=_readonly(off_family),
+        scalarized_ray_construction_residuals=_readonly(construction_residuals),
         retained_beta_residual_vectors=_readonly(retained_beta_vectors),
         retained_beta_residuals=_readonly(retained_beta),
         basin_exits=_readonly(basin_exits, dtype=np.bool_),
@@ -329,6 +334,6 @@ __all__ = [
     "generate_initial_coefficients",
     "iterate_fixed_ray",
     "job_seed",
-    "off_family_remainder",
     "projective_ray_angle",
+    "scalarized_ray_construction_residual",
 ]

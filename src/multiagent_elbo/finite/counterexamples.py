@@ -367,6 +367,8 @@ def coarsen_marked_event(
     if len(source.masses) != channel.source_states or len(beta) != channel.source_states:
         raise ValueError("source, beta, and channel source sizes must agree")
     event_count = len(beta[0]) if beta else 0
+    if any(_fraction(probability) < 0 for row in beta for probability in row):
+        raise ValueError("beta probabilities must be nonnegative")
     if event_count < 1 or any(len(row) != event_count or sum(map(_fraction, row)) != 1 for row in beta):
         raise ValueError("beta rows must be normalized with a common event width")
     joint = tuple(tuple(sum(source.masses[source_index] * _fraction(beta[source_index][event]) * channel.rows[source_index][target] for source_index in range(channel.source_states)) for event in range(event_count)) for target in range(channel.target_states))

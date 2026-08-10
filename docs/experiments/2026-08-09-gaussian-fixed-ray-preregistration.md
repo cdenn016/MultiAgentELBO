@@ -72,14 +72,14 @@ For every scale, initial condition, and scheme, record:
 
 - projective ray angle `acos(<c,c*>/(||c|| ||c*||))`;
 - normalized coupling distance `||c/||c|| - c*/||c*||||_2`;
-- off-family nonlinear remainder, computed by Frobenius projection of every `W_e` onto the frozen `M0` ray;
+- scalarized-ray construction residual, computed by Frobenius projection of every constructed `W_e=c_e M0` onto the frozen `M0` ray as a roundoff consistency diagnostic, not as a test of unrestricted matrix dynamics;
 - exact comparison-typed retained beta residual divided by `log(2)`;
 - basin exit indicator;
 - paired blocking-scheme dispersion between normalized coefficient rays;
 - coefficient and matrix-direction conditioning;
 - rejection reason and rejected-run count.
 
-The primary endpoint is the paired median ordinary-least-squares slope of projective ray angle over scales `4,...,8`, estimated across the 30 `C` initial conditions. The practical attraction threshold is a slope of at most `-0.02` radians per scale. The prespecified supporting endpoint is the median normalized coupling distance at scale 8. Secondary endpoints are off-family remainder, retained beta residual, basin-exit rate, scheme dispersion, conditioning, and rejection rate.
+The primary endpoint is the paired median ordinary-least-squares slope of projective ray angle over scales `4,...,8`, estimated across the 30 `C` initial conditions. The practical attraction threshold is a slope of at most `-0.02` radians per scale. The prespecified supporting endpoint is the median normalized coupling distance at scale 8. Secondary endpoints are the scalarized-ray construction residual, retained beta residual, basin-exit rate, scheme dispersion, conditioning, and rejection rate.
 
 The finite numerical result is classified as support only if all of the following hold on the `C` population: the upper endpoint of the two-sided 95% paired bootstrap confidence interval for the median angle slope is at most `-0.02`; the median scale-8 normalized distance is at most `0.05`; the upper 95% confidence bound for median scheme dispersion is at most `0.02`; basin-exit and rejection rates are each at most `0.05`; and no primary endpoint changes status under the required float64 CPU/CUDA sentinel recomputation. A positive result is still only `theorem_status=NUMERICAL`.
 

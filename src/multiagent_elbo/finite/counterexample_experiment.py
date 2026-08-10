@@ -73,7 +73,7 @@ def _metric(
     value: float,
     target: float,
     interpretation: str,
-    claim_origin: Literal["STANDARD", "PROJECT_NOVEL"],
+    claim_origin: Literal["STANDARD", "PROJECT_NOVEL", "APPLICATION_SPECIFIC"],
 ) -> MetricRecord:
     return target_metric(
         value,
@@ -267,9 +267,9 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
             _float(parameter_fixture.fisher_weighted_score_gap),
             16.0 / 15.0,
             "Parameter-dependent-channel control is outside fixed-channel assumptions.",
-            "STANDARD",
+            "APPLICATION_SPECIFIC",
         ),
-        "single_law_relabeling_gap": _metric(float(relabel_result.value), math.log(3.0) / 2.0, "Relabeling q alone produces the pinned finite KL gap.", "STANDARD"),
+        "single_law_relabeling_gap": _metric(float(relabel_result.value), math.log(3.0) / 2.0, "Relabeling q alone produces the pinned finite KL gap.", "APPLICATION_SPECIFIC"),
         "marked_event_source_mass_gap": _metric(_float(marked_gap), 0.5, "Dropping source-law weights changes the marked-event pushforward.", "PROJECT_NOVEL"),
         "pairwise_truncation_residual": _metric(_float(pairwise.residual), 1.0, "A three-axis order-three action leaves an omitted residual after order-two retention.", "PROJECT_NOVEL"),
     }

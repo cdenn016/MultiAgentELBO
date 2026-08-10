@@ -12,8 +12,8 @@ from multiagent_elbo.realizations.gaussian.fixed_ray import (
     generate_initial_coefficients,
     iterate_fixed_ray,
     job_seed,
-    off_family_remainder,
     projective_ray_angle,
+    scalarized_ray_construction_residual,
 )
 
 
@@ -109,19 +109,19 @@ def test_finite_trajectory_records_all_preregistered_diagnostics_without_basin_e
     assert result.coupling_matrices.shape == (9, 6, 2, 2)
     assert result.projective_ray_angles.shape == (9,)
     assert result.normalized_coupling_distances.shape == (9,)
-    assert result.off_family_nonlinear_remainders.shape == (9,)
+    assert result.scalarized_ray_construction_residuals.shape == (9,)
     assert result.retained_beta_residual_vectors.shape == (8, 6)
     assert result.retained_beta_residuals.shape == (8,)
     assert result.basin_exits.shape == (9,)
     assert result.coefficient_conditioning.shape == (9,)
     assert result.projective_ray_angles[-1] < result.projective_ray_angles[0]
     assert result.normalized_coupling_distances[-1] < result.normalized_coupling_distances[0]
-    assert np.max(result.off_family_nonlinear_remainders) < 1e-15
+    assert np.max(result.scalarized_ray_construction_residuals) < 1e-15
     assert not np.any(result.basin_exits)
     assert np.all(np.isfinite(result.retained_beta_residuals))
 
 
-def test_off_family_control_detects_matrix_mutation_but_projective_flow_does_not_select_m():
+def test_scalarized_ray_construction_residual_detects_matrix_mutation_without_selecting_m():
     system = build_preregistered_system()
     coefficients = np.arange(1.0, 7.0)
     first_family = coefficients[:, None, None] * system.matrix_direction
@@ -130,9 +130,9 @@ def test_off_family_control_detects_matrix_mutation_but_projective_flow_does_not
     mutated = first_family.copy()
     mutated[0, 0, 1] += 0.125
 
-    assert off_family_remainder(first_family, system.matrix_direction) < 1e-15
-    assert off_family_remainder(alternate_family, alternate_direction) < 1e-15
-    assert off_family_remainder(mutated, system.matrix_direction) > 1e-3
+    assert scalarized_ray_construction_residual(first_family, system.matrix_direction) < 1e-15
+    assert scalarized_ray_construction_residual(alternate_family, alternate_direction) < 1e-15
+    assert scalarized_ray_construction_residual(mutated, system.matrix_direction) > 1e-3
     assert projective_ray_angle(coefficients, system.perron_ray) == pytest.approx(
         projective_ray_angle(coefficients, np.ones(6))
     )

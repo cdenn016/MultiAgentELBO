@@ -246,7 +246,7 @@ Artifacts: `preregistered_job_table`, `initial_conditions`,
 `performance_records`.
 
 Metrics: `projective_ray_angle`, `normalized_coupling_distance`,
-`off_family_nonlinear_remainder`, `retained_beta_residual`,
+`scalarized_ray_construction_residual`, `retained_beta_residual`,
 `basin_exit_rate`, `blocking_scheme_dispersion`, and
 `cpu_cuda_parity_residual`.
 

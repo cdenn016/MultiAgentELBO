@@ -334,7 +334,7 @@ _EXPERIMENT_CONTRACTS = {
         metric_inventory=(
             "projective_ray_angle",
             "normalized_coupling_distance",
-            "off_family_nonlinear_remainder",
+            "scalarized_ray_construction_residual",
             "retained_beta_residual",
             "basin_exit_rate",
             "blocking_scheme_dispersion",

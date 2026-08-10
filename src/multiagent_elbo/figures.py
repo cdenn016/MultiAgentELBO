@@ -15,7 +15,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
 import numpy as np
 
-from .artifacts import resolve_owned_artifact
+from .artifacts import _is_reparse_path, resolve_owned_artifact
 
 
 FigureStatus = Literal["complete", "failed"]
@@ -130,7 +130,7 @@ _LABORATORY_FIGURES = {
             "blocking_scheme_dispersion",
             "cpu_cuda_parity_residual",
             "normalized_coupling_distance",
-            "off_family_nonlinear_remainder",
+            "scalarized_ray_construction_residual",
             "projective_ray_angle",
         ),
     ),
@@ -368,6 +368,8 @@ def _normalize_requested(requested: Sequence[str] | None) -> tuple[str, ...]:
 
 
 def _resolve_replay_paths(run_dir: Path, output_dir: Path) -> tuple[Path, Path]:
+    if _is_reparse_path(run_dir):
+        raise ValueError("run_dir must not be a symlink or reparse path")
     try:
         resolved_run = run_dir.resolve(strict=False)
     except OSError as error:

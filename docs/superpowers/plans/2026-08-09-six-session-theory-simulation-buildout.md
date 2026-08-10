@@ -444,7 +444,7 @@ Implement exact finite scale composition and retained beta diagnostics first. On
 - Record:
   - projective ray angle;
   - normalized coupling distance;
-  - off-family nonlinear remainder;
+  - scalarized-ray construction residual (roundoff consistency only);
   - retained beta residual;
   - basin exits;
   - blocking-scheme dispersion;

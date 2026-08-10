@@ -138,7 +138,8 @@ labels and log ticks, made the Task 5 evidence durable, and then moved panel lab
 `C` clear of every visible y-axis tick after the first scoped visual check exposed
 one residual collision. The final scoped re-review at `cc863e4` reported no
 Critical, Important, or Minor finding and approved the source for final machine
-evidence. Final verification-ledger binding remains intentionally pending.
+evidence. Subsequent final-SHA verification and ledger binding were completed
+at `ddf2a41`; the revision-bound identities are recorded below.
 
 ## Residual limitations
 
@@ -179,9 +180,21 @@ merge also exposed a Windows LF/CRLF preregistration-digest defect; its focused
 regression and full merged suite are green. Saved-artifact replay was exercised
 against actual finalized outputs from all seven new laboratories.
 
-Disposition: **CPU integration ready; final closure pending.** No unresolved
-Critical or Important finding is recorded in the six lane reviews, but those
-reviews do not substitute for an independent review of the final integration
-SHA. The final-SHA review, final ledger rebinding, and CUDA sentinel remain open
-gates. CUDA parity is `INCONCLUSIVE`, and the heavy confirmatory sweep was not
-run because the required operator opt-in was absent.
+Disposition at `ddf2a41`: **CPU and saved-artifact replay verified; CUDA closure
+inconclusive.** No unresolved Critical or Important finding is recorded in the
+six lane reviews. Final-SHA review was completed by the actual ledger views
+`coordinator-mechanical` / `independent-code-review`,
+`coordinator-reproducer` / `independent-experiment-review`, and
+`coordinator-source-audit` / `independent-mathematical-review`. The validated
+ledger bound `FINAL-CODE-CPU`, `FINAL-EXPERIMENT-REPLAY`, and
+`FINAL-CLAIM-BOUNDARIES` as `EVIDENCE_VERIFIED` at `ddf2a41`; it bound
+`FINAL-CUDA-CLOSURE` as `INCONCLUSIVE` through `coordinator-gate-audit` and
+`independent-experiment-review`.
+
+The present tracked remediation changes the artifact revision. Therefore the
+completed `ddf2a41` CPU/replay evidence, final-SHA reviews, and ledger binding
+must be refreshed for the remediation commit; they must not be described as if
+they never occurred. CUDA remains open because explicit operator opt-in, a
+current validated idle-GPU record, the pinned float64 sentinel, and the
+separately gated confirmatory sweep are absent. No unqualified full-program
+closure is supported.

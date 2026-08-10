@@ -151,7 +151,16 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     assert result.metrics["single_law_relabeling_gap"].value == pytest.approx(math.log(3.0) / 2.0)
     assert result.metrics["marked_event_source_mass_gap"].value == 0.5
     assert result.metrics["pairwise_truncation_residual"].value == 1.0
-    assert {metric.claim_origin for metric in result.metrics.values()} >= {"STANDARD", "PROJECT_NOVEL"}
+    assert result.metrics["parameter_dependent_channel_gap"].claim_origin == (
+        "APPLICATION_SPECIFIC"
+    )
+    assert result.metrics["single_law_relabeling_gap"].claim_origin == (
+        "APPLICATION_SPECIFIC"
+    )
+    assert {metric.claim_origin for metric in result.metrics.values()} == {
+        "APPLICATION_SPECIFIC",
+        "PROJECT_NOVEL",
+    }
     expected = {"config.json", "manifest.json", "metrics.json", "arrays.npz", "enumeration_bounds.json", "candidate_records.json", "minimal_witnesses.json", "stress_matrix.json", "diagnostics.npz"}
     assert {path.name for path in result.run_dir.iterdir()} == expected
     manifest = json.loads((result.run_dir / "manifest.json").read_text("utf-8"))
@@ -210,6 +219,7 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     assert relabel["inside_declared_domain"] is False
     assert relabel["assumptions_satisfied"] is False
     assert relabel["classification"] == "assumption_boundary"
+    assert relabel["claim_origin"] == "STANDARD"
     parameter = next(
         record
         for record in candidates
@@ -219,6 +229,7 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     assert parameter["inside_declared_domain"] is False
     assert parameter["assumptions_satisfied"] is False
     assert parameter["classification"] == "assumption_boundary"
+    assert parameter["claim_origin"] == "STANDARD"
     assert parameter["observed_residual"] == "16/15"
     assert parameter["smallest_witness"]["fine_law"] == ["1/2", "1/2"]
     assert parameter["smallest_witness"]["fine_derivative"] == ["0", "0"]

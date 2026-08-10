@@ -30,7 +30,7 @@ from .fixed_ray import (
 
 MetricStatus = Literal["pass", "fail", "inconclusive"]
 _PREREGISTRATION_SHA256 = (
-    "b9eeac423f9181feff6847c99abaae8865fc95b754fda85f7b87fc0b636c0186"
+    "30c9b98cec1d6a5f266265157ae805c2ba0afe24cf1d0982aa4da7827858b015"
 )
 
 
@@ -220,10 +220,10 @@ def _run_pilot(
         arrays[f"{scheme}_coefficient_conditioning"] = _readonly(
             [trajectory.coefficient_conditioning for trajectory in scheme_trajectories]
         )
-    arrays["off_family_nonlinear_remainders"] = _readonly(
+    arrays["scalarized_ray_construction_residuals"] = _readonly(
         [
             [
-                trajectory.off_family_nonlinear_remainders
+                trajectory.scalarized_ray_construction_residuals
                 for trajectory in trajectories[scheme]
             ]
             for scheme in config.theory.blocking_schemes
@@ -293,7 +293,7 @@ def _run_pilot(
     basin = np.concatenate(
         [arrays[f"{scheme}_basin_exits"] for scheme in config.theory.blocking_schemes]
     )
-    off_family = arrays["off_family_nonlinear_remainders"]
+    construction_residuals = arrays["scalarized_ray_construction_residuals"]
     metrics = {
         "projective_ray_angle": _metric(
             float(np.median(angles)),
@@ -305,11 +305,11 @@ def _run_pilot(
             status="pass",
             interpretation="Pilot median scale-8 normalized distance within the frozen finite domain.",
         ),
-        "off_family_nonlinear_remainder": target_metric(
-            float(np.max(off_family)),
+        "scalarized_ray_construction_residual": target_metric(
+            float(np.max(construction_residuals)),
             config.numerics.atol,
             target=0.0,
-            interpretation="Scalarized updates remain on the preregistered M0 matrix ray.",
+            interpretation="Roundoff consistency of the constructed W_e=c_e M0 ray; unrestricted matrix dynamics are not implemented.",
             theorem_status="NUMERICAL",
             verification_state="EVIDENCE_VERIFIED",
             claim_origin="APPLICATION_SPECIFIC",
@@ -407,8 +407,8 @@ def _run_pilot(
                     "scale_8_retained_beta_residual": float(
                         trajectory.retained_beta_residuals[-1]
                     ),
-                    "maximum_off_family_remainder": float(
-                        np.max(trajectory.off_family_nonlinear_remainders)
+                    "maximum_scalarized_ray_construction_residual": float(
+                        np.max(trajectory.scalarized_ray_construction_residuals)
                     ),
                     "basin_exit": bool(np.any(trajectory.basin_exits)),
                     "maximum_coefficient_condition": float(

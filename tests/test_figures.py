@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import struct
+import subprocess
 
 import matplotlib
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -255,7 +256,7 @@ def _write_buildout_metric_run(run_dir: Path) -> None:
         "blocking_scheme_dispersion",
         "cpu_cuda_parity_residual",
         "normalized_coupling_distance",
-        "off_family_nonlinear_remainder",
+        "scalarized_ray_construction_residual",
         "projective_ray_angle",
     )
     metrics = {
@@ -358,6 +359,36 @@ def test_buildout_replay_rejects_a_hard_linked_numeric_archive(tmp_path: Path):
 
     assert result.status == "failed"
     assert "exactly one hard link" in result.message
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows junction regression")
+def test_replay_rejects_a_lexical_junction_run_root_before_resolving_it(
+    tmp_path: Path,
+):
+    physical_run = tmp_path / "physical-run"
+    _write_buildout_metric_run(physical_run)
+    junction_run = tmp_path / "junction-run"
+    created = subprocess.run(
+        ["cmd.exe", "/d", "/c", "mklink", "/J", str(junction_run), str(physical_run)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert created.returncode == 0, created.stderr or created.stdout
+    assert junction_run.is_junction()
+
+    try:
+        result = render_run(
+            junction_run,
+            tmp_path / "figures",
+            requested=("multiagent_network",),
+        )
+    finally:
+        junction_run.rmdir()
+
+    assert result.status == "failed"
+    assert result.manifest_path is None
+    assert "run_dir must not be a symlink or reparse path" in str(result.message)
 
 
 def test_finite_replay_uses_finalized_saved_artifacts_and_local_style(tmp_path: Path):

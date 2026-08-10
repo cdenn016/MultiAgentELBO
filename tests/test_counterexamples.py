@@ -87,6 +87,20 @@ def test_joint_marked_event_coarsening_differs_from_beta_alone_control():
     assert beta_only == ((Fraction(1, 2), Fraction(0)), (Fraction(0), Fraction(1, 2)))
 
 
+def test_marked_event_coarsening_rejects_a_negative_beta_probability():
+    source = ExactLaw((Fraction(1, 2), Fraction(1, 2)))
+    beta = (
+        (Fraction(3, 2), Fraction(-1, 2)),
+        (Fraction(0), Fraction(1)),
+    )
+    channel = ExactChannel(
+        ((Fraction(1), Fraction(0)), (Fraction(0), Fraction(1)))
+    )
+
+    with pytest.raises(ValueError, match="beta probabilities must be nonnegative"):
+        coarsen_marked_event(source, beta, channel)
+
+
 def test_pairwise_retention_and_parameter_dependent_channel_controls_are_nonzero():
     action = ExactAction((2, 2, 2), (Fraction(-1), Fraction(1), Fraction(1), Fraction(-1), Fraction(1), Fraction(-1), Fraction(-1), Fraction(1)))
     decomposition = hoeffding_decompose_action(action)

@@ -203,8 +203,8 @@ through a renderer.
 | Claim | `theorem_status` | `verification_state` | `claim_origin` | Evidence type | Falsification condition |
 |---|---|---|---|---|---|
 | Structured support violations are represented without numeric infinity subtraction. | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `PROJECT_NOVEL` | Exact literal oracle, focused test, primitive-array replay | A supported run emits a finite residual or evaluates an undefined infinity subtraction. |
-| The pinned parameter-dependent-channel fixture has Fisher-weighted score gap `16/15`. | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Saved primitive `p,p',K,K',r,r'` arrays, independent literal score/Fisher recomputation, and artifact metric | The same literal primitives fail to reconstruct `r,r'`, the fixed prediction is nonzero, or direct Fisher weighting differs from `16/15`. This would challenge the implementation/control, not refute the fixed-channel theorem because the channel depends on the parameter. |
-| One-sided relabeling has KL gap `ln(3)/2`. | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Independent literal logarithmic oracle and artifact metric | The pinned two-state laws give a value other than `ln(3)/2`. This is not a coherent-relabeling theorem refutation. |
+| The pinned parameter-dependent-channel fixture has Fisher-weighted score gap `16/15`. | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `APPLICATION_SPECIFIC` | Saved primitive `p,p',K,K',r,r'` arrays, independent literal score/Fisher recomputation, and artifact metric | The same literal primitives fail to reconstruct `r,r'`, the fixed prediction is nonzero, or direct Fisher weighting differs from `16/15`. This would challenge the implementation/control, not refute the fixed-channel theorem because the channel depends on the parameter. |
+| One-sided relabeling has KL gap `ln(3)/2`. | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `APPLICATION_SPECIFIC` | Independent literal logarithmic oracle and artifact metric | The pinned two-state laws give a value other than `ln(3)/2`. This is not a coherent-relabeling theorem refutation. |
 | Omitting source masses changes the pinned marked-event pushforward by `1/2`. | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `PROJECT_NOVEL` | Exact joint tables and primitive-array replay | Source-weighted and beta-only tables agree on the pinned nonuniform source fixture. |
 | Pairwise retention omits residual `1` on the pinned order-three action. | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `PROJECT_NOVEL` | Exact Hoeffding components, mutation control, primitive-array replay | Order-two projection exactly reconstructs the pinned nonzero order-three component. |
 | The effective finite catalog is exhaustively enumerated and deterministically serialized at this revision. | `NUMERICAL` | `EVIDENCE_VERIFIED` | `PROJECT_NOVEL` | Saved bounds/counts, 19,587 field-checked records, low-bound pre-effect tests, structural denominator adversary, and two-root byte hashes | An admissible object within the saved effective bounds is omitted, an invalid lower bound reaches an effect seam, a structurally simpler witness loses to lexical ordering, or semantic hashes differ across an otherwise identical replay. |
@@ -212,7 +212,9 @@ through a renderer.
 
 `EVIDENCE_VERIFIED` in this table closes the stated implementation or finite-run
 check at the tested revision. It does not elevate finite evidence into a proof
-of the underlying mathematical statement.
+of the underlying mathematical statement. The governing fixed-channel score
+identity and coherent-relabeling identity remain `STANDARD`; only the literal
+`16/15` and `ln(3)/2` fixture metrics are `APPLICATION_SPECIFIC`.
 
 ## Open obligations
 
