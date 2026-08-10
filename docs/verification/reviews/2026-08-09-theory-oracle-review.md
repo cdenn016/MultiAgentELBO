@@ -1,7 +1,8 @@
 # Session 2 exact-theory oracle derivation and review
 
 **Review basis.** This is an independent mathematical review of the Session 2
-implementation at commit `2480e969fda0aa3f73d8820611ecbfb572d9d9e6`. The
+implementation and repaired theorem-assumption matrix at commit
+`3b4192cdea63b9e1669416d7524e5e097dc781ce`. The
 reviewed implementation is `src/multiagent_elbo/finite/theory_oracles.py` and
 `src/multiagent_elbo/finite/theory_oracle_experiment.py`; the principal literal
 checks are in `tests/test_theory_oracles.py` and
@@ -17,8 +18,24 @@ the displayed finite sums and matrix products without floating-point
 roundoff. Its comparison with the NumPy production path is useful reproduced
 evidence about that implementation, but numerical agreement is not a proof of
 the identities. The two-scale application file supplies a checked literal
-Jacobian and commuting square only. Its broader application premises and its
-recognition extraction-after-lift right inverse remain unverified.
+Jacobian and commuting square only. Its frozen metadata correctly remains
+`CANDIDATE`. This review's external adjudication of whether the application
+fixture satisfies the broader theorem is `INCONCLUSIVE`: the recognition
+extraction-after-lift right inverse and the other obligations named in
+Section 6 have not been discharged.
+
+### Epistemic typing
+
+The mathematical identities reviewed here are standard finite probability,
+conditional-expectation, Möbius-inversion, and linear-algebra identities. Their
+theorem-assumption records therefore use `claim_origin=STANDARD`. Session 2's
+selection of literal packets, canonical rational serialization, mutation
+controls, artifact layout, and exact-versus-NumPy comparison are
+project-specific verification machinery. The emitted comparison metrics use
+`claim_origin=PROJECT_NOVEL`; that label describes the packaging and comparison
+protocol, not invention of the underlying identities. The frozen two-scale
+fixture is a separate application-specific object and retains
+`claim_origin=APPLICATION_SPECIFIC`.
 
 ## 1. Finite evidence and ELBO identity
 
@@ -109,7 +126,11 @@ score
 =\mathbb E[s_a(X)\mid Y=y].
 \]
 
-No conditional is formed at $r(y)=0$; such targets make zero contribution.
+No semantic conditional is formed at $r(y)=0$. The implementation stores a
+zero coarse-score row there because its exact matrix container needs a total
+array, but that row is only a nonsemantic version sentinel: every occurrence
+in the identity is multiplied by the zero coarse mass and therefore excluded.
+Any other row would represent the same almost-sure conditional-score version.
 The fine and coarse Fisher matrices are
 
 \[
@@ -145,19 +166,31 @@ This yields $r=(1/2,1/2)$, $\bar s=(1,-1)$, $I_X=2$, $I_Y=1$, and
 conditional covariance $1$, so the defect closes exactly. An unweighted
 average would instead give the wrong first conditional score $1/2$.
 
-The theorem consumes more than finite arithmetic: the channel must be
-parameter independent, the selected statistical family must admit the score
-(DQM is sufficient in the frozen theory), the score must be square
-integrable and centered, and the output family must be closed under the
-channel. If $K=K_\theta$, differentiating $r_\theta$ adds a channel-score
-term; the displayed conditional-score formula no longer follows. The exact
-fixture checks the finite algebra after these analytic premises are declared;
-it does not prove DQM or family closure.
+The theorem-assumption matrix now separates two records. The standard
+`fixed_channel_fisher_defect_algebraic` identity consumes a finite normalized
+source law, a normalized nonnegative source-row channel, a finite centered
+score array, joint-weighted conditional averages on positive-mass targets,
+and exclusion of the arbitrary zero-mass sentinel by its coarse mass. Those
+premises suffice for the finite matrix expansion above.
+
+The distinct standard
+`fixed_channel_fisher_statistical_interpretation` consumes a regular DQM
+statistical family, a parameter-independent normalized Markov channel, a
+square-integrable centered score version, and positive-mass conditional
+disintegration with arbitrary zero-mass versions excluded almost surely. The
+frozen theory additionally requires family closure and suitable jointly
+measurable versions when the construction is lifted to its smooth bundle
+tier. If $K=K_\theta$, differentiating $r_\theta$ adds a channel-score term;
+the displayed conditional-score formula no longer follows. The rational
+fixture closes the finite algebraic record after these analytic premises are
+declared; it does not prove DQM, family closure, or bundle-level smoothness.
 
 **Falsifier.** A mismatch between $I_X-I_Y$ and the displayed joint-weighted
 conditional covariance falsifies the finite encoding. Acceptance of a
 transposed or nonnormalized source-row channel, or promotion of the result to
-a parameter-dependent channel, falsifies its typing.
+a parameter-dependent channel, falsifies its typing. Treating the stored
+zero-mass sentinel as a semantically determined score also invalidates the
+statistical interpretation.
 
 ## 3. Marked-event pushforward and associativity
 
@@ -362,18 +395,25 @@ coordinates $E$:
 A=\begin{pmatrix}A_{RR}&A_{RE}\\A_{ER}&A_{EE}\end{pmatrix}.
 \]
 
-When $A_{EE}$ is invertible, the algebraic Schur complement is
+The standard `gaussian_schur_complement_algebraic` record assumes only a
+square rational block matrix, a genuine retained/eliminated coordinate
+partition, and an invertible eliminated block. Under exactly those premises,
+the algebraic Schur complement is
 
 \[
 \operatorname{Sc}_E(A)
 =A_{RR}-A_{RE}A_{EE}^{-1}A_{ER}.
 \]
 
-If $A\succ0$, then $A_{EE}\succ0$, and completing the square in the
-eliminated variables shows that this is the precision induced by Gaussian
-marginalization (up to the usual information-vector update when a nonzero
-linear term is present). This SPD hypothesis supplies the probabilistic
-meaning; mere invertibility supplies only the algebraic formula.
+The separately typed standard
+`gaussian_schur_gaussian_marginal_interpretation` assumes a symmetric
+positive-definite joint precision, a proper nondegenerate Gaussian law, and
+the same coordinate partition. Under those stronger premises,
+$A_{EE}\succ0$, and completing the square in the eliminated variables shows
+that the Schur complement is the marginal precision (up to the usual
+information-vector update when a nonzero linear term is present). SPD and
+proper normalization supply the probabilistic meaning; mere invertibility
+supplies only the algebraic formula.
 
 For
 
@@ -450,16 +490,29 @@ probability normalization, evidence/posterior consistency, and invertibility
 of the two declared comparison maps.
 
 Those checks do **not** establish the full application theorem. In particular,
-the fixture's typed equation “extraction after lift equals the identity on the
-open unit cube” remains `NOT_CHECKED`. The application conclusion remains
+the fixture's typed equation "extraction after lift equals the identity on the
+open unit cube" remains `NOT_CHECKED`. The frozen fixture record remains
 `theorem_status=HYPOTHESIS`, `verification_state=CANDIDATE`, and
-`claim_origin=APPLICATION_SPECIFIC`. No exact commuting square can substitute
-for the right-inverse proof, local-to-collective VFE premises, absolute
-continuity obligations, or any later scientific-lane conclusion.
+`claim_origin=APPLICATION_SPECIFIC`; this accurately describes evidence still
+queued inside the artifact.
+
+At the external review level, application applicability is `INCONCLUSIVE`,
+not `CANDIDATE`, because this review has completed its present adjudication and
+the following obligations remain open: prove the declared recognition
+extraction-after-lift right inverse on the open unit cube; verify exact outside
+marginal equality for each local block update; verify recognition absolute
+continuity and finite KL against the relevant posterior before using the
+classical local/global VFE split; establish the local-to-collective identity
+on the same joint law; and show that every product or block-product reference
+used for Hoeffding coordinates is equivalent to the corresponding target law.
+No exact commuting square can substitute for those proofs or for a later
+scientific-lane conclusion.
 
 **Falsifier.** A digest mismatch, a noninvertible declared comparison, or
 $I_cC\neq CI_f$ falsifies this literal application check. Passing this check
-does not falsify or verify any of the still-open application-family premises.
+does not falsify or verify any of the still-open application-family premises;
+their current external closure state is `INCONCLUSIVE` for the obligations
+listed above.
 
 ## 7. Evidence boundary and closure assessment
 
@@ -475,20 +528,26 @@ implementation.
 
 The following claims remain outside that closure:
 
-- DQM transfer, smooth family closure, and parameter independence are analytic
-  premises of the Fisher theorem, not consequences of rational enumeration.
+- DQM transfer, smooth family closure, parameter independence, square
+  integrability, and almost-sure exclusion of zero-mass score versions are
+  analytic premises of the Fisher statistical interpretation, not
+  consequences of rational enumeration.
 - Existence of an application-appropriate product reference is a premise of
   the Hoeffding coordinates; it is not automatic for arbitrary pushed laws.
-- SPD and invertibility must be supplied where a rational matrix calculation
-  is interpreted as a proper Gaussian precision or marginalization.
-- The application recognition right inverse and the remaining application
-  premises are open at this revision.
+- The algebraic Schur identity requires an invertible eliminated block; its
+  Gaussian marginal interpretation separately requires an SPD joint precision
+  and a proper nondegenerate Gaussian law.
+- The application recognition right inverse and the other named application
+  premises are open, so external applicability is `INCONCLUSIVE` at this
+  revision even though the frozen fixture record itself remains `CANDIDATE`.
 - Finite exactness does not prove continuum limits, RG fixed points,
   universality, learned-agent behavior, or physical interpretations.
 
 Accordingly, the finite evidence/ELBO, conditional Fisher-defect,
 marked-event associativity, full Hoeffding reconstruction, inverse-congruence,
 Galerkin, and Schur identities are supported here by derivation. The
+identities are `STANDARD`; the oracle packets, serialized artifacts, and
+comparison protocol are project-specific evidence machinery. The
 application-family conclusion is not closed. Floating-point residuals may
 corroborate correct implementation of these formulas, but no residual,
 however small, changes a mathematical claim from numerical evidence into a
@@ -498,9 +557,11 @@ proof.
 
 | Subject | Frozen mathematical source | Exact implementation | Literal and negative controls |
 |---|---|---|---|
-| Evidence/ELBO | `Theory/05_elbo.tex`, extended gap and classical identity | `theory_oracles.py:484` | `test_theory_oracles.py:59,97` |
-| Fisher defect | `Theory/05c_pullback_geometry.tex`, Fisher-defect section | `theory_oracles.py:556` | `test_theory_oracles.py:119,148` |
-| Marked events | `Theory/07b_agent_network_rg.tex`, exact meta-attention | `theory_oracles.py:828` | `test_theory_oracles.py:167,209,235,342` |
-| Hoeffding/Möbius | `Theory/07b_agent_network_rg.tex`, coordinate projectors | `theory_oracles.py:981` | `test_theory_oracles.py:364,390` |
-| Gaussian operations | `Theory/09_coarsegraining.tex`, hard aggregation and Kron reduction | `theory_oracles.py:1107,1144,1178` | `test_theory_oracles.py:472,534,566` |
-| Two-scale square | `Theory/SPEC.md` and `tests/fixtures/two_scale_application_v1.json` | `theory_oracles.py:1045,1404` | `test_theory_oracles.py:602,626,680` |
+| Evidence/ELBO (`evidence_elbo`) | `Theory/05_elbo.tex:180-190,212-274` | `theory_oracles.py:527` | `test_theory_oracles.py:59,97` |
+| Fisher algebra (`fixed_channel_fisher_defect_algebraic`) and statistical interpretation (`fixed_channel_fisher_statistical_interpretation`) | `Theory/05c_pullback_geometry.tex:1078-1152` | `theory_oracles.py:599` | `test_theory_oracles.py:119,148,763` |
+| Marked events (`marked_event_associativity`) | `Theory/07b_agent_network_rg.tex:1748+` | `theory_oracles.py:874` | `test_theory_oracles.py:221,263,289,396` |
+| Hoeffding/Mobius (`full_hoeffding_mobius`) | `Theory/07b_agent_network_rg.tex:1182-1250,1468-1507` | `theory_oracles.py:1027` | `test_theory_oracles.py:418,444` |
+| Inverse congruence and Galerkin (`gaussian_inverse_congruence`, `gaussian_galerkin_restriction`) | `Theory/09_coarsegraining.tex:50-88,50-166` | `theory_oracles.py:1153,1190` | `test_theory_oracles.py:526,588` |
+| Schur algebra and marginal interpretation (`gaussian_schur_complement_algebraic`, `gaussian_schur_gaussian_marginal_interpretation`) | `Theory/09_coarsegraining.tex:90-166` | `theory_oracles.py:1224` | `test_theory_oracles.py:620,763` |
+| Two-scale square (`two_scale_literal_commuting_square`) | `Theory/SPEC.md:207+` and `tests/fixtures/two_scale_application_v1.json` | `theory_oracles.py:1091,1450` | `test_theory_oracles.py:656,680` |
+| Origin and record-boundary checks | theorem-assumption records above | `theory_oracles.py:357-477` | `test_theory_oracles.py:763,793` |
