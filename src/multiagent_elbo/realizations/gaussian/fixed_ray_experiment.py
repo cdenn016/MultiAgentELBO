@@ -2124,6 +2124,8 @@ def _validate_confirmatory_sentinel_bundle(
     sentinel_gate_sha256 = _record_sha256(sentinel_gate)
     rechecks_valid = True
     recheck_digests: set[str] = set()
+    rechecks_by_digest: dict[str, Mapping[str, object]] = {}
+    recheck_job_ids: list[object] = []
     try:
         for recheck_entry in parity.get("operator_gate_rechecks", []):
             if not isinstance(recheck_entry, Mapping):
@@ -2136,9 +2138,13 @@ def _validate_confirmatory_sentinel_bundle(
             if recheck_entry.get("gate_sha256") != digest:
                 raise ValueError("sentinel recheck digest drifted")
             recheck_digests.add(digest)
+            rechecks_by_digest[digest] = recheck
+            recheck_job_ids.append(recheck_entry.get("sentinel_job_id"))
+        if recheck_job_ids != expected_ids:
+            raise ValueError("sentinel recheck job inventory drifted")
     except (TypeError, ValueError, RuntimeError, KeyError):
         rechecks_valid = False
-    worker_bindings_valid = isinstance(worker_records, list)
+    worker_bindings_valid = isinstance(worker_records, list) and isinstance(source, Mapping)
     if worker_bindings_valid:
         try:
             for worker in worker_records:
@@ -2155,11 +2161,36 @@ def _validate_confirmatory_sentinel_bundle(
                     expected_message_type="response",
                     request_manifest=request,
                 )
+                validate_worker_provenance(
+                    worker.get("provenance"),  # type: ignore[arg-type]
+                    requested_backend=request.get("requested_backend"),  # type: ignore[arg-type]
+                    requested_dtype="float64",
+                    environment_sha256=str(
+                        operator_gate.get("environment_lock_identity", {}).get(  # type: ignore[union-attr]
+                            "sha256"
+                        )
+                    ),
+                    batch_size=config.compute.batch_size,
+                )
+                recheck_digest = (
+                    context.get("operator_gate_recheck_sha256")
+                    if isinstance(context, Mapping)
+                    else None
+                )
                 if (
                     not isinstance(context, Mapping)
                     or context.get("accepted_gate_sha256") != sentinel_gate_sha256
                     or context.get("accepted_gate_record") != sentinel_gate
-                    or context.get("operator_gate_recheck_sha256") not in recheck_digests
+                    or recheck_digest not in recheck_digests
+                    or context.get("operator_gate_recheck_record")
+                    != rechecks_by_digest.get(str(recheck_digest))
+                    or context.get("sentinel_job_id") != worker.get("sentinel_job_id")
+                    or context.get("scheme") != worker.get("scheme")
+                    or context.get("step") != worker.get("step")
+                    or context.get("lane") != worker.get("lane")
+                    or context.get("config_sha256") != sentinel_gate.get("config_sha256")
+                    or context.get("source_revision") != source.get("git_revision")  # type: ignore[union-attr]
+                    or request.get("job_id") != worker.get("job_id")
                 ):
                     raise ValueError("worker context binding drifted")
         except (TypeError, ValueError, RuntimeError, KeyError):
@@ -2201,7 +2232,65 @@ def _validate_confirmatory_sentinel_bundle(
                 parity_records_valid = False
                 break
             seen_steps.add(identity)
-        parity_records_valid = parity_records_valid and len(seen_steps) == 80
+        expected_step_identities = {
+            (job_id, scheme, step)
+            for job_id in expected_ids
+            for scheme in config.theory.blocking_schemes
+            for step in range(1, 9)
+        }
+        parity_records_valid = seen_steps == expected_step_identities
+    endpoint_records = parity.get("endpoint_parity_records", [])
+    expected_endpoint_lanes = {
+        "worker_cpu",
+        "worker_cuda",
+        "worker_cuda_repeat",
+    }
+    endpoint_records_valid = isinstance(endpoint_records, list) and len(
+        endpoint_records
+    ) == 10
+    if endpoint_records_valid:
+        seen_endpoints: set[tuple[object, object]] = set()
+        for endpoint_record in endpoint_records:
+            comparisons = (
+                endpoint_record.get("comparisons")
+                if isinstance(endpoint_record, Mapping)
+                else None
+            )
+            identity = (
+                endpoint_record.get("sentinel_job_id"),
+                endpoint_record.get("scheme"),
+            ) if isinstance(endpoint_record, Mapping) else (None, None)
+            if (
+                not isinstance(comparisons, Mapping)
+                or set(comparisons) != expected_endpoint_lanes
+                or any(
+                    not isinstance(comparison, Mapping)
+                    or comparison.get("passed") is not True
+                    for comparison in comparisons.values()
+                )
+                or identity in seen_endpoints
+            ):
+                endpoint_records_valid = False
+                break
+            seen_endpoints.add(identity)
+        expected_endpoint_identities = {
+            (job_id, scheme)
+            for job_id in expected_ids
+            for scheme in config.theory.blocking_schemes
+        }
+        endpoint_records_valid = seen_endpoints == expected_endpoint_identities
+    expected_worker_ids = {
+        f"sentinel.{job_id}.{scheme}.step{step:02d}.{lane}"
+        for job_id in expected_ids
+        for scheme in config.theory.blocking_schemes
+        for step in range(1, 9)
+        for lane in ("worker_cpu", "worker_cuda", "worker_cuda_repeat")
+    }
+    worker_ids = {
+        str(record.get("job_id"))
+        for record in worker_records or []
+        if isinstance(record, Mapping)
+    }
     if (
         manifest.get("complete") is not True
         or not isinstance(provenance, Mapping)
@@ -2210,6 +2299,11 @@ def _validate_confirmatory_sentinel_bundle(
         or provenance.get("git_dirty") is not False
         or provenance.get("experiment_scope") != "cuda_float64_parity_sentinel_only"
         or provenance.get("confirmatory_executed") is not False
+        or parity.get("schema_version") != "gaussian-fixed-ray-cuda-sentinel-v1"
+        or sentinel_gate.get("schema_version") != "cuda-idle-operator-gate-v1"
+        or worker_index.get("schema_version")
+        != "gaussian-fixed-ray-worker-exchange-index-v1"
+        or sentinel_config.get("config_hash") != manifest.get("config_hash")
         or set(manifest.get("artifacts", {})) != expected_artifacts
         or not isinstance(artifact_hashes, Mapping)
         or set(artifact_hashes) != expected_artifacts - {"manifest.json"}
@@ -2244,14 +2338,14 @@ def _validate_confirmatory_sentinel_bundle(
         != {job_id: False for job_id in expected_ids}
         or parity.get("all_parity_passed") is not True
         or parity.get("scientific_decision_parity_passed") is not True
+        or parity.get("stratum_decision_parity", {}).get("passed") is not True  # type: ignore[union-attr]
         or len(parity.get("operator_gate_rechecks", [])) != 5
         or not rechecks_valid
         or not parity_records_valid
-        or len(parity.get("endpoint_parity_records", [])) != 30
+        or not endpoint_records_valid
         or not isinstance(worker_records, list)
         or len(worker_records) != 240
-        or len({record.get("job_id") for record in worker_records if isinstance(record, Mapping)})
-        != 240
+        or worker_ids != expected_worker_ids
         or not worker_bindings_valid
         or parity.get("threshold_mutation_negative_control", {}).get(  # type: ignore[union-attr]
             "negative_control_passed"
@@ -2314,9 +2408,14 @@ def _validate_confirmatory_sentinel_bundle(
             failed_groups.append("rechecks")
         if not parity_records_valid:
             failed_groups.append("step_parity")
-        if len(parity.get("endpoint_parity_records", [])) != 30:
+        if not endpoint_records_valid:
             failed_groups.append("endpoint_parity")
-        if not worker_bindings_valid or not isinstance(worker_records, list) or len(worker_records) != 240:
+        if (
+            not worker_bindings_valid
+            or not isinstance(worker_records, list)
+            or len(worker_records) != 240
+            or worker_ids != expected_worker_ids
+        ):
             failed_groups.append("workers")
         raise ValueError(
             "accepted sentinel bundle is not eligible for confirmation: "

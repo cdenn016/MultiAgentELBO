@@ -818,17 +818,34 @@ def test_published_sentinel_schema_is_admitted_by_confirmatory_validator(
     ]
     worker_jobs = [
         {
-            "job_id": f"sentinel.worker.{index:03d}",
+            "job_id": f"sentinel.{sentinel_id}.{scheme}.step{step:02d}.{lane}",
+            "sentinel_job_id": sentinel_id,
+            "scheme": scheme,
+            "step": step,
+            "lane": lane,
             "execution_context": {
                 "accepted_gate_sha256": sentinel_gate_sha256,
                 "accepted_gate_record": sentinel_gate,
-                "operator_gate_recheck_sha256": recheck_digests[index % 5],
+                "operator_gate_recheck_sha256": recheck_digests[job_index],
+                "operator_gate_recheck_record": rechecks[job_index]["gate"],
+                "sentinel_job_id": sentinel_id,
+                "scheme": scheme,
+                "step": step,
+                "lane": lane,
+                "config_sha256": config_sha256(sentinel_config),
+                "source_revision": "a" * 40,
             },
-            "request_manifest": {},
+            "request_manifest": {
+                "job_id": f"sentinel.{sentinel_id}.{scheme}.step{step:02d}.{lane}",
+                "requested_backend": "cpu" if lane == "worker_cpu" else "cuda",
+            },
             "response_manifest": {},
             "provenance": {},
         }
-        for index in range(240)
+        for job_index, sentinel_id in enumerate(sentinel_ids)
+        for scheme in ("adjacent_pairs", "balanced_alternating")
+        for step in range(1, 9)
+        for lane in ("worker_cpu", "worker_cuda", "worker_cuda_repeat")
     ]
     trajectories = {
         scheme: {
@@ -852,8 +869,20 @@ def test_published_sentinel_schema_is_admitted_by_confirmatory_validator(
         "operator_gate_rechecks": rechecks,
         "all_parity_passed": True,
         "scientific_decision_parity_passed": True,
+        "stratum_decision_parity": {"passed": True, "records": {}},
         "parity_records": parity_records,
-        "endpoint_parity_records": [{"passed": True} for _ in range(30)],
+        "endpoint_parity_records": [
+            {
+                "sentinel_job_id": sentinel_id,
+                "scheme": scheme,
+                "comparisons": {
+                    lane: {"passed": True}
+                    for lane in ("worker_cpu", "worker_cuda", "worker_cuda_repeat")
+                },
+            }
+            for sentinel_id in sentinel_ids
+            for scheme in ("adjacent_pairs", "balanced_alternating")
+        ],
         "threshold_mutation_negative_control": {"negative_control_passed": True},
         "mutation_negative_control": {"passed": False},
         "worker_jobs": worker_jobs,
@@ -863,6 +892,9 @@ def test_published_sentinel_schema_is_admitted_by_confirmatory_validator(
     monkeypatch.setattr(experiment, "_validate_gate_recheck", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         experiment, "validate_worker_protocol_manifest", lambda *_args, **_kwargs: None
+    )
+    monkeypatch.setattr(
+        experiment, "validate_worker_provenance", lambda *_args, **_kwargs: None
     )
     monkeypatch.setattr(
         experiment,
