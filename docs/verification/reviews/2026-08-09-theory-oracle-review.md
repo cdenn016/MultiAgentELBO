@@ -8,8 +8,9 @@ reviewed implementation is `src/multiagent_elbo/finite/theory_oracles.py` and
 checks are in `tests/test_theory_oracles.py` and
 `tests/test_theory_oracle_experiment.py`. The governing mathematical sources are
 the frozen `Theory/05_elbo.tex`, `Theory/05c_pullback_geometry.tex`,
-`Theory/07b_agent_network_rg.tex`, `Theory/09_coarsegraining.tex`, and
-`Theory/SPEC.md`. No statement below promotes a finite fixture to a continuum,
+`Theory/07b_agent_network_rg.tex`, `Theory/08_infogeometry.tex`,
+`Theory/09_coarsegraining.tex`, and `Theory/SPEC.md`. No statement below
+promotes a finite fixture to a continuum,
 universality, fixed-point, learned-agent, or physical-time claim.
 
 **Verdict.** The exact finite identities encoded by Session 2 are mathematically
@@ -561,7 +562,8 @@ proof.
 | Fisher algebra (`fixed_channel_fisher_defect_algebraic`) and statistical interpretation (`fixed_channel_fisher_statistical_interpretation`) | `Theory/05c_pullback_geometry.tex:1078-1152` | `theory_oracles.py:599` | `test_theory_oracles.py:119,148,763` |
 | Marked events (`marked_event_associativity`) | `Theory/07b_agent_network_rg.tex:1748+` | `theory_oracles.py:874` | `test_theory_oracles.py:221,263,289,396` |
 | Hoeffding/Mobius (`full_hoeffding_mobius`) | `Theory/07b_agent_network_rg.tex:1182-1250,1468-1507` | `theory_oracles.py:1027` | `test_theory_oracles.py:418,444` |
-| Inverse congruence and Galerkin (`gaussian_inverse_congruence`, `gaussian_galerkin_restriction`) | `Theory/09_coarsegraining.tex:50-88,50-166` | `theory_oracles.py:1153,1190` | `test_theory_oracles.py:526,588` |
+| Inverse congruence (`gaussian_inverse_congruence`) | `Theory/08_infogeometry.tex:424-431` | `theory_oracles.py:1153` | `test_theory_oracles.py:526,588` |
+| Galerkin restriction (`gaussian_galerkin_restriction`) | `Theory/09_coarsegraining.tex:50-88` | `theory_oracles.py:1190` | `test_theory_oracles.py:526,620` |
 | Schur algebra and marginal interpretation (`gaussian_schur_complement_algebraic`, `gaussian_schur_gaussian_marginal_interpretation`) | `Theory/09_coarsegraining.tex:90-166` | `theory_oracles.py:1224` | `test_theory_oracles.py:620,763` |
 | Two-scale square (`two_scale_literal_commuting_square`) | `Theory/SPEC.md:207+` and `tests/fixtures/two_scale_application_v1.json` | `theory_oracles.py:1091,1450` | `test_theory_oracles.py:656,680` |
 | Origin and record-boundary checks | theorem-assumption records above | `theory_oracles.py:357-477` | `test_theory_oracles.py:763,793` |
