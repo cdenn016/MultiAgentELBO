@@ -776,7 +776,11 @@ def test_launcher_confirmatory_gate_uses_separate_control_and_heavy_config(
 def test_launcher_confirmatory_run_requires_gate_and_current_sentinel_digest(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
-    gate = {"schema_version": "cuda-confirmatory-operator-gate-v1"}
+    source_revision = "a" * 40
+    gate = {
+        "schema_version": "cuda-confirmatory-operator-gate-v1",
+        "source_identity": {"git_revision": source_revision},
+    }
     gate_payload = json.dumps(gate, sort_keys=True, separators=(",", ":"))
     gate_sha256 = hashlib.sha256(gate_payload.encode("utf-8")).hexdigest()
     control_path = tmp_path / "confirmatory-control.json"
@@ -799,7 +803,11 @@ def test_launcher_confirmatory_run_requires_gate_and_current_sentinel_digest(
     monkeypatch.setattr(
         launcher,
         "_find_accepted_sentinel_run",
-        lambda _: tmp_path / "sentinel-run",
+        lambda _, revision: (
+            tmp_path / "sentinel-run"
+            if revision == source_revision
+            else pytest.fail("confirmatory launcher used the wrong source revision")
+        ),
     )
     captured: dict[str, object] = {}
 
@@ -816,3 +824,30 @@ def test_launcher_confirmatory_run_requires_gate_and_current_sentinel_digest(
     assert captured["heavy_sweep_enabled"] is True
     assert captured["accepted_gate_sha256"] == gate_sha256
     assert captured["accepted_sentinel_manifest_sha256"] == "s" * 64
+
+
+def test_launcher_finds_sentinel_only_in_the_expected_source_namespace(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    source_revision = "b" * 40
+    manifest_payload = b'{"complete":true}'
+    manifest_sha256 = hashlib.sha256(manifest_payload).hexdigest()
+    expected_run = (
+        tmp_path
+        / "artifacts"
+        / f"gaussian-fixed-ray-sentinel-{source_revision[:12]}"
+        / "current-run"
+    )
+    expected_run.mkdir(parents=True)
+    (expected_run / "manifest.json").write_bytes(manifest_payload)
+    stale_run = tmp_path / "artifacts" / "gaussian-fixed-ray-pilot" / "stale-run"
+    stale_run.mkdir(parents=True)
+    (stale_run / "manifest.json").write_bytes(manifest_payload)
+    monkeypatch.setattr(launcher, "ROOT", tmp_path)
+    monkeypatch.setattr(launcher, "OUTPUT", {**launcher.OUTPUT, "root": "artifacts"})
+
+    resolved = launcher._find_accepted_sentinel_run(
+        manifest_sha256, source_revision
+    )
+
+    assert resolved == expected_run

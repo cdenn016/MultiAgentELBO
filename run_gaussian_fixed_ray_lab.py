@@ -139,10 +139,25 @@ def _confirmatory_control() -> dict[str, object]:
     return control
 
 
-def _find_accepted_sentinel_run(manifest_sha256: str) -> Path:
+def _find_accepted_sentinel_run(
+    manifest_sha256: str, source_revision: str
+) -> Path:
     if not isinstance(manifest_sha256, str) or len(manifest_sha256) != 64:
         raise ValueError("confirmatory run requires a sentinel manifest SHA-256")
-    root = ROOT / str(OUTPUT["root"]) / str(RUN["name"])
+    if (
+        not isinstance(source_revision, str)
+        or len(source_revision) != 40
+        or any(
+            character not in "0123456789abcdef"
+            for character in source_revision.lower()
+        )
+    ):
+        raise ValueError("confirmatory gate requires a full Git source revision")
+    root = (
+        ROOT
+        / str(OUTPUT["root"])
+        / str(_sentinel_run(source_revision)["name"])
+    )
     matches: list[Path] = []
     if root.is_dir():
         for manifest in root.glob("*/manifest.json"):
@@ -196,8 +211,14 @@ def main() -> GaussianFixedRayExperimentResult | dict[str, object]:
         payload = json.dumps(gate, sort_keys=True, separators=(",", ":"))
         if hashlib.sha256(payload.encode("utf-8")).hexdigest() != accepted_gate_sha256:
             raise ValueError("confirmatory accepted gate SHA-256 does not match the gate")
+        source_identity = gate.get("source_identity")
+        if not isinstance(source_identity, dict):
+            raise ValueError("confirmatory gate is missing its source identity")
+        source_revision = source_identity.get("git_revision")
+        if not isinstance(source_revision, str):
+            raise ValueError("confirmatory gate is missing its Git source revision")
         sentinel_run_dir = _find_accepted_sentinel_run(
-            str(accepted_sentinel_manifest_sha256)
+            str(accepted_sentinel_manifest_sha256), source_revision
         )
         result = publish_confirmatory_experiment(
             config,
