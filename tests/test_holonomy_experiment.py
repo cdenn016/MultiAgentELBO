@@ -408,6 +408,34 @@ def test_runner_rejects_invalid_data_before_rng_provenance_or_run_store(
     assert not tmp_path.exists() or list(tmp_path.iterdir()) == []
 
 
+def test_frame_condition_ceiling_is_enforced_before_runtime_or_artifacts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    """Mutation caught: accepting configured frames above their condition ceiling."""
+    experiment = importlib.import_module(
+        "multiagent_elbo.geometry.holonomy_experiment"
+    )
+    config = holonomy_config(tmp_path)
+    low_ceiling = replace(
+        config,
+        numerics=replace(config.numerics, max_frame_condition=1.0),
+    )
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("runtime seam reached before frame preflight")
+
+    monkeypatch.setattr(experiment.RngStreams, "from_seed", forbidden)
+    monkeypatch.setattr(experiment, "collect_provenance", forbidden)
+    monkeypatch.setattr(experiment.RunStore, "create", forbidden)
+
+    with pytest.raises(
+        ValueError,
+        match="frame '0' condition number exceeds max_frame_condition",
+    ):
+        experiment.run_holonomy_experiment(low_ceiling)
+    assert not tmp_path.exists() or list(tmp_path.iterdir()) == []
+
+
 def test_same_seed_semantic_artifacts_replay_byte_identically_and_are_immutable(
     tmp_path: Path,
 ):

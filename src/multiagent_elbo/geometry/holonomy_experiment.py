@@ -18,7 +18,7 @@ from typing import Literal, Mapping
 import numpy as np
 
 from multiagent_elbo.artifacts import RunStore
-from multiagent_elbo.config import ExperimentConfig, config_sha256
+from multiagent_elbo.config import ExperimentConfig, NumericsConfig, config_sha256
 from multiagent_elbo.experiment_support import (
     ClaimOrigin,
     MetricRecord,
@@ -179,18 +179,32 @@ def _scenario_arrays(
     complex_: hol.InteractionComplex,
     links: hol.OrientedLinks,
     scenario: str,
-    tolerance: float,
+    numerics: NumericsConfig,
 ) -> tuple[
     dict[str, dict[str, np.ndarray]],
     dict[str, MetricRecord],
     dict[str, object],
 ]:
+    tolerance = numerics.atol + numerics.rtol
     frames = {
         "0": np.array([[2.0, 0.0], [0.0, 1.0]]),
         "1": np.eye(2),
         "2": np.eye(2),
         "3": np.eye(2),
     }
+    frame_boundary_tolerance = numerics.atol + numerics.rtol * max(
+        numerics.max_frame_condition, 1.0
+    )
+    for vertex, frame in frames.items():
+        condition = float(np.linalg.cond(frame))
+        if (
+            not np.isfinite(condition)
+            or condition - numerics.max_frame_condition
+            > frame_boundary_tolerance
+        ):
+            raise ValueError(
+                f"frame {vertex!r} condition number exceeds max_frame_condition"
+            )
     transformed_links = hol.passive_transform_links(complex_, links, frames)
     broken_link_labels = ("e01", "e10")
     broken_link_matrices = dict(transformed_links.matrices)
@@ -644,7 +658,7 @@ def run_holonomy_experiment(config: ExperimentConfig) -> HolonomyExperimentResul
         complex_,
         links,
         theory.scenario,
-        config.numerics.atol + config.numerics.rtol,
+        config.numerics,
     )
     interaction_record["application_id"] = application_id
     interaction_record["fixture_file_sha256"] = fixture_sha256
