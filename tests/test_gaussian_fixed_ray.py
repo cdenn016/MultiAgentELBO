@@ -138,6 +138,23 @@ def test_scalarized_ray_construction_residual_detects_matrix_mutation_without_se
     )
 
 
+def test_projective_ray_angle_is_stable_for_nearly_parallel_positive_rays():
+    target = np.ones(6, dtype=np.float64)
+    target /= np.linalg.norm(target)
+    tangent = np.array([1.0, -1.0, 0.0, 0.0, 0.0, 0.0])
+    tangent /= np.linalg.norm(tangent)
+    expected_angle = 1.0e-6
+    nearby = (
+        math.cos(expected_angle) * target
+        + math.sin(expected_angle) * tangent
+    )
+
+    assert np.all(nearby > 0.0)
+    assert projective_ray_angle(nearby, target) == pytest.approx(
+        expected_angle, rel=1.0e-10, abs=1.0e-15
+    )
+
+
 def test_paired_scheme_dispersion_is_zero_at_start_and_detectable_after_noncommuting_steps():
     system = build_preregistered_system()
     initial = np.arange(1.0, 7.0)

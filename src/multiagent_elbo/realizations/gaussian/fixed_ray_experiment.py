@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta, timezone
 import hashlib
+import json
+import os
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import time
@@ -15,8 +19,20 @@ import numpy as np
 
 from multiagent_elbo.artifacts import RunStore
 from multiagent_elbo.config import ExperimentConfig, config_sha256
-from multiagent_elbo.cuda_backend import parity_diagnostics, run_worker_job
-from multiagent_elbo.experiment_support import MetricRecord, target_metric
+from multiagent_elbo.cuda_backend import (
+    WorkerJobResult,
+    _parse_environment_lock,
+    _run_cuda_preflight,
+    parity_diagnostics,
+    run_worker_job,
+    validate_worker_provenance,
+    validate_worker_result,
+)
+from multiagent_elbo.experiment_support import (
+    MetricRecord,
+    target_metric,
+    validate_worker_protocol_manifest,
+)
 from multiagent_elbo.runtime import RngStreams, collect_provenance
 
 from .fixed_ray import (
@@ -25,6 +41,8 @@ from .fixed_ray import (
     generate_initial_coefficients,
     iterate_fixed_ray,
     job_seed,
+    projective_ray_angle,
+    scalarized_ray_construction_residual,
 )
 
 
@@ -62,6 +80,1065 @@ def _readonly(values: object, *, dtype: object = np.float64) -> np.ndarray:
     array = np.array(values, dtype=dtype, copy=True, order="C")
     array.setflags(write=False)
     return array
+
+
+def _run_nvidia_smi(arguments: list[str]) -> list[str]:
+    completed = subprocess.run(
+        ["nvidia-smi", *arguments],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(
+            f"GPU occupancy query failed with exit {completed.returncode}: "
+            f"{completed.stderr.strip()}"
+        )
+    return [line.strip() for line in completed.stdout.splitlines() if line.strip()]
+
+
+def capture_idle_gpu_gate(
+    *,
+    operator_opt_in: bool,
+    sample_count: int = 5,
+    sample_interval_seconds: float = 1.0,
+    freshness_ttl_seconds: float = 300.0,
+) -> dict[str, object]:
+    """Capture an operator-attested idle-residency observation without killing processes."""
+    if operator_opt_in is not True:
+        raise ValueError("CUDA execution requires explicit operator opt-in")
+    if type(sample_count) is not int or sample_count <= 0:
+        raise ValueError("sample_count must be a positive integer")
+    if not np.isfinite(sample_interval_seconds) or sample_interval_seconds < 0.0:
+        raise ValueError("sample interval must be finite and nonnegative")
+    if not np.isfinite(freshness_ttl_seconds) or freshness_ttl_seconds <= 0.0:
+        raise ValueError("freshness TTL must be finite and positive")
+
+    samples: list[dict[str, object]] = []
+    raw_gpu_rows: list[str] = []
+    query = [
+        "--query-gpu=index,name,uuid,driver_version,pstate,utilization.gpu,"
+        "memory.used,memory.total,temperature.gpu",
+        "--format=csv,noheader,nounits",
+    ]
+    for sample_index in range(sample_count):
+        rows = _run_nvidia_smi(query)
+        if len(rows) != 1:
+            raise RuntimeError("idle gate requires exactly one visible GPU")
+        raw_gpu_rows.append(rows[0])
+        fields = [field.strip() for field in rows[0].split(",")]
+        if len(fields) != 9:
+            raise RuntimeError("GPU occupancy row does not match the frozen schema")
+        samples.append(
+            {
+                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+                "index": int(fields[0]),
+                "name": fields[1],
+                "uuid": fields[2],
+                "driver_version": fields[3],
+                "pstate": fields[4],
+                "utilization_gpu_percent": int(fields[5]),
+                "memory_used_mib": int(fields[6]),
+                "memory_total_mib": int(fields[7]),
+                "temperature_c": int(fields[8]),
+            }
+        )
+        if sample_index + 1 < sample_count and sample_interval_seconds:
+            time.sleep(sample_interval_seconds)
+
+    raw_process_rows = _run_nvidia_smi(
+        [
+            "--query-compute-apps=gpu_uuid,pid,process_name,used_gpu_memory",
+            "--format=csv,noheader,nounits",
+        ]
+    )
+    processes: list[dict[str, object]] = []
+    for row in raw_process_rows:
+        fields = [field.strip() for field in row.split(",", 3)]
+        if len(fields) != 4:
+            raise RuntimeError("GPU process row does not match the frozen schema")
+        used_memory = None if fields[3].startswith("[") else int(fields[3])
+        processes.append(
+            {
+                "gpu_uuid": fields[0],
+                "pid": int(fields[1]),
+                "process_name": fields[2],
+                "used_gpu_memory_mib": used_memory,
+            }
+        )
+
+    memory_values = [int(sample["memory_used_mib"]) for sample in samples]
+    idle = (
+        all(sample["utilization_gpu_percent"] == 0 for sample in samples)
+        and all(sample["pstate"] == "P8" for sample in samples)
+        and max(memory_values) - min(memory_values) <= 64
+    )
+    if not idle:
+        raise RuntimeError("GPU is not idle across the required occupancy samples")
+    captured_at = datetime.now(timezone.utc)
+    return {
+        "schema_version": "cuda-idle-operator-gate-v1",
+        "captured_at_utc": captured_at.isoformat(),
+        "expires_at_utc": (
+            captured_at + timedelta(seconds=float(freshness_ttl_seconds))
+        ).isoformat(),
+        "operator_opt_in": True,
+        "operator_process_acceptance_pending": True,
+        "idle_observation_passed": True,
+        "idle_observation_scope": (
+            "Observed residency only; listed processes may resume after sampling."
+        ),
+        "sample_count": sample_count,
+        "sample_interval_seconds": float(sample_interval_seconds),
+        "sample_window_seconds": float(sample_interval_seconds * (sample_count - 1)),
+        "freshness_ttl_seconds": float(freshness_ttl_seconds),
+        "memory_stability_tolerance_mib": 64,
+        "processes_present": bool(processes),
+        "samples": samples,
+        "active_compute_processes": processes,
+        "raw_gpu_rows": raw_gpu_rows,
+        "raw_process_rows": raw_process_rows,
+    }
+
+
+def _capture_idle_gpu_gate_after_cooldown(
+    *, operator_opt_in: bool
+) -> dict[str, object]:
+    """Wait briefly for this sentinel's prior CUDA work to return to P8."""
+    maximum_attempts = 31
+    poll_seconds = 1.0
+    idle_error = "GPU is not idle across the required occupancy samples"
+    for attempt in range(1, maximum_attempts + 1):
+        try:
+            gate = capture_idle_gpu_gate(
+                operator_opt_in=operator_opt_in,
+                sample_count=1,
+                sample_interval_seconds=0.0,
+                freshness_ttl_seconds=300.0,
+            )
+        except RuntimeError as error:
+            if str(error) != idle_error or attempt == maximum_attempts:
+                raise
+            time.sleep(poll_seconds)
+            continue
+        gate["idle_wait_attempts"] = attempt
+        gate["idle_wait_seconds"] = float((attempt - 1) * poll_seconds)
+        return gate
+    raise AssertionError("unreachable CUDA idle-wait state")
+
+
+def _live_cuda_gate_bindings(config: ExperimentConfig) -> dict[str, object]:
+    if config.compute.backend != "cuda" or config.compute.dtype != "float64":
+        raise ValueError("CUDA gate requires a CUDA float64 configuration")
+    if config.compute.heavy_sweep_enabled:
+        raise ValueError("CUDA gate precedes heavy-sweep enablement")
+    repo_root = Path(__file__).resolve().parents[4]
+    revision = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    tracked_status = subprocess.run(
+        ["git", "status", "--porcelain", "--untracked-files=no"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if (
+        revision.returncode != 0
+        or tracked_status.returncode != 0
+        or tracked_status.stdout.strip()
+    ):
+        raise RuntimeError("CUDA gate requires an exact clean Git revision")
+    preregistration = (
+        repo_root
+        / "docs"
+        / "experiments"
+        / "2026-08-09-gaussian-fixed-ray-preregistration.md"
+    )
+    preregistration_sha256 = _validate_preregistration(preregistration)
+    environment_lock = repo_root / "environments" / "cuda-rtx5090-cu128.lock.txt"
+    worker_script = repo_root / "tools" / "cuda_worker.py"
+    worker_python = config.compute.cuda_worker_python.resolve(strict=True)
+    environment = dict(os.environ)
+    lock_records = _parse_environment_lock(environment_lock)
+    environment["CUBLAS_WORKSPACE_CONFIG"] = lock_records[
+        "required_CUBLAS_WORKSPACE_CONFIG"
+    ]
+    preflight = _run_cuda_preflight(
+        worker_python=worker_python,
+        worker_script=worker_script,
+        environment=environment,
+        lock_records=lock_records,
+        timeout_seconds=120.0,
+    )
+    return {
+        "source_identity": {
+            "git_revision": revision.stdout.strip(),
+            "tracked_worktree_clean": True,
+        },
+        "config_sha256": config_sha256(config),
+        "preregistration_sha256": preregistration_sha256,
+        "environment_lock_identity": {
+            "path": str(environment_lock),
+            "sha256": _file_sha256(environment_lock),
+        },
+        "worker_python_identity": {
+            "path": str(worker_python),
+            "sha256": _file_sha256(worker_python),
+        },
+        "worker_script_identity": {
+            "path": str(worker_script),
+            "sha256": _file_sha256(worker_script),
+        },
+        "preflight": dict(preflight),
+    }
+
+
+def _validate_cuda_gate_bindings(
+    config: ExperimentConfig, gate: Mapping[str, object]
+) -> None:
+    live = _live_cuda_gate_bindings(config)
+    if any(gate.get(key) != value for key, value in live.items()):
+        raise ValueError("accepted CUDA gate identity drifted from the live execution")
+
+
+def build_cuda_gate_record(
+    config: ExperimentConfig, *, operator_opt_in: bool
+) -> dict[str, object]:
+    """Bind a fresh occupancy gate to the exact clean source and CUDA preflight."""
+    bindings = _live_cuda_gate_bindings(config)
+    gate = capture_idle_gpu_gate(operator_opt_in=operator_opt_in)
+    gate.update(bindings)
+    gate["decision"] = "PENDING_OPERATOR_PROCESS_ACCEPTANCE"
+    return gate
+
+
+def _validate_gate_recheck(
+    initial_gate: Mapping[str, object], current_gate: Mapping[str, object]
+) -> None:
+    initial_samples = initial_gate["samples"]
+    current_samples = current_gate["samples"]
+    initial_last = initial_samples[-1]  # type: ignore[index]
+    current_first = current_samples[0]  # type: ignore[index]
+    if initial_last["uuid"] != current_first["uuid"]:  # type: ignore[index]
+        raise RuntimeError("GPU identity changed after operator attestation")
+    memory_drift = abs(
+        int(current_first["memory_used_mib"])  # type: ignore[index]
+        - int(initial_last["memory_used_mib"])  # type: ignore[index]
+    )
+    if memory_drift > 256:
+        raise RuntimeError("GPU residency changed materially after operator attestation")
+
+    def process_signature(gate: Mapping[str, object]) -> set[tuple[object, ...]]:
+        return {
+            (
+                process["gpu_uuid"],
+                process["pid"],
+                process["process_name"],
+                process["used_gpu_memory_mib"],
+            )
+            for process in gate["active_compute_processes"]  # type: ignore[union-attr]
+        }
+
+    if process_signature(initial_gate) != process_signature(current_gate):
+        raise RuntimeError("GPU compute-process set changed after operator attestation")
+
+
+def _atomic_json(path: Path, payload: object) -> None:
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False),
+        encoding="utf-8",
+    )
+    temporary.replace(path)
+
+
+def _record_sha256(payload: object) -> str:
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
+def _validate_execution_context(
+    context: Mapping[str, object], *, persisted: bool
+) -> None:
+    required = {
+        "accepted_gate_sha256",
+        "accepted_gate_record",
+        "operator_gate_recheck_sha256",
+        "operator_gate_recheck_record",
+        "sentinel_job_id",
+        "scheme",
+        "step",
+        "lane",
+        "config_sha256",
+        "source_revision",
+    }
+    if persisted:
+        required |= {"outer_attempt", "parent_attempt"}
+    if set(context) != required:
+        raise RuntimeError("worker execution context schema drifted")
+    if (
+        _record_sha256(context["accepted_gate_record"])
+        != context["accepted_gate_sha256"]
+        or _record_sha256(context["operator_gate_recheck_record"])
+        != context["operator_gate_recheck_sha256"]
+    ):
+        raise RuntimeError("worker execution context gate digest drifted")
+    accepted_gate = context["accepted_gate_record"]
+    if not isinstance(accepted_gate, Mapping) or (
+        accepted_gate.get("config_sha256") != context["config_sha256"]
+        or not isinstance(accepted_gate.get("source_identity"), Mapping)
+        or accepted_gate["source_identity"].get("git_revision")
+        != context["source_revision"]
+    ):
+        raise RuntimeError("worker execution context identity binding drifted")
+    if persisted and (
+        context["outer_attempt"] not in {1, 2}
+        or context["parent_attempt"]
+        != (None if context["outer_attempt"] == 1 else 1)
+    ):
+        raise RuntimeError("worker execution context retry lineage drifted")
+
+
+def _validate_execution_context_compatibility(
+    stored: Mapping[str, object], current: Mapping[str, object]
+) -> None:
+    scientific_fields = {
+        "sentinel_job_id",
+        "scheme",
+        "step",
+        "lane",
+        "config_sha256",
+        "source_revision",
+    }
+    if any(stored[field] != current[field] for field in scientific_fields):
+        raise RuntimeError("worker execution context scientific identity drifted")
+    binding_fields = {
+        "source_identity",
+        "config_sha256",
+        "preregistration_sha256",
+        "environment_lock_identity",
+        "worker_python_identity",
+        "worker_script_identity",
+        "preflight",
+    }
+    stored_gate = stored["accepted_gate_record"]
+    current_gate = current["accepted_gate_record"]
+    if not isinstance(stored_gate, Mapping) or not isinstance(current_gate, Mapping):
+        raise RuntimeError("worker execution context accepted gate is invalid")
+    if any(stored_gate.get(field) != current_gate.get(field) for field in binding_fields):
+        raise RuntimeError("worker execution context accepted gate binding drifted")
+
+
+def _run_or_resume_worker_job(
+    *,
+    worker_python: Path,
+    worker_script: Path,
+    work_root: Path,
+    job_id: str,
+    requested_backend: Literal["cpu", "cuda"],
+    requested_dtype: Literal["float64"],
+    arrays: Mapping[str, np.ndarray],
+    environment_lock: Path,
+    execution_context: Mapping[str, object],
+) -> tuple[WorkerJobResult, Mapping[str, object]]:
+    """Resume a valid attempt or make one infrastructure retry with bound context."""
+    exchange_root = Path(work_root)
+    exchange_root.mkdir(parents=True, exist_ok=True)
+    expected_names = {
+        "input.npz",
+        "request.json",
+        "response.json",
+        "output.npz",
+        "provenance.json",
+    }
+    _validate_execution_context(execution_context, persisted=False)
+
+    def load_attempt(
+        attempt_root: Path, context_path: Path
+    ) -> tuple[WorkerJobResult, Mapping[str, object]]:
+        if {path.name for path in attempt_root.iterdir()} != expected_names:
+            raise RuntimeError(f"incomplete immutable worker exchange: {job_id}")
+        request_path = attempt_root / "request.json"
+        response_path = attempt_root / "response.json"
+        input_path = attempt_root / "input.npz"
+        output_path = attempt_root / "output.npz"
+        request = json.loads(request_path.read_text(encoding="utf-8"))
+        response = json.loads(response_path.read_text(encoding="utf-8"))
+        provenance = json.loads(
+            (attempt_root / "provenance.json").read_text(encoding="utf-8")
+        )
+        stored_context = json.loads(context_path.read_text(encoding="utf-8"))
+        _validate_execution_context(stored_context, persisted=True)
+        _validate_execution_context_compatibility(stored_context, execution_context)
+        validate_worker_protocol_manifest(request, expected_message_type="request")
+        if (
+            request["job_id"] != job_id
+            or request["requested_backend"] != requested_backend
+            or request["requested_dtype"] != requested_dtype
+            or request["npz_sha256"] != _file_sha256(input_path)
+            or request["environment_sha256"] != _file_sha256(environment_lock)
+        ):
+            raise RuntimeError(f"immutable worker request drifted: {job_id}")
+        with np.load(input_path, allow_pickle=False) as archive:
+            if set(archive.files) != set(arrays) or any(
+                not np.array_equal(archive[name], np.asarray(arrays[name]))
+                for name in archive.files
+            ):
+                raise RuntimeError(f"immutable worker inputs drifted: {job_id}")
+        arrays_out = validate_worker_result(
+            request_manifest=request,
+            response_manifest=response,
+            output_npz=output_path,
+        )
+        validate_worker_provenance(
+            provenance,
+            requested_backend=requested_backend,
+            requested_dtype=requested_dtype,
+            environment_sha256=_file_sha256(environment_lock),
+            batch_size=int(np.asarray(arrays["batch_size"])),
+        )
+        resolved_python = Path(worker_python).resolve(strict=True)
+        resolved_script = Path(worker_script).resolve(strict=True)
+        if (
+            Path(str(provenance["python_executable"])).resolve() != resolved_python
+            or Path(str(provenance["worker_executable"])).resolve() != resolved_python
+            or provenance["worker_executable_sha256"] != _file_sha256(resolved_python)
+            or provenance["worker_script_sha256"] != _file_sha256(resolved_script)
+        ):
+            raise RuntimeError(f"immutable worker provenance drifted: {job_id}")
+        return (
+            WorkerJobResult(
+                request_manifest=MappingProxyType(request),
+                response_manifest=MappingProxyType(response),
+                arrays=arrays_out,
+                provenance=MappingProxyType(provenance),
+                request_json=request_path,
+                input_npz=input_path,
+                response_json=response_path,
+                output_npz=output_path,
+            ),
+            MappingProxyType(stored_context),
+        )
+
+    for attempt in (2, 1):
+        attempt_root = exchange_root / f"attempt-{attempt}"
+        context_path = exchange_root / f"attempt-{attempt}-context.json"
+        if attempt_root.is_dir() and context_path.is_file():
+            if {path.name for path in attempt_root.iterdir()} == expected_names:
+                return load_attempt(attempt_root, context_path)
+
+    attempt_1_started = (exchange_root / "attempt-1").exists() or (
+        exchange_root / "attempt-1-context.json"
+    ).exists()
+    attempt = 2 if attempt_1_started else 1
+    attempt_root = exchange_root / f"attempt-{attempt}"
+    context_path = exchange_root / f"attempt-{attempt}-context.json"
+    if attempt_root.exists() or context_path.exists():
+        raise RuntimeError(f"worker exchange exhausted one infrastructure retry: {job_id}")
+    context = dict(execution_context)
+    context["outer_attempt"] = attempt
+    context["parent_attempt"] = None if attempt == 1 else 1
+    _validate_execution_context(context, persisted=True)
+    _atomic_json(context_path, context)
+    result = run_worker_job(
+        worker_python=worker_python,
+        worker_script=worker_script,
+        work_root=attempt_root,
+        job_id=job_id,
+        requested_backend=requested_backend,
+        requested_dtype=requested_dtype,
+        arrays=arrays,
+        environment_lock=environment_lock,
+    )
+    _atomic_json(attempt_root / "provenance.json", dict(result.provenance))
+    return result, MappingProxyType(context)
+
+
+def _sentinel_endpoint(
+    coefficients: np.ndarray,
+    *,
+    system: object,
+    scheme_dispersion: float,
+) -> dict[str, object]:
+    ray = system.perron_ray
+    angles = np.array([projective_ray_angle(row, ray) for row in coefficients])
+    normalized_ray = ray / np.linalg.norm(ray)
+    distances = np.array(
+        [np.linalg.norm(row / np.linalg.norm(row) - normalized_ray) for row in coefficients]
+    )
+    projection = np.outer(ray, ray) / float(np.dot(ray, ray))
+    beta_vectors = np.array(
+        [
+            (np.eye(ray.size) - projection) @ difference / system.log_block_scale
+            for difference in np.diff(coefficients, axis=0)
+        ]
+    )
+    construction = max(
+        scalarized_ray_construction_residual(
+            row[:, None, None] * system.matrix_direction,
+            system.matrix_direction,
+        )
+        for row in coefficients
+    )
+    basin_exit = bool(
+        np.any(
+            (coefficients < system.basin_lower)
+            | (coefficients > system.basin_upper)
+        )
+    )
+    maximum_condition = float(
+        np.max(np.max(coefficients, axis=1) / np.min(coefficients, axis=1))
+    )
+    slope = _ols_slope(angles)
+    scale_8_distance = float(distances[-1])
+    return {
+        "angle_slope_scales_4_8": slope,
+        "scale_8_projective_ray_angle": float(angles[-1]),
+        "scale_8_normalized_coupling_distance": scale_8_distance,
+        "scale_8_retained_beta_residual": float(np.linalg.norm(beta_vectors[-1])),
+        "maximum_scalarized_ray_construction_residual": float(construction),
+        "scale_8_scheme_dispersion": float(scheme_dispersion),
+        "maximum_coefficient_condition": maximum_condition,
+        "basin_exit": basin_exit,
+        "rejected": False,
+        "angle_slope_threshold_pass": slope <= -0.02,
+        "distance_threshold_pass": scale_8_distance <= 0.05,
+        "dispersion_threshold_pass": scheme_dispersion <= 0.02,
+    }
+
+
+_SENTINEL_NUMERIC_FIELDS = (
+    "angle_slope_scales_4_8",
+    "scale_8_projective_ray_angle",
+    "scale_8_normalized_coupling_distance",
+    "scale_8_retained_beta_residual",
+    "maximum_scalarized_ray_construction_residual",
+    "scale_8_scheme_dispersion",
+    "maximum_coefficient_condition",
+)
+_SENTINEL_DECISION_FIELDS = (
+    "basin_exit",
+    "rejected",
+    "angle_slope_threshold_pass",
+    "distance_threshold_pass",
+    "dispersion_threshold_pass",
+)
+
+
+def _compare_sentinel_endpoint(
+    reference: Mapping[str, object],
+    candidate: Mapping[str, object],
+    *,
+    condition_number: float,
+) -> dict[str, object]:
+    numeric = parity_diagnostics(
+        [reference[field] for field in _SENTINEL_NUMERIC_FIELDS],
+        [candidate[field] for field in _SENTINEL_NUMERIC_FIELDS],
+        dtype="float64",
+        condition_number=condition_number,
+    )
+    decisions_match = all(
+        reference[field] == candidate[field] for field in _SENTINEL_DECISION_FIELDS
+    )
+    return {
+        "numeric": asdict(numeric),
+        "exact_decisions_match": decisions_match,
+        "passed": numeric.passed and decisions_match,
+    }
+
+
+def run_cuda_sentinel(
+    config: ExperimentConfig,
+    *,
+    operator_opt_in: bool,
+    operator_gate: Mapping[str, object],
+    accepted_gate_sha256: str,
+    work_root: Path,
+    sample_count: int = 5,
+) -> dict[str, object]:
+    """Run the frozen five-job, three-lane float64 parity sentinel."""
+    if not isinstance(config, ExperimentConfig):
+        raise TypeError("config must be an ExperimentConfig")
+    if config.theory.experiment != "gaussian_fixed_ray":
+        raise ValueError("CUDA sentinel requires gaussian_fixed_ray")
+    if config.compute.backend != "cuda" or config.compute.dtype != "float64":
+        raise ValueError("CUDA sentinel requires requested CUDA float64")
+    if config.compute.heavy_sweep_enabled:
+        raise ValueError("CUDA sentinel must pass before enabling the heavy sweep")
+    if sample_count != 5:
+        raise ValueError("CUDA sentinel requires exactly five initial idle samples")
+    work_root = Path(work_root)
+
+    gate = dict(operator_gate)
+    gate_bytes = json.dumps(gate, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
+    gate_sha256 = hashlib.sha256(gate_bytes).hexdigest()
+    if (
+        gate.get("schema_version") != "cuda-idle-operator-gate-v1"
+        or gate.get("operator_opt_in") is not True
+        or gate.get("operator_process_acceptance_pending") is not True
+        or gate.get("idle_observation_passed") is not True
+        or accepted_gate_sha256 != gate_sha256
+    ):
+        raise ValueError("operator acceptance does not match the captured gate digest")
+    _validate_cuda_gate_bindings(config, gate)
+    try:
+        expires_at = datetime.fromisoformat(str(gate["expires_at_utc"]))
+    except (KeyError, ValueError) as error:
+        raise ValueError("operator gate expiry is invalid") from error
+    if datetime.now(timezone.utc) >= expires_at:
+        raise ValueError("operator gate expired before sentinel execution")
+    repo_root = Path(__file__).resolve().parents[4]
+    worker_script = repo_root / "tools" / "cuda_worker.py"
+    environment_lock = repo_root / "environments" / "cuda-rtx5090-cu128.lock.txt"
+    if not worker_script.is_file() or not environment_lock.is_file():
+        raise ValueError("CUDA sentinel prerequisites are missing")
+
+    table = _job_table(config)
+    jobs = {str(job["job_id"]): job for job in table["jobs"]}  # type: ignore[index]
+    sentinel_ids = list(table["sentinel_job_ids"])  # type: ignore[arg-type]
+    initial = _readonly(
+        [
+            generate_initial_coefficients(
+                int(jobs[job_id]["master_seed"]), job_id
+            )
+            for job_id in sentinel_ids
+        ]
+    )
+    system = build_preregistered_system()
+    condition = float(np.linalg.cond(system.matrix_direction))
+    lane_names = (
+        "controller_cpu",
+        "worker_cpu",
+        "worker_cuda",
+        "worker_cuda_repeat",
+    )
+    trajectories = {
+        scheme: {
+            lane: np.empty((len(initial), 9, initial.shape[1]), dtype=np.float64)
+            for lane in lane_names
+        }
+        for scheme in config.theory.blocking_schemes
+    }
+    for scheme_lanes in trajectories.values():
+        for values in scheme_lanes.values():
+            values[:, 0, :] = initial
+    parity_records: list[dict[str, object]] = []
+    worker_jobs: list[dict[str, object]] = []
+    gate_rechecks: list[dict[str, object]] = []
+
+    for job_index, sentinel_id in enumerate(sentinel_ids):
+        recheck = _capture_idle_gpu_gate_after_cooldown(
+            operator_opt_in=operator_opt_in
+        )
+        _validate_gate_recheck(gate, recheck)
+        recheck_bytes = json.dumps(
+            recheck, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+        recheck_sha256 = hashlib.sha256(recheck_bytes).hexdigest()
+        gate_rechecks.append(
+            {
+                "sentinel_job_id": sentinel_id,
+                "gate_sha256": recheck_sha256,
+                "gate": recheck,
+            }
+        )
+        for scheme in config.theory.blocking_schemes:
+            spatial_map = system.spatial_maps[scheme]
+            lanes = trajectories[scheme]
+            for step in range(1, 9):
+                lanes["controller_cpu"][job_index, step, :] = (
+                    lanes["controller_cpu"][job_index, step - 1, :] @ spatial_map.T
+                )
+                executions = (
+                    ("worker_cpu", "cpu"),
+                    ("worker_cuda", "cuda"),
+                    ("worker_cuda_repeat", "cuda"),
+                )
+                for lane, backend in executions:
+                    if datetime.now(timezone.utc) >= datetime.fromisoformat(
+                        str(recheck["expires_at_utc"])
+                    ):
+                        raise RuntimeError(
+                            f"GPU gate expired during sentinel job {sentinel_id}"
+                        )
+                    immutable_id = (
+                        f"sentinel.{sentinel_id}.{scheme}.step{step:02d}.{lane}"
+                    )
+                    result, stored_execution_context = _run_or_resume_worker_job(
+                        worker_python=config.compute.cuda_worker_python,
+                        worker_script=worker_script,
+                        work_root=work_root / immutable_id,
+                        job_id=immutable_id,
+                        requested_backend=backend,  # type: ignore[arg-type]
+                        requested_dtype="float64",
+                        arrays={
+                            "coefficients": lanes[lane][
+                                job_index : job_index + 1, step - 1, :
+                            ],
+                            "spatial_map": spatial_map,
+                            "matrix_direction": system.matrix_direction,
+                            "batch_size": np.array(
+                                config.compute.batch_size, dtype=np.int64
+                            ),
+                        },
+                        environment_lock=environment_lock,
+                        execution_context={
+                            "accepted_gate_sha256": accepted_gate_sha256,
+                            "accepted_gate_record": gate,
+                            "operator_gate_recheck_sha256": recheck_sha256,
+                            "operator_gate_recheck_record": recheck,
+                            "sentinel_job_id": sentinel_id,
+                            "scheme": scheme,
+                            "step": step,
+                            "lane": lane,
+                            "config_sha256": config_sha256(config),
+                            "source_revision": gate["source_identity"]["git_revision"],  # type: ignore[index]
+                        },
+                    )
+                    lanes[lane][job_index, step, :] = result.arrays[
+                        "updated_coefficients"
+                    ][0]
+                    worker_jobs.append(
+                        {
+                            "job_id": immutable_id,
+                            "sentinel_job_id": sentinel_id,
+                            "scheme": scheme,
+                            "step": step,
+                            "lane": lane,
+                            "execution_context": dict(stored_execution_context),
+                            "request_manifest": dict(result.request_manifest),
+                            "response_manifest": dict(result.response_manifest),
+                            "provenance": dict(result.provenance),
+                        }
+                    )
+
+                comparisons = {
+                    "controller_cpu_vs_worker_cpu": parity_diagnostics(
+                        lanes["controller_cpu"][job_index, step, :],
+                        lanes["worker_cpu"][job_index, step, :],
+                        dtype="float64",
+                        condition_number=condition,
+                    ),
+                    "controller_cpu_vs_worker_cuda": parity_diagnostics(
+                        lanes["controller_cpu"][job_index, step, :],
+                        lanes["worker_cuda"][job_index, step, :],
+                        dtype="float64",
+                        condition_number=condition,
+                    ),
+                    "controller_cpu_vs_worker_cuda_repeat": parity_diagnostics(
+                        lanes["controller_cpu"][job_index, step, :],
+                        lanes["worker_cuda_repeat"][job_index, step, :],
+                        dtype="float64",
+                        condition_number=condition,
+                    ),
+                    "worker_cpu_vs_worker_cuda": parity_diagnostics(
+                        lanes["worker_cpu"][job_index, step, :],
+                        lanes["worker_cuda"][job_index, step, :],
+                        dtype="float64",
+                        condition_number=condition,
+                    ),
+                    "worker_cuda_repeatability": parity_diagnostics(
+                        lanes["worker_cuda"][job_index, step, :],
+                        lanes["worker_cuda_repeat"][job_index, step, :],
+                        dtype="float64",
+                        condition_number=condition,
+                    ),
+                }
+                parity_records.append(
+                    {
+                        "sentinel_job_id": sentinel_id,
+                        "scheme": scheme,
+                        "step": step,
+                        "comparisons": {
+                            name: asdict(diagnostics)
+                            for name, diagnostics in comparisons.items()
+                        },
+                    }
+                )
+                if not all(
+                    diagnostics.passed for diagnostics in comparisons.values()
+                ):
+                    raise RuntimeError(
+                        f"CUDA sentinel parity failed for {sentinel_id}, "
+                        f"{scheme}, step {step}"
+                    )
+
+    trajectories = {
+        scheme: {
+            lane: _readonly(values) for lane, values in scheme_lanes.items()
+        }
+        for scheme, scheme_lanes in trajectories.items()
+    }
+
+    endpoints: dict[str, dict[str, dict[str, object]]] = {
+        lane: {} for lane in lane_names
+    }
+    first_scheme, second_scheme = config.theory.blocking_schemes
+    for lane in lane_names:
+        for job_index, sentinel_id in enumerate(sentinel_ids):
+            dispersion = float(
+                blocking_scheme_dispersion(
+                    trajectories[first_scheme][lane][job_index],
+                    trajectories[second_scheme][lane][job_index],
+                )[-1]
+            )
+            endpoints[lane][sentinel_id] = {
+                scheme: _sentinel_endpoint(
+                    trajectories[scheme][lane][job_index],
+                    system=system,
+                    scheme_dispersion=dispersion,
+                )
+                for scheme in config.theory.blocking_schemes
+            }
+
+    endpoint_parity_records: list[dict[str, object]] = []
+    scientific_decision_parity_passed = True
+    for sentinel_id in sentinel_ids:
+        for scheme in config.theory.blocking_schemes:
+            reference = endpoints["controller_cpu"][sentinel_id][scheme]
+            comparisons: dict[str, object] = {}
+            for lane in lane_names[1:]:
+                candidate = endpoints[lane][sentinel_id][scheme]
+                comparison = _compare_sentinel_endpoint(
+                    reference,
+                    candidate,
+                    condition_number=condition,
+                )
+                scientific_decision_parity_passed &= bool(comparison["passed"])
+                comparisons[lane] = comparison
+            endpoint_parity_records.append(
+                {
+                    "sentinel_job_id": sentinel_id,
+                    "scheme": scheme,
+                    "comparisons": comparisons,
+                }
+            )
+
+    stratum_records: dict[str, dict[str, dict[str, str]]] = {}
+    stratum_passed = True
+    for scheme in config.theory.blocking_schemes:
+        by_lane: dict[str, dict[str, str]] = {}
+        for lane in lane_names:
+            worst = max(
+                sentinel_ids,
+                key=lambda job_id: endpoints[lane][job_id][scheme][
+                    "maximum_coefficient_condition"
+                ],
+            )
+            threshold_near = min(
+                sentinel_ids,
+                key=lambda job_id: abs(
+                    float(
+                        endpoints[lane][job_id][scheme][
+                            "angle_slope_scales_4_8"
+                        ]
+                    )
+                    + 0.02
+                ),
+            )
+            by_lane[lane] = {
+                "worst_conditioned_job_id": worst,
+                "threshold_near_job_id": threshold_near,
+            }
+        stratum_passed &= len(
+            {record["worst_conditioned_job_id"] for record in by_lane.values()}
+        ) == 1 and len(
+            {record["threshold_near_job_id"] for record in by_lane.values()}
+        ) == 1
+        stratum_records[scheme] = by_lane
+    scientific_decision_parity_passed &= stratum_passed
+
+    reference_endpoint = endpoints["controller_cpu"][sentinel_ids[0]][first_scheme]
+    mutated_endpoint = dict(reference_endpoint)
+    reference_decision = bool(reference_endpoint["angle_slope_threshold_pass"])
+    mutated_value = -0.0199999 if reference_decision else -0.0200001
+    mutated_endpoint["angle_slope_scales_4_8"] = mutated_value
+    mutated_endpoint["angle_slope_threshold_pass"] = not reference_decision
+    mutation_comparison = _compare_sentinel_endpoint(
+        reference_endpoint,
+        mutated_endpoint,
+        condition_number=condition,
+    )
+    threshold_mutation = {
+        "threshold": -0.02,
+        "sentinel_job_id": sentinel_ids[0],
+        "scheme": first_scheme,
+        "reference_value": reference_endpoint["angle_slope_scales_4_8"],
+        "mutated_value": mutated_value,
+        "reference_decision": reference_decision,
+        "mutated_decision": not reference_decision,
+        "comparison": mutation_comparison,
+        "negative_control_passed": not bool(mutation_comparison["passed"]),
+    }
+    if not threshold_mutation["negative_control_passed"]:
+        raise RuntimeError("threshold mutation was not rejected by endpoint parity")
+    if not scientific_decision_parity_passed:
+        raise RuntimeError("CUDA sentinel scientific endpoint or decision parity failed")
+
+    final_controller = trajectories[config.theory.blocking_schemes[0]][
+        "controller_cpu"
+    ][:, -1, :]
+    mutated = np.array(final_controller, copy=True)
+    mutated[0, 0] += 1.0e-3
+    mutation = parity_diagnostics(
+        final_controller,
+        mutated,
+        dtype="float64",
+        condition_number=condition,
+    )
+    if mutation.passed:
+        raise RuntimeError("fixed parity mutation was not rejected")
+
+    return {
+        "schema_version": "gaussian-fixed-ray-cuda-sentinel-v1",
+        "sentinel_job_ids": sentinel_ids,
+        "scientific_analysis_eligibility": {
+            job_id: False for job_id in sentinel_ids
+        },
+        "scientific_analysis_scope": (
+            "Parity-only execution; no sentinel values enter primary, holdout, "
+            "threshold, or tuning analyses."
+        ),
+        "operator_gate": gate,
+        "operator_gate_sha256": gate_sha256,
+        "accepted_gate_sha256": accepted_gate_sha256,
+        "operator_gate_rechecks": gate_rechecks,
+        "environment_lock_sha256": _file_sha256(environment_lock),
+        "worker_script_sha256": _file_sha256(worker_script),
+        "controller_python_executable": sys.executable,
+        "controller_python_executable_sha256": _file_sha256(Path(sys.executable)),
+        "requested_dtype": "float64",
+        "requested_worker_backends": ["cpu", "cuda"],
+        "all_parity_passed": scientific_decision_parity_passed,
+        "scientific_decision_parity_passed": scientific_decision_parity_passed,
+        "endpoint_parity_records": endpoint_parity_records,
+        "sentinel_endpoints": endpoints,
+        "stratum_decision_parity": {
+            "passed": stratum_passed,
+            "records": stratum_records,
+        },
+        "threshold_mutation_negative_control": threshold_mutation,
+        "mutation_negative_control": asdict(mutation),
+        "parity_records": parity_records,
+        "worker_jobs": worker_jobs,
+        "trajectories": trajectories,
+        "initial_coefficients_sha256": hashlib.sha256(
+            initial.tobytes(order="C")
+        ).hexdigest(),
+    }
+
+
+def publish_cuda_sentinel(
+    config: ExperimentConfig,
+    *,
+    operator_opt_in: bool,
+    operator_gate: Mapping[str, object],
+    accepted_gate_sha256: str,
+    staging_root: Path,
+) -> GaussianFixedRayExperimentResult:
+    """Resume the sentinel staging tree and publish one immutable RunStore bundle."""
+    repo_root = Path(__file__).resolve().parents[4]
+    preregistration = (
+        repo_root
+        / "docs"
+        / "experiments"
+        / "2026-08-09-gaussian-fixed-ray-preregistration.md"
+    )
+    preregistration_sha256 = _validate_preregistration(preregistration)
+    environment_lock = repo_root / "environments" / "cuda-rtx5090-cu128.lock.txt"
+    worker_script = repo_root / "tools" / "cuda_worker.py"
+    sentinel = run_cuda_sentinel(
+        config,
+        operator_opt_in=operator_opt_in,
+        operator_gate=operator_gate,
+        accepted_gate_sha256=accepted_gate_sha256,
+        work_root=Path(staging_root),
+    )
+    if (
+        sentinel["all_parity_passed"] is not True
+        or sentinel["scientific_decision_parity_passed"] is not True
+    ):
+        raise RuntimeError("CUDA sentinel cannot publish failed parity")
+
+    trajectory_payload = sentinel["trajectories"]
+    arrays = {
+        f"{scheme}_{lane}_coefficients": _readonly(values)
+        for scheme, lanes in trajectory_payload.items()  # type: ignore[union-attr]
+        for lane, values in lanes.items()
+    }
+    worker_jobs = sentinel["worker_jobs"]
+    sentinel_json = {
+        key: value
+        for key, value in sentinel.items()
+        if key not in {"trajectories", "worker_jobs"}
+    }
+    job_table = _job_table(config)
+    job_table_bytes = json.dumps(
+        job_table, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    config_hash = config_sha256(config)
+    streams = RngStreams.from_seed(config.run.seed)
+    provenance = collect_provenance(repo_root, repo_root / "Theory", config_hash, streams)
+    provenance["experiment_scope"] = "cuda_float64_parity_sentinel_only"
+    provenance["confirmatory_executed"] = False
+    provenance["effective_backend"] = "cpu_controller_cpu_worker_cuda_worker"
+    provenance["effective_dtype"] = "float64"
+    input_hashes = provenance["input_hashes"]
+    input_hashes["operator_gate_sha256"] = accepted_gate_sha256  # type: ignore[index]
+    input_hashes["preregistration_sha256"] = preregistration_sha256  # type: ignore[index]
+    input_hashes["environment_lock_sha256"] = _file_sha256(environment_lock)  # type: ignore[index]
+    input_hashes["worker_script_sha256"] = _file_sha256(worker_script)  # type: ignore[index]
+    input_hashes["job_table_sha256"] = hashlib.sha256(job_table_bytes).hexdigest()  # type: ignore[index]
+    metrics = {
+        "cuda_sentinel_parity": _metric(
+            0.0,
+            status="pass",
+            tolerance=config.numerics.atol,
+            interpretation=(
+                "Five preregistered parity-only sentinel IDs passed controller CPU, "
+                "worker CPU, CUDA, repeated-CUDA endpoint and decision parity."
+            ),
+        )
+    }
+    store = RunStore.create(config, provenance)
+    store.write_json("cuda_gate", operator_gate)
+    store.write_json("preregistered_job_table", job_table)
+    store.write_json("sentinel_parity", sentinel_json)
+    store.write_npz("sentinel_arrays", arrays)
+    store.write_json(
+        "worker_exchange_index",
+        {
+            "schema_version": "gaussian-fixed-ray-worker-exchange-index-v1",
+            "staging_root": str(Path(staging_root).resolve()),
+            "records": worker_jobs,
+        },
+    )
+    store.write_json("metrics", {name: asdict(value) for name, value in metrics.items()})
+    store.finalize(
+        (
+            "cuda_gate.json",
+            "preregistered_job_table.json",
+            "sentinel_parity.json",
+            "sentinel_arrays.npz",
+            "worker_exchange_index.json",
+            "metrics.json",
+        )
+    )
+    return GaussianFixedRayExperimentResult(
+        run_dir=store.run_dir,
+        config_hash=store.config_hash,
+        status="pass",
+        metrics=MappingProxyType(metrics),
+        arrays=MappingProxyType(arrays),
+    )
 
 
 def _validate_preregistration(path: Path) -> str:
@@ -574,4 +1651,11 @@ def run_gaussian_fixed_ray_experiment(
     )
 
 
-__all__ = ["GaussianFixedRayExperimentResult", "run_gaussian_fixed_ray_experiment"]
+__all__ = [
+    "GaussianFixedRayExperimentResult",
+    "build_cuda_gate_record",
+    "capture_idle_gpu_gate",
+    "publish_cuda_sentinel",
+    "run_cuda_sentinel",
+    "run_gaussian_fixed_ray_experiment",
+]

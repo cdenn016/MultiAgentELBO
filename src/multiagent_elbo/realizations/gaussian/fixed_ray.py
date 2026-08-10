@@ -205,11 +205,9 @@ def projective_ray_angle(values: object, ray: object) -> float:
     target = np.asarray(ray, dtype=np.float64)
     if vector.shape != target.shape or vector.ndim != 1:
         raise ValueError("projective vectors must have equal one-dimensional shape")
-    cosine = float(np.dot(_normalized(vector), _normalized(target)))
-    cosine = min(max(cosine, -1.0), 1.0)
-    if abs(1.0 - cosine) <= 8.0 * np.finfo(np.float64).eps:
-        return 0.0
-    return float(math.acos(cosine))
+    chord = float(np.linalg.norm(_normalized(vector) - _normalized(target)))
+    half_chord = min(max(0.5 * chord, 0.0), 1.0)
+    return float(2.0 * math.asin(half_chord))
 
 
 def scalarized_ray_construction_residual(

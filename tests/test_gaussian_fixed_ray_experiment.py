@@ -1,18 +1,27 @@
 from __future__ import annotations
 
+from dataclasses import replace
+import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
 import shutil
 import subprocess
 import sys
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
 
-from multiagent_elbo.config import ExperimentConfig
+from multiagent_elbo.config import ExperimentConfig, config_sha256
 from multiagent_elbo.realizations.gaussian.fixed_ray_experiment import (
     GaussianFixedRayExperimentResult,
+    _run_or_resume_worker_job,
+    _validate_cuda_gate_bindings,
+    capture_idle_gpu_gate,
+    publish_cuda_sentinel,
+    run_cuda_sentinel,
     run_gaussian_fixed_ray_experiment,
 )
 
@@ -210,6 +219,633 @@ def test_cpu_worker_temporary_files_stay_under_configured_output_root(
     assert Path(backend["worker_cpu"]["python_executable"]).resolve() == Path(
         sys.executable
     ).resolve()
+def worker_execution_context() -> dict[str, object]:
+    accepted_gate_record = {
+        "schema_version": "accepted-test-gate-v1",
+        "source_identity": {"git_revision": "d" * 40},
+        "config_sha256": "c" * 64,
+        "preregistration_sha256": "e" * 64,
+        "environment_lock_identity": {"sha256": "f" * 64},
+        "worker_python_identity": {"sha256": "1" * 64},
+        "worker_script_identity": {"sha256": "2" * 64},
+        "preflight": {"torch_version": "test"},
+    }
+    recheck_record = {"schema_version": "recheck-test-gate-v1"}
+
+    def digest(record: object) -> str:
+        return hashlib.sha256(
+            json.dumps(record, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+
+    return {
+        "accepted_gate_sha256": digest(accepted_gate_record),
+        "accepted_gate_record": accepted_gate_record,
+        "operator_gate_recheck_sha256": digest(recheck_record),
+        "operator_gate_recheck_record": recheck_record,
+        "sentinel_job_id": "sentinel.C001.adjacent_pairs.step01.worker_cpu",
+        "scheme": "adjacent_pairs",
+        "step": 1,
+        "lane": "worker_cpu",
+        "config_sha256": "c" * 64,
+        "source_revision": "d" * 40,
+    }
+
+
+def test_idle_gpu_gate_requires_operator_opt_in_before_inspection(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    def forbidden_run(*_: object, **__: object) -> object:
+        raise AssertionError("GPU inspection ran before operator opt-in")
+
+    monkeypatch.setattr(subprocess, "run", forbidden_run)
+    with pytest.raises(ValueError, match="operator opt-in"):
+        capture_idle_gpu_gate(operator_opt_in=False, sample_count=1)
+
+
+def test_idle_gpu_gate_rejects_observed_utilization(monkeypatch: pytest.MonkeyPatch):
+    responses = iter(
+        (
+            subprocess.CompletedProcess(
+                args=[],
+                returncode=0,
+                stdout=(
+                    "0, NVIDIA GeForce RTX 5090, GPU-test, 576.88, P2, "
+                    "7, 1500, 32607, 40\n"
+                ),
+                stderr="",
+            ),
+            subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr=""),
+        )
+    )
+    monkeypatch.setattr(subprocess, "run", lambda *_args, **_kwargs: next(responses))
+
+    with pytest.raises(RuntimeError, match="not idle"):
+        capture_idle_gpu_gate(operator_opt_in=True, sample_count=1)
+
+
+def test_idle_gpu_gate_records_zero_utilization_and_active_processes(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    responses = iter(
+        (
+            subprocess.CompletedProcess(
+                args=[],
+                returncode=0,
+                stdout=(
+                    "0, NVIDIA GeForce RTX 5090, GPU-test, 576.88, P8, "
+                    "0, 1129, 32607, 31\n"
+                ),
+                stderr="",
+            ),
+            subprocess.CompletedProcess(
+                args=[],
+                returncode=0,
+                stdout="GPU-test, 12956, C:\\anaconda\\python.exe, [N/A]\n",
+                stderr="",
+            ),
+        )
+    )
+    monkeypatch.setattr(subprocess, "run", lambda *_args, **_kwargs: next(responses))
+
+    gate = capture_idle_gpu_gate(operator_opt_in=True, sample_count=1)
+
+    assert gate["schema_version"] == "cuda-idle-operator-gate-v1"
+    assert gate["expires_at_utc"] > gate["captured_at_utc"]
+    assert gate["operator_opt_in"] is True
+    assert gate["idle_observation_passed"] is True
+    assert gate["samples"][0]["utilization_gpu_percent"] == 0
+    assert gate["active_compute_processes"][0]["pid"] == 12956
+
+
+def test_cuda_sentinel_runs_five_frozen_jobs_through_three_float64_lanes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    config = fixed_ray_config(tmp_path / "artifacts")
+    config = replace(
+        config,
+        compute=replace(config.compute, backend="cuda", heavy_sweep_enabled=False),
+    )
+    gate = {
+        "schema_version": "cuda-idle-operator-gate-v1",
+        "captured_at_utc": "2099-01-01T00:00:00+00:00",
+        "expires_at_utc": "2099-01-01T00:05:00+00:00",
+        "operator_opt_in": True,
+        "operator_process_acceptance_pending": True,
+        "idle_observation_passed": True,
+        "source_identity": {"git_revision": "f" * 40},
+        "config_sha256": config_sha256(config),
+        "samples": [
+            {
+                "uuid": "GPU-test",
+                "utilization_gpu_percent": 0,
+                "memory_used_mib": 1129,
+            }
+        ],
+        "active_compute_processes": [
+            {
+                "gpu_uuid": "GPU-test",
+                "pid": 12956,
+                "process_name": r"C:\anaconda\python.exe",
+                "used_gpu_memory_mib": None,
+            }
+        ],
+    }
+    gate_captures = []
+
+    def capture_after_cuda_cooldown(**kwargs: object) -> dict[str, object]:
+        gate_captures.append(kwargs)
+        if len(gate_captures) == 1:
+            raise RuntimeError("GPU is not idle across the required occupancy samples")
+        return dict(gate)
+
+    monkeypatch.setattr(
+        "multiagent_elbo.realizations.gaussian.fixed_ray_experiment.capture_idle_gpu_gate",
+        capture_after_cuda_cooldown,
+    )
+    monkeypatch.setattr(
+        "multiagent_elbo.realizations.gaussian.fixed_ray_experiment.time.sleep",
+        lambda _seconds: None,
+    )
+    monkeypatch.setattr(
+        "multiagent_elbo.realizations.gaussian.fixed_ray_experiment._validate_cuda_gate_bindings",
+        lambda *_args, **_kwargs: None,
+    )
+    calls = []
+
+    def fake_worker_job(**kwargs: object) -> object:
+        calls.append(kwargs)
+        Path(kwargs["work_root"]).mkdir(parents=True)
+        arrays = kwargs["arrays"]
+        updated = arrays["coefficients"] @ arrays["spatial_map"].T
+        backend = kwargs["requested_backend"]
+        job_id = kwargs["job_id"]
+        return SimpleNamespace(
+            arrays={"updated_coefficients": updated},
+            provenance={
+                "effective_backend": backend,
+                "effective_dtype": "float64",
+                "peak_allocated_bytes": 0,
+                "peak_reserved_bytes": 0,
+            },
+            request_manifest={"job_id": job_id, "requested_backend": backend},
+            response_manifest={
+                "job_id": job_id,
+                "effective_backend": backend,
+                "output_identity": f"identity-{job_id}",
+            },
+        )
+
+    monkeypatch.setattr(
+        "multiagent_elbo.realizations.gaussian.fixed_ray_experiment.run_worker_job",
+        fake_worker_job,
+    )
+
+    sentinel = run_cuda_sentinel(
+        config,
+        operator_opt_in=True,
+        operator_gate=gate,
+        accepted_gate_sha256=hashlib.sha256(
+            json.dumps(gate, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest(),
+        work_root=tmp_path / "sentinel-worker-jobs",
+        sample_count=5,
+    )
+
+    assert sentinel["schema_version"] == "gaussian-fixed-ray-cuda-sentinel-v1"
+    assert sentinel["sentinel_job_ids"] == ["C001", "C015", "C030", "H001", "H010"]
+    assert set(sentinel["scientific_analysis_eligibility"].values()) == {False}
+    assert sentinel["all_parity_passed"] is True
+    assert sentinel["scientific_decision_parity_passed"] is True
+    assert len(sentinel["endpoint_parity_records"]) == 10
+    assert sentinel["stratum_decision_parity"]["passed"] is True
+    assert sentinel["threshold_mutation_negative_control"][
+        "negative_control_passed"
+    ] is True
+    assert sentinel["mutation_negative_control"]["passed"] is False
+    assert len(gate_captures) == 6
+    assert len(sentinel["operator_gate_rechecks"]) == 5
+    assert sentinel["operator_gate_rechecks"][0]["gate"]["idle_wait_attempts"] == 2
+    assert sentinel["operator_gate_rechecks"][0]["gate"]["idle_wait_seconds"] == 1.0
+    assert len(sentinel["worker_jobs"]) == 240
+    assert len(calls) == 240
+    assert all(call["arrays"]["coefficients"].shape == (1, 6) for call in calls)
+    assert sum(call["requested_backend"] == "cpu" for call in calls) == 80
+    assert sum(call["requested_backend"] == "cuda" for call in calls) == 160
+    assert {call["requested_backend"] for call in calls} == {"cpu", "cuda"}
+    for scheme in config.theory.blocking_schemes:
+        for lane in (
+            "controller_cpu",
+            "worker_cpu",
+            "worker_cuda",
+            "worker_cuda_repeat",
+        ):
+            assert sentinel["trajectories"][scheme][lane].shape == (5, 9, 6)
+
+
+def test_worker_trajectory_job_resumes_only_from_validated_immutable_artifacts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    from multiagent_elbo.realizations.gaussian.fixed_ray import (
+        build_preregistered_system,
+        generate_initial_coefficients,
+    )
+
+    repository = Path(__file__).resolve().parents[1]
+    system = build_preregistered_system()
+    kwargs = {
+        "worker_python": Path(r"C:\anaconda\python.exe"),
+        "worker_script": repository / "tools" / "cuda_worker.py",
+        "work_root": tmp_path / "resume-job",
+        "job_id": "sentinel.C001.adjacent_pairs.step01.worker_cpu",
+        "requested_backend": "cpu",
+        "requested_dtype": "float64",
+        "arrays": {
+            "coefficients": generate_initial_coefficients(
+                202608090101, "C001"
+            )[None, :],
+            "spatial_map": system.spatial_maps["adjacent_pairs"],
+            "matrix_direction": system.matrix_direction,
+            "batch_size": np.array(1, dtype=np.int64),
+        },
+        "environment_lock": repository
+        / "environments"
+        / "cuda-rtx5090-cu128.lock.txt",
+        "execution_context": worker_execution_context(),
+    }
+    first, first_context = _run_or_resume_worker_job(**kwargs)
+    monkeypatch.setattr(
+        "multiagent_elbo.realizations.gaussian.fixed_ray_experiment.run_worker_job",
+        lambda **_: (_ for _ in ()).throw(AssertionError("resume reran worker")),
+    )
+
+    resumed, resumed_context = _run_or_resume_worker_job(**kwargs)
+
+    np.testing.assert_array_equal(
+        first.arrays["updated_coefficients"],
+        resumed.arrays["updated_coefficients"],
+    )
+    assert first.provenance == resumed.provenance
+    assert first_context == resumed_context
+    assert first_context["operator_gate_recheck_sha256"] == kwargs[
+        "execution_context"
+    ]["operator_gate_recheck_sha256"]
+    assert first_context["outer_attempt"] == 1
+    assert (kwargs["work_root"] / "attempt-1" / "provenance.json").is_file()
+
+
+def test_interrupted_worker_exchange_uses_one_context_bound_outer_retry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import multiagent_elbo.realizations.gaussian.fixed_ray_experiment as module
+    from multiagent_elbo.realizations.gaussian.fixed_ray import build_preregistered_system
+
+    repository = Path(__file__).resolve().parents[1]
+    system = build_preregistered_system()
+    original_worker = module.run_worker_job
+    kwargs = {
+        "worker_python": Path(r"C:\anaconda\python.exe"),
+        "worker_script": repository / "tools" / "cuda_worker.py",
+        "work_root": tmp_path / "retry-job",
+        "job_id": "sentinel.C001.adjacent_pairs.step01.worker_cpu",
+        "requested_backend": "cpu",
+        "requested_dtype": "float64",
+        "arrays": {
+            "coefficients": np.ones((1, 6), dtype=np.float64),
+            "spatial_map": system.spatial_maps["adjacent_pairs"],
+            "matrix_direction": system.matrix_direction,
+            "batch_size": np.array(1, dtype=np.int64),
+        },
+        "environment_lock": repository
+        / "environments"
+        / "cuda-rtx5090-cu128.lock.txt",
+        "execution_context": worker_execution_context(),
+    }
+
+    def interrupted(**call: object) -> object:
+        attempt_root = Path(call["work_root"])
+        attempt_root.mkdir(parents=True)
+        (attempt_root / "partial.txt").write_text("interrupted", encoding="utf-8")
+        raise RuntimeError("simulated infrastructure interruption")
+
+    monkeypatch.setattr(module, "run_worker_job", interrupted)
+    with pytest.raises(RuntimeError, match="simulated"):
+        _run_or_resume_worker_job(**kwargs)
+    monkeypatch.setattr(module, "run_worker_job", original_worker)
+
+    _result, context = _run_or_resume_worker_job(**kwargs)
+
+    assert context["outer_attempt"] == 2
+    assert context["parent_attempt"] == 1
+    assert (kwargs["work_root"] / "attempt-1" / "partial.txt").is_file()
+    assert (kwargs["work_root"] / "attempt-2" / "provenance.json").is_file()
+
+
+def test_context_only_interruption_consumes_first_outer_attempt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import multiagent_elbo.realizations.gaussian.fixed_ray_experiment as module
+    from multiagent_elbo.realizations.gaussian.fixed_ray import build_preregistered_system
+
+    repository = Path(__file__).resolve().parents[1]
+    system = build_preregistered_system()
+    original_worker = module.run_worker_job
+    work_root = tmp_path / "context-only-retry"
+    kwargs = {
+        "worker_python": Path(r"C:\anaconda\python.exe"),
+        "worker_script": repository / "tools" / "cuda_worker.py",
+        "work_root": work_root,
+        "job_id": "sentinel.C001.adjacent_pairs.step01.worker_cpu",
+        "requested_backend": "cpu",
+        "requested_dtype": "float64",
+        "arrays": {
+            "coefficients": np.ones((1, 6), dtype=np.float64),
+            "spatial_map": system.spatial_maps["adjacent_pairs"],
+            "matrix_direction": system.matrix_direction,
+            "batch_size": np.array(1, dtype=np.int64),
+        },
+        "environment_lock": repository
+        / "environments"
+        / "cuda-rtx5090-cu128.lock.txt",
+        "execution_context": worker_execution_context(),
+    }
+
+    monkeypatch.setattr(
+        module,
+        "run_worker_job",
+        lambda **_: (_ for _ in ()).throw(RuntimeError("pre-worker interruption")),
+    )
+    with pytest.raises(RuntimeError, match="pre-worker interruption"):
+        _run_or_resume_worker_job(**kwargs)
+    assert (work_root / "attempt-1-context.json").is_file()
+    assert not (work_root / "attempt-1").exists()
+
+    monkeypatch.setattr(module, "run_worker_job", original_worker)
+    _result, context = _run_or_resume_worker_job(**kwargs)
+
+    assert context["outer_attempt"] == 2
+    assert context["parent_attempt"] == 1
+    assert (work_root / "attempt-2" / "provenance.json").is_file()
+
+
+def test_resumed_worker_exchange_rejects_tampered_execution_context(tmp_path: Path):
+    from multiagent_elbo.realizations.gaussian.fixed_ray import build_preregistered_system
+
+    repository = Path(__file__).resolve().parents[1]
+    system = build_preregistered_system()
+    work_root = tmp_path / "tampered-context"
+    kwargs = {
+        "worker_python": Path(r"C:\anaconda\python.exe"),
+        "worker_script": repository / "tools" / "cuda_worker.py",
+        "work_root": work_root,
+        "job_id": "sentinel.C001.adjacent_pairs.step01.worker_cpu",
+        "requested_backend": "cpu",
+        "requested_dtype": "float64",
+        "arrays": {
+            "coefficients": np.ones((1, 6), dtype=np.float64),
+            "spatial_map": system.spatial_maps["adjacent_pairs"],
+            "matrix_direction": system.matrix_direction,
+            "batch_size": np.array(1, dtype=np.int64),
+        },
+        "environment_lock": repository
+        / "environments"
+        / "cuda-rtx5090-cu128.lock.txt",
+        "execution_context": worker_execution_context(),
+    }
+    _run_or_resume_worker_job(**kwargs)
+    context_path = work_root / "attempt-1-context.json"
+    context = json.loads(context_path.read_text(encoding="utf-8"))
+    context["accepted_gate_sha256"] = "0" * 64
+    context_path.write_text(json.dumps(context), encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="gate digest drifted"):
+        _run_or_resume_worker_job(**kwargs)
+
+
+@pytest.mark.parametrize("field", ["config_sha256", "source_revision"])
+def test_resumed_worker_exchange_rejects_current_scientific_identity_drift(
+    tmp_path: Path, field: str
+):
+    from multiagent_elbo.realizations.gaussian.fixed_ray import build_preregistered_system
+
+    repository = Path(__file__).resolve().parents[1]
+    system = build_preregistered_system()
+    work_root = tmp_path / f"current-{field}-drift"
+    arrays = {
+        "coefficients": np.ones((1, 6), dtype=np.float64),
+        "spatial_map": system.spatial_maps["adjacent_pairs"],
+        "matrix_direction": system.matrix_direction,
+        "batch_size": np.array(1, dtype=np.int64),
+    }
+    context = worker_execution_context()
+    kwargs = {
+        "worker_python": Path(r"C:\anaconda\python.exe"),
+        "worker_script": repository / "tools" / "cuda_worker.py",
+        "work_root": work_root,
+        "job_id": "sentinel.C001.adjacent_pairs.step01.worker_cpu",
+        "requested_backend": "cpu",
+        "requested_dtype": "float64",
+        "arrays": arrays,
+        "environment_lock": repository
+        / "environments"
+        / "cuda-rtx5090-cu128.lock.txt",
+        "execution_context": context,
+    }
+    _run_or_resume_worker_job(**kwargs)
+    changed = worker_execution_context()
+    if field == "config_sha256":
+        changed[field] = "9" * 64
+        changed_gate = dict(changed["accepted_gate_record"])
+        changed_gate["config_sha256"] = changed[field]
+    else:
+        changed[field] = "8" * 40
+        changed_gate = dict(changed["accepted_gate_record"])
+        changed_gate["source_identity"] = {"git_revision": changed[field]}
+    changed["accepted_gate_record"] = changed_gate
+    changed["accepted_gate_sha256"] = hashlib.sha256(
+        json.dumps(changed_gate, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+    with pytest.raises(RuntimeError, match="scientific identity drifted"):
+        _run_or_resume_worker_job(**{**kwargs, "execution_context": changed})
+
+
+def test_cuda_sentinel_publishes_manifest_bound_runstore_bundle(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    config = fixed_ray_config(tmp_path / "artifacts", name="cuda-sentinel-bundle")
+    config = replace(
+        config,
+        compute=replace(config.compute, backend="cuda", heavy_sweep_enabled=False),
+    )
+    gate = {
+        "schema_version": "cuda-idle-operator-gate-v1",
+        "captured_at_utc": "2099-01-01T00:00:00+00:00",
+        "expires_at_utc": "2099-01-01T00:05:00+00:00",
+        "operator_opt_in": True,
+        "operator_process_acceptance_pending": True,
+        "idle_observation_passed": True,
+    }
+    gate_digest = hashlib.sha256(
+        json.dumps(gate, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    fake = {
+        "schema_version": "gaussian-fixed-ray-cuda-sentinel-v1",
+        "operator_gate": gate,
+        "operator_gate_sha256": gate_digest,
+        "accepted_gate_sha256": gate_digest,
+        "all_parity_passed": True,
+        "scientific_decision_parity_passed": True,
+        "worker_jobs": [{"job_id": "sentinel.fake"}],
+        "trajectories": {
+            "adjacent_pairs": {
+                "controller_cpu": np.ones((5, 9, 6)),
+                "worker_cpu": np.ones((5, 9, 6)),
+                "worker_cuda": np.ones((5, 9, 6)),
+                "worker_cuda_repeat": np.ones((5, 9, 6)),
+            }
+        },
+    }
+    monkeypatch.setattr(
+        "multiagent_elbo.realizations.gaussian.fixed_ray_experiment.run_cuda_sentinel",
+        lambda *_args, **_kwargs: fake,
+    )
+
+    result = publish_cuda_sentinel(
+        config,
+        operator_opt_in=True,
+        operator_gate=gate,
+        accepted_gate_sha256=gate_digest,
+        staging_root=tmp_path / "staging",
+    )
+
+    assert result.status == "pass"
+    expected = {
+        "cuda_gate.json",
+        "preregistered_job_table.json",
+        "sentinel_parity.json",
+        "sentinel_arrays.npz",
+        "worker_exchange_index.json",
+        "metrics.json",
+        "manifest.json",
+    }
+    assert expected <= {path.name for path in result.run_dir.iterdir()}
+    manifest = json.loads((result.run_dir / "manifest.json").read_text("utf-8"))
+    assert manifest["provenance"]["input_hashes"]["operator_gate_sha256"] == gate_digest
+
+
+def test_click_launcher_gate_mode_publishes_digest_for_two_phase_acceptance(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repository = Path(__file__).resolve().parents[1]
+    launcher_path = repository / "run_gaussian_fixed_ray_lab.py"
+    spec = importlib.util.spec_from_file_location("fixed_ray_launcher", launcher_path)
+    assert spec is not None and spec.loader is not None
+    launcher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(launcher)
+    gate = {
+        "schema_version": "cuda-idle-operator-gate-v1",
+        "operator_opt_in": True,
+        "operator_process_acceptance_pending": True,
+        "processes_present": True,
+    }
+    gate_path = tmp_path / "cuda-gate.json"
+    control_path = tmp_path / "operator-control.json"
+    control_path.write_text(
+        json.dumps(
+            {
+                "mode": "cuda_gate",
+                "operator_opt_in": True,
+                "accepted_gate_sha256": "",
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(launcher, "OPERATOR_CONTROL_PATH", control_path)
+    monkeypatch.setattr(launcher, "CUDA_GATE_PATH", gate_path)
+    monkeypatch.setattr(launcher, "build_cuda_gate_record", lambda *_args, **_kwargs: gate)
+
+    published = launcher.main()
+
+    assert published == gate
+    assert json.loads(gate_path.read_text("utf-8")) == gate
+
+
+def test_click_launcher_namespaces_sentinel_staging_by_accepted_gate_digest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repository = Path(__file__).resolve().parents[1]
+    launcher_path = repository / "run_gaussian_fixed_ray_lab.py"
+    spec = importlib.util.spec_from_file_location("fixed_ray_launcher", launcher_path)
+    assert spec is not None and spec.loader is not None
+    launcher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(launcher)
+    accepted_digest = "a" * 64
+    gate = {"schema_version": "cuda-idle-operator-gate-v1"}
+    gate_path = tmp_path / "cuda-gate.json"
+    gate_path.write_text(json.dumps(gate), encoding="utf-8")
+    control_path = tmp_path / "operator-control.json"
+    control_path.write_text(
+        json.dumps(
+            {
+                "mode": "cuda_sentinel",
+                "operator_opt_in": True,
+                "accepted_gate_sha256": accepted_digest,
+            }
+        ),
+        encoding="utf-8",
+    )
+    staging_base = tmp_path / "sentinel-staging"
+    captured = {}
+
+    def publish(*_args: object, **kwargs: object) -> object:
+        captured.update(kwargs)
+        return SimpleNamespace(run_dir=tmp_path / "run", status="pass", metrics={})
+
+    monkeypatch.setattr(launcher, "OPERATOR_CONTROL_PATH", control_path)
+    monkeypatch.setattr(launcher, "CUDA_GATE_PATH", gate_path)
+    monkeypatch.setattr(launcher, "SENTINEL_STAGING_ROOT", staging_base)
+    monkeypatch.setattr(launcher, "publish_cuda_sentinel", publish)
+
+    launcher.main()
+
+    assert captured["staging_root"] == staging_base / accepted_digest
+
+
+@pytest.mark.parametrize(
+    "mutated_key",
+    (
+        "source_identity",
+        "config_sha256",
+        "preregistration_sha256",
+        "environment_lock_identity",
+        "worker_python_identity",
+        "worker_script_identity",
+        "preflight",
+    ),
+)
+def test_cuda_gate_rejects_every_live_identity_mutation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mutated_key: str
+):
+    config = fixed_ray_config(tmp_path)
+    config = replace(config, compute=replace(config.compute, backend="cuda"))
+    live = {
+        "source_identity": {"git_revision": "a" * 40, "tracked_worktree_clean": True},
+        "config_sha256": "b" * 64,
+        "preregistration_sha256": "c" * 64,
+        "environment_lock_identity": {"path": "lock", "sha256": "d" * 64},
+        "worker_python_identity": {"path": "python", "sha256": "e" * 64},
+        "worker_script_identity": {"path": "worker", "sha256": "f" * 64},
+        "preflight": {"device_name": "NVIDIA GeForce RTX 5090"},
+    }
+    monkeypatch.setattr(
+        "multiagent_elbo.realizations.gaussian.fixed_ray_experiment._live_cuda_gate_bindings",
+        lambda _config: live,
+    )
+    gate = dict(live)
+    gate[mutated_key] = {"mutated": True}
+
+    with pytest.raises(ValueError, match="identity drifted"):
+        _validate_cuda_gate_bindings(config, gate)
 
 
 def test_pilot_is_same_seed_deterministic_across_output_roots(tmp_path: Path):

@@ -41,6 +41,14 @@ The worker request and response were bound by immutable job ID `PILOT-CPU-ONE-ST
 
 The CUDA lanes are explicitly recorded as `not_requested_cpu_pilot` / `INCONCLUSIVE_NOT_REQUESTED_CPU_PILOT`, with null requested/effective backend and dtype, a null gate record, and null CUDA runtime/memory. The CPU pilot makes no busy/idle or operator-decision assertion; such a state would require a separately validated, timestamped, hash-bound gate record. No CPU fallback is presented as CUDA evidence. `heavy_sweep_enabled` remained false and `confirmatory_executed` remained false.
 
+## 2026-08-10 CUDA sentinel attempt and numerical correction
+
+A later float64 parity sentinel at source revision `f3d26921424d012aee472b08cff998b6c0cc1b5e` used operator-gate digest `210bbbbd9226121061600d402e504c212f9887c6921f7d77665ffe2a1a692158`. It completed all 240 controller/worker exchanges for `C001`, `C015`, `C030`, `H001`, and `H010`, while preserving the `H` jobs as parity-only and ineligible for scientific analysis. Every stepwise controller-CPU, worker-CPU, worker-CUDA, and repeated-worker-CUDA comparison passed, CUDA repeatability was exact, and every basin/rejection/threshold decision agreed.
+
+The sentinel nevertheless failed closed before publication because the `H010` `balanced_alternating` angle slope differed from the controller by approximately `3.5e-12`, above the endpoint parity tolerance. The controller value was `-0.00014309631977561107`, the worker-CPU value was `-0.0001430963162191419`, and both CUDA repetitions returned `-0.0001430963162673183`. The same failure in the independent worker-CPU lane, together with passing trajectory parity and exact CUDA repeatability, localized the discrepancy to the derived endpoint rather than the CUDA kernel.
+
+Revision `dae4a4f` replaces the ill-conditioned near-parallel evaluation `acos(dot(u, v))` with the algebraically equivalent chord formula `2*asin(norm(u-v)/2)` for normalized rays. A pinned `1e-6`-radian positive-ray regression fails under the former formula and passes under the correction. Recomputing the preserved trajectories with the corrected formula reduces the `H010` slope differences to approximately `1e-17` without changing the estimand, thresholds, job IDs, seeds, or categorical decisions. The failed digest namespace remains immutable negative evidence. It is not a successful sentinel artifact, does not close CUDA parity, and does not authorize confirmatory execution; a complete fresh-gate rerun at the new final source revision is required.
+
 ## Evidence artifact
 
 The non-publication evidence run was written under the ignored repository-local path:
