@@ -211,7 +211,7 @@ Run the complete test suite with:
 C:\Python314\python.exe -m pytest -q -p no:cacheprovider
 ```
 
-The post-review integration JUnit record contains 688 collected tests: 686
+The post-reconciliation integration JUnit record contains 698 collected tests: 696
 passed, zero failed, zero errored, and two were skipped for the Windows symlink
 privilege described below. CUDA parity and the heavy confirmatory sweep are not
 part of this CPU count.

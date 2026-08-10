@@ -6,7 +6,7 @@ Branch: `codex/theory-simulation-integration-20260809`
 
 Contract freeze: `b80df01f239c2f9a18842f6887cdeca67dff508f`
 
-Scientific and integration source checkpoint: `d5a0514`
+Post-reconciliation CPU/coverage source checkpoint: `8491ad9`
 
 ## Outcome
 
@@ -15,7 +15,7 @@ allowlists, and independently green before serial integration. They were merged
 in the plan's exact order in an isolated worktree. The live `main` checkout and
 its uncommitted files were not modified.
 
-The post-review CPU source checkpoint passes 686 tests with two Windows
+The post-reconciliation CPU source checkpoint passes 696 tests with two Windows
 symlink-privilege skips. All seven new launchers import without side effects,
 run from a sanitized working directory without an editable install, and publish
 complete manifests. All seven new figures replay from finalized saved artifacts
@@ -39,6 +39,16 @@ job was run.
 | 6-7 | Session 6 scale/CUDA infrastructure and CPU Gaussian pilot (`198febf`) | `977688b`, then `0255c1c` | 661 passed, 2 skipped |
 | 8 | Shared exports and launcher matrix | `f483a33` | 682 passed, 2 skipped |
 | 9 | Saved-artifact renderers | `d5a0514` | 683 passed, 2 skipped |
+| 10 | Final review remediation | `e4a7244` | 686 passed, 2 skipped |
+| Reconcile | Current `origin/main` plus complete refreshed Session 2 tip (`aa3fa6b`) | `8491ad9` | 696 passed, 2 skipped |
+
+The reconciliation absorbed Session 5's immutable two-cell boundary repair and
+the complete reviewed Session 2 canonical-rational contract repair. Both
+changes stayed within their frozen lane allowlists. The only merge conflict was
+between two independently implemented preregistration line-ending helpers; the
+resolution retained Git-LF canonicalization, the stricter lone-CR handling, and
+both regression tests. Focused Gaussian/holonomy verification passed 27 tests
+before the broad checkpoint.
 
 ## Final-review remediation
 
@@ -100,8 +110,12 @@ heavy sweep was not run.
 
 ## Remaining gates
 
-1. Run and validate the final-revision CPU JUnit and coverage records after the
-   documentation checkpoint.
+1. Re-run and validate final-revision CPU JUnit and coverage records after this
+   documentation checkpoint. The preliminary revision-bound record at
+   `8491ad9` contains 698 collected tests: 696 passed, zero failed, zero
+   errored, and two skipped. Aggregate coverage is 91.15% line and 74.39%
+   branch; every new production module remains above the 80% line threshold,
+   with `cuda_backend.py` the minimum at 80.56%.
 2. Obtain a final-SHA independent review or record any unresolved disagreement
    as `INCONCLUSIVE`.
 3. Only after explicit operator opt-in and a current validated idle-GPU record,
