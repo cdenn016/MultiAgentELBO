@@ -12,6 +12,7 @@ from .finite_gauge import (
     FiniteRelabelingResult,
     apply_site_relabeling,
 )
+from .holonomy_experiment import HolonomyExperimentResult, run_holonomy_experiment
 
 __all__ = [
     "AttentionCovariantInputs",
@@ -19,7 +20,9 @@ __all__ = [
     "FiniteGaugeResiduals",
     "FinitePermutation",
     "FiniteRelabelingResult",
+    "HolonomyExperimentResult",
     "apply_site_relabeling",
     "evaluate_attention",
+    "run_holonomy_experiment",
     "transform_attention_inputs",
 ]

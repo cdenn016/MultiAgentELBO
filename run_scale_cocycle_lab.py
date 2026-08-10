@@ -11,6 +11,7 @@ if str(SRC) not in sys.path:
 
 from multiagent_elbo.config import ExperimentConfig  # noqa: E402
 from multiagent_elbo.finite.scale_cocycle_experiment import (  # noqa: E402
+    ScaleCocycleExperimentResult,
     run_scale_cocycle_experiment,
 )
 
@@ -31,7 +32,7 @@ NUMERICS = {
     "max_frame_condition": 1.0e6,
 }
 OUTPUT = {
-    "root": str(ROOT / "artifacts" / "scale-cocycle"),
+    "root": "artifacts",
     "collect_diagnostics": True,
     "render_figures": False,
 }
@@ -48,7 +49,7 @@ COMPUTE = {
 }
 
 
-def main() -> None:
+def main() -> ScaleCocycleExperimentResult:
     config = ExperimentConfig.from_dicts(RUN, THEORY, NUMERICS, OUTPUT, COMPUTE)
     result = run_scale_cocycle_experiment(config)
     print(f"run_dir={result.run_dir}")
@@ -59,6 +60,7 @@ def main() -> None:
             f"status={metric.status} theorem_status={metric.theorem_status} "
             f"verification_state={metric.verification_state} claim_origin={metric.claim_origin}"
         )
+    return result
 
 
 if __name__ == "__main__":

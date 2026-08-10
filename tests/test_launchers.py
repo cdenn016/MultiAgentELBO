@@ -20,9 +20,23 @@ LAUNCHER = REPO_ROOT / "run_finite_lab.py"
 FIGURE_LAUNCHER = REPO_ROOT / "make_figures.py"
 ATTENTION_LAUNCHER = REPO_ROOT / "run_attention_lab.py"
 CATEGORICAL_DQM_LAUNCHER = REPO_ROOT / "run_categorical_dqm_lab.py"
+MULTIAGENT_NETWORK_LAUNCHER = REPO_ROOT / "run_multiagent_network_lab.py"
+THEORY_ORACLE_LAUNCHER = REPO_ROOT / "run_theory_oracle_lab.py"
+FINITE_COUNTEREXAMPLE_LAUNCHER = REPO_ROOT / "run_finite_counterexample_lab.py"
+INFORMATION_HISTORY_LAUNCHER = REPO_ROOT / "run_information_history_lab.py"
+GAUGE_HOLONOMY_LAUNCHER = REPO_ROOT / "run_gauge_holonomy_lab.py"
+SCALE_COCYCLE_LAUNCHER = REPO_ROOT / "run_scale_cocycle_lab.py"
+GAUSSIAN_FIXED_RAY_LAUNCHER = REPO_ROOT / "run_gaussian_fixed_ray_lab.py"
 NEW_LAUNCHERS = (
-    ("attention", ATTENTION_LAUNCHER),
-    ("categorical_dqm", CATEGORICAL_DQM_LAUNCHER),
+    ("attention", ATTENTION_LAUNCHER, "pass"),
+    ("categorical_dqm", CATEGORICAL_DQM_LAUNCHER, "pass"),
+    ("multiagent_network", MULTIAGENT_NETWORK_LAUNCHER, "pass"),
+    ("theory_oracle", THEORY_ORACLE_LAUNCHER, "pass"),
+    ("finite_counterexample", FINITE_COUNTEREXAMPLE_LAUNCHER, "pass"),
+    ("information_history", INFORMATION_HISTORY_LAUNCHER, "pass"),
+    ("gauge_holonomy", GAUGE_HOLONOMY_LAUNCHER, "pass"),
+    ("scale_cocycle", SCALE_COCYCLE_LAUNCHER, "pass"),
+    ("gaussian_fixed_ray", GAUSSIAN_FIXED_RAY_LAUNCHER, "inconclusive"),
 )
 
 
@@ -38,24 +52,40 @@ def test_new_stable_primitives_results_and_runs_are_public_package_exports():
     from multiagent_elbo.finite import (
         AttentionDisintegration,
         AttentionExperimentResult,
+        AgentNetworkExperimentResult,
         CategoricalDqmAnalysis,
         CategoricalDqmExperimentResult,
         CategoricalExponentialFamily,
         DqmRemainderLadder,
+        FiniteCounterexampleExperimentResult,
+        InformationHistoryExperimentResult,
+        ScaleCocycleExperimentResult,
         StateConditionedAttentionLaw,
+        TheoryOracleExperimentResult,
         analyze_categorical_dqm,
         centered_log_probability_finite_difference,
         centered_pushed_log_probability_finite_difference,
         compose_kernels,
         normalized_dqm_remainder_ladder,
+        run_agent_network_experiment,
         run_attention_experiment,
         run_categorical_dqm_experiment,
+        run_finite_counterexample_experiment,
+        run_information_history_experiment,
+        run_scale_cocycle_experiment,
+        run_theory_oracle_experiment,
     )
     from multiagent_elbo.geometry import (
         AttentionCovariantInputs,
         AttentionGaugeEvaluation,
+        HolonomyExperimentResult,
         evaluate_attention,
+        run_holonomy_experiment,
         transform_attention_inputs,
+    )
+    from multiagent_elbo.realizations.gaussian import (
+        GaussianFixedRayExperimentResult,
+        run_gaussian_fixed_ray_experiment,
     )
 
     assert all(
@@ -63,30 +93,49 @@ def test_new_stable_primitives_results_and_runs_are_public_package_exports():
         for value in (
             AttentionDisintegration,
             AttentionExperimentResult,
+            AgentNetworkExperimentResult,
             CategoricalDqmAnalysis,
             CategoricalDqmExperimentResult,
             CategoricalExponentialFamily,
             DqmRemainderLadder,
+            FiniteCounterexampleExperimentResult,
+            InformationHistoryExperimentResult,
+            ScaleCocycleExperimentResult,
             StateConditionedAttentionLaw,
+            TheoryOracleExperimentResult,
             analyze_categorical_dqm,
             centered_log_probability_finite_difference,
             centered_pushed_log_probability_finite_difference,
             compose_kernels,
             normalized_dqm_remainder_ladder,
+            run_agent_network_experiment,
             run_attention_experiment,
             run_categorical_dqm_experiment,
+            run_finite_counterexample_experiment,
+            run_information_history_experiment,
+            run_scale_cocycle_experiment,
+            run_theory_oracle_experiment,
             AttentionCovariantInputs,
             AttentionGaugeEvaluation,
+            HolonomyExperimentResult,
             evaluate_attention,
+            run_holonomy_experiment,
             transform_attention_inputs,
+            GaussianFixedRayExperimentResult,
+            run_gaussian_fixed_ray_experiment,
         )
     )
 
 
-@pytest.mark.parametrize(("label", "launcher"), NEW_LAUNCHERS)
+@pytest.mark.parametrize(("label", "launcher", "expected_status"), NEW_LAUNCHERS)
 def test_new_launcher_import_ignores_invalid_argv_and_has_no_side_effects(
-    tmp_path: Path, monkeypatch, label: str, launcher: Path
+    tmp_path: Path,
+    monkeypatch,
+    label: str,
+    launcher: Path,
+    expected_status: str,
 ):
+    del expected_status
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", [launcher.name, "--invalid-argument"])
 
@@ -97,25 +146,25 @@ def test_new_launcher_import_ignores_invalid_argv_and_has_no_side_effects(
     assert list(tmp_path.iterdir()) == []
 
 
-@pytest.mark.parametrize(("label", "launcher"), NEW_LAUNCHERS)
+@pytest.mark.parametrize(("label", "launcher", "expected_status"), NEW_LAUNCHERS)
 def test_new_launcher_main_needs_only_an_overridden_output_root(
-    tmp_path: Path, label: str, launcher: Path
+    tmp_path: Path, label: str, launcher: Path, expected_status: str
 ):
     module = load_launcher(f"{label}_launcher_main", launcher)
     module.OUTPUT = {**module.OUTPUT, "root": str(tmp_path)}
 
     result = module.main()
 
-    assert result.status == "pass"
+    assert result.status == expected_status
     assert not hasattr(module, "parser")
     manifests = list(tmp_path.rglob("manifest.json"))
     assert manifests == [result.run_dir / "manifest.json"]
     assert json.loads(manifests[0].read_text("utf-8"))["complete"] is True
 
 
-@pytest.mark.parametrize(("label", "launcher"), NEW_LAUNCHERS)
+@pytest.mark.parametrize(("label", "launcher", "expected_status"), NEW_LAUNCHERS)
 def test_new_launcher_runs_with_no_arguments_from_a_sanitized_temp_cwd(
-    tmp_path: Path, label: str, launcher: Path
+    tmp_path: Path, label: str, launcher: Path, expected_status: str
 ):
     environment = os.environ.copy()
     environment["PYTHONPATH"] = ""
@@ -131,7 +180,7 @@ def test_new_launcher_runs_with_no_arguments_from_a_sanitized_temp_cwd(
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert "status=pass" in completed.stdout
+    assert f"status={expected_status}" in completed.stdout
     manifests = list((tmp_path / "artifacts").rglob("manifest.json"))
     assert len(manifests) == 1
     assert json.loads(manifests[0].read_text("utf-8"))["complete"] is True
