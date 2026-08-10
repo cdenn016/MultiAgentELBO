@@ -23,7 +23,8 @@ inconclusive.
 |---|---|
 | Branch | `codex/exact-theory-oracles-20260809` |
 | Contract-freeze base | `b80df01f239c2f9a18842f6887cdeca67dff508f` |
-| Tested source and review revision | `9f9425fa14485845e0fcb8d618f2a3d3ce4ab3ad` |
+| Focused JUnit/coverage and review revision | `9f9425fa14485845e0fcb8d618f2a3d3ce4ab3ad` |
+| Profile/replay manifest revision | `cd5740b774fb8f5f61611900dbc6d55be204fa53` |
 | Manifest Git state | `git_dirty=false` |
 | Theory tree SHA-256 | `a7fddfcb8c67dbec71c7a35d0e415313a38154719e05d6ccd73672a810939343` |
 | Frozen application ID | `30a4bd77e738fbb73b3326ec009995ec7b2bc94f20c96e9e286644bdeec620cd` |
@@ -64,6 +65,9 @@ made.
 Focused JUnit was generated with:
 
 ```powershell
+$expected = '9f9425fa14485845e0fcb8d618f2a3d3ce4ab3ad'
+if ((git rev-parse HEAD).Trim() -ne $expected) { throw 'wrong JUnit source revision' }
+if (git status --porcelain=v1) { throw 'JUnit source checkout is dirty' }
 C:\Python314\python.exe -m pytest `
   tests/test_theory_oracles.py `
   tests/test_theory_oracle_experiment.py `
@@ -75,6 +79,9 @@ C:\Python314\python.exe -m pytest `
 Branch-aware coverage and the lane-scoped XML were generated with:
 
 ```powershell
+$expected = '9f9425fa14485845e0fcb8d618f2a3d3ce4ab3ad'
+if ((git rev-parse HEAD).Trim() -ne $expected) { throw 'wrong coverage source revision' }
+if (git status --porcelain=v1) { throw 'coverage source checkout is dirty' }
 C:\Python314\python.exe -m coverage run `
   --data-file=.verification/session2-results-draft/9f9425f/.coverage `
   --branch --source=src -m pytest `
@@ -89,29 +96,13 @@ C:\Python314\python.exe -m coverage xml `
   -o .verification/session2-results-draft/9f9425f/coverage-lane.xml
 ```
 
-The following path-safe recipe invokes the no-argument launcher from a fresh
-working directory with an empty `PYTHONPATH`:
-
-```powershell
-$repo = (Resolve-Path '.').Path
-$token = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
-$launchCwd = Join-Path $repo ".verification/session2-results-draft/9f9425f/launcher-sanitized-$token"
-New-Item -ItemType Directory -Path $launchCwd | Out-Null
-Push-Location $launchCwd
-try {
-  $env:PYTHONPATH = ''
-  & 'C:\Python314\python.exe' (Join-Path $repo 'run_theory_oracle_lab.py')
-  if ($LASTEXITCODE -ne 0) { throw "launcher exit code $LASTEXITCODE" }
-} finally {
-  Pop-Location
-}
-```
-
 The editable `RUN`, `THEORY`, `NUMERICS`, `OUTPUT`, and `COMPUTE` dictionaries
 in that file are the user interface. The launcher has no `argparse` or CLI
 options.
 
 ## Machine-readable verification
+
+### Focused JUnit and coverage partition: `9f9425f`
 
 The JUnit XML was parsed as data rather than read from the console summary.
 
@@ -141,13 +132,15 @@ The branch percentages are not represented as meeting an 80% threshold.
 
 ## Launcher reproduction and artifacts
 
-The sanitized launcher completed with exit code zero in 0.525346 seconds and
+### Profile and replay partition: `cd5740b`
+
+The machine-recorded no-argument profile completed with exit code zero and
 reported `status=pass`, five metrics, and `figures=not_exposed`. Its finalized
 run is:
 
-`.verification/session2-results-draft/9f9425f/launcher-sanitized/artifacts/theory_oracle/a80d4ddb5d6d33b9105fd192650bb5e869a2e9ca98e287dd867db790c98c1d94-20260809`
+`.verification/session2-results-draft/cd5740b/profile-run-1786334584543785600/artifacts/theory_oracle/a80d4ddb5d6d33b9105fd192650bb5e869a2e9ca98e287dd867db790c98c1d94-20260809`
 
-The manifest binds the clean source revision `9f9425f`, the Theory digest, the
+The manifest binds the clean source revision `cd5740b`, the Theory digest, the
 fixture digest and application ID, resolved configuration, platform and
 dependency versions, and named RNG streams. It finalizes exactly these nine
 files:
@@ -165,35 +158,49 @@ files:
 The exact files contain 41 rational arrays, four formal-log sums, and a
 five-metric reconstruction layout. The theorem-assumption artifact contains
 10 typed records. The manifest SHA-256 is
-`8d8b9da847d7e09d93d4e845b317d6ba4a74bc86f22ef38122ec2671946fb3bb`;
+`5a14763632289673dc60ce94634101d76368ff2401685ab027a148ea337b26db`;
 the metric-file SHA-256 is
 `8d8efca46866e5c549a18e541db7956c6b49bbb1c386f73be014e9ae88d59c1e`.
 
-A fresh no-argument profile at commit `cd5740b` used Python's standard-library
-`subprocess` and `time.perf_counter`, plus `ctypes` access to Windows
-`GetProcessMemoryInfo`. It completed in 0.535613 seconds with a peak working
-set of 62,509,056 bytes (59.613 MiB), measured over 190 samples. This is a
-process peak-working-set measurement, not a claim about asymptotic memory.
+A fresh no-argument profile from a clean detached checkout of `cd5740b` used
+Python's standard-library `subprocess` and `time.perf_counter`, plus `ctypes`
+access to Windows `GetProcessMemoryInfo`. It completed in 1.091541 seconds
+with a peak working set of 63,332,352 bytes (60.398 MiB), measured over 376
+samples. This is a process peak-working-set measurement, not a claim about
+asymptotic memory.
 
 The machine-readable record is
-`.verification/session2-results-draft/9f9425f/launcher-profile-latest.json`,
+`.verification/session2-results-draft/cd5740b/launcher-profile.json`,
 SHA-256
-`c8953e884d827eeff0964fa07d575d312ae9fe2cf543a57a5d6e0b0288c24a5f`.
-It records the exact two-element command, absolute working directory,
-`PYTHONPATH` override, interpreter, exit code, elapsed seconds, peak bytes,
-sample count, launcher stdout and stderr, parsed launcher and figure statuses,
-metric count, manifest completeness, measurement method, and manifest Git
-commit. PowerShell reparsing confirmed exit code zero, empty stderr,
-`status=pass`, `figures=not_exposed`, five metrics, a complete manifest, and
-manifest revision `cd5740b774fb8f5f61611900dbc6d55be204fa53`.
+`32b2c41dd27e730ce9587fffb68473236af6e3ccab61dae31ad24a7a31bd9893`.
+It records the exact probe and launcher argument arrays, probe and launcher
+working directories, source checkout, `PYTHONPATH` override, interpreter, exit
+code, elapsed seconds, peak bytes, sample count, launcher stdout and stderr,
+parsed launcher and figure statuses, metric count and hash, manifest path and
+hash, manifest completeness, measurement method, and tested Git revision and
+dirty state. PowerShell reparsing confirmed exit code zero, empty stderr,
+`status=pass`, `figures=not_exposed`, five metrics, a complete manifest, and a
+clean manifest revision `cd5740b774fb8f5f61611900dbc6d55be204fa53`.
 
-The retained ignored probe makes the profile command exact and path safe:
+The exact recorded profile command used the clean short-path checkout below.
+Its precondition is that the command starts in the Session 2 worktree and that
+the detached source checkout exists, is clean, and is at `cd5740b`:
 
 ```powershell
-$repo = (Resolve-Path '.').Path
-& 'C:\Python314\python.exe' `
-  (Join-Path $repo '.verification/session2-results-draft/9f9425f/profile_launcher_probe.py')
-if ($LASTEXITCODE -ne 0) { throw "profile probe exit code $LASTEXITCODE" }
+$laneRepo = (Resolve-Path '.').Path
+$evidence = Join-Path $laneRepo '.verification/session2-results-draft/cd5740b'
+$source = 'C:\tmp\maelbo-s2-cd5740b-src-20260810'
+$expected = 'cd5740b774fb8f5f61611900dbc6d55be204fa53'
+if (-not (Test-Path -LiteralPath $source)) { throw 'missing detached source checkout' }
+if ((git -C $source rev-parse HEAD).Trim() -ne $expected) { throw 'wrong profile source revision' }
+if (git -C $source status --porcelain=v1) { throw 'profile source checkout is dirty' }
+Push-Location $source
+try {
+  & 'C:\Python314\python.exe' (Join-Path $evidence 'profile_launcher_probe.py') $source
+  if ($LASTEXITCODE -ne 0) { throw "profile probe exit code $LASTEXITCODE" }
+} finally {
+  Pop-Location
+}
 ```
 
 ## Metric results
@@ -277,18 +284,36 @@ because each records its distinct output root and resulting configuration
 hash.
 
 The replay is recorded as machine-readable JSON at
-`.verification/session2-results-draft/9f9425f/deterministic-replay-latest.json`,
+`.verification/session2-results-draft/cd5740b/deterministic-replay.json`,
 SHA-256
-`68ca11295805804c0cbe05f4e353a8b3ae98434379e63494fb0fa35cf2b3f5c0`.
-The record contains both absolute run directories, both complete hash maps,
-all five metric-equality booleans, the seed, interpreter, semantic inventory,
-and probe command. It was generated with:
+`96816e3bc093cbaa0719d29bc6a45bf9a40ce8965c82cc16ff2fc80577f7e9cc`.
+The record contains the tested Git revision, clean state from both manifests,
+both manifest paths and hashes, both absolute run directories, interpreter,
+probe and launcher argument arrays, probe CWD, source checkout, environment
+override, both exit codes, full stdout and stderr plus their hashes, both
+complete semantic hash maps, both metric records and hashes, and the equality
+booleans. Both subprocesses exited zero with empty stderr; both clean manifests
+bind `cd5740b` and have SHA-256
+`5a14763632289673dc60ce94634101d76368ff2401685ab027a148ea337b26db`.
+
+The exact replay command has the same source-checkout precondition and uses an
+explicit `Push-Location`:
 
 ```powershell
-$repo = (Resolve-Path '.').Path
-& 'C:\Python314\python.exe' `
-  (Join-Path $repo '.verification/session2-results-draft/9f9425f/deterministic_replay_probe.py')
-if ($LASTEXITCODE -ne 0) { throw "replay probe exit code $LASTEXITCODE" }
+$laneRepo = (Resolve-Path '.').Path
+$evidence = Join-Path $laneRepo '.verification/session2-results-draft/cd5740b'
+$source = 'C:\tmp\maelbo-s2-cd5740b-src-20260810'
+$expected = 'cd5740b774fb8f5f61611900dbc6d55be204fa53'
+if (-not (Test-Path -LiteralPath $source)) { throw 'missing detached source checkout' }
+if ((git -C $source rev-parse HEAD).Trim() -ne $expected) { throw 'wrong replay source revision' }
+if (git -C $source status --porcelain=v1) { throw 'replay source checkout is dirty' }
+Push-Location $source
+try {
+  & 'C:\Python314\python.exe' (Join-Path $evidence 'deterministic_replay_probe.py') $source
+  if ($LASTEXITCODE -ne 0) { throw "replay probe exit code $LASTEXITCODE" }
+} finally {
+  Pop-Location
+}
 ```
 
 ## Claim, evidence, and falsifier table
@@ -307,7 +332,8 @@ counterexample to that exact mathematical claim. Missing premises yield
 | Marked-event direct/staged pushforward | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Finite-sum derivation and exact asymmetric witness | Implementation failure: direct/staged joints differ or agreement requires dropped source mass/reversed composition. Mathematical refutation: normalized finite kernels and a marked joint law satisfying the orientation premises but violating associativity. |
 | Full product-reference Hoeffding/Mobius reconstruction | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Mobius derivation and exact three-way witness | Implementation failure: a nonzero full residual, missing empty component, or missing triple residual under order-two truncation. Mathematical refutation: a finite normalized product-reference witness satisfying the projector definition but violating reconstruction. |
 | Inverse congruence, Galerkin restriction, and algebraic Schur complement as distinct operations | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `STANDARD` | Exact matrix derivations and rational literals | Implementation failure: disagreement with the respective exact matrix formula or collapse of the two reductions. Mathematical refutation: matrices satisfying each operation's invertibility and typing premises but violating its stated identity. |
-| The project comparison lab reproduces all five exact-oracle vectors at revision `9f9425f` | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `PROJECT_NOVEL` | JUnit, branch-aware coverage, exact serialized reconstruction, and reproduced output | This is an implementation claim: a residual above tolerance, undetected exact-JSON corruption, changed semantic replay hash, or incomplete manifest refutes conformance at the bound revision. |
+| The project comparison lab passes focused tests and exact serialized reconstruction at revision `9f9425f` | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `PROJECT_NOVEL` | JUnit, branch-aware coverage, and exact serialized reconstruction | This is an implementation claim: a focused failure, residual above tolerance, or undetected exact-JSON corruption refutes conformance at the bound revision. |
+| The no-argument lab profiles and deterministically replays all five exact-oracle metrics at revision `cd5740b` | `ESTABLISHED` | `EVIDENCE_VERIFIED` | `PROJECT_NOVEL` | Two clean-manifest subprocess reproductions, resource profile, and semantic hashes | This is an implementation claim: a nonzero exit, dirty or wrong-revision manifest, incomplete inventory, changed semantic hash, unequal metrics, or nonempty stderr refutes conformance at the bound revision. |
 | The frozen two-scale application satisfies all premises needed for the application theorem | `HYPOTHESIS` | `INCONCLUSIVE` | `APPLICATION_SPECIFIC` | Exact literal Jacobian/square plus review of missing witnesses | Verification requires proofs of every named premise. A supplied exact witness that violates one precise premise refutes only that application-premise claim; absent witnesses remain inconclusive. |
 | Continuum, infinite-volume, universality, nonlinear-attraction, or physical-time conclusions | `OPEN` | `INCONCLUSIVE` | `PROJECT_NOVEL` | No eligible evidence in this finite lane | These labels are not one claim. Each must first be scoped precisely; proof may verify it, while an in-domain premise-satisfying certified counterexample may refute it. Finite residuals do neither. |
 
@@ -350,9 +376,17 @@ and any saved-artifact figure integration. Those shared paths were deliberately
 not edited by Session 2. The oracle remains CPU-only and figures remain
 unexposed unless the integration owner approves a later contract change.
 
-The exact lane allowlist audit is:
+The exact lane allowlist audit assumes the current Session 2 branch tip is
+checked out and starts from any directory inside that worktree. It resolves and
+enters the repository root explicitly:
 
 ```powershell
+$repo = (git rev-parse --show-toplevel).Trim()
+if (-not (Test-Path -LiteralPath (Join-Path $repo 'docs/superpowers/plans/2026-08-09-six-session-theory-simulation-buildout.md'))) {
+  throw 'not in the Session 2 repository'
+}
+Push-Location $repo
+try {
 $base = 'b80df01f239c2f9a18842f6887cdeca67dff508f'
 $allowed = @(
   'src/multiagent_elbo/finite/theory_oracles.py',
@@ -370,14 +404,22 @@ if ($unexpected.Count -ne 0 -or $missing.Count -ne 0) {
   throw "allowlist mismatch: unexpected=$unexpected missing=$missing"
 }
 $changed | Sort-Object
+} finally {
+  Pop-Location
+}
 ```
 
-This document is written after the evidence run, so the evidence above is
-revision-bound to clean source/review SHA `9f9425f`, not to the subsequent
-results-document commit. Before lane publication, the coordinator must start a
-fresh ignored verification ledger at the final tracked SHA, rerun the required
-focused JUnit, scoped coverage, launcher reproduction, determinism, and
-allowlist checks, record one claim per check with eligible evidence, validate
-the ledger, and keep `.verification/**` uncommitted. Any post-`9f9425f` source,
-configuration, dependency, fixture, or mathematical-convention change also
-requires affected evidence to be reproduced.
+The evidence is deliberately partitioned rather than described as one
+revision-bound run: focused JUnit, coverage, and the mathematical review bind
+clean revision `9f9425f`; the machine-recorded profile and two-root replay bind
+clean revision `cd5740b`. Runtime source paths did not change between those
+commits, but their evidence records remain distinct. Neither partition binds
+the later results-document repair commits.
+
+Before lane publication, the coordinator must start a fresh ignored
+verification ledger at the final tracked SHA, rerun the required focused
+JUnit, scoped coverage, launcher reproduction, determinism, and allowlist
+checks, record one claim per check with eligible evidence, validate the ledger,
+and keep `.verification/**` uncommitted. Any later source, configuration,
+dependency, fixture, or mathematical-convention change also requires affected
+evidence to be reproduced.
