@@ -235,6 +235,7 @@ class FixedRayTrajectory:
     projective_ray_angles: np.ndarray
     normalized_coupling_distances: np.ndarray
     off_family_nonlinear_remainders: np.ndarray
+    retained_beta_residual_vectors: np.ndarray
     retained_beta_residuals: np.ndarray
     basin_exits: np.ndarray
     coefficient_conditioning: np.ndarray
@@ -277,13 +278,17 @@ def iterate_fixed_ray(
     projection = np.outer(system.perron_ray, system.perron_ray) / float(
         np.dot(system.perron_ray, system.perron_ray)
     )
-    retained_beta = np.array(
+    finite_differences = coefficients[1:] - coefficients[:-1]
+    retained_beta_vectors = np.array(
         [
-            np.linalg.norm((np.eye(initial.size) - projection) @ coefficients[index + 1])
+            (np.eye(initial.size) - projection) @ difference
             / system.log_block_scale
-            for index in range(steps)
+            for difference in finite_differences
         ]
     )
+    if steps == 0:
+        retained_beta_vectors = np.empty((0, initial.size), dtype=np.float64)
+    retained_beta = np.linalg.norm(retained_beta_vectors, axis=1)
     basin_exits = np.any(
         (coefficients < system.basin_lower) | (coefficients > system.basin_upper),
         axis=1,
@@ -296,6 +301,7 @@ def iterate_fixed_ray(
         projective_ray_angles=_readonly(angles),
         normalized_coupling_distances=_readonly(distances),
         off_family_nonlinear_remainders=_readonly(off_family),
+        retained_beta_residual_vectors=_readonly(retained_beta_vectors),
         retained_beta_residuals=_readonly(retained_beta),
         basin_exits=_readonly(basin_exits, dtype=np.bool_),
         coefficient_conditioning=_readonly(conditioning),

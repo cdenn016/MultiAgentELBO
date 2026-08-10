@@ -95,6 +95,11 @@ def test_pilot_publishes_recomputable_artifacts_with_incomplete_cuda_gate(
     assert result.metrics["cpu_cuda_parity_residual"].status == "inconclusive"
     assert result.metrics["cpu_cuda_parity_residual"].theorem_status == "OPEN"
     assert result.metrics["cpu_cuda_parity_residual"].verification_state == "INCONCLUSIVE"
+    assert result.metrics["retained_beta_residual"].interpretation.startswith(
+        "Pilot norm"
+    )
+    assert result.metrics["retained_beta_residual_signed_max"].value > 0.0
+    assert result.metrics["retained_beta_residual_signed_min"].value < 0.0
     assert result.metrics["noncommuting_scheme_control"].value == pytest.approx(0.01)
     assert result.metrics["noncommuting_scheme_control"].status == "pass"
     assert result.metrics["commuting_mutation_control"].value == pytest.approx(0.0)
@@ -137,6 +142,11 @@ def test_pilot_publishes_recomputable_artifacts_with_incomplete_cuda_gate(
     assert arrays["balanced_alternating_coefficients"].shape == (4, 9, 6)
     assert arrays["adjacent_pairs_projective_angles"].shape == (4, 9)
     assert arrays["balanced_alternating_retained_beta_residuals"].shape == (4, 8)
+    assert arrays["balanced_alternating_retained_beta_residual_vectors"].shape == (
+        4,
+        8,
+        6,
+    )
     assert arrays["blocking_scheme_dispersion"].shape == (4, 9)
     np.testing.assert_allclose(
         arrays["off_family_nonlinear_remainders"], 0.0, rtol=0.0, atol=1.0e-12

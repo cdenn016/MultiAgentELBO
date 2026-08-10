@@ -8,6 +8,7 @@ import pytest
 from multiagent_elbo.finite.scale_cocycle import (
     ExactLinearIsomorphism,
     ExactMarkovChannel,
+    ExactTypedMorphism,
     anchored_mobius_decompose,
     base_fisher_cocycle_residual_forms,
     conditional_log_laplace_action,
@@ -97,18 +98,34 @@ def test_comparison_orientation_and_ordered_derivative_cocycle_are_typed_and_non
     identified = identified_linear_step(
         source_identification, native_step, target_identification
     )
-    first_derivative = ((F(1), F(1)), (F(0), F(1)))
-    second_derivative = ((F(1), F(0)), (F(1), F(1)))
+    first_derivative = ExactTypedMorphism(
+        "level-0",
+        "level-1",
+        "tangent-0",
+        "tangent-1",
+        ((F(1), F(1)), (F(0), F(1))),
+    )
+    second_derivative = ExactTypedMorphism(
+        "level-1",
+        "level-2",
+        "tangent-1",
+        "tangent-2",
+        ((F(1), F(0)), (F(1), F(1))),
+    )
 
     assert identified == ((F(5, 2), F(10, 3)), (F(21, 2), F(28, 3)))
-    assert ordered_derivative_cocycle((first_derivative, second_derivative)) == (
+    composite = ordered_derivative_cocycle((first_derivative, second_derivative))
+    assert composite.matrix == (
         (F(1), F(1)),
         (F(1), F(2)),
     )
-    assert ordered_derivative_cocycle((first_derivative, second_derivative)) != (
-        (F(2), F(1)),
-        (F(1), F(1)),
-    )
+    assert composite.source_level == "level-0"
+    assert composite.target_level == "level-2"
+    assert composite.source_type == "tangent-0"
+    assert composite.target_type == "tangent-2"
+
+    with pytest.raises(ValueError, match="adjacent levels and types"):
+        ordered_derivative_cocycle((second_derivative, first_derivative))
 
 
 def test_retained_beta_has_the_exact_signed_residual_in_three_equivalent_forms():

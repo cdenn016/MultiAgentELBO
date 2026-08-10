@@ -19,7 +19,8 @@ Positive finite trends are typed `NUMERICAL`. They do not select a unique matrix
 | Median scale-8 projective ray angle | `1.8964891266716035e-4` rad | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
 | Median scale-8 normalized coupling distance | `1.8964894228803603e-4` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
 | Maximum off-family nonlinear remainder | `1.7771674674387606e-16` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
-| Median final retained beta residual | `8.660655934822545e-4` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
+| Median final retained beta residual norm | `1.3155508488955265e-3` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
+| Final signed retained beta component range | `[-2.409409114073506e-3, 1.5281165231984949e-3]` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
 | Basin-exit rate | `0` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
 | Median scale-8 scheme dispersion | `4.647541415137177e-4` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
 | Controller CPU versus worker CPU maximum residual | `2.220446049250313e-16` | CPU subcheck passed | CUDA metric remains `OPEN / INCONCLUSIVE / APPLICATION_SPECIFIC` |
@@ -32,10 +33,11 @@ The eight preregistered-window pilot slopes ranged from approximately `-4.97e-3`
 - Replacing the second map by the first made the commutator gap exactly zero, demonstrating that the control detects the pinned mutation.
 - Adding `1e-3` to one parity output produced a failed parity comparison; the negative-control metric therefore passed.
 - The scalarized coupling arrays retained every `W_e=c_e M0`, with only float64 roundoff in the Frobenius projection residual.
+- The signed retained beta array is `(I-P)(c_(k+1)-c_k)/log(2)`. The literal adjacent-map oracle starts with `[1.5, 0.9, 0.3, -0.3, -0.9, -1.5]/log(2)`; the former next-state mutation has different signs and fails the oracle.
 
 ## Backend and protocol evidence
 
-The worker request and response were bound by immutable job ID `PILOT-CPU-ONE-STEP`, per-array hashes, NPZ hashes, and output identity `3e5c563e5a43cd5ac393408fda5d6a16acabd2f922de028a3812165febf040c1`. The frozen lock digest was `b1309f089eda1914df7e87704628e367706e50203441aba775517fefa02838a2`; the worker executable hash was `6965927a96b81d1717c1d2186de7feb9b29ebf8775464020ebc2f25de6ef8ee0`. Requested and effective worker values were both `cpu/float64`.
+The worker request and response were bound by immutable job ID `PILOT-CPU-ONE-STEP`, exact output inventory, request-derived shapes/dtypes, per-array hashes, NPZ hashes, and output identity `3e5c563e5a43cd5ac393408fda5d6a16acabd2f922de028a3812165febf040c1`. The frozen lock digest was `b1309f089eda1914df7e87704628e367706e50203441aba775517fefa02838a2`; the worker executable hash was `6965927a96b81d1717c1d2186de7feb9b29ebf8775464020ebc2f25de6ef8ee0`. Requested and effective worker values were both `cpu/float64`. The validated CPU provenance records `rowwise_spatial_map_matvec`, runtime, retry lineage, lock consistency, and explicit null CUDA driver/cuBLAS/library fields.
 
 The CUDA lanes are explicitly recorded as `not_run_busy_gpu`, with null effective backend/dtype and null CUDA runtime/memory. No CPU fallback is presented as CUDA evidence. `heavy_sweep_enabled` remained false and `confirmatory_executed` remained false.
 
@@ -43,6 +45,6 @@ The CUDA lanes are explicitly recorded as `not_run_busy_gpu`, with null effectiv
 
 The non-publication evidence run was written under the ignored repository-local path:
 
-`.pytest-tmp/session6-pilot-evidence/session6-pilot-evidence/7cb33d88a88013a5e11b06dcd8df87ec2f6c6971fe53b9bba47a3063312c0b1f-20260809`
+`.pytest-tmp/session6-round1-pilot-evidence/session6-round1-pilot-evidence/feab619e1e476b18a82c76b47547668d0cd9ace52a707baf852d66fe757ad897-20260809`
 
 It contains the full 44-job planned table, four CPU-generated pilot literals, every pilot trajectory and diagnostic array, per-seed endpoints, backend provenance, request/response manifests, parity matrix, performance record, and typed metrics.

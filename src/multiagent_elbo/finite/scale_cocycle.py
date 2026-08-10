@@ -271,17 +271,60 @@ def identified_linear_step(
     )
 
 
+@dataclass(frozen=True, init=False)
+class ExactTypedMorphism:
+    """Exact linear morphism with semantic source/target level and type."""
+
+    source_level: str
+    target_level: str
+    source_type: str
+    target_type: str
+    matrix: ExactMatrix
+
+    def __init__(
+        self,
+        source_level: str,
+        target_level: str,
+        source_type: str,
+        target_type: str,
+        matrix: Sequence[Sequence[object]],
+    ) -> None:
+        labels = (source_level, target_level, source_type, target_type)
+        if any(type(label) is not str or not label for label in labels):
+            raise ValueError("morphism levels and types must be nonempty strings")
+        object.__setattr__(self, "source_level", source_level)
+        object.__setattr__(self, "target_level", target_level)
+        object.__setattr__(self, "source_type", source_type)
+        object.__setattr__(self, "target_type", target_type)
+        object.__setattr__(self, "matrix", _matrix(matrix, field="typed morphism matrix"))
+
+
 def ordered_derivative_cocycle(
-    derivatives: Sequence[Sequence[Sequence[object]]],
-) -> ExactMatrix:
-    """Compose adjacent derivatives with the rightmost scale acting first."""
+    derivatives: Sequence[ExactTypedMorphism],
+) -> ExactTypedMorphism:
+    """Compose semantically adjacent derivatives, rightmost scale first."""
     if not derivatives:
         raise ValueError("at least one derivative is required")
-    exact = [_matrix(derivative, field="derivative") for derivative in derivatives]
-    result = exact[0]
-    for derivative in exact[1:]:
-        result = _matmul(derivative, result)
-    return result
+    if any(not isinstance(derivative, ExactTypedMorphism) for derivative in derivatives):
+        raise TypeError("every derivative must be an ExactTypedMorphism")
+    first = derivatives[0]
+    result = first.matrix
+    previous = first
+    for derivative in derivatives[1:]:
+        if (
+            previous.target_level != derivative.source_level
+            or previous.target_type != derivative.source_type
+        ):
+            raise ValueError("derivative factors must have adjacent levels and types")
+        result = _matmul(derivative.matrix, result)
+        previous = derivative
+    return ExactTypedMorphism(
+        first.source_level,
+        previous.target_level,
+        first.source_type,
+        previous.target_type,
+        result,
+    )
 
 
 @dataclass(frozen=True)
@@ -490,6 +533,7 @@ __all__ = [
     "CoarseAction",
     "ExactLinearIsomorphism",
     "ExactMarkovChannel",
+    "ExactTypedMorphism",
     "FisherCocycleResidualForms",
     "PosteriorBridge",
     "RetainedBetaDiagnostics",

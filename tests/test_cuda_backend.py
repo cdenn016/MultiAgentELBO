@@ -12,9 +12,13 @@ from multiagent_elbo.cuda_backend import (
     canonical_array_sha256,
     parity_diagnostics,
     run_worker_job,
+    validate_worker_provenance,
     validate_worker_result,
 )
-from multiagent_elbo.experiment_support import validate_worker_protocol_manifest
+from multiagent_elbo.experiment_support import (
+    validate_worker_protocol_manifest,
+    worker_output_identity,
+)
 
 
 REPOSITORY = Path(__file__).resolve().parents[1]
@@ -97,12 +101,50 @@ def test_worker_cpu_roundtrip_validates_binding_remainder_batch_and_provenance(
     assert result.provenance["worker_executable_sha256"] == hashlib.sha256(
         ANACONDA.read_bytes()
     ).hexdigest()
-    assert result.provenance["kernel_strategy"] == "batched_spatial_map_matmul"
+    assert result.provenance["schema_version"] == "cuda-worker-provenance-v1"
+    assert result.provenance["kernel_strategy"] == "rowwise_spatial_map_matvec"
     assert result.provenance["batch_size"] == 4
     assert result.provenance["requested_backend"] == "cpu"
     assert result.provenance["effective_backend"] == "cpu"
     assert result.provenance["requested_dtype"] == "float64"
     assert result.provenance["effective_dtype"] == "float64"
+    assert result.provenance["driver_version"] is None
+    assert result.provenance["cublas_library_version"] is None
+    assert result.provenance["environment_lock_consistent"] is True
+    assert result.provenance["runtime_seconds"] >= 0.0
+    assert result.provenance["retry_lineage"] == {
+        "attempt": 1,
+        "parent_job_id": None,
+    }
+    validate_worker_provenance(
+        result.provenance,
+        requested_backend="cpu",
+        requested_dtype="float64",
+        environment_sha256=request.environment_sha256,
+        batch_size=4,
+    )
+
+    missing_driver = dict(result.provenance)
+    del missing_driver["driver_version"]
+    with pytest.raises(WorkerBackendError, match="provenance schema"):
+        validate_worker_provenance(
+            missing_driver,
+            requested_backend="cpu",
+            requested_dtype="float64",
+            environment_sha256=request.environment_sha256,
+            batch_size=4,
+        )
+
+    drifted_lock = dict(result.provenance)
+    drifted_lock["environment_sha256"] = "0" * 64
+    with pytest.raises(WorkerBackendError, match="environment lock"):
+        validate_worker_provenance(
+            drifted_lock,
+            requested_backend="cpu",
+            requested_dtype="float64",
+            environment_sha256=request.environment_sha256,
+            batch_size=4,
+        )
 
 
 def test_worker_cpu_handles_zero_support_and_batch_schedule_invariance(tmp_path: Path):
@@ -158,6 +200,83 @@ def test_requested_cuda_on_unpinned_cpu_interpreter_fails_before_artifacts(tmp_p
             environment_lock=ENVIRONMENT_LOCK,
         )
     assert not output.exists()
+
+
+def test_pinned_cuda_preflight_rejects_hidden_device_before_job_artifacts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    output = tmp_path / "must-not-exist-hidden-device"
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "-1")
+
+    with pytest.raises(WorkerBackendError, match="CUDA preflight"):
+        run_worker_job(
+            worker_python=ANACONDA,
+            worker_script=WORKER,
+            work_root=output,
+            job_id="fixed-ray.cuda.hidden",
+            requested_backend="cuda",
+            requested_dtype="float64",
+            arrays=literal_inputs(),
+            environment_lock=ENVIRONMENT_LOCK,
+        )
+    assert not output.exists()
+
+
+def _rewrite_self_consistent_response(
+    result: object,
+    arrays: dict[str, np.ndarray],
+) -> dict[str, object]:
+    np.savez(result.output_npz, **arrays)
+    response = dict(result.response_manifest)
+    response["npz_sha256"] = hashlib.sha256(result.output_npz.read_bytes()).hexdigest()
+    response["arrays"] = [
+        {
+            "name": name,
+            "shape": list(array.shape),
+            "dtype": "float64",
+            "sha256": canonical_array_sha256(name, array, "float64"),
+        }
+        for name, array in sorted(arrays.items())
+    ]
+    response["output_identity"] = worker_output_identity(
+        response, request_manifest=result.request_manifest
+    )
+    return response
+
+
+def test_self_consistent_worker_output_must_match_fixed_kernel_contract(tmp_path: Path):
+    result = run_worker_job(
+        worker_python=ANACONDA,
+        worker_script=WORKER,
+        work_root=tmp_path / "contract",
+        job_id="fixed-ray.cpu.contract",
+        requested_backend="cpu",
+        requested_dtype="float64",
+        arrays=literal_inputs(rows=5),
+        environment_lock=ENVIRONMENT_LOCK,
+    )
+    with np.load(result.output_npz, allow_pickle=False) as archive:
+        valid = {name: np.array(archive[name], copy=True) for name in archive.files}
+
+    extra = dict(valid)
+    extra["unexpected"] = np.zeros((), dtype=np.float64)
+    response = _rewrite_self_consistent_response(result, extra)
+    with pytest.raises(WorkerBackendError, match="exact fixed-ray inventory"):
+        validate_worker_result(
+            request_manifest=result.request_manifest,
+            response_manifest=response,
+            output_npz=result.output_npz,
+        )
+
+    wrong_shape = dict(valid)
+    wrong_shape["updated_coefficients"] = valid["updated_coefficients"][:, :-1]
+    response = _rewrite_self_consistent_response(result, wrong_shape)
+    with pytest.raises(WorkerBackendError, match="request-derived shape"):
+        validate_worker_result(
+            request_manifest=result.request_manifest,
+            response_manifest=response,
+            output_npz=result.output_npz,
+        )
 
 
 def test_mutated_output_npz_and_parity_candidate_are_rejected(tmp_path: Path):

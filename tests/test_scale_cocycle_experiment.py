@@ -49,9 +49,18 @@ def test_scale_experiment_publishes_recomputable_exact_extension_and_canonical_m
 
     assert isinstance(result, ScaleCocycleExperimentResult)
     assert result.status == "pass"
-    assert (result.run_dir / "three_level_extension.json").is_file()
-    assert (result.run_dir / "metrics.json").is_file()
-    assert (result.run_dir / "arrays.npz").is_file()
+    required_artifacts = {
+        "three_level_extension.json",
+        "composed_channels.json",
+        "coarse_actions.json",
+        "posterior_bridges.json",
+        "comparison_isomorphisms.json",
+        "derivative_cocycle.json",
+        "retained_projection_residual.json",
+        "metrics.json",
+        "arrays.npz",
+    }
+    assert required_artifacts <= {path.name for path in result.run_dir.iterdir()}
     extension = json.loads(
         (result.run_dir / "three_level_extension.json").read_text(encoding="utf-8")
     )
@@ -80,9 +89,17 @@ def test_scale_experiment_publishes_recomputable_exact_extension_and_canonical_m
     )
     assert all(result.metrics[name].claim_origin in {"PROJECT_NOVEL", "APPLICATION_SPECIFIC"} for name in result.metrics)
     assert result.metrics["retained_beta_residual"].value == pytest.approx(2.0)
+    assert "magnitude" in result.metrics["retained_beta_residual"].interpretation
+    assert result.metrics["retained_beta_residual_signed_min"].value == pytest.approx(0.0)
+    assert result.metrics["retained_beta_residual_signed_max"].value == pytest.approx(2.0)
     assert result.metrics["wrong_order_negative_control"].value == pytest.approx(1.0)
     assert result.metrics["projection_nonintertwining_control"].value == pytest.approx(1.0)
-    assert result.metrics["pairwise_truncation_control"].value == pytest.approx(5.0)
+    assert result.metrics["generated_higher_order_coefficient"].value == pytest.approx(
+        -0.32394711573301693
+    )
+    assert result.metrics["pairwise_truncation_control"].value == pytest.approx(
+        0.32394711573301693
+    )
 
     assert set(result.arrays) >= {
         "channel_fine_to_middle",
@@ -102,6 +119,10 @@ def test_scale_experiment_publishes_recomputable_exact_extension_and_canonical_m
         "reverse_bridge_staged",
         "identified_step",
         "derivative_cocycle",
+        "fine_pairwise_action",
+        "coarse_generated_action",
+        "coarse_generated_likelihood",
+        "coarse_mobius_triple_component",
         "retained_beta_exact",
         "retained_beta_retained",
         "retained_beta_residual_difference",
@@ -118,6 +139,23 @@ def test_scale_experiment_publishes_recomputable_exact_extension_and_canonical_m
     np.testing.assert_allclose(
         result.arrays["retained_beta_residual_difference"],
         result.arrays["retained_beta_residual_native"],
+    )
+    derivative = json.loads(
+        (result.run_dir / "derivative_cocycle.json").read_text(encoding="utf-8")
+    )
+    assert derivative["ordered_nonautonomous"] is True
+    assert derivative["factors"][0]["source_level"] == "level-0"
+    assert derivative["factors"][1]["target_level"] == "level-2"
+    assert derivative["composite"]["source_type"] == "interaction-tangent-0"
+    assert derivative["composite"]["target_type"] == "interaction-tangent-2"
+
+    coarse = json.loads(
+        (result.run_dir / "coarse_actions.json").read_text(encoding="utf-8")
+    )
+    assert coarse["fine_action_maximum_order"] == 2
+    assert coarse["coarse_triple_log_ratio"] == "103823/143543"
+    assert coarse["generated_triple_component"] == pytest.approx(
+        -0.32394711573301693
     )
 
 

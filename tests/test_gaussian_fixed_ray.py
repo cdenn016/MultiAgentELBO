@@ -54,6 +54,34 @@ def test_adjacent_map_matches_independent_literal_and_uniform_ray_is_fixed():
     np.testing.assert_array_equal(fixed.normalized_coupling_distances, np.zeros(4))
 
 
+def test_retained_beta_is_signed_comparison_typed_finite_difference():
+    """Catches replacing (I-P)(c_next-c_now) by the unsigned next state."""
+    system = build_preregistered_system()
+    trajectory = iterate_fixed_ray(
+        system, np.arange(1.0, 7.0), scheme="adjacent_pairs", steps=1
+    )
+    expected = np.array([1.5, 0.9, 0.3, -0.3, -0.9, -1.5]) / math.log(2.0)
+
+    np.testing.assert_allclose(
+        trajectory.retained_beta_residual_vectors[0],
+        expected,
+        rtol=1e-15,
+        atol=1e-15,
+    )
+    assert trajectory.retained_beta_residuals[0] == pytest.approx(
+        np.linalg.norm(expected)
+    )
+    assert trajectory.retained_beta_residual_vectors[0, 0] > 0.0
+    assert trajectory.retained_beta_residual_vectors[0, -1] < 0.0
+
+    fixed = iterate_fixed_ray(
+        system, np.ones(6), scheme="adjacent_pairs", steps=1
+    )
+    np.testing.assert_array_equal(
+        fixed.retained_beta_residual_vectors, np.zeros((1, 6))
+    )
+
+
 def test_job_substreams_are_immutable_schedule_independent_and_in_basin():
     first_seed = job_seed(202608090001, "P001")
     second_seed = job_seed(202608090001, "P002")
@@ -82,6 +110,7 @@ def test_finite_trajectory_records_all_preregistered_diagnostics_without_basin_e
     assert result.projective_ray_angles.shape == (9,)
     assert result.normalized_coupling_distances.shape == (9,)
     assert result.off_family_nonlinear_remainders.shape == (9,)
+    assert result.retained_beta_residual_vectors.shape == (8, 6)
     assert result.retained_beta_residuals.shape == (8,)
     assert result.basin_exits.shape == (9,)
     assert result.coefficient_conditioning.shape == (9,)

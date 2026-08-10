@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from fractions import Fraction
 import hashlib
 import json
+import math
 from pathlib import Path
 from types import MappingProxyType
 from typing import Literal, Mapping
@@ -25,6 +26,7 @@ from multiagent_elbo.runtime import RngStreams, collect_provenance
 from .scale_cocycle import (
     ExactLinearIsomorphism,
     ExactMarkovChannel,
+    ExactTypedMorphism,
     anchored_mobius_decompose,
     base_fisher_cocycle_residual_forms,
     conditional_log_laplace_action,
@@ -104,6 +106,71 @@ def _maximum_gap(left: object, right: object) -> Fraction:
     )
 
 
+def _typed_morphism_payload(morphism: ExactTypedMorphism) -> dict[str, object]:
+    return {
+        "source_level": morphism.source_level,
+        "target_level": morphism.target_level,
+        "source_type": morphism.source_type,
+        "target_type": morphism.target_type,
+        "matrix": _fraction_strings(morphism.matrix),
+    }
+
+
+def _generated_coarse_interaction() -> dict[str, object]:
+    """Coarse a pairwise binary action and expose its generated triple term."""
+    states = tuple(
+        (a, b, c) for a in (0, 1) for b in (0, 1) for c in (0, 1)
+    )
+    labels = tuple("".join(str(value) for value in state) for state in states)
+    reference = tuple(F(1, 8) for _ in states)
+    pair_counts = tuple(
+        state[0] * state[1] + state[0] * state[2] + state[1] * state[2]
+        for state in states
+    )
+    fine_likelihood = tuple(F(1, 2**count) for count in pair_counts)
+    evidence = tuple(base * likelihood for base, likelihood in zip(reference, fine_likelihood))
+    channel = ExactMarkovChannel(
+        labels,
+        labels,
+        tuple(
+            tuple(F(25, 32) if row == column else F(1, 32) for column in range(8))
+            for row in range(8)
+        ),
+    )
+    coarse = conditional_log_laplace_action(reference, evidence, channel)
+    action_by_state = dict(zip(states, coarse.action))
+    triple = (
+        action_by_state[(1, 1, 1)]
+        - action_by_state[(1, 1, 0)]
+        - action_by_state[(1, 0, 1)]
+        - action_by_state[(0, 1, 1)]
+        + action_by_state[(1, 0, 0)]
+        + action_by_state[(0, 1, 0)]
+        + action_by_state[(0, 0, 1)]
+        - action_by_state[(0, 0, 0)]
+    )
+    pairwise_reconstruction = list(coarse.action)
+    pairwise_reconstruction[-1] -= triple
+    exact_log_ratio = F(141**3, 69 * 237**2)
+    independent_triple = math.log(float(exact_log_ratio))
+    if not math.isclose(triple, independent_triple, rel_tol=0.0, abs_tol=2.0e-15):
+        raise ArithmeticError("coarse triple component disagrees with exact log-ratio oracle")
+    return {
+        "states": states,
+        "labels": labels,
+        "reference": reference,
+        "fine_likelihood": fine_likelihood,
+        "fine_action": tuple(count * math.log(2.0) for count in pair_counts),
+        "evidence": evidence,
+        "channel": channel,
+        "coarse_action": coarse.action,
+        "coarse_likelihood": coarse.likelihood,
+        "triple_component": triple,
+        "triple_log_ratio": exact_log_ratio,
+        "pairwise_reconstruction": tuple(pairwise_reconstruction),
+    }
+
+
 def _build_extension(payload: Mapping[str, object]) -> tuple[dict[str, object], ExactMarkovChannel, ExactMarkovChannel, ExactMarkovChannel]:
     state_spaces = payload["state_spaces"]
     channel_payload = payload["channel"]
@@ -158,7 +225,12 @@ def _build_extension(payload: Mapping[str, object]) -> tuple[dict[str, object], 
 
 def _exact_fixtures(
     config: ExperimentConfig, payload: Mapping[str, object]
-) -> tuple[dict[str, object], dict[str, MetricRecord], dict[str, np.ndarray]]:
+) -> tuple[
+    dict[str, object],
+    dict[str, dict[str, object]],
+    dict[str, MetricRecord],
+    dict[str, np.ndarray],
+]:
     extension, first, second, direct_channel = _build_extension(payload)
     references = payload["reference_laws"]
     generative = payload["generative_structure"]
@@ -203,10 +275,22 @@ def _exact_fixtures(
     identified_step = identified_linear_step(
         source_identification, native_step, target_identification
     )
-    derivative_first = ((F(1), F(1)), (F(0), F(1)))
-    derivative_second = ((F(1), F(0)), (F(1), F(1)))
+    derivative_first = ExactTypedMorphism(
+        "level-0",
+        "level-1",
+        "interaction-tangent-0",
+        "interaction-tangent-1",
+        ((F(1), F(1)), (F(0), F(1))),
+    )
+    derivative_second = ExactTypedMorphism(
+        "level-1",
+        "level-2",
+        "interaction-tangent-1",
+        "interaction-tangent-2",
+        ((F(1), F(0)), (F(1), F(1))),
+    )
     derivative_direct = ordered_derivative_cocycle((derivative_first, derivative_second))
-    derivative_wrong = ordered_derivative_cocycle((derivative_second, derivative_first))
+    derivative_wrong = _matmul(derivative_first.matrix, derivative_second.matrix)
 
     identity = ExactLinearIsomorphism(
         "interaction-native", "interaction-reference", ((F(1), F(0)), (F(0), F(1)))
@@ -234,18 +318,25 @@ def _exact_fixtures(
         horizontal_anomaly=(F(2), F(-1)),
     )
 
-    states = tuple(
-        (a, b, c) for a in (0, 1) for b in (0, 1) for c in (0, 1)
-    )
-    full_action = {
-        state: F(state[0] + 2 * state[1] + 3 * state[2] + 5 * np.prod(state))
+    generated = _generated_coarse_interaction()
+    states = generated["states"]
+    assert isinstance(states, tuple)
+    fine_pair_counts = {
+        state: F(state[0] * state[1] + state[0] * state[2] + state[1] * state[2])
         for state in states
     }
-    interactions = anchored_mobius_decompose(full_action, anchor=(0, 0, 0))
-    full_reconstruction = tuple(interactions.reconstruct(state) for state in states)
-    pairwise_reconstruction = tuple(
-        interactions.reconstruct(state, maximum_order=2) for state in states
+    fine_interactions = anchored_mobius_decompose(
+        fine_pair_counts, anchor=(0, 0, 0)
     )
+    if any(
+        value != 0
+        for subset, table in fine_interactions.components.items()
+        if len(subset) > 2
+        for value in table.values()
+    ):
+        raise ArithmeticError("declared fine action is not pairwise")
+    full_reconstruction = tuple(generated["coarse_action"])
+    pairwise_reconstruction = tuple(generated["pairwise_reconstruction"])
 
     typed_gap = max(
         _maximum_gap(typed_direct[name], typed_staged[name])
@@ -267,9 +358,15 @@ def _exact_fixtures(
         abs(fisher_forms.from_norm_difference - fisher_forms.from_coarse_jet_cross_terms),
         abs(fisher_forms.from_norm_difference - fisher_forms.from_pushed_jet_cross_terms),
     )
-    full_residual = interactions.maximum_residual(maximum_order=3)
-    pairwise_residual = interactions.maximum_residual(maximum_order=2)
-    wrong_order_gap = _maximum_gap(derivative_direct, derivative_wrong)
+    full_residual = max(
+        abs(value - reconstructed)
+        for value, reconstructed in zip(generated["coarse_action"], full_reconstruction)
+    )
+    pairwise_residual = max(
+        abs(value - reconstructed)
+        for value, reconstructed in zip(generated["coarse_action"], pairwise_reconstruction)
+    )
+    wrong_order_gap = _maximum_gap(derivative_direct.matrix, derivative_wrong)
     tolerance = config.numerics.atol + config.numerics.rtol
 
     def exact_metric(
@@ -315,7 +412,17 @@ def _exact_fixtures(
         "retained_beta_residual": exact_metric(
             max(abs(value) for value in beta.residual_from_difference),
             F(2),
-            "The exact signed omitted beta component matches the independent two-coordinate oracle.",
+            "The exact L-infinity magnitude of the signed omitted beta vector matches the oracle.",
+        ),
+        "retained_beta_residual_signed_min": exact_metric(
+            min(beta.residual_from_difference),
+            F(0),
+            "The minimum signed omitted beta component is published without absolute value.",
+        ),
+        "retained_beta_residual_signed_max": exact_metric(
+            max(beta.residual_from_difference),
+            F(2),
+            "The maximum signed omitted beta component is published without absolute value.",
         ),
         "retained_beta_equivalent_forms_residual": exact_metric(
             beta_form_gap,
@@ -327,10 +434,14 @@ def _exact_fixtures(
             F(0),
             "All three sign-sensitive base Fisher cocycle residual forms coincide exactly.",
         ),
-        "full_interaction_reconstruction_residual": exact_metric(
+        "full_interaction_reconstruction_residual": target_metric(
             full_residual,
-            F(0),
-            "The complete nonempty-subset hierarchy plus the anchor term reconstructs the action.",
+            tolerance,
+            target=0.0,
+            interpretation="The full coarse Möbius hierarchy reconstructs the generated action.",
+            theorem_status="NUMERICAL",
+            verification_state="EVIDENCE_VERIFIED",
+            claim_origin="PROJECT_NOVEL",
         ),
         "wrong_order_negative_control": exact_metric(
             wrong_order_gap,
@@ -344,11 +455,23 @@ def _exact_fixtures(
             "Holding a retained projection fixed across a nontrivial comparison breaks intertwining.",
             theorem_status="NUMERICAL",
         ),
-        "pairwise_truncation_control": exact_metric(
-            pairwise_residual,
-            F(5),
-            "Pairwise truncation omits the pinned three-body interaction generated by exact closure.",
+        "generated_higher_order_coefficient": target_metric(
+            float(generated["triple_component"]),
+            tolerance,
+            target=-0.32394711573301693,
+            interpretation="A declared pairwise fine action generates the pinned coarse triple coefficient.",
             theorem_status="NUMERICAL",
+            verification_state="EVIDENCE_VERIFIED",
+            claim_origin="PROJECT_NOVEL",
+        ),
+        "pairwise_truncation_control": target_metric(
+            pairwise_residual,
+            tolerance,
+            target=0.32394711573301693,
+            interpretation="Pairwise truncation omits the coarse three-body term generated after channel action.",
+            theorem_status="NUMERICAL",
+            verification_state="EVIDENCE_VERIFIED",
+            claim_origin="PROJECT_NOVEL",
         ),
     }
 
@@ -371,9 +494,9 @@ def _exact_fixtures(
         "reverse_bridge_direct": _float_array(direct_bridge.reverse),
         "reverse_bridge_staged": _float_array(staged_reverse),
         "identified_step": _float_array(identified_step),
-        "derivative_first": _float_array(derivative_first),
-        "derivative_second": _float_array(derivative_second),
-        "derivative_cocycle": _float_array(derivative_direct),
+        "derivative_first": _float_array(derivative_first.matrix),
+        "derivative_second": _float_array(derivative_second.matrix),
+        "derivative_cocycle": _float_array(derivative_direct.matrix),
         "derivative_wrong_order": _float_array(derivative_wrong),
         "retained_beta_exact": _float_array(beta.exact_beta),
         "retained_beta_retained": _float_array(beta.retained_beta),
@@ -387,11 +510,108 @@ def _exact_fixtures(
                 fisher_forms.from_pushed_jet_cross_terms,
             )
         ),
-        "full_action": _float_array(tuple(full_action[state] for state in states)),
+        "fine_pairwise_action": readonly_array(generated["fine_action"]),
+        "coarse_generated_action": readonly_array(generated["coarse_action"]),
+        "coarse_generated_likelihood": _float_array(generated["coarse_likelihood"]),
+        "coarse_mobius_triple_component": readonly_array(
+            (generated["triple_component"],)
+        ),
+        "full_action": readonly_array(generated["coarse_action"]),
         "full_action_reconstruction": _float_array(full_reconstruction),
         "pairwise_action_reconstruction": _float_array(pairwise_reconstruction),
     }
-    return extension, metrics, arrays
+
+    semantic_artifacts = {
+        "composed_channels": {
+            "schema_version": "scale-composed-channels-v1",
+            "composition_orientation": "right_acting",
+            "fine_to_middle": {
+                "source_labels": list(first.source_labels),
+                "target_labels": list(first.target_labels),
+                "rows": _fraction_strings(first.matrix),
+            },
+            "middle_to_macro": {
+                "source_labels": list(second.source_labels),
+                "target_labels": list(second.target_labels),
+                "rows": _fraction_strings(second.matrix),
+            },
+            "fine_to_macro": {
+                "source_labels": list(direct_channel.source_labels),
+                "target_labels": list(direct_channel.target_labels),
+                "rows": _fraction_strings(direct_channel.matrix),
+            },
+        },
+        "coarse_actions": {
+            "schema_version": "scale-coarse-actions-v1",
+            "fine_action_maximum_order": 2,
+            "fine_state_labels": list(generated["labels"]),
+            "fine_reference": [str(value) for value in generated["reference"]],
+            "fine_likelihood": [str(value) for value in generated["fine_likelihood"]],
+            "fine_evidence": [str(value) for value in generated["evidence"]],
+            "coarse_channel_rows": _fraction_strings(generated["channel"].matrix),
+            "coarse_likelihood": [str(value) for value in generated["coarse_likelihood"]],
+            "coarse_action": list(generated["coarse_action"]),
+            "coarse_triple_log_ratio": str(generated["triple_log_ratio"]),
+            "generated_triple_component": generated["triple_component"],
+            "pairwise_reconstruction": list(generated["pairwise_reconstruction"]),
+            "fixture_direct_likelihood": [str(value) for value in direct_action.likelihood],
+            "fixture_staged_likelihood": [str(value) for value in staged_action.likelihood],
+        },
+        "posterior_bridges": {
+            "schema_version": "scale-posterior-bridges-v1",
+            "fine_posterior": [str(value) for value in fine_posterior],
+            "direct_reverse": _fraction_strings(direct_bridge.reverse),
+            "first_reverse": _fraction_strings(first_bridge.reverse),
+            "second_reverse": _fraction_strings(second_bridge.reverse),
+            "staged_reverse": _fraction_strings(staged_reverse),
+        },
+        "comparison_isomorphisms": {
+            "schema_version": "scale-comparison-isomorphisms-v1",
+            "orientation": "I_target C I_source^-1",
+            "source": {
+                "native_type": source_identification.native_type,
+                "reference_type": source_identification.reference_type,
+                "matrix": _fraction_strings(source_identification.matrix),
+                "inverse": _fraction_strings(source_identification.inverse),
+            },
+            "target": {
+                "native_type": target_identification.native_type,
+                "reference_type": target_identification.reference_type,
+                "matrix": _fraction_strings(target_identification.matrix),
+                "inverse": _fraction_strings(target_identification.inverse),
+            },
+            "native_step": _fraction_strings(native_step),
+            "identified_step": _fraction_strings(identified_step),
+        },
+        "derivative_cocycle": {
+            "schema_version": "scale-typed-derivative-cocycle-v1",
+            "ordered_nonautonomous": True,
+            "factors": [
+                _typed_morphism_payload(derivative_first),
+                _typed_morphism_payload(derivative_second),
+            ],
+            "composite": _typed_morphism_payload(derivative_direct),
+            "wrong_matrix_order_control": _fraction_strings(derivative_wrong),
+        },
+        "retained_projection_residual": {
+            "schema_version": "scale-retained-projection-residual-v1",
+            "source_projection": _fraction_strings(retained_projection),
+            "target_projection": _fraction_strings(retained_projection),
+            "exact_beta": [str(value) for value in beta.exact_beta],
+            "retained_beta": [str(value) for value in beta.retained_beta],
+            "signed_residual_difference": [
+                str(value) for value in beta.residual_from_difference
+            ],
+            "signed_residual_identified": [
+                str(value) for value in beta.residual_from_identified_projection
+            ],
+            "signed_residual_native": [
+                str(value) for value in beta.residual_from_native_transport
+            ],
+            "projection_nonintertwining_control": str(nonintertwining),
+        },
+    }
+    return extension, semantic_artifacts, metrics, arrays
 
 
 def run_scale_cocycle_experiment(
@@ -419,7 +639,7 @@ def run_scale_cocycle_experiment(
     if not isinstance(payload, Mapping):
         raise ValueError("fixture must be a JSON object")
     application_id = validate_two_scale_application_fixture(payload)
-    extension, metrics, arrays = _exact_fixtures(config, payload)
+    extension, semantic_artifacts, metrics, arrays = _exact_fixtures(config, payload)
 
     config_hash = config_sha256(config)
     streams = RngStreams.from_seed(config.run.seed)
@@ -438,12 +658,31 @@ def run_scale_cocycle_experiment(
 
     store = RunStore.create(config, provenance)
     store.write_json("three_level_extension", extension)
+    for name in (
+        "composed_channels",
+        "coarse_actions",
+        "posterior_bridges",
+        "comparison_isomorphisms",
+        "derivative_cocycle",
+        "retained_projection_residual",
+    ):
+        store.write_json(name, semantic_artifacts[name])
     store.write_json(
         "metrics", {name: asdict(metrics[name]) for name in sorted(metrics)}
     )
     store.write_npz("arrays", arrays)
     store.finalize(
-        ("three_level_extension.json", "metrics.json", "arrays.npz")
+        (
+            "three_level_extension.json",
+            "composed_channels.json",
+            "coarse_actions.json",
+            "posterior_bridges.json",
+            "comparison_isomorphisms.json",
+            "derivative_cocycle.json",
+            "retained_projection_residual.json",
+            "metrics.json",
+            "arrays.npz",
+        )
     )
     status: MetricStatus = (
         "pass" if all(metric.status == "pass" for metric in metrics.values()) else "fail"

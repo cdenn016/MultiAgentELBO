@@ -31,6 +31,53 @@ _NUMPY_DTYPES = {
     "int64": np.dtype("<i8"),
     "bool": np.dtype(np.bool_),
 }
+_PROVENANCE_SCHEMA = "cuda-worker-provenance-v1"
+_PROVENANCE_KEYS = {
+    "schema_version",
+    "python_executable",
+    "worker_executable",
+    "worker_executable_sha256",
+    "worker_script_sha256",
+    "python_version",
+    "numpy_version",
+    "platform",
+    "requested_backend",
+    "effective_backend",
+    "requested_dtype",
+    "effective_dtype",
+    "environment_sha256",
+    "environment_lock_consistent",
+    "cublas_workspace_config",
+    "batch_size",
+    "runtime_seconds",
+    "retry_lineage",
+    "torch_version",
+    "torch_cuda_build_runtime",
+    "cuda_available",
+    "driver_version",
+    "cuda_runtime_version",
+    "cublas_library_version",
+    "device_name",
+    "compute_capability",
+    "deterministic_algorithms",
+    "deterministic_warn_only",
+    "matmul_allow_tf32",
+    "cudnn_allow_tf32",
+    "cudnn_version",
+    "library_records",
+    "kernel_strategy",
+    "peak_allocated_bytes",
+    "peak_reserved_bytes",
+}
+_LIBRARY_RECORD_KEYS = {
+    "cublas_path",
+    "cublas_sha256",
+    "cublas_version",
+    "cublas_lt_path",
+    "cublas_lt_sha256",
+    "cublas_lt_version",
+    "torch_config",
+}
 
 
 class WorkerBackendError(RuntimeError):
@@ -205,6 +252,187 @@ def _atomic_json(path: Path, payload: object) -> None:
     os.replace(temporary, path)
 
 
+def validate_worker_provenance(
+    provenance: Mapping[str, object],
+    *,
+    requested_backend: Backend,
+    requested_dtype: ScientificDtype,
+    environment_sha256: str,
+    batch_size: int,
+) -> None:
+    """Validate the frozen worker provenance schema and request binding."""
+    if not isinstance(provenance, Mapping) or set(provenance) != _PROVENANCE_KEYS:
+        raise WorkerBackendError("worker provenance schema does not match the freeze")
+    if provenance["schema_version"] != _PROVENANCE_SCHEMA:
+        raise WorkerBackendError("worker provenance schema version is invalid")
+    if any(
+        type(provenance[field]) is not str or not provenance[field]
+        for field in (
+            "python_executable",
+            "worker_executable",
+            "python_version",
+            "numpy_version",
+            "platform",
+        )
+    ):
+        raise WorkerBackendError("worker provenance identity fields are invalid")
+    for field in ("worker_executable_sha256", "worker_script_sha256"):
+        if type(provenance[field]) is not str or _SHA256.fullmatch(provenance[field]) is None:
+            raise WorkerBackendError("worker provenance executable digest is invalid")
+    if (
+        provenance["requested_backend"] != requested_backend
+        or provenance["effective_backend"] != requested_backend
+        or provenance["requested_dtype"] != requested_dtype
+        or provenance["effective_dtype"] != requested_dtype
+    ):
+        raise WorkerBackendError("worker provenance backend or dtype drifted")
+    if provenance["environment_sha256"] != environment_sha256:
+        raise WorkerBackendError("worker provenance environment lock drifted")
+    if provenance["environment_lock_consistent"] is not True:
+        raise WorkerBackendError("worker provenance environment lock is inconsistent")
+    if provenance["cublas_workspace_config"] != ":4096:8":
+        raise WorkerBackendError("worker provenance CUBLAS control drifted")
+    if provenance["batch_size"] != batch_size:
+        raise WorkerBackendError("worker provenance batch size drifted")
+    runtime = provenance["runtime_seconds"]
+    if type(runtime) not in {float, int} or not np.isfinite(runtime) or runtime < 0.0:
+        raise WorkerBackendError("worker provenance runtime is invalid")
+    retry = provenance["retry_lineage"]
+    if retry != {"attempt": 1, "parent_job_id": None}:
+        raise WorkerBackendError("worker provenance retry lineage is invalid")
+    libraries = provenance["library_records"]
+    if not isinstance(libraries, Mapping) or set(libraries) != _LIBRARY_RECORD_KEYS:
+        raise WorkerBackendError("worker provenance library records are invalid")
+    for field in ("peak_allocated_bytes", "peak_reserved_bytes"):
+        if type(provenance[field]) is not int or provenance[field] < 0:
+            raise WorkerBackendError("worker provenance memory record is invalid")
+
+    expected_strategy = (
+        "rowwise_spatial_map_matvec"
+        if requested_backend == "cpu"
+        else "batched_spatial_map_matmul"
+    )
+    if provenance["kernel_strategy"] != expected_strategy:
+        raise WorkerBackendError("worker provenance kernel strategy drifted")
+    if requested_backend == "cpu":
+        if provenance["cuda_available"] is not False:
+            raise WorkerBackendError("CPU worker provenance CUDA state is invalid")
+        nullable = (
+            "torch_version",
+            "torch_cuda_build_runtime",
+            "driver_version",
+            "cuda_runtime_version",
+            "cublas_library_version",
+            "device_name",
+            "compute_capability",
+            "deterministic_algorithms",
+            "deterministic_warn_only",
+            "matmul_allow_tf32",
+            "cudnn_allow_tf32",
+            "cudnn_version",
+        )
+        if any(provenance[field] is not None for field in nullable) or any(
+            value is not None for value in libraries.values()
+        ):
+            raise WorkerBackendError("CPU worker provenance contains CUDA claims")
+    else:
+        if provenance["cuda_available"] is not True:
+            raise WorkerBackendError("CUDA worker provenance says CUDA is unavailable")
+        if (
+            provenance["deterministic_algorithms"] is not True
+            or provenance["deterministic_warn_only"] is not False
+            or provenance["matmul_allow_tf32"] is not False
+            or provenance["cudnn_allow_tf32"] is not False
+        ):
+            raise WorkerBackendError("CUDA worker provenance determinism drifted")
+        if any(
+            provenance[field] is None
+            for field in (
+                "torch_version",
+                "torch_cuda_build_runtime",
+                "driver_version",
+                "cuda_runtime_version",
+                "cublas_library_version",
+                "device_name",
+                "compute_capability",
+                "cudnn_version",
+            )
+        ) or any(value is None for value in libraries.values()):
+            raise WorkerBackendError("CUDA worker provenance library identity is incomplete")
+
+
+def _validate_cuda_preflight(
+    payload: object, *, lock_records: Mapping[str, str]
+) -> Mapping[str, object]:
+    expected_keys = {
+        "schema_version",
+        "torch_version",
+        "torch_cuda_build_runtime",
+        "cuda_available",
+        "device_count",
+        "device_name",
+        "compute_capability",
+        "driver_version",
+        "cuda_runtime_version",
+        "cudnn_version",
+        "cublas_library_version",
+        "cublas_lt_library_version",
+        "library_records",
+    }
+    if not isinstance(payload, Mapping) or set(payload) != expected_keys:
+        raise WorkerBackendError("CUDA preflight schema does not match the freeze")
+    if payload["schema_version"] != "cuda-worker-preflight-v1":
+        raise WorkerBackendError("CUDA preflight schema version is invalid")
+    expected_pairs = {
+        "torch_version": lock_records.get("torch_version"),
+        "torch_cuda_build_runtime": lock_records.get("torch_cuda_build_runtime"),
+        "driver_version": lock_records.get("driver_version"),
+        "device_name": lock_records.get("device_name"),
+        "cudnn_version": int(lock_records["cudnn_version"]),
+        "cublas_library_version": lock_records.get("cublas64_12_dll_file_version"),
+        "cublas_lt_library_version": lock_records.get("cublasLt64_12_dll_file_version"),
+    }
+    if payload["cuda_available"] is not True or payload["device_count"] != int(
+        lock_records["device_count"]
+    ):
+        raise WorkerBackendError("CUDA preflight availability drifted from the lock")
+    if any(payload[field] != expected for field, expected in expected_pairs.items()):
+        raise WorkerBackendError("CUDA preflight identity drifted from the lock")
+    capability = ".".join(str(value) for value in payload["compute_capability"])
+    if capability != lock_records.get("compute_capability"):
+        raise WorkerBackendError("CUDA preflight capability drifted from the lock")
+    return payload
+
+
+def _run_cuda_preflight(
+    *,
+    worker_python: Path,
+    worker_script: Path,
+    environment: Mapping[str, str],
+    lock_records: Mapping[str, str],
+    timeout_seconds: float,
+) -> Mapping[str, object]:
+    completed = subprocess.run(
+        [str(worker_python), str(worker_script), "--preflight-cuda"],
+        cwd=worker_script.parent,
+        env=dict(environment),
+        capture_output=True,
+        text=True,
+        timeout=timeout_seconds,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise WorkerBackendError(
+            f"CUDA preflight failed with exit {completed.returncode}: "
+            f"{completed.stderr.strip()}"
+        )
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as error:
+        raise WorkerBackendError("CUDA preflight emitted invalid JSON") from error
+    return _validate_cuda_preflight(payload, lock_records=lock_records)
+
+
 def validate_worker_result(
     *,
     request_manifest: Mapping[str, object],
@@ -217,6 +445,29 @@ def validate_worker_result(
         expected_message_type="response",
         request_manifest=request_manifest,
     )
+    validated_request = validate_worker_protocol_manifest(
+        request_manifest, expected_message_type="request"
+    )
+    response_descriptors = {descriptor.name: descriptor for descriptor in validated.arrays}
+    if set(response_descriptors) != {"updated_coefficients", "matrix_condition"}:
+        raise WorkerBackendError(
+            "worker output must match the exact fixed-ray inventory"
+        )
+    request_descriptors = {
+        descriptor.name: descriptor for descriptor in validated_request.arrays
+    }
+    coefficient_shape = request_descriptors["coefficients"].shape
+    spatial_shape = request_descriptors["spatial_map"].shape
+    expected_shape = (coefficient_shape[0], spatial_shape[0])
+    updated = response_descriptors["updated_coefficients"]
+    condition = response_descriptors["matrix_condition"]
+    if updated.shape != expected_shape or condition.shape != ():
+        raise WorkerBackendError("worker output violates the request-derived shape")
+    if (
+        updated.dtype != validated_request.requested_dtype
+        or condition.dtype != "float64"
+    ):
+        raise WorkerBackendError("worker output violates the request-derived dtype")
     if not Path(output_npz).is_file():
         raise WorkerBackendError("worker output NPZ is missing")
     if _file_sha256(Path(output_npz)) != validated.npz_sha256:
@@ -270,6 +521,18 @@ def run_worker_job(
             "requested CUDA requires the pinned CUDA worker executable"
         )
     environment_sha256 = _file_sha256(environment_lock)
+    environment = os.environ.copy()
+    environment["CUBLAS_WORKSPACE_CONFIG"] = lock_records[
+        "required_CUBLAS_WORKSPACE_CONFIG"
+    ]
+    if requested_backend == "cuda":
+        _run_cuda_preflight(
+            worker_python=worker_python,
+            worker_script=worker_script,
+            environment=environment,
+            lock_records=lock_records,
+            timeout_seconds=timeout_seconds,
+        )
 
     work_root = Path(work_root)
     if work_root.exists():
@@ -296,10 +559,6 @@ def run_worker_job(
     validate_worker_protocol_manifest(request_manifest, expected_message_type="request")
     _atomic_json(request_json, request_manifest)
 
-    environment = os.environ.copy()
-    environment["CUBLAS_WORKSPACE_CONFIG"] = lock_records[
-        "required_CUBLAS_WORKSPACE_CONFIG"
-    ]
     completed = subprocess.run(
         [
             str(worker_python),
@@ -333,23 +592,21 @@ def run_worker_job(
     if not isinstance(worker_provenance, dict):
         raise WorkerBackendError("worker provenance must be a JSON object")
     provenance = dict(worker_provenance)
-    provenance.update(
-        {
-            "environment_sha256": environment_sha256,
-            "worker_executable": str(worker_python),
-            "worker_executable_sha256": executable_sha256,
-            "worker_script_sha256": _file_sha256(worker_script),
-            "requested_backend": requested_backend,
-            "effective_backend": response_manifest["effective_backend"],
-            "requested_dtype": requested_dtype,
-            "effective_dtype": response_manifest["effective_dtype"],
-            "kernel_strategy": "batched_spatial_map_matmul",
-            "batch_size": int(normalized["batch_size"]),
-            "cublas_workspace_config": environment[
-                "CUBLAS_WORKSPACE_CONFIG"
-            ],
-        }
+    validate_worker_provenance(
+        provenance,
+        requested_backend=requested_backend,
+        requested_dtype=requested_dtype,
+        environment_sha256=environment_sha256,
+        batch_size=int(normalized["batch_size"]),
     )
+    if Path(str(provenance["python_executable"])).resolve() != worker_python:
+        raise WorkerBackendError("worker provenance executable path drifted")
+    if Path(str(provenance["worker_executable"])).resolve() != worker_python:
+        raise WorkerBackendError("worker provenance worker path drifted")
+    if provenance["worker_executable_sha256"] != executable_sha256:
+        raise WorkerBackendError("worker provenance executable hash drifted")
+    if provenance["worker_script_sha256"] != _file_sha256(worker_script):
+        raise WorkerBackendError("worker provenance script hash drifted")
     return WorkerJobResult(
         request_manifest=MappingProxyType(request_manifest),
         response_manifest=MappingProxyType(response_manifest),
@@ -412,5 +669,6 @@ __all__ = [
     "canonical_array_sha256",
     "parity_diagnostics",
     "run_worker_job",
+    "validate_worker_provenance",
     "validate_worker_result",
 ]

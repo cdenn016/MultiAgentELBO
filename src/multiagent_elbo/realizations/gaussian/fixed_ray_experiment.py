@@ -200,6 +200,12 @@ def _run_pilot(
         arrays[f"{scheme}_retained_beta_residuals"] = _readonly(
             [trajectory.retained_beta_residuals for trajectory in scheme_trajectories]
         )
+        arrays[f"{scheme}_retained_beta_residual_vectors"] = _readonly(
+            [
+                trajectory.retained_beta_residual_vectors
+                for trajectory in scheme_trajectories
+            ]
+        )
         arrays[f"{scheme}_basin_exits"] = _readonly(
             [trajectory.basin_exits for trajectory in scheme_trajectories],
             dtype=np.bool_,
@@ -271,6 +277,12 @@ def _run_pilot(
     beta = np.concatenate(
         [arrays[f"{scheme}_retained_beta_residuals"][:, -1] for scheme in config.theory.blocking_schemes]
     )
+    signed_beta = np.concatenate(
+        [
+            arrays[f"{scheme}_retained_beta_residual_vectors"][:, -1, :].ravel()
+            for scheme in config.theory.blocking_schemes
+        ]
+    )
     basin = np.concatenate(
         [arrays[f"{scheme}_basin_exits"] for scheme in config.theory.blocking_schemes]
     )
@@ -298,7 +310,17 @@ def _run_pilot(
         "retained_beta_residual": _metric(
             float(np.median(beta)),
             status="pass",
-            interpretation="Pilot scale-8 omitted projective component divided by log(2).",
+            interpretation="Pilot norm of the signed comparison-typed scale-8 finite-difference residual.",
+        ),
+        "retained_beta_residual_signed_max": _metric(
+            float(np.max(signed_beta)),
+            status="pass",
+            interpretation="Largest signed component of the pilot scale-8 retained beta residual vector.",
+        ),
+        "retained_beta_residual_signed_min": _metric(
+            float(np.min(signed_beta)),
+            status="pass",
+            interpretation="Smallest signed component of the pilot scale-8 retained beta residual vector.",
         ),
         "basin_exit_rate": target_metric(
             float(np.mean(basin)),

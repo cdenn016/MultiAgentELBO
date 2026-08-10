@@ -12,7 +12,9 @@ import os
 from pathlib import Path
 import platform
 import re
+import subprocess
 import sys
+import time
 from typing import Mapping
 
 import numpy as np
@@ -41,10 +43,95 @@ NUMPY_DTYPES = {
     "int64": np.dtype("<i8"),
     "bool": np.dtype(np.bool_),
 }
+PROVENANCE_SCHEMA = "cuda-worker-provenance-v1"
+PREFLIGHT_SCHEMA = "cuda-worker-preflight-v1"
 
 
 class ProtocolError(ValueError):
     pass
+
+
+def _driver_version() -> str:
+    completed = subprocess.run(
+        [
+            "nvidia-smi",
+            "--query-gpu=driver_version",
+            "--format=csv,noheader,nounits",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0 or not completed.stdout.strip():
+        raise ProtocolError("CUDA driver version query failed")
+    return completed.stdout.splitlines()[0].strip()
+
+
+def _windows_file_version(path: Path) -> str:
+    completed = subprocess.run(
+        [
+            "powershell.exe",
+            "-NoProfile",
+            "-Command",
+            "(Get-Item -LiteralPath $args[0]).VersionInfo.FileVersion",
+            str(path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0 or not completed.stdout.strip():
+        raise ProtocolError(f"library version query failed: {path.name}")
+    return completed.stdout.strip().replace(", ", ".")
+
+
+def _cuda_library_records(torch: object) -> dict[str, object]:
+    library_root = Path(torch.__file__).resolve().parent / "lib"
+    cublas = library_root / "cublas64_12.dll"
+    cublas_lt = library_root / "cublasLt64_12.dll"
+    if not cublas.is_file() or not cublas_lt.is_file():
+        raise ProtocolError("pinned cuBLAS libraries are missing")
+    return {
+        "cublas_path": str(cublas),
+        "cublas_sha256": file_sha256(cublas),
+        "cublas_version": _windows_file_version(cublas),
+        "cublas_lt_path": str(cublas_lt),
+        "cublas_lt_sha256": file_sha256(cublas_lt),
+        "cublas_lt_version": _windows_file_version(cublas_lt),
+        "torch_config": torch.__config__.show(),
+    }
+
+
+def cuda_preflight() -> dict[str, object]:
+    """Return live CUDA identity without creating scientific job artifacts."""
+    import torch
+
+    if not torch.cuda.is_available() or torch.cuda.device_count() < 1:
+        raise ProtocolError("requested CUDA device is unavailable")
+    capability = torch.cuda.get_device_capability(0)
+    runtime_result = torch.cuda.cudart().cudaRuntimeGetVersion()
+    if isinstance(runtime_result, tuple):
+        runtime_error, runtime_version = runtime_result
+        if runtime_error != 0:
+            raise ProtocolError("CUDA runtime version query failed")
+    else:
+        runtime_version = runtime_result
+    libraries = _cuda_library_records(torch)
+    return {
+        "schema_version": PREFLIGHT_SCHEMA,
+        "torch_version": torch.__version__,
+        "torch_cuda_build_runtime": torch.version.cuda,
+        "cuda_available": True,
+        "device_count": torch.cuda.device_count(),
+        "device_name": torch.cuda.get_device_name(0),
+        "compute_capability": list(capability),
+        "driver_version": _driver_version(),
+        "cuda_runtime_version": int(runtime_version),
+        "cudnn_version": torch.backends.cudnn.version(),
+        "cublas_library_version": libraries["cublas_version"],
+        "cublas_lt_library_version": libraries["cublas_lt_version"],
+        "library_records": libraries,
+    }
 
 
 def file_sha256(path: Path) -> str:
@@ -196,12 +283,26 @@ def compute_cpu(arrays: Mapping[str, np.ndarray]) -> tuple[dict[str, np.ndarray]
             "torch_version": None,
             "torch_cuda_build_runtime": None,
             "cuda_available": False,
+            "driver_version": None,
+            "cuda_runtime_version": None,
+            "cublas_library_version": None,
             "device_name": None,
             "compute_capability": None,
             "deterministic_algorithms": None,
             "deterministic_warn_only": None,
             "matmul_allow_tf32": None,
             "cudnn_allow_tf32": None,
+            "cudnn_version": None,
+            "library_records": {
+                "cublas_path": None,
+                "cublas_sha256": None,
+                "cublas_version": None,
+                "cublas_lt_path": None,
+                "cublas_lt_sha256": None,
+                "cublas_lt_version": None,
+                "torch_config": None,
+            },
+            "kernel_strategy": "rowwise_spatial_map_matvec",
             "peak_allocated_bytes": 0,
             "peak_reserved_bytes": 0,
         },
@@ -243,10 +344,21 @@ def compute_cuda(
         dtype=np.float64,
     )
     capability = torch.cuda.get_device_capability(0)
+    runtime_result = torch.cuda.cudart().cudaRuntimeGetVersion()
+    if isinstance(runtime_result, tuple):
+        runtime_error, runtime_version = runtime_result
+        if runtime_error != 0:
+            raise ProtocolError("CUDA runtime version query failed")
+    else:
+        runtime_version = runtime_result
+    libraries = _cuda_library_records(torch)
     provenance = {
         "torch_version": torch.__version__,
         "torch_cuda_build_runtime": torch.version.cuda,
         "cuda_available": True,
+        "driver_version": _driver_version(),
+        "cuda_runtime_version": int(runtime_version),
+        "cublas_library_version": libraries["cublas_version"],
         "device_name": torch.cuda.get_device_name(0),
         "compute_capability": list(capability),
         "deterministic_algorithms": torch.are_deterministic_algorithms_enabled(),
@@ -254,6 +366,8 @@ def compute_cuda(
         "matmul_allow_tf32": torch.backends.cuda.matmul.allow_tf32,
         "cudnn_allow_tf32": torch.backends.cudnn.allow_tf32,
         "cudnn_version": torch.backends.cudnn.version(),
+        "library_records": libraries,
+        "kernel_strategy": "batched_spatial_map_matmul",
         "peak_allocated_bytes": int(torch.cuda.max_memory_allocated(device)),
         "peak_reserved_bytes": int(torch.cuda.max_memory_reserved(device)),
     }
@@ -303,6 +417,16 @@ def atomic_json(path: Path, payload: object) -> None:
 
 
 def main() -> int:
+    if len(sys.argv) == 2 and sys.argv[1] == "--preflight-cuda":
+        sys.stdout.write(
+            json.dumps(
+                cuda_preflight(),
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            )
+        )
+        return 0
     if len(sys.argv) != 5:
         raise ProtocolError("worker requires request JSON, input NPZ, response JSON, and output NPZ")
     request_path, input_path, response_path, output_path = map(Path, sys.argv[1:])
@@ -310,6 +434,7 @@ def main() -> int:
         raise ProtocolError("worker output paths must not exist")
     request = validate_request(json.loads(request_path.read_text(encoding="utf-8")))
     arrays = load_and_validate_inputs(request, input_path)
+    started = time.perf_counter()
     if request["requested_backend"] == "cpu":
         outputs, backend_provenance = compute_cpu(arrays)
     else:
@@ -333,7 +458,11 @@ def main() -> int:
     response["output_identity"] = output_identity(request, response)
     atomic_json(response_path, response)
     provenance = {
+        "schema_version": PROVENANCE_SCHEMA,
         "python_executable": str(Path(sys.executable).resolve()),
+        "worker_executable": str(Path(sys.executable).resolve()),
+        "worker_executable_sha256": file_sha256(Path(sys.executable).resolve()),
+        "worker_script_sha256": file_sha256(Path(__file__).resolve()),
         "python_version": sys.version,
         "numpy_version": np.__version__,
         "platform": platform.platform(),
@@ -341,7 +470,13 @@ def main() -> int:
         "effective_backend": request["requested_backend"],
         "requested_dtype": request["requested_dtype"],
         "effective_dtype": request["requested_dtype"],
+        "environment_sha256": request["environment_sha256"],
+        "environment_lock_consistent": os.environ.get("CUBLAS_WORKSPACE_CONFIG")
+        == ":4096:8",
         "cublas_workspace_config": os.environ.get("CUBLAS_WORKSPACE_CONFIG"),
+        "batch_size": int(arrays["batch_size"]),
+        "runtime_seconds": time.perf_counter() - started,
+        "retry_lineage": {"attempt": 1, "parent_job_id": None},
         **backend_provenance,
     }
     sys.stdout.write(
