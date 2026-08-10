@@ -2,17 +2,19 @@
 
 ## Result boundary
 
-This record reproduces the finite, declared graph-link laboratory at implementation revision `2016042a0f10b13e9fbfc44b8f0741b4ed09eb95`, from contract base `b80df01f239c2f9a18842f6887cdeca67dff508f`. It is mechanical implementation and finite experimental evidence. It does **not** prove a mathematical theorem, identify a graph-link assignment with a base-manifold connection, establish a dynamical gauge symmetry, or establish a continuum limit, universality, or physical time.
+This record reproduces the finite, declared graph-link laboratory at evidence-source revision `75c32c5c20b02ad76628f33dff0b64fa33ab2023`, from contract base `b80df01f239c2f9a18842f6887cdeca67dff508f`. The last production-code change in that revision history is `54e7faaa139f73a053c4be5463545dc4df9f780c`. This is mechanical implementation and finite experimental evidence. It does **not** prove a mathematical theorem, identify a graph-link assignment with a base-manifold connection, establish a dynamical gauge symmetry, or establish a continuum limit, universality, or physical time.
 
-The only tracked additions from the contract base through the reproduced implementation revision were:
+The tracked Session 5 additions from the contract base through the reproduced evidence-source revision were:
 
 - `run_gauge_holonomy_lab.py`
 - `src/multiagent_elbo/geometry/discrete_holonomy.py`
 - `src/multiagent_elbo/geometry/holonomy_experiment.py`
 - `tests/test_discrete_holonomy.py`
 - `tests/test_holonomy_experiment.py`
+- `docs/results/2026-08-09-gauge-holonomy-results.md`
+- `docs/verification/reviews/2026-08-09-gauge-holonomy-review.md`
 
-This result document is the sixth and only documentation path in the Session 5 allowlist. `git diff --name-only b80df01..2016042` produced exactly the five implementation paths above; the worktree was clean apart from ignored evidence.
+These are exactly the seven paths in the Session 5 allowlist. The final allowlist and cleanliness checks remain parent-gate obligations because this document refresh necessarily advances the branch revision.
 
 ## Environment and commands
 
@@ -40,19 +42,19 @@ Focused mechanical check, with a worktree-local pytest base and JUnit output:
 
 ```powershell
 C:\Python314\python.exe -m pytest tests/test_discrete_holonomy.py tests/test_holonomy_experiment.py `
-  --basetemp=.pytest-tmp/task3-focused `
-  --junitxml=.verification/gauge-holonomy/pytest-focused.xml -q -p no:cacheprovider
+  --basetemp=.verification/gauge-holonomy/prelim-focused-tmp `
+  --junitxml=.verification/gauge-holonomy/pytest-prelim-focused.xml -q -p no:cacheprovider
 ```
 
 Coverage check (direct Coverage.py branch measurement was used):
 
 ```powershell
-$env:COVERAGE_FILE = "$PWD/.verification/gauge-holonomy/.coverage"
+$env:COVERAGE_FILE = "$PWD/.verification/gauge-holonomy/.coverage-prelim"
 C:\Python314\python.exe -m coverage run --branch -m pytest `
   tests/test_discrete_holonomy.py tests/test_holonomy_experiment.py `
-  --basetemp=.pytest-tmp/task3-coverage -q -p no:cacheprovider
+  --basetemp=.verification/gauge-holonomy/prelim-coverage-tmp -q -p no:cacheprovider
 C:\Python314\python.exe -m coverage xml `
-  -o .verification/gauge-holonomy/coverage.xml `
+  -o .verification/gauge-holonomy/coverage-prelim.xml `
   --include='src/multiagent_elbo/geometry/discrete_holonomy.py,src/multiagent_elbo/geometry/holonomy_experiment.py'
 ```
 
@@ -63,20 +65,20 @@ Set-Location "<worktree>"
 C:\Python314\python.exe .verification\gauge-holonomy\run_reproduction_evidence.py
 ```
 
-The ignored harness runs the launcher with no arguments in a fresh isolated working directory, then loads that run's saved `config.json`, redirects only `output.root`, and invokes the experiment for a second-root replay. Its durable latest record is `.verification/gauge-holonomy/reproduction-evidence.json` (SHA-256 `069206202c1bfbd5894138238edcaec78619e52c00a6029c040ee6404b117e2c`).
+The ignored harness runs the launcher with no arguments in a fresh isolated working directory, then loads that run's saved `config.json`, redirects only `output.root`, and invokes the experiment for a second-root replay. Its durable latest record is `.verification/gauge-holonomy/reproduction-evidence.json` (SHA-256 `fe850e4eeddfbb4c7372f22d40b8bfb8c75c4c380ad7b8e672757b61aaa50823`).
 
-The record preserves the exact launcher command and working directory, `time.perf_counter` around `subprocess.Popen`/`communicate` as its wall-clock method, and Windows `GetProcessMemoryInfo(PROCESS_MEMORY_COUNTERS_EX)` as its primary-process working-set metric. In the fresh recorded execution, wall-clock duration was `0.3770372999988467 s`; the maximum of `19` samples taken every `0.020 s` was `42,102,784` bytes (`40.15234375 MiB`). This is a sampled process-memory observation, not a hardware-capacity assertion.
+The record preserves the exact launcher command and working directory, `time.perf_counter` around `subprocess.Popen`/`communicate` as its wall-clock method, and Windows `GetProcessMemoryInfo(PROCESS_MEMORY_COUNTERS_EX)` as its primary-process working-set metric. In the fresh recorded execution, wall-clock duration was `0.3785457999983919 s`; the maximum of `19` samples taken every `0.020 s` was `42,024,960` bytes (`40.078125 MiB`). This is a sampled process-memory observation, not a hardware-capacity assertion.
 
 ## Parsed mechanical evidence
 
-`pytest-focused.xml` was parsed as XML, not transcribed from console output: `tests=36`, `failures=0`, `errors=0`, `skipped=0`, and suite time `3.084 s`.
+`pytest-prelim-focused.xml` was parsed as XML, not transcribed from console output: `tests=37`, `failures=0`, `errors=0`, `skipped=0`, and suite time `3.152 s`.
 
-`coverage.xml` was parsed at the class/line and branch-condition level:
+`coverage-prelim.xml` was parsed at the class/line and branch-condition level:
 
 | New production module | Covered / executable lines | Line rate | Covered / total branches | Branch rate | 80% line gate |
 | --- | ---: | ---: | ---: | ---: | --- |
 | `discrete_holonomy.py` | 346 / 395 | 87.59% | 121 / 164 | 73.78% | PASS |
-| `holonomy_experiment.py` | 188 / 193 | 97.41% | 39 / 44 | 88.64% | PASS |
+| `holonomy_experiment.py` | 194 / 199 | 97.49% | 43 / 48 | 89.58% | PASS |
 
 The frozen gate is a line-coverage gate, so both modules clear it. The XML and its Coverage.py data file are ignored under `.verification/gauge-holonomy/`.
 
@@ -85,13 +87,13 @@ The frozen gate is a line-coverage gate, so both modules clear it. The XML and i
 The fresh harness's clean, finalized default bundle is:
 
 ```text
-.verification/gauge-holonomy/runs/20260810T031446.506135Z/launcher-cwd/artifacts/gauge_holonomy/
+.verification/gauge-holonomy/runs/20260810T040236.916367Z/launcher-cwd/artifacts/gauge_holonomy/
 10fbd1855196e092ecc5f36caa8af8d6ac1ce37b513c92c03f802de18535c317-20260809
 ```
 
-Its manifest has `complete=true`, exactly nine complete files, `git_commit=4e15677e52004420156b3fde009aec643b4f3c9d`, `git_dirty=false`, CPU/float64 provenance, the four named RNG streams, and the project-module path in this worktree. The scientific implementation remains revision `2016042a0f10b13e9fbfc44b8f0741b4ed09eb95`; the newer manifest revision includes this first results-record commit only. The frozen application identity is `30a4bd77e738fbb73b3326ec009995ec7b2bc94f20c96e9e286644bdeec620cd`; the physical fixture SHA-256 is `a207eba1e9f3a36e80d809940405dce178f20c52dffc2482bbc24f4fc26df567`.
+Its manifest has `complete=true`, exactly nine complete files, `git_commit=75c32c5c20b02ad76628f33dff0b64fa33ab2023`, `git_dirty=false`, CPU/float64 provenance, the four named RNG streams, and the project-module path in this worktree. That revision includes the production implementation through `54e7faaa139f73a053c4be5463545dc4df9f780c` and the independent review response through `75c32c5c20b02ad76628f33dff0b64fa33ab2023`. The frozen application identity is `30a4bd77e738fbb73b3326ec009995ec7b2bc94f20c96e9e286644bdeec620cd`; the physical fixture SHA-256 is `a207eba1e9f3a36e80d809940405dce178f20c52dffc2482bbc24f4fc26df567`.
 
-The harness's recorded replay method is `load source config.json; replace output.root only; run_holonomy_experiment`, with the replay call made from the worktree and output root `.verification/gauge-holonomy/runs/20260810T031446.506135Z/replay-root`. The resulting replay configuration hash is `dc1b6bde07ffee904e1e0c8f2fc7e8e1f9f0fa1c7484e1c5130a39a8c9e7f776`, differing only because output root is part of the resolved configuration. The JSON mechanically records `semantic_file_count=7`, `all_semantic_files_byte_identical=true`, `array_count=53`, `array_names_identical=true`, and `all_arrays_identical=true`.
+The harness's recorded replay method is `load source config.json; replace output.root only; run_holonomy_experiment`, with the replay call made from the worktree and output root `.verification/gauge-holonomy/runs/20260810T040236.916367Z/replay-root`. The resulting replay configuration hash is `073b7876784188d29f74c262673bd8559979e5047b64203309ee290571a1ac0d`, differing only because output root is part of the resolved configuration. The JSON mechanically records `semantic_file_count=7`, `all_semantic_files_byte_identical=true`, `array_count=53`, `array_names_identical=true`, and `all_arrays_identical=true`.
 
 | Semantic artifact | SHA-256 in source run | Second-root comparison |
 | --- | --- | --- |
@@ -127,7 +129,7 @@ The `CANDIDATE` values below are the serialized metric fields. They are delibera
 
 | Claim | theorem_status | verification_state | claim_origin | Current evidence | Falsifier / open obligation |
 | --- | --- | --- | --- | --- | --- |
-| The declared finite link implementation composes the pinned nonflat cycle and preserves its conjugacy invariants under the coherent passive frame convention. | `ESTABLISHED` | `CANDIDATE` | `STANDARD` | 36-test JUnit; literal cycle matrices; zero residuals; two-root replay. | A literal composition or passive-frame test mismatch; a derivation would still be needed for theorem closure. |
+| The declared finite link implementation composes the pinned nonflat cycle and preserves its conjugacy invariants under the coherent passive frame convention. | `ESTABLISHED` | `CANDIDATE` | `STANDARD` | 37-test JUnit; literal cycle matrices; zero residuals; two-root replay. | A literal composition or passive-frame test mismatch; a derivation would still be needed for theorem closure. |
 | The finite graph meets the implementation's declared flat/nonflat spanning-tree criterion. | `ESTABLISHED` | `CANDIDATE` | `PROJECT_NOVEL` | Literal residual `1.0` for the nonflat controls and zero metric residual. | A cycle/chord calculation or saved residual that disagrees; general mathematical scope remains conditional. |
 | A normalized marked-event law has the documented coherent-frame observable invariance, and the declared broken pair produces an observable mismatch. | `ESTABLISHED` | `CANDIDATE` | `PROJECT_NOVEL` | Saved logits/probabilities, zero coherent residual, and pinned `0.07177704884455105` mutation gap. | Failure of law normalization, coherent equality, or the specified single-pair mutation check. |
 | The default run is a reproducible finite computational artifact. | `NUMERICAL` | `CANDIDATE` | `APPLICATION_SPECIFIC` | Complete nine-file manifest, source/fixture identities, exact semantic hashes, and second-root equality of seven semantic files and 53 arrays. | Any source-hash, semantic-file, or array mismatch after replay at the same code/configuration. |
