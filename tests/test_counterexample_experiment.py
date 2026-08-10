@@ -132,6 +132,14 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     assert relabel["inside_declared_domain"] is False
     assert relabel["assumptions_satisfied"] is False
     assert relabel["classification"] == "assumption_boundary"
+    for record in candidates:
+        if record["exact_or_numeric"] != "numeric_log":
+            continue
+        residual = record["observed_residual"]
+        assert residual != "numeric_log"
+        if residual != "ln(3)/2":
+            assert math.isfinite(float(residual))
+            assert float(residual) > 0.0
     stress = json.loads((result.run_dir / "stress_matrix.json").read_text("utf-8"))
     assert stress["deep_composition"] == {
         "channels": {

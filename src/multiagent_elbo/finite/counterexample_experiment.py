@@ -127,6 +127,13 @@ def _fraction_text(value: Fraction) -> str:
     return str(value.numerator) if value.denominator == 1 else str(value)
 
 
+def _numeric_log_text(value: float) -> str:
+    """Serialize a finite KL value with stable IEEE-754 round-trip precision."""
+    if not math.isfinite(value) or value <= 0.0:
+        raise ValueError("numeric log residual must be finite and positive")
+    return format(value, ".17g")
+
+
 def _channel_text(channel: ExactChannel) -> list[list[str]]:
     return [[_fraction_text(value) for value in row] for row in channel.rows]
 
@@ -158,11 +165,8 @@ def _enumerate_candidates(
         if all(value > 0 for value in law.masses):
             result = kl_divergence(relabel_law(law, swap), law)
             if result.value and result.value > 0.0:
-                residual = (
-                    "ln(3)/2"
-                    if law.masses == (Fraction(3, 4), Fraction(1, 4))
-                    else "numeric_log"
-                )
+                is_pinned = law.masses == (Fraction(3, 4), Fraction(1, 4))
+                residual = "ln(3)/2" if is_pinned else _numeric_log_text(result.value)
                 records.append(
                     _record(
                         "single_law_relabeling",
