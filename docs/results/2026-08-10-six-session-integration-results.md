@@ -6,7 +6,8 @@ Branch: `codex/theory-simulation-integration-20260809`
 
 Contract freeze: `b80df01f239c2f9a18842f6887cdeca67dff508f`
 
-Final verified pre-remediation source checkpoint: `ddf2a41`
+Authoritative final artifact identity: the post-closeout validated live
+`.verification/ledger.json`
 
 ## Outcome
 
@@ -15,11 +16,11 @@ allowlists, and independently green before serial integration. They were merged
 in the plan's exact order in an isolated worktree. The live `main` checkout and
 its uncommitted files were not modified.
 
-The final pre-remediation source checkpoint passes 696 tests with two Windows
-symlink-privilege skips. All seven new launchers import without side effects,
-run from a sanitized working directory without an editable install, and publish
-complete manifests. All seven new figures replay from finalized saved artifacts
-without recomputing an experiment.
+The final-revision CPU record contains 700 collected tests: 698 passed, zero
+failed, zero errored, and two expected Windows privilege-dependent symlink
+tests skipped. The separately pinned worker-CPU check passed 1 of 1. Aggregate
+coverage is 91.20% line and 74.48% branch; every production module remains at
+or above 80% line coverage, with `cuda_backend.py` the minimum at 80.56%.
 
 This is not full program closure. The Gaussian fixed-ray CUDA parity claim and
 confirmatory sweep remain `INCONCLUSIVE`: operator opt-in, a current idle-GPU
@@ -41,7 +42,7 @@ job was run.
 | 9 | Saved-artifact renderers | `d5a0514` | 683 passed, 2 skipped |
 | 10 | Final review remediation | `e4a7244` | 686 passed, 2 skipped |
 | Reconcile | Current `origin/main` plus complete refreshed Session 2 tip (`aa3fa6b`) | `8491ad9` | 696 passed, 2 skipped |
-| Final SHA | Documentation/evidence reconciliation through `ddf2a41` | `ddf2a41` | 696 passed, 2 skipped |
+| Pre-remediation evidence checkpoint | Documentation/evidence reconciliation through `ddf2a41` | `ddf2a41` | 696 passed, 2 skipped |
 
 The reconciliation absorbed Session 5's immutable two-cell boundary repair and
 the complete reviewed Session 2 canonical-rational contract repair. Both
@@ -74,31 +75,23 @@ unchanged. Checkpoint `0255c1c` added a regression and canonicalizes text line
 endings only for that preregistration digest; executable and environment-lock
 hashes remain raw-byte hashes.
 
-## Completed final-SHA verification at `ddf2a41`
+## Final-revision evidence and audit disposition
 
-Final CPU, worker-CPU, experiment reproduction, saved-artifact replay, and
-independent final-SHA review were completed at `ddf2a41`; they are not pending
-work at that revision. The validated ledger was bound to
-`git:ddf2a41d663ee92b01c8ff5190836ade0945d264:sha256:6a5a05003944b86f34a2dc55174c6f44b8043709481c8f75a55341cac909949b`
-and contains these actual claim identities:
+The post-fix evidence refresh completed every scoped CPU, worker-CPU,
+reproduction, replay, and independent-review check. All 11/11 laboratory
+bundles reproduced from clean roots. Two independent replay roots each contain
+33 files, and corresponding files are byte-identical. The post-fix code and
+mathematical re-reviews each reported zero Critical, Important, or Minor
+findings. The experiment audit reported zero Critical or Important findings and
+explicitly retained the two expected Windows privilege skips as limitations.
 
-- `FINAL-CODE-CPU`: `EVIDENCE_VERIFIED` from `coordinator-mechanical` and
-  `independent-code-review`, with the 698-test JUnit record (696 passed, zero
-  failed, zero errors, two skipped), worker-CPU JUnit, and coverage evidence.
-- `FINAL-EXPERIMENT-REPLAY`: `EVIDENCE_VERIFIED` from
-  `coordinator-reproducer` and `independent-experiment-review`, with reproduced
-  bundles and two saved-artifact replay records.
-- `FINAL-CLAIM-BOUNDARIES`: `EVIDENCE_VERIFIED` from
-  `coordinator-source-audit` and `independent-mathematical-review`.
-- `FINAL-CUDA-CLOSURE`: `INCONCLUSIVE` from `coordinator-gate-audit` and
-  `independent-experiment-review`; the ledger retains explicit operator opt-in,
-  idle-GPU gate, float64 sentinel, and confirmatory-job obligations.
-
-The tracked remediation documented below changes the artifact revision, so the
-`ddf2a41` evidence remains historical and cannot close the remediation commit.
-Its final-SHA CPU/replay evidence, independent review, and ledger binding must
-be refreshed after the remediation is committed. No new ledger claim is
-asserted by this document update.
+Because this closeout text changes the Git revision, it does not hardcode a
+purported final commit or ledger digest. After the controller performs the
+final evidence refresh validation, the validated live
+`.verification/ledger.json` is the authoritative source for the exact artifact
+identity. That ledger will bind the CPU, replay, and claim-boundary checks as
+`EVIDENCE_VERIFIED` and CUDA closure as `INCONCLUSIVE`. This document neither
+edits the ledger nor claims that the post-closeout binding has already occurred.
 
 ## Laboratory records
 
@@ -137,15 +130,11 @@ heavy sweep was not run.
 
 ## Remaining gates
 
-1. Refresh the final-revision CPU JUnit, coverage, worker-CPU, experiment
-   reproduction, and saved-artifact replay records after this remediation.
-2. Refresh the independent final-SHA reviews and rebind the verification ledger
-   to the remediation commit; the completed `ddf2a41` review and ledger binding
-   are revision-specific evidence, not missing historical work.
-3. Only after explicit operator opt-in and a current validated idle-GPU record,
-   run the pinned Python 3.12 float64 CUDA sentinel. The heavy confirmatory sweep
+1. Obtain explicit operator opt-in and a current validated idle-GPU gate, then
+   run the pinned Python 3.12 float64 CUDA sentinel. The confirmatory sweep
    remains separately gated.
 
-Until those gates close, `ddf2a41` remains the last fully bound CPU-green
-checkpoint; the remediation revision has focused test evidence only and is not
-eligible for an unqualified final-closure claim.
+Publication disposition after the final evidence refresh and controller ledger
+validation: the declared CPU and saved-artifact replay scope is publishable.
+CUDA parity and the confirmatory sweep remain `INCONCLUSIVE`, so unqualified
+full-program closure is not supported.

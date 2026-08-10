@@ -138,8 +138,8 @@ labels and log ticks, made the Task 5 evidence durable, and then moved panel lab
 `C` clear of every visible y-axis tick after the first scoped visual check exposed
 one residual collision. The final scoped re-review at `cc863e4` reported no
 Critical, Important, or Minor finding and approved the source for final machine
-evidence. Subsequent final-SHA verification and ledger binding were completed
-at `ddf2a41`; the revision-bound identities are recorded below.
+evidence. The subsequent post-fix audit and evidence refresh are recorded in
+the final-revision disposition below.
 
 ## Residual limitations
 
@@ -180,21 +180,29 @@ merge also exposed a Windows LF/CRLF preregistration-digest defect; its focused
 regression and full merged suite are green. Saved-artifact replay was exercised
 against actual finalized outputs from all seven new laboratories.
 
-Disposition at `ddf2a41`: **CPU and saved-artifact replay verified; CUDA closure
-inconclusive.** No unresolved Critical or Important finding is recorded in the
-six lane reviews. Final-SHA review was completed by the actual ledger views
-`coordinator-mechanical` / `independent-code-review`,
-`coordinator-reproducer` / `independent-experiment-review`, and
-`coordinator-source-audit` / `independent-mathematical-review`. The validated
-ledger bound `FINAL-CODE-CPU`, `FINAL-EXPERIMENT-REPLAY`, and
-`FINAL-CLAIM-BOUNDARIES` as `EVIDENCE_VERIFIED` at `ddf2a41`; it bound
-`FINAL-CUDA-CLOSURE` as `INCONCLUSIVE` through `coordinator-gate-audit` and
-`independent-experiment-review`.
+Final-revision disposition: **CPU and saved-artifact replay scope publishable;
+CUDA closure inconclusive.** The final CPU audit records 700 collected tests,
+698 passed, zero failures, zero errors, and two expected Windows
+privilege-dependent skips. The pinned worker-CPU check passed 1 of 1. Aggregate
+coverage is 91.20% line and 74.48% branch; every production module remains at
+or above 80% line coverage, with `cuda_backend.py` the minimum at 80.56%.
 
-The present tracked remediation changes the artifact revision. Therefore the
-completed `ddf2a41` CPU/replay evidence, final-SHA reviews, and ledger binding
-must be refreshed for the remediation commit; they must not be described as if
-they never occurred. CUDA remains open because explicit operator opt-in, a
-current validated idle-GPU record, the pinned float64 sentinel, and the
-separately gated confirmatory sweep are absent. No unqualified full-program
-closure is supported.
+All 11/11 laboratories reproduced from clean bundle roots. Two
+independent replay roots each contain 33 files, and corresponding files are
+byte-identical. The actual post-fix code and mathematical re-reviews each
+reported zero Critical, Important, or Minor findings. The experiment audit
+reported zero Critical or Important findings and explicitly noted the two
+expected Windows privilege skips.
+
+This documentation commit necessarily changes the Git revision. The exact
+final artifact identity is therefore supplied authoritatively by the validated
+live `.verification/ledger.json` after the controller's final evidence refresh
+validation, rather than hardcoded here. That ledger will bind the CPU, replay,
+and claim-boundary checks as `EVIDENCE_VERIFIED` and CUDA closure as
+`INCONCLUSIVE`; this review does not claim that the post-closeout ledger binding
+has already occurred.
+
+The only remaining scientific execution gates are explicit operator opt-in, a
+current validated idle-GPU gate, the pinned Python 3.12 float64 CUDA sentinel,
+and the separately gated confirmatory sweep. Until those CUDA obligations are
+satisfied, unqualified full-program closure is not supported.
