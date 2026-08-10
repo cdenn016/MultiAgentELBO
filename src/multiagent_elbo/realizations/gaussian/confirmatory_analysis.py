@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import re
 from math import comb, isfinite
 from typing import Mapping
 
@@ -16,6 +18,21 @@ SECONDARY_ENDPOINT_IDS = (
     "conditioning_trend",
     "rejection_rate",
 )
+_SCHEME_IDS = ("adjacent_pairs", "balanced_alternating")
+_SCALES_4_8 = np.arange(4.0, 9.0, dtype=np.float64)
+_SHA256_HEX = re.compile(r"[0-9a-f]{64}")
+
+
+def _finite_vector(values: object, *, length: int, label: str) -> np.ndarray:
+    vector = np.asarray(values, dtype=np.float64)
+    if vector.shape != (length,) or not np.all(np.isfinite(vector)):
+        raise ValueError(f"{label} must be a finite vector of length {length}")
+    return vector
+
+
+def _ols_slope(values: np.ndarray) -> float:
+    centered = _SCALES_4_8 - float(np.mean(_SCALES_4_8))
+    return float(np.dot(centered, values) / np.dot(centered, centered))
 
 
 def exact_sign_pvalue(values: object, boundary: float) -> float:
@@ -88,9 +105,365 @@ def holm_adjust(
     ]
 
 
+def summarize_paired_job(record: Mapping[str, object]) -> dict[str, object]:
+    """Reduce one two-scheme job to one conservative independent summary."""
+    if record.get("scientific_analysis_eligibility") is not True:
+        raise ValueError("job is not eligible for scientific analysis")
+    job_id = record.get("job_id")
+    role = record.get("role")
+    if not isinstance(job_id, str) or role not in {
+        "confirmatory_primary",
+        "confirmatory_holdout",
+    }:
+        raise ValueError("job identity or role is invalid")
+    schemes = record.get("schemes")
+    if not isinstance(schemes, Mapping) or set(schemes) != set(_SCHEME_IDS):
+        raise ValueError("job must contain exactly the two frozen schemes")
+
+    angle_slopes: list[float] = []
+    distances: list[float] = []
+    construction: list[float] = []
+    beta_slopes: list[float] = []
+    conditioning_slopes: list[float] = []
+    basin_events: list[bool] = []
+    rejection_events: list[bool] = []
+    censored = False
+    for scheme_id in _SCHEME_IDS:
+        scheme = schemes[scheme_id]
+        if not isinstance(scheme, Mapping):
+            raise ValueError("scheme record must be a mapping")
+        basin_exit = scheme.get("basin_exit")
+        rejected = scheme.get("rejected")
+        if type(basin_exit) is not bool or type(rejected) is not bool:
+            raise ValueError("basin and rejection events must be Boolean")
+        basin_events.append(basin_exit)
+        rejection_events.append(rejected)
+        continuous_fields = (
+            "projective_ray_angles",
+            "normalized_coupling_distances",
+            "retained_beta_residuals",
+            "scalarized_ray_construction_residuals",
+            "coefficient_conditioning",
+        )
+        continuous_available = all(scheme.get(field) is not None for field in continuous_fields)
+        if rejected and not continuous_available:
+            censored = True
+            continue
+        if not continuous_available:
+            raise ValueError("nonrejected scheme is missing a continuous endpoint")
+        angles = _finite_vector(
+            scheme.get("projective_ray_angles"),
+            length=9,
+            label="projective ray angles",
+        )
+        normalized = _finite_vector(
+            scheme.get("normalized_coupling_distances"),
+            length=9,
+            label="normalized coupling distances",
+        )
+        beta = _finite_vector(
+            scheme.get("retained_beta_residuals"),
+            length=8,
+            label="retained beta residuals",
+        )
+        conditioning = _finite_vector(
+            scheme.get("coefficient_conditioning"),
+            length=9,
+            label="coefficient conditioning",
+        )
+        if np.any(conditioning <= 0.0):
+            raise ValueError("coefficient conditioning must be strictly positive")
+        residuals = np.asarray(
+            scheme.get("scalarized_ray_construction_residuals"),
+            dtype=np.float64,
+        )
+        if residuals.size == 0 or not np.all(np.isfinite(residuals)):
+            raise ValueError("construction residuals must be finite and nonempty")
+        angle_slopes.append(_ols_slope(angles[4:9]))
+        distances.append(float(normalized[8]))
+        construction.append(float(np.max(residuals)))
+        beta_slopes.append(_ols_slope(beta[3:8]))
+        conditioning_slopes.append(_ols_slope(np.log(conditioning[4:9])))
+    dispersion_value: float | None
+    if censored:
+        dispersion_value = None
+    else:
+        dispersion = _finite_vector(
+            record.get("blocking_scheme_dispersion"),
+            length=9,
+            label="blocking scheme dispersion",
+        )
+        dispersion_value = float(dispersion[8])
+    return {
+        "job_id": job_id,
+        "role": role,
+        "primary_angle_slope": None if censored else max(angle_slopes),
+        "scale_8_normalized_distance": None if censored else max(distances),
+        "construction_residual": None if censored else max(construction),
+        "retained_beta_trend": None if censored else max(beta_slopes),
+        "basin_exit": any(basin_events),
+        "scheme_dispersion": dispersion_value,
+        "conditioning_trend": None if censored else max(conditioning_slopes),
+        "rejected": any(rejection_events),
+        "continuous_endpoint_censored_worst_case": censored,
+        "independent_observation_count": 1,
+    }
+
+
+def bootstrap_seed(protocol_id: str, job_table_sha256: str, endpoint_id: str) -> int:
+    """Derive an endpoint-bound unsigned 64-bit bootstrap seed."""
+    if not isinstance(protocol_id, str) or not protocol_id:
+        raise ValueError("bootstrap protocol ID must be nonempty")
+    if _SHA256_HEX.fullmatch(job_table_sha256) is None:
+        raise ValueError("bootstrap job-table SHA-256 is invalid")
+    if not isinstance(endpoint_id, str) or not endpoint_id:
+        raise ValueError("bootstrap endpoint ID must be nonempty")
+    payload = "\0".join(
+        (
+            protocol_id,
+            job_table_sha256,
+            "confirmatory-analysis-bootstrap-v1",
+            endpoint_id,
+        )
+    ).encode("utf-8")
+    return int.from_bytes(hashlib.sha256(payload).digest()[:8], "big", signed=False)
+
+
+def _bootstrap_statistics(
+    values: object, *, seed: int, resamples: int
+) -> tuple[np.ndarray, dict[str, object]]:
+    sample = np.asarray(values, dtype=np.float64)
+    if sample.ndim != 1 or sample.size == 0 or not np.all(np.isfinite(sample)):
+        raise ValueError("bootstrap values must be a nonempty finite vector")
+    if type(seed) is not int or not 0 <= seed < 2**64:
+        raise ValueError("bootstrap seed must be an unsigned 64-bit integer")
+    if type(resamples) is not int or resamples <= 0:
+        raise ValueError("bootstrap resample count must be positive")
+    generator = np.random.Generator(np.random.PCG64(seed))
+    indices = generator.integers(
+        0,
+        sample.size,
+        size=(resamples, sample.size),
+        dtype=np.int64,
+    )
+    statistics = np.median(sample[indices], axis=1).astype(np.float64, copy=False)
+    return statistics, {
+        "seed_u64": seed,
+        "resamples": resamples,
+        "trials": int(sample.size),
+        "input_sha256": hashlib.sha256(sample.tobytes(order="C")).hexdigest(),
+        "resample_indices_sha256": hashlib.sha256(
+            indices.tobytes(order="C")
+        ).hexdigest(),
+        "bootstrap_statistics_sha256": hashlib.sha256(
+            statistics.tobytes(order="C")
+        ).hexdigest(),
+    }
+
+
+def percentile_interval(
+    values: object, *, seed: int, resamples: int = 10_000
+) -> dict[str, object]:
+    """Return a deterministic whole-job percentile interval for a median."""
+    sample = np.asarray(values, dtype=np.float64)
+    statistics, identity = _bootstrap_statistics(
+        sample, seed=seed, resamples=resamples
+    )
+    return {
+        "estimate": float(np.median(sample)),
+        "lower": float(np.percentile(statistics, 2.5)),
+        "upper": float(np.percentile(statistics, 97.5)),
+        **identity,
+    }
+
+
+def analyze_primary(
+    job_records: object,
+    *,
+    protocol_id: str,
+    job_table_sha256: str,
+    decision_stability: bool,
+    premises_passed: bool,
+    gpu_gate_complete: bool,
+) -> dict[str, object]:
+    """Analyze exactly the 30 frozen primary jobs without pseudo-replication."""
+    if type(decision_stability) is not bool or type(premises_passed) is not bool:
+        raise ValueError("primary analysis decision flags must be Boolean")
+    if type(gpu_gate_complete) is not bool:
+        raise ValueError("primary analysis GPU gate flag must be Boolean")
+    if (
+        not isinstance(job_records, (list, tuple))
+        or len(job_records) == 0
+        or len(job_records) > 30
+    ):
+        raise ValueError("primary analysis requires between one and 30 job records")
+    records_by_id: dict[str, Mapping[str, object]] = {}
+    for record in job_records:
+        if not isinstance(record, Mapping):
+            raise ValueError("primary job record must be a mapping")
+        job_id = record.get("job_id")
+        if (
+            not isinstance(job_id, str)
+            or record.get("role") != "confirmatory_primary"
+            or record.get("scientific_analysis_eligibility") is not True
+        ):
+            raise ValueError("primary analysis received a non-primary record")
+        if job_id in records_by_id:
+            raise ValueError("primary analysis job IDs must be unique")
+        records_by_id[job_id] = record
+    expected_ids = [f"C{index:03d}" for index in range(1, 31)]
+    if not set(records_by_id).issubset(set(expected_ids)):
+        raise ValueError("primary analysis job table is drifted")
+    missing_job_ids = [job_id for job_id in expected_ids if job_id not in records_by_id]
+    ordered_records = [
+        records_by_id[job_id] for job_id in expected_ids if job_id in records_by_id
+    ]
+    summaries = [summarize_paired_job(record) for record in ordered_records]
+    censored_count = int(
+        sum(
+            bool(summary["continuous_endpoint_censored_worst_case"])
+            for summary in summaries
+        )
+    )
+    worst_case = np.finfo(np.float64).max
+
+    def values(name: str) -> np.ndarray:
+        observed = [
+            worst_case if summary[name] is None else summary[name]
+            for summary in summaries
+        ]
+        observed.extend([worst_case] * len(missing_job_ids))
+        return np.asarray(observed, dtype=np.float64)
+
+    primary_values = values("primary_angle_slope")
+    distance_values = values("scale_8_normalized_distance")
+    dispersion_values = values("scheme_dispersion")
+    primary_seed = bootstrap_seed(protocol_id, job_table_sha256, "primary_angle_slope")
+    primary_statistics, primary_identity = _bootstrap_statistics(
+        primary_values, seed=primary_seed, resamples=10_000
+    )
+    primary_estimate = float(np.median(primary_values))
+    primary_interval = {
+        "estimate": primary_estimate,
+        "lower": float(np.percentile(primary_statistics, 2.5)),
+        "upper": float(np.percentile(primary_statistics, 97.5)),
+        **primary_identity,
+    }
+    primary_boundary = -0.02
+    null_statistics = primary_statistics - primary_estimate + primary_boundary
+    lower_count = int(np.count_nonzero(null_statistics <= primary_estimate))
+    upper_count = int(np.count_nonzero(null_statistics >= primary_estimate))
+    primary_pvalue = min(
+        1.0,
+        2.0 * (min(lower_count, upper_count) + 1.0) / (len(null_statistics) + 1.0),
+    )
+    distance_interval = percentile_interval(
+        distance_values,
+        seed=bootstrap_seed(protocol_id, job_table_sha256, "supporting_distance"),
+    )
+    dispersion_interval = percentile_interval(
+        dispersion_values,
+        seed=bootstrap_seed(protocol_id, job_table_sha256, "scheme_dispersion"),
+    )
+
+    basin_events = int(sum(bool(summary["basin_exit"]) for summary in summaries))
+    rejection_events = int(sum(bool(summary["rejected"]) for summary in summaries))
+    raw_secondary = {
+        "construction_residual": exact_sign_pvalue(
+            values("construction_residual"), 1.0e-12
+        ),
+        "retained_beta_trend": exact_sign_pvalue(
+            values("retained_beta_trend"), 0.0
+        ),
+        "basin_exit_rate": exact_binomial_lower_tail(basin_events, 30, 0.05),
+        "scheme_dispersion": exact_sign_pvalue(dispersion_values, 0.02),
+        "conditioning_trend": exact_sign_pvalue(
+            values("conditioning_trend"), 0.0
+        ),
+        "rejection_rate": exact_binomial_lower_tail(rejection_events, 30, 0.05),
+    }
+    secondary_tests = holm_adjust(raw_secondary)
+    basin_rate = basin_events / 30.0
+    rejection_rate = rejection_events / 30.0
+    distinct_rays = any(
+        record.get("distinct_projective_rays") is True for record in ordered_records
+    )
+    interval_half_width = (
+        float(primary_interval["upper"]) - float(primary_interval["lower"])
+    ) / 2.0
+    support = (
+        float(primary_interval["upper"]) <= -0.02
+        and float(distance_interval["estimate"]) <= 0.05
+        and float(dispersion_interval["upper"]) <= 0.02
+        and basin_rate <= 0.05
+        and rejection_rate <= 0.05
+        and decision_stability
+        and premises_passed
+        and gpu_gate_complete
+    )
+    counterevidence = (
+        float(primary_interval["lower"]) >= 0.0
+        or float(dispersion_interval["lower"]) > 0.05
+        or basin_rate > 0.20
+        or rejection_rate > 0.20
+        or distinct_rays
+    )
+    forced_inconclusive = (
+        interval_half_width > 0.02
+        or bool(missing_job_ids)
+        or not decision_stability
+        or not premises_passed
+        or not gpu_gate_complete
+    )
+    if support and not counterevidence and not forced_inconclusive:
+        classification = "support"
+    elif counterevidence and not forced_inconclusive:
+        classification = "counterevidence"
+    else:
+        classification = "inconclusive"
+
+    return {
+        "schema_version": "gaussian-fixed-ray-primary-analysis-v1",
+        "protocol_id": protocol_id,
+        "job_table_sha256": job_table_sha256,
+        "primary_job_ids": expected_ids,
+        "independent_job_count": 30,
+        "completed_job_count": len(summaries),
+        "missing_job_ids": missing_job_ids,
+        "censored_worst_case_count": censored_count,
+        "paired_reduction": "least_favorable_across_two_frozen_schemes",
+        "primary_endpoint": {
+            **primary_interval,
+            "null_boundary": primary_boundary,
+            "two_sided_p": primary_pvalue,
+        },
+        "supporting_distance": distance_interval,
+        "scheme_dispersion_interval": dispersion_interval,
+        "secondary_tests": secondary_tests,
+        "basin_exit_events": basin_events,
+        "basin_exit_rate": basin_rate,
+        "rejection_events": rejection_events,
+        "rejection_rate": rejection_rate,
+        "decision_stability": decision_stability,
+        "premises_passed": premises_passed,
+        "gpu_gate_complete": gpu_gate_complete,
+        "distinct_projective_rays": distinct_rays,
+        "primary_interval_half_width": interval_half_width,
+        "classification": classification,
+        "theorem_status": "NUMERICAL",
+        "verification_state": "CANDIDATE",
+        "claim_origin": "APPLICATION_SPECIFIC",
+        "job_summaries": summaries,
+    }
+
+
 __all__ = [
     "SECONDARY_ENDPOINT_IDS",
+    "analyze_primary",
+    "bootstrap_seed",
     "exact_binomial_lower_tail",
     "exact_sign_pvalue",
     "holm_adjust",
+    "percentile_interval",
+    "summarize_paired_job",
 ]

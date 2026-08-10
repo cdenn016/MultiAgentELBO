@@ -3,9 +3,13 @@
 from .experiment import GaussianExperimentResult, run_gaussian_experiment
 from .confirmatory_analysis import (
     SECONDARY_ENDPOINT_IDS,
+    analyze_primary,
+    bootstrap_seed,
     exact_binomial_lower_tail,
     exact_sign_pvalue,
     holm_adjust,
+    percentile_interval,
+    summarize_paired_job,
 )
 from .fixed_ray_experiment import (
     GaussianFixedRayExperimentResult,
@@ -32,16 +36,20 @@ __all__ = [
     "GaussianInteraction",
     "GaussianNumericalError",
     "SECONDARY_ENDPOINT_IDS",
+    "analyze_primary",
     "apply_frame_change",
     "build_cuda_gate_record",
+    "bootstrap_seed",
     "capture_idle_gpu_gate",
     "exact_binomial_lower_tail",
     "exact_sign_pvalue",
     "galerkin_aggregate_precision",
     "holm_adjust",
+    "percentile_interval",
     "publish_cuda_sentinel",
     "run_cuda_sentinel",
     "run_gaussian_experiment",
     "run_gaussian_fixed_ray_experiment",
     "schur_complement_precision",
+    "summarize_paired_job",
 ]
