@@ -162,6 +162,116 @@ def test_all_frozen_scenarios_publish_their_declared_finite_records(
     ][0] == pytest.approx(raw_trivialization)
 
 
+@pytest.mark.parametrize(
+    "scenario",
+    ["flat_tree", "nonflat_plaquette", "frustrated_transport"],
+)
+def test_saved_artifacts_make_every_metric_decision_recomputable(
+    tmp_path: Path,
+    scenario: str,
+):
+    """Mutation caught: hiding decision oracles and thresholds in runtime code."""
+    experiment = importlib.import_module(
+        "multiagent_elbo.geometry.holonomy_experiment"
+    )
+    result = experiment.run_holonomy_experiment(
+        holonomy_config(tmp_path, scenario=scenario)
+    )
+
+    record = json.loads(
+        (result.run_dir / "interaction_complex.json").read_text("utf-8")
+    )
+    saved_metrics = json.loads(
+        (result.run_dir / "metrics.json").read_text("utf-8")
+    )
+    decisions = record["metric_decisions"]
+    assert set(decisions) == METRIC_KEYS
+
+    for name, decision in decisions.items():
+        if decision["rule"] == "target":
+            recomputed = (
+                "pass"
+                if abs(decision["observed_value"] - decision["reference_value"])
+                <= decision["tolerance"]
+                else "fail"
+            )
+        elif decision["rule"] == "lower_bound":
+            recomputed = (
+                "pass"
+                if decision["observed_value"]
+                >= decision["reference_value"] - decision["tolerance"]
+                else "fail"
+            )
+        else:
+            assert decision["rule"] == "not_applicable"
+            recomputed = "inconclusive"
+        assert recomputed == saved_metrics[name]["status"]
+
+    assert decisions["trivialization_residual"][
+        "expected_max_edge_residual"
+    ] in {0.0, 1.0}
+    assert decisions["broken_link_negative_control"]["reference_value"] == 1.0e-3
+    if scenario == "frustrated_transport":
+        assert decisions["operational_observable_residual"][
+            "expected_frustration_gap"
+        ] == pytest.approx(0.3807970779778823)
+    if scenario == "flat_tree":
+        assert decisions["cycle_conjugacy_invariant_residual"] == {
+            "comparison_applicable": False,
+            "observed_value": 0.0,
+            "reference_value": None,
+            "rule": "not_applicable",
+            "tolerance": pytest.approx(1.01e-10),
+        }
+        assert saved_metrics["cycle_conjugacy_invariant_residual"][
+            "status"
+        ] == "inconclusive"
+
+
+def test_negative_control_mutates_exactly_one_declared_undirected_link_pair(
+    tmp_path: Path,
+):
+    """Mutation caught: comparing coherent frames against all original links."""
+    experiment = importlib.import_module(
+        "multiagent_elbo.geometry.holonomy_experiment"
+    )
+    result = experiment.run_holonomy_experiment(holonomy_config(tmp_path))
+    record = json.loads(
+        (result.run_dir / "interaction_complex.json").read_text("utf-8")
+    )
+
+    mutation = record["negative_control_mutation"]
+    assert mutation == {
+        "mutated_oriented_edges": ["e01", "e10"],
+        "replacement": "original_declared_link_pair",
+        "undirected_link_pair": ["e01", "e10"],
+    }
+    labels = {edge["label"] for edge in record["oriented_edges"]}
+    changed = {
+        label
+        for label in labels
+        if not np.array_equal(
+            result.arrays[f"oriented_links.coherent_{label}"],
+            result.arrays[f"oriented_links.broken_{label}"],
+        )
+    }
+    assert changed == {"e01", "e10"}
+    for label in labels:
+        original = result.arrays[f"oriented_links.{label}"]
+        broken = result.arrays[f"oriented_links.broken_{label}"]
+        if label in changed:
+            assert_array_equal(broken, original)
+        else:
+            assert_array_equal(
+                broken, result.arrays[f"oriented_links.coherent_{label}"]
+            )
+    assert_array_equal(
+        result.arrays["oriented_links.broken_e10"]
+        @ result.arrays["oriented_links.broken_e01"],
+        np.eye(2),
+    )
+
+
 def test_frustrated_transport_has_a_normalized_path_dependent_observable(
     tmp_path: Path,
 ):
@@ -319,9 +429,15 @@ def test_launcher_runs_without_arguments_pythonpath_or_editable_install(
         for key, value in os.environ.items()
         if key not in {"PYTHONPATH", "PYTHONHOME"} and not key.startswith("PYTEST_")
     }
+    dependency_site = Path(np.__file__).resolve().parents[1]
+    isolated_bootstrap = (
+        "import runpy, sys; "
+        f"sys.path.append({str(dependency_site)!r}); "
+        f"runpy.run_path({str(launcher)!r}, run_name='__main__')"
+    )
 
     completed = subprocess.run(
-        [sys.executable, str(launcher)],
+        [sys.executable, "-I", "-c", isolated_bootstrap],
         cwd=tmp_path,
         env=environment,
         capture_output=True,
@@ -335,4 +451,13 @@ def test_launcher_runs_without_arguments_pythonpath_or_editable_install(
     assert "status=pass; metrics=5; figures=not_exposed" in completed.stdout
     manifests = list((tmp_path / "artifacts").rglob("manifest.json"))
     assert len(manifests) == 1
-    assert json.loads(manifests[0].read_text("utf-8"))["complete"] is True
+    manifest = json.loads(manifests[0].read_text("utf-8"))
+    assert manifest["complete"] is True
+    expected_module = (
+        launcher.parent
+        / "src"
+        / "multiagent_elbo"
+        / "geometry"
+        / "holonomy_experiment.py"
+    ).resolve()
+    assert Path(manifest["provenance"]["experiment_module_path"]) == expected_module

@@ -192,6 +192,11 @@ def _scenario_arrays(
         "3": np.eye(2),
     }
     transformed_links = hol.passive_transform_links(complex_, links, frames)
+    broken_link_labels = ("e01", "e10")
+    broken_link_matrices = dict(transformed_links.matrices)
+    for label in broken_link_labels:
+        broken_link_matrices[label] = links.matrices[label]
+    broken_links = hol.OrientedLinks(complex_, broken_link_matrices)
     if complex_.two_cells:
         boundary = complex_.two_cells[0].boundary
         cycle = hol.cycle_holonomy(complex_, links, boundary)
@@ -279,7 +284,7 @@ def _scenario_arrays(
     )
     broken = hol.operational_record_law(
         complex_,
-        links,
+        broken_links,
         transformed_states,
         "0",
         paths,
@@ -311,6 +316,8 @@ def _scenario_arrays(
         )
     )
     operational_residual = abs(baseline_observable - coherent_observable)
+    expected_frustration_gap: float | None = None
+    frustration_gap: float | None = None
 
     if scenario == "frustrated_transport":
         frustrated_state = {"2": np.array([1.0, 1.0])}
@@ -335,9 +342,10 @@ def _scenario_arrays(
         frustration_gap = hol.operational_observable(
             long, mark_values
         ) - hol.operational_observable(short, mark_values)
+        expected_frustration_gap = 0.3807970779778823
         operational_residual = max(
             operational_residual,
-            abs(frustration_gap - 0.3807970779778823),
+            abs(frustration_gap - expected_frustration_gap),
         )
         operational_arrays.update(
             _frozen_arrays(
@@ -416,6 +424,35 @@ def _scenario_arrays(
             }
         )
 
+    cycle_comparison_applicable = bool(complex_.two_cells)
+    cycle_metric = (
+        target_metric(
+            invariant_residual,
+            tolerance,
+            target=0.0,
+            interpretation=(
+                "Trace, determinant, and discriminant agree under represented "
+                "cycle conjugation."
+            ),
+            theorem_status="ESTABLISHED",
+            verification_state="CANDIDATE",
+            claim_origin="STANDARD",
+        )
+        if cycle_comparison_applicable
+        else MetricRecord(
+            value=0.0,
+            tolerance=tolerance,
+            status="inconclusive",
+            interpretation=(
+                "Cycle conjugacy comparison is not applicable because the flat-tree "
+                "scenario declares no cycle."
+            ),
+            assessment_scope="implementation_check",
+            theorem_status="ESTABLISHED",
+            verification_state="CANDIDATE",
+            claim_origin="STANDARD",
+        )
+    )
     metrics = {
         "passive_covariance_residual": target_metric(
             passive_residual,
@@ -429,18 +466,7 @@ def _scenario_arrays(
             verification_state="CANDIDATE",
             claim_origin="STANDARD",
         ),
-        "cycle_conjugacy_invariant_residual": target_metric(
-            invariant_residual,
-            tolerance,
-            target=0.0,
-            interpretation=(
-                "Trace, determinant, and discriminant agree under represented "
-                "cycle conjugation."
-            ),
-            theorem_status="ESTABLISHED",
-            verification_state="CANDIDATE",
-            claim_origin="STANDARD",
-        ),
+        "cycle_conjugacy_invariant_residual": cycle_metric,
         "trivialization_residual": target_metric(
             abs(trivialization.max_edge_residual - expected_trivialization),
             tolerance,
@@ -470,8 +496,8 @@ def _scenario_arrays(
             tolerance,
             lower_bound=1.0e-3,
             interpretation=(
-                "Leaving the graph links untransformed while changing states and "
-                "covectors produces a detectable operational mismatch."
+                "Replacing exactly one coherently transformed undirected link pair "
+                "with its original pair produces a detectable operational mismatch."
             ),
             theorem_status="NUMERICAL",
             verification_state="CANDIDATE",
@@ -479,7 +505,19 @@ def _scenario_arrays(
         ),
     }
     bundles = {
-        "oriented_links": _frozen_arrays(links.matrices),
+        "oriented_links": _frozen_arrays(
+            {
+                **links.matrices,
+                **{
+                    f"coherent_{label}": matrix
+                    for label, matrix in transformed_links.matrices.items()
+                },
+                **{
+                    f"broken_{label}": matrix
+                    for label, matrix in broken_links.matrices.items()
+                },
+            }
+        ),
         "vertex_frames": _frozen_arrays(
             {f"frame_{vertex}": frame for vertex, frame in frames.items()}
         ),
@@ -488,6 +526,7 @@ def _scenario_arrays(
                 "is_trivializable": [trivialization.is_trivializable],
                 "original": cycle_matrices,
                 "original_invariants": invariant_vectors,
+                "comparison_applicable": [cycle_comparison_applicable],
                 "transformed": transformed_cycle_matrices,
                 "transformed_invariants": transformed_invariant_vectors,
                 "trivialization_max_edge_residual": [
@@ -519,6 +558,54 @@ def _scenario_arrays(
             "theorem_status": "NUMERICAL",
             "verification_state": "CANDIDATE",
             "claim_origin": "APPLICATION_SPECIFIC",
+        },
+        "negative_control_mutation": {
+            "undirected_link_pair": list(broken_link_labels),
+            "mutated_oriented_edges": list(broken_link_labels),
+            "replacement": "original_declared_link_pair",
+        },
+        "metric_decisions": {
+            "passive_covariance_residual": {
+                "rule": "target",
+                "observed_value": passive_residual,
+                "reference_value": 0.0,
+                "tolerance": tolerance,
+            },
+            "cycle_conjugacy_invariant_residual": {
+                "rule": "target" if cycle_comparison_applicable else "not_applicable",
+                "observed_value": invariant_residual,
+                "reference_value": 0.0 if cycle_comparison_applicable else None,
+                "tolerance": tolerance,
+                "comparison_applicable": cycle_comparison_applicable,
+            },
+            "trivialization_residual": {
+                "rule": "target",
+                "observed_value": abs(
+                    trivialization.max_edge_residual - expected_trivialization
+                ),
+                "reference_value": 0.0,
+                "tolerance": tolerance,
+                "actual_max_edge_residual": trivialization.max_edge_residual,
+                "expected_max_edge_residual": expected_trivialization,
+            },
+            "operational_observable_residual": {
+                "rule": "target",
+                "observed_value": operational_residual,
+                "reference_value": 0.0,
+                "tolerance": tolerance,
+                "baseline_observable": baseline_observable,
+                "coherent_observable": coherent_observable,
+                "frustration_gap": frustration_gap,
+                "expected_frustration_gap": expected_frustration_gap,
+            },
+            "broken_link_negative_control": {
+                "rule": "lower_bound",
+                "observed_value": abs(broken_observable - baseline_observable),
+                "reference_value": 1.0e-3,
+                "tolerance": tolerance,
+                "baseline_observable": baseline_observable,
+                "broken_observable": broken_observable,
+            },
         },
     }
     return bundles, metrics, interaction_record
@@ -582,6 +669,7 @@ def run_holonomy_experiment(config: ExperimentConfig) -> HolonomyExperimentResul
             "effective_dtype": config.compute.dtype,
             "arithmetic_provenance": "floating_point_float64",
             "graph_to_base_identification": False,
+            "experiment_module_path": str(Path(__file__).resolve()),
         }
     )
     store = RunStore.create(config, provenance)
@@ -598,7 +686,7 @@ def run_holonomy_experiment(config: ExperimentConfig) -> HolonomyExperimentResul
         for filename in _SCIENTIFIC_ARTIFACTS
     }
     status: MetricStatus = (
-        "pass" if all(metric.status == "pass" for metric in metrics.values()) else "fail"
+        "pass" if all(metric.status != "fail" for metric in metrics.values()) else "fail"
     )
     return HolonomyExperimentResult(
         run_dir=store.run_dir,
