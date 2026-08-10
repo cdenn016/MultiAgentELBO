@@ -9,6 +9,7 @@ import subprocess
 import numpy as np
 import pytest
 
+import multiagent_elbo.cuda_backend as cuda_backend_module
 from multiagent_elbo.cuda_backend import (
     WorkerBackendError,
     canonical_array_sha256,
@@ -65,6 +66,29 @@ def test_array_digest_matches_frozen_literal_and_normalizes_noncontiguous_input(
     assert canonical_array_sha256("coefficients", noncontiguous, "float64") == canonical_array_sha256(
         "coefficients", contiguous, "float64"
     )
+
+
+def test_array_digest_and_environment_lock_fail_closed_edges(tmp_path: Path):
+    with pytest.raises(ValueError, match="invalid array name"):
+        canonical_array_sha256("invalid array name", np.ones(1), "float64")
+    with pytest.raises(ValueError, match="unsupported worker dtype"):
+        canonical_array_sha256("coefficients", np.ones(1), "complex64")
+    with pytest.raises(ValueError, match="uint16 bit patterns"):
+        canonical_array_sha256("coefficients", np.ones(1), "bfloat16")
+    assert canonical_array_sha256(
+        "coefficients", np.array([0x3F80], dtype=np.uint16), "bfloat16"
+    )
+    assert canonical_array_sha256(
+        "coefficients", np.array([True, False]), "bool"
+    )
+    with pytest.raises(ValueError, match="unsupported array dtype"):
+        cuda_backend_module._dtype_name(np.array([1], dtype=np.uint16))
+    with pytest.raises(WorkerBackendError, match="does not exist"):
+        cuda_backend_module._parse_environment_lock(tmp_path / "missing.lock")
+    incomplete = tmp_path / "incomplete.lock"
+    incomplete.write_text("python_executable_sha256=0\n", encoding="utf-8")
+    with pytest.raises(WorkerBackendError, match="missing required records"):
+        cuda_backend_module._parse_environment_lock(incomplete)
 
 
 def test_worker_cpu_roundtrip_validates_binding_remainder_batch_and_provenance(
@@ -211,6 +235,78 @@ def test_controller_rejects_invalid_probability_payload_before_artifacts(
             job_id=f"fixed-ray.cpu.{case}",
             requested_backend="cpu",
             requested_dtype="float64",
+            arrays=inputs,
+            environment_lock=ENVIRONMENT_LOCK,
+        )
+    assert not output.exists()
+
+
+@pytest.mark.parametrize(
+    ("case", "message"),
+    (
+        ("job-id", "invalid immutable job ID"),
+        ("backend", "requested backend"),
+        ("dtype", "requested dtype"),
+        ("inventory", "input arrays"),
+        ("bfloat16", "bfloat16"),
+        ("scientific-dtype", "scientific input dtypes"),
+        ("coefficient-shape", "invalid shapes"),
+        ("spatial-shape", "invalid shapes"),
+        ("width", "coefficient width"),
+        ("matrix-shape", "matrix_direction must be square"),
+        ("batch-dtype", "batch_size"),
+        ("batch-zero", "batch_size"),
+        ("matrix-symmetry", "exactly symmetric"),
+        ("matrix-positive", "positive definite"),
+    ),
+)
+def test_controller_rejects_malformed_fixed_ray_contract_before_artifacts(
+    tmp_path: Path, case: str, message: str
+):
+    inputs = {name: np.array(value, copy=True) for name, value in literal_inputs().items()}
+    job_id = "fixed-ray.cpu.malformed"
+    backend = "cpu"
+    dtype = "float64"
+    if case == "job-id":
+        job_id = "invalid job id"
+    elif case == "backend":
+        backend = "metal"
+    elif case == "dtype":
+        dtype = "float16"
+    elif case == "inventory":
+        inputs.pop("matrix_direction")
+    elif case == "bfloat16":
+        dtype = "bfloat16"
+    elif case == "scientific-dtype":
+        inputs["coefficients"] = inputs["coefficients"].astype(np.float32)
+    elif case == "coefficient-shape":
+        inputs["coefficients"] = inputs["coefficients"].ravel()
+    elif case == "spatial-shape":
+        inputs["spatial_map"] = inputs["spatial_map"][:, :-1]
+    elif case == "width":
+        inputs["coefficients"] = inputs["coefficients"][:, :-1]
+    elif case == "matrix-shape":
+        inputs["matrix_direction"] = inputs["matrix_direction"][:1, :]
+    elif case == "batch-dtype":
+        inputs["batch_size"] = np.array(4.0, dtype=np.float64)
+    elif case == "batch-zero":
+        inputs["batch_size"] = np.array(0, dtype=np.int64)
+    elif case == "matrix-symmetry":
+        inputs["matrix_direction"] = np.array(
+            [[1.0, 1.0], [0.0, 1.0]], dtype=np.float64
+        )
+    elif case == "matrix-positive":
+        inputs["matrix_direction"] = np.diag([-1.0, 1.0])
+
+    output = tmp_path / case
+    with pytest.raises(WorkerBackendError, match=message):
+        run_worker_job(
+            worker_python=ANACONDA,
+            worker_script=WORKER,
+            work_root=output,
+            job_id=job_id,
+            requested_backend=backend,
+            requested_dtype=dtype,
             arrays=inputs,
             environment_lock=ENVIRONMENT_LOCK,
         )
