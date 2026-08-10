@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from fractions import Fraction
 import json
 import os
 from pathlib import Path
@@ -156,6 +157,123 @@ def test_scale_experiment_publishes_recomputable_exact_extension_and_canonical_m
     assert coarse["coarse_triple_log_ratio"] == "103823/143543"
     assert coarse["generated_triple_component"] == pytest.approx(
         -0.32394711573301693
+    )
+
+
+def test_retained_projection_artifact_independently_reconstructs_beta_outputs(
+    tmp_path: Path,
+):
+    result = run_scale_cocycle_experiment(scale_config(tmp_path))
+    artifact = json.loads(
+        (result.run_dir / "retained_projection_residual.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    def vector(values: list[str]) -> tuple[Fraction, ...]:
+        return tuple(Fraction(value) for value in values)
+
+    def matrix(values: list[list[str]]) -> tuple[tuple[Fraction, ...], ...]:
+        return tuple(vector(row) for row in values)
+
+    def matvec(
+        values: tuple[tuple[Fraction, ...], ...],
+        operand: tuple[Fraction, ...],
+    ) -> tuple[Fraction, ...]:
+        return tuple(
+            sum((entry * value for entry, value in zip(row, operand)), Fraction(0))
+            for row in values
+        )
+
+    def matmul(
+        left: tuple[tuple[Fraction, ...], ...],
+        right: tuple[tuple[Fraction, ...], ...],
+    ) -> tuple[tuple[Fraction, ...], ...]:
+        columns = tuple(zip(*right))
+        return tuple(
+            tuple(
+                sum((entry * value for entry, value in zip(row, column)), Fraction(0))
+                for column in columns
+            )
+            for row in left
+        )
+
+    source_identification = matrix(artifact["source_identification"]["matrix"])
+    source_inverse = matrix(artifact["source_identification"]["inverse"])
+    target_identification = matrix(artifact["target_identification"]["matrix"])
+    target_inverse = matrix(artifact["target_identification"]["inverse"])
+    source_projection = matrix(artifact["source_projection"])
+    target_projection = matrix(artifact["target_projection"])
+    exact_step = matrix(artifact["exact_step"])
+    reference_input = vector(artifact["reference_input"])
+    delta_log_scale = Fraction(artifact["delta_log_scale"])
+
+    assert artifact["schema_version"] == "scale-retained-projection-residual-v2"
+    assert artifact["source_identification"]["native_type"] == "interaction-native"
+    assert artifact["target_identification"]["reference_type"] == (
+        "interaction-reference"
+    )
+    source_reference_projection = matmul(
+        source_identification, matmul(source_projection, source_inverse)
+    )
+    assert matvec(source_reference_projection, reference_input) == reference_input
+    native_input = matvec(source_inverse, reference_input)
+    native_output = matvec(exact_step, native_input)
+    exact_output = matvec(target_identification, native_output)
+    target_reference_projection = matmul(
+        target_identification, matmul(target_projection, target_inverse)
+    )
+    retained_output = matvec(target_reference_projection, exact_output)
+    exact_beta = tuple(
+        (output - reference) / delta_log_scale
+        for output, reference in zip(exact_output, reference_input)
+    )
+    retained_beta = tuple(
+        (output - reference) / delta_log_scale
+        for output, reference in zip(retained_output, reference_input)
+    )
+    signed_residual = tuple(
+        exact - retained for exact, retained in zip(exact_beta, retained_beta)
+    )
+    dimension = len(reference_input)
+    identity = tuple(
+        tuple(Fraction(int(row == column)) for column in range(dimension))
+        for row in range(dimension)
+    )
+    omitted_reference = tuple(
+        tuple(base - projected for base, projected in zip(base_row, projected_row))
+        for base_row, projected_row in zip(identity, target_reference_projection)
+    )
+    signed_residual_identified = tuple(
+        value / delta_log_scale
+        for value in matvec(omitted_reference, exact_output)
+    )
+    omitted_native = tuple(
+        tuple(base - projected for base, projected in zip(base_row, projected_row))
+        for base_row, projected_row in zip(identity, target_projection)
+    )
+    signed_residual_native = tuple(
+        value / delta_log_scale
+        for value in matvec(
+            target_identification, matvec(omitted_native, native_output)
+        )
+    )
+
+    assert exact_beta == vector(artifact["exact_beta"])
+    assert retained_beta == vector(artifact["retained_beta"])
+    assert signed_residual == vector(artifact["signed_residual_difference"])
+    assert signed_residual_identified == vector(
+        artifact["signed_residual_identified"]
+    )
+    assert signed_residual_native == vector(artifact["signed_residual_native"])
+    assert max(abs(value) for value in exact_beta) == Fraction(
+        artifact["exact_beta_linf_norm"]
+    )
+    assert max(abs(value) for value in retained_beta) == Fraction(
+        artifact["retained_beta_linf_norm"]
+    )
+    assert max(abs(value) for value in signed_residual) == Fraction(
+        artifact["signed_residual_linf_norm"]
     )
 
 

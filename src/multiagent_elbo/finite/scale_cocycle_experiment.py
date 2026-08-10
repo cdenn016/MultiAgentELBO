@@ -296,14 +296,17 @@ def _exact_fixtures(
         "interaction-native", "interaction-reference", ((F(1), F(0)), (F(0), F(1)))
     )
     retained_projection = ((F(1), F(0)), (F(0), F(0)))
+    beta_exact_step = ((F(1), F(0)), (F(1), F(0)))
+    beta_reference_input = (F(2), F(0))
+    beta_delta_log_scale = F(1)
     beta = retained_beta_diagnostics(
-        exact_step=((F(1), F(0)), (F(1), F(0))),
-        reference_input=(F(2), F(0)),
+        exact_step=beta_exact_step,
+        reference_input=beta_reference_input,
         source_identification=identity,
         target_identification=identity,
         source_projection=retained_projection,
         target_projection=retained_projection,
-        delta_log_scale=F(1),
+        delta_log_scale=beta_delta_log_scale,
     )
     nonintertwining = projection_intertwining_residual(
         ExactLinearIsomorphism(
@@ -594,11 +597,30 @@ def _exact_fixtures(
             "wrong_matrix_order_control": _fraction_strings(derivative_wrong),
         },
         "retained_projection_residual": {
-            "schema_version": "scale-retained-projection-residual-v1",
+            "schema_version": "scale-retained-projection-residual-v2",
+            "exact_step": _fraction_strings(beta_exact_step),
+            "reference_input": [str(value) for value in beta_reference_input],
+            "source_identification": {
+                "native_type": identity.native_type,
+                "reference_type": identity.reference_type,
+                "matrix": _fraction_strings(identity.matrix),
+                "inverse": _fraction_strings(identity.inverse),
+            },
+            "target_identification": {
+                "native_type": identity.native_type,
+                "reference_type": identity.reference_type,
+                "matrix": _fraction_strings(identity.matrix),
+                "inverse": _fraction_strings(identity.inverse),
+            },
             "source_projection": _fraction_strings(retained_projection),
             "target_projection": _fraction_strings(retained_projection),
+            "delta_log_scale": str(beta_delta_log_scale),
             "exact_beta": [str(value) for value in beta.exact_beta],
             "retained_beta": [str(value) for value in beta.retained_beta],
+            "exact_beta_linf_norm": str(max(abs(value) for value in beta.exact_beta)),
+            "retained_beta_linf_norm": str(
+                max(abs(value) for value in beta.retained_beta)
+            ),
             "signed_residual_difference": [
                 str(value) for value in beta.residual_from_difference
             ],
@@ -608,6 +630,9 @@ def _exact_fixtures(
             "signed_residual_native": [
                 str(value) for value in beta.residual_from_native_transport
             ],
+            "signed_residual_linf_norm": str(
+                max(abs(value) for value in beta.residual_from_difference)
+            ),
             "projection_nonintertwining_control": str(nonintertwining),
         },
     }

@@ -13,9 +13,9 @@ The CPU implementation is internally consistent with the frozen finite scope and
 - The immutable two-scale fixture is validated and left unchanged. The third scale is a separate self-identified extension artifact.
 - Markov channels are normalized and recognition-independent. Direct/staged law, conditional action, and posterior bridge composition are checked exactly.
 - Comparison orientation is `I_target C I_source^-1`; derivative factors carry source/target level and tangent type, invalid adjacency is rejected, and the valid sequence is ordered as a nonautonomous cocycle.
-- The retained beta residual preserves its sign and typed identifications. Difference, identified-projection, and native-transport forms agree exactly. Three sign-sensitive base Fisher residual forms also agree.
+- The retained beta residual preserves its sign and typed identifications. Its version-2 semantic artifact publishes the raw exact step, reference input, source/target identification matrices and inverses, projections, and scale increment; a test independently reconstructs the stored beta vectors and L-infinity norms from those inputs. Difference, identified-projection, and native-transport forms agree exactly. Three sign-sensitive base Fisher residual forms also agree.
 - A pairwise fine log-likelihood is passed through a declared exact coarse channel before Möbius decomposition. The resulting triple coefficient is `-0.32394711573301693`; the pairwise-only coarse reconstruction fails by its magnitude.
-- All six additional semantic artifacts frozen by the registry are published and declared through `RunStore` with exact inputs or sufficient data for independent recomputation.
+- All six additional semantic artifacts frozen by the registry are published and declared through `RunStore` with exact inputs sufficient for independent recomputation.
 - The Gaussian fixed-ray code checks `M0` is SPD, both maps are primitive, the Perron ray factorizes, and the declared basin is finite. Projective stabilization is not reported as selecting `M0` or proving an infinite-hierarchy attraction theorem.
 - Every emitted metric carries `theorem_status`, `verification_state`, and `claim_origin`; recomputation arrays are retained through `RunStore`.
 
