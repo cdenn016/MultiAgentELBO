@@ -20,7 +20,6 @@ from multiagent_elbo.finite.counterexamples import (
     ExactChannel,
     ExactLaw,
     coarsen_marked_event,
-    fixed_channel_score_gap,
     hoeffding_decompose_action,
     kl_divergence,
     project_action,
@@ -47,14 +46,16 @@ def config(
     *,
     diagnostics: bool = False,
     render_figures: bool = False,
+    max_states: int = 4,
+    max_denominator: int = 8,
 ) -> ExperimentConfig:
     return ExperimentConfig.from_dicts(
         {"name": "finite_counterexample", "seed": 20260809},
         {
             "experiment": "finite_counterexample",
             "fixture": "counterexample_catalog_v1",
-            "max_states": 4,
-            "max_denominator": 8,
+            "max_states": max_states,
+            "max_denominator": max_denominator,
             "arithmetic": "exact_rational",
         },
         {
@@ -68,6 +69,72 @@ def config(
     )
 
 
+@pytest.mark.parametrize(
+    ("max_states", "max_denominator", "message"),
+    ((1, 4, "max_states must be at least 2"), (2, 3, "max_denominator must be at least 4")),
+)
+def test_catalog_bound_minima_reject_before_every_effect(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    max_states: int,
+    max_denominator: int,
+    message: str,
+):
+    import multiagent_elbo.finite.counterexample_experiment as experiment
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("effect reached before bound rejection")
+
+    monkeypatch.setattr(experiment, "_catalog", forbidden)
+    monkeypatch.setattr(experiment, "config_sha256", forbidden)
+    monkeypatch.setattr(experiment.RngStreams, "from_seed", forbidden)
+    monkeypatch.setattr(experiment, "collect_provenance", forbidden)
+    monkeypatch.setattr(experiment.RunStore, "create", forbidden)
+    invalid = config(
+        tmp_path,
+        max_states=max_states,
+        max_denominator=max_denominator,
+    )
+
+    with pytest.raises(ValueError, match=message):
+        run_finite_counterexample_experiment(invalid)
+
+    assert not tmp_path.exists() or not list(tmp_path.iterdir())
+
+
+@pytest.mark.parametrize(
+    ("max_states", "max_denominator"),
+    ((2, 4), (5, 9)),
+)
+def test_equal_and_greater_catalog_bounds_never_allow_effective_overreach(
+    tmp_path: Path,
+    max_states: int,
+    max_denominator: int,
+):
+    result = run_finite_counterexample_experiment(
+        config(
+            tmp_path,
+            max_states=max_states,
+            max_denominator=max_denominator,
+        )
+    )
+    bounds = json.loads(
+        (result.run_dir / "enumeration_bounds.json").read_text("utf-8")
+    )
+    assert bounds["requested"] == {
+        "max_states": max_states,
+        "max_denominator": max_denominator,
+    }
+    assert bounds["effective"]["laws_channels"] == {
+        "max_states": 2,
+        "max_denominator": 4,
+    }
+    assert all(
+        bounds["effective"]["laws_channels"][key] <= bounds["requested"][key]
+        for key in ("max_states", "max_denominator")
+    )
+
+
 def _fractions(numerators: np.ndarray, denominators: np.ndarray) -> tuple[Fraction, ...]:
     return tuple(Fraction(int(num), int(den)) for num, den in zip(numerators.flat, denominators.flat))
 
@@ -78,7 +145,9 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     assert result.status == "pass"
     assert set(result.metrics) == METRICS
     assert result.metrics["support_violation_count"].value == 1.0
-    assert result.metrics["parameter_dependent_channel_gap"].value == 0.125
+    assert result.metrics["parameter_dependent_channel_gap"].value == pytest.approx(
+        16.0 / 15.0
+    )
     assert result.metrics["single_law_relabeling_gap"].value == pytest.approx(math.log(3.0) / 2.0)
     assert result.metrics["marked_event_source_mass_gap"].value == 0.5
     assert result.metrics["pairwise_truncation_residual"].value == 1.0
@@ -108,11 +177,18 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
         "laws": 7,
         "channels": 49,
         "actions": 6561,
-        "candidates": 19588,
+        "candidates": 19587,
         "minimal_candidates": 5,
     }
-    assert len(candidates) == 19588
+    assert len(candidates) == 19587
     assert len(minimal) == 5
+    minimal_parameter = next(
+        record
+        for record in minimal
+        if record["claim_id"] == "fixed_channel_score_fisher"
+    )
+    assert minimal_parameter["smallest_witness"]["theta"] == "1/2"
+    assert minimal_parameter["observed_residual"] == "4/3"
     fields = {"claim_id", "inside_declared_domain", "assumptions_satisfied", "smallest_witness", "exact_or_numeric", "observed_residual", "classification", "theorem_status", "verification_state", "claim_origin"}
     for record in candidates + minimal:
         assert set(record) == fields
@@ -134,6 +210,26 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     assert relabel["inside_declared_domain"] is False
     assert relabel["assumptions_satisfied"] is False
     assert relabel["classification"] == "assumption_boundary"
+    parameter = next(
+        record
+        for record in candidates
+        if record["claim_id"] == "fixed_channel_score_fisher"
+        and record["smallest_witness"]["theta"] == "1/4"
+    )
+    assert parameter["inside_declared_domain"] is False
+    assert parameter["assumptions_satisfied"] is False
+    assert parameter["classification"] == "assumption_boundary"
+    assert parameter["observed_residual"] == "16/15"
+    assert parameter["smallest_witness"]["fine_law"] == ["1/2", "1/2"]
+    assert parameter["smallest_witness"]["fine_derivative"] == ["0", "0"]
+    assert parameter["smallest_witness"]["channel"] == [
+        ["5/8", "3/8"],
+        ["5/8", "3/8"],
+    ]
+    assert parameter["smallest_witness"]["channel_derivative"] == [
+        ["1/2", "-1/2"],
+        ["1/2", "-1/2"],
+    ]
     for record in candidates:
         if record["exact_or_numeric"] != "numeric_log":
             continue
@@ -186,7 +282,93 @@ def test_primitive_rational_arrays_independently_recompute_all_metrics(tmp_path:
     support_p = ExactLaw(_fractions(arrays["support_p_num"], arrays["support_p_den"]))
     assert len(kl_divergence(support_q, support_p).support_violations) == 1
     theta = _fractions(arrays["theta_num"], arrays["theta_den"])[0]
-    assert float(fixed_channel_score_gap(theta)) == result.metrics["parameter_dependent_channel_gap"].value
+    assert theta == Fraction(1, 4)
+    fine_law = _fractions(
+        arrays["parameter_fine_law_num"], arrays["parameter_fine_law_den"]
+    )
+    fine_derivative = _fractions(
+        arrays["parameter_fine_derivative_num"],
+        arrays["parameter_fine_derivative_den"],
+    )
+    channel_entries = _fractions(
+        arrays["parameter_channel_num"], arrays["parameter_channel_den"]
+    )
+    channel = (channel_entries[:2], channel_entries[2:])
+    derivative_entries = _fractions(
+        arrays["parameter_channel_derivative_num"],
+        arrays["parameter_channel_derivative_den"],
+    )
+    channel_derivative = (derivative_entries[:2], derivative_entries[2:])
+    pushed_law = _fractions(
+        arrays["parameter_pushed_law_num"],
+        arrays["parameter_pushed_law_den"],
+    )
+    pushed_derivative = _fractions(
+        arrays["parameter_pushed_derivative_num"],
+        arrays["parameter_pushed_derivative_den"],
+    )
+    fine_score = tuple(
+        derivative / mass
+        for derivative, mass in zip(fine_derivative, fine_law)
+    )
+    reconstructed_pushed = tuple(
+        sum(fine_law[index] * channel[index][target] for index in range(2))
+        for target in range(2)
+    )
+    reconstructed_derivative = tuple(
+        sum(
+            fine_derivative[index] * channel[index][target]
+            + fine_law[index] * channel_derivative[index][target]
+            for index in range(2)
+        )
+        for target in range(2)
+    )
+    fixed_prediction = tuple(
+        sum(
+            fine_law[index] * channel[index][target] * fine_score[index]
+            for index in range(2)
+        )
+        / pushed_law[target]
+        for target in range(2)
+    )
+    actual_score = tuple(
+        derivative / mass
+        for derivative, mass in zip(pushed_derivative, pushed_law)
+    )
+    score_gap = sum(
+        mass * (actual - predicted) ** 2
+        for mass, actual, predicted in zip(
+            pushed_law, actual_score, fixed_prediction
+        )
+    )
+    assert channel_derivative != ((Fraction(0), Fraction(0)),) * 2
+    assert reconstructed_pushed == pushed_law == (Fraction(5, 8), Fraction(3, 8))
+    assert reconstructed_derivative == pushed_derivative == (
+        Fraction(1, 2),
+        Fraction(-1, 2),
+    )
+    assert fixed_prediction == (Fraction(0), Fraction(0))
+    assert actual_score == (Fraction(4, 5), Fraction(-4, 3))
+    assert score_gap == Fraction(16, 15)
+    assert _fractions(
+        arrays["parameter_fine_score_num"],
+        arrays["parameter_fine_score_den"],
+    ) == fine_score
+    assert _fractions(
+        arrays["parameter_fixed_predicted_coarse_score_num"],
+        arrays["parameter_fixed_predicted_coarse_score_den"],
+    ) == fixed_prediction
+    assert _fractions(
+        arrays["parameter_actual_coarse_score_num"],
+        arrays["parameter_actual_coarse_score_den"],
+    ) == actual_score
+    assert _fractions(
+        arrays["parameter_fisher_weighted_score_gap_num"],
+        arrays["parameter_fisher_weighted_score_gap_den"],
+    ) == (score_gap,)
+    assert result.metrics["parameter_dependent_channel_gap"].value == pytest.approx(
+        float(Fraction(16, 15))
+    )
     relabel_p = ExactLaw(_fractions(arrays["relabel_p_num"], arrays["relabel_p_den"]))
     permutation = tuple(int(value) for value in arrays["relabel_permutation"])
     relabel_kl = kl_divergence(relabel_law(relabel_p, permutation), relabel_p)

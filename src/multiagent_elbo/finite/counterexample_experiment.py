@@ -29,10 +29,10 @@ from multiagent_elbo.finite.counterexamples import (
     enumerate_rational_actions,
     enumerate_rational_channels,
     enumerate_rational_laws,
-    fixed_channel_score_gap,
     hoeffding_decompose_action,
     kl_divergence,
     minimize_candidates,
+    parameter_dependent_channel_fixture,
     parameter_dependent_channel_witness,
     project_action,
     relabel_law,
@@ -159,7 +159,9 @@ def _enumerate_candidates(
                         classification="catalog",
                     )
                 )
-    for theta in sorted({law.masses[0] for law in laws if law.masses[0] > 0}):
+    for theta in sorted(
+        {law.masses[0] for law in laws if Fraction(0) < law.masses[0] < Fraction(1)}
+    ):
         records.append(parameter_dependent_channel_witness(theta))
     swap = (1, 0)
     for law in laws:
@@ -240,6 +242,7 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
     support_q = ExactLaw((Fraction(1), Fraction(0)))
     support_p = ExactLaw((Fraction(0), Fraction(1)))
     theta = Fraction(1, 4)
+    parameter_fixture = parameter_dependent_channel_fixture(theta)
     relabel_p = ExactLaw((Fraction(3, 4), Fraction(1, 4)))
     permutation = (1, 0)
     relabel_result = kl_divergence(relabel_law(relabel_p, permutation), relabel_p)
@@ -260,7 +263,12 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
     support_count = len(kl_divergence(support_q, support_p).support_violations)
     metrics = {
         "support_violation_count": _metric(float(support_count), 1.0, "Structured extended-real support failures are counted without infinity arithmetic.", "PROJECT_NOVEL"),
-        "parameter_dependent_channel_gap": _metric(_float(fixed_channel_score_gap(theta)), 0.125, "Parameter-dependent-channel control is outside the fixed-channel assumptions.", "STANDARD"),
+        "parameter_dependent_channel_gap": _metric(
+            _float(parameter_fixture.fisher_weighted_score_gap),
+            16.0 / 15.0,
+            "Parameter-dependent-channel control is outside fixed-channel assumptions.",
+            "STANDARD",
+        ),
         "single_law_relabeling_gap": _metric(float(relabel_result.value), math.log(3.0) / 2.0, "Relabeling q alone produces the pinned finite KL gap.", "STANDARD"),
         "marked_event_source_mass_gap": _metric(_float(marked_gap), 0.5, "Dropping source-law weights changes the marked-event pushforward.", "PROJECT_NOVEL"),
         "pairwise_truncation_residual": _metric(_float(pairwise.residual), 1.0, "A three-axis order-three action leaves an omitted residual after order-two retention.", "PROJECT_NOVEL"),
@@ -275,6 +283,59 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
     arrays.update(_fraction_arrays("support_q", support_q.masses))
     arrays.update(_fraction_arrays("support_p", support_p.masses))
     arrays.update(_fraction_arrays("theta", (theta,)))
+    arrays.update(
+        _fraction_arrays("parameter_fine_law", parameter_fixture.fine_law)
+    )
+    arrays.update(
+        _fraction_arrays(
+            "parameter_fine_derivative", parameter_fixture.fine_derivative
+        )
+    )
+    arrays.update(
+        _fraction_arrays(
+            "parameter_channel",
+            tuple(value for row in parameter_fixture.channel.rows for value in row),
+        )
+    )
+    arrays.update(
+        _fraction_arrays(
+            "parameter_channel_derivative",
+            tuple(
+                value
+                for row in parameter_fixture.channel_derivative
+                for value in row
+            ),
+        )
+    )
+    arrays.update(
+        _fraction_arrays("parameter_pushed_law", parameter_fixture.pushed_law)
+    )
+    arrays.update(
+        _fraction_arrays(
+            "parameter_pushed_derivative", parameter_fixture.pushed_derivative
+        )
+    )
+    arrays.update(
+        _fraction_arrays("parameter_fine_score", parameter_fixture.fine_score)
+    )
+    arrays.update(
+        _fraction_arrays(
+            "parameter_fixed_predicted_coarse_score",
+            parameter_fixture.fixed_predicted_coarse_score,
+        )
+    )
+    arrays.update(
+        _fraction_arrays(
+            "parameter_actual_coarse_score",
+            parameter_fixture.actual_coarse_score,
+        )
+    )
+    arrays.update(
+        _fraction_arrays(
+            "parameter_fisher_weighted_score_gap",
+            (parameter_fixture.fisher_weighted_score_gap,),
+        )
+    )
     arrays.update(_fraction_arrays("relabel_p", relabel_p.masses))
     arrays.update(_fraction_arrays("marked_source", source.masses))
     arrays.update(_fraction_arrays("marked_channel", tuple(value for row in channel.rows for value in row)))
@@ -379,6 +440,10 @@ def run_finite_counterexample_experiment(config: ExperimentConfig) -> FiniteCoun
         raise ValueError("exact-rational finite counterexample execution is CPU-only")
     if config.output.render_figures:
         raise ValueError("finite counterexample laboratory exposes no figures")
+    if config.theory.max_states < _EFFECTIVE_BOUNDS.max_states:
+        raise ValueError("max_states must be at least 2 for the pinned catalog")
+    if config.theory.max_denominator < _EFFECTIVE_BOUNDS.max_denominator:
+        raise ValueError("max_denominator must be at least 4 for the pinned catalog")
     metrics, raw_arrays, candidates, bounds, stress = _catalog(config)
     arrays = _readonly_arrays(raw_arrays)
     config_hash = config_sha256(config)

@@ -137,6 +137,25 @@ class ExtendedRealKL:
 
 
 @dataclass(frozen=True)
+class ParameterDependentChannelFixture:
+    """Exact two-state score/Fisher control outside fixed-channel premises."""
+
+    theta: Fraction
+    fine_law: tuple[Fraction, Fraction]
+    fine_derivative: tuple[Fraction, Fraction]
+    channel: ExactChannel
+    channel_derivative: tuple[
+        tuple[Fraction, Fraction], tuple[Fraction, Fraction]
+    ]
+    pushed_law: tuple[Fraction, Fraction]
+    pushed_derivative: tuple[Fraction, Fraction]
+    fine_score: tuple[Fraction, Fraction]
+    fixed_predicted_coarse_score: tuple[Fraction, Fraction]
+    actual_coarse_score: tuple[Fraction, Fraction]
+    fisher_weighted_score_gap: Fraction
+
+
+@dataclass(frozen=True)
 class CandidateRecord:
     """Session-3 scientific fields plus the independent global claim fields."""
 
@@ -361,15 +380,93 @@ def pairwise_interaction_residual(components: Mapping[tuple[int, ...], object], 
     return sum(max((abs(_fraction(entry)) for entry in value.values()), default=Fraction(0)) if isinstance(value, Mapping) else abs(_fraction(value)) for subset, value in components.items() if len(subset) > retained_order)
 
 
-def parameter_dependent_channel_witness(theta: Fraction) -> CandidateRecord:
-    """Construct the pinned non-refuting parameter-dependent-channel witness."""
+def parameter_dependent_channel_fixture(
+    theta: Fraction,
+) -> ParameterDependentChannelFixture:
+    """Construct the exact global two-state parameter-dependent-channel control."""
     theta = _fraction(theta)
-    gap = fixed_channel_score_gap(theta)
+    if not Fraction(-1) < theta < Fraction(1):
+        raise ValueError("parameter-dependent fixture requires -1 < theta < 1")
+    fine_law = (Fraction(1, 2), Fraction(1, 2))
+    fine_derivative = (Fraction(0), Fraction(0))
+    channel_row = ((1 + theta) / 2, (1 - theta) / 2)
+    channel = ExactChannel((channel_row, channel_row))
+    derivative_row = (Fraction(1, 2), Fraction(-1, 2))
+    channel_derivative = (derivative_row, derivative_row)
+    pushed_law = tuple(
+        sum(fine_law[source] * channel.rows[source][target] for source in range(2))
+        for target in range(2)
+    )
+    pushed_derivative = tuple(
+        sum(
+            fine_derivative[source] * channel.rows[source][target]
+            + fine_law[source] * channel_derivative[source][target]
+            for source in range(2)
+        )
+        for target in range(2)
+    )
+    fine_score = tuple(
+        derivative / mass
+        for derivative, mass in zip(fine_derivative, fine_law)
+    )
+    fixed_prediction = tuple(
+        sum(
+            fine_law[source]
+            * channel.rows[source][target]
+            * fine_score[source]
+            for source in range(2)
+        )
+        / pushed_law[target]
+        for target in range(2)
+    )
+    actual_score = tuple(
+        derivative / mass
+        for derivative, mass in zip(pushed_derivative, pushed_law)
+    )
+    gap = sum(
+        mass * (actual - predicted) ** 2
+        for mass, actual, predicted in zip(
+            pushed_law, actual_score, fixed_prediction
+        )
+    )
+    return ParameterDependentChannelFixture(
+        theta=theta,
+        fine_law=fine_law,
+        fine_derivative=fine_derivative,
+        channel=channel,
+        channel_derivative=channel_derivative,
+        pushed_law=pushed_law,  # type: ignore[arg-type]
+        pushed_derivative=pushed_derivative,  # type: ignore[arg-type]
+        fine_score=fine_score,  # type: ignore[arg-type]
+        fixed_predicted_coarse_score=fixed_prediction,  # type: ignore[arg-type]
+        actual_coarse_score=actual_score,  # type: ignore[arg-type]
+        fisher_weighted_score_gap=gap,
+    )
+
+
+def parameter_dependent_channel_witness(theta: Fraction) -> CandidateRecord:
+    """Construct the non-refuting parameter-dependent-channel witness."""
+    fixture = parameter_dependent_channel_fixture(theta)
+    gap = fixture.fisher_weighted_score_gap
     return CandidateRecord(
         "fixed_channel_score_fisher",
         False,
         False,
-        {"states": 2, "theta": theta, "channel": "parameter_dependent"},
+        {
+            "states": 2,
+            "theta": fixture.theta,
+            "fine_law": fixture.fine_law,
+            "fine_derivative": fixture.fine_derivative,
+            "channel": fixture.channel.rows,
+            "channel_derivative": fixture.channel_derivative,
+            "pushed_law": fixture.pushed_law,
+            "pushed_derivative": fixture.pushed_derivative,
+            "fine_score": fixture.fine_score,
+            "fixed_predicted_coarse_score": fixture.fixed_predicted_coarse_score,
+            "actual_coarse_score": fixture.actual_coarse_score,
+            "fisher_weighted_score_gap": gap,
+            "channel_parameter_dependent": True,
+        },
         "exact",
         str(gap.numerator) if gap.denominator == 1 else f"{gap.numerator}/{gap.denominator}",
         "assumption_boundary",
@@ -380,11 +477,8 @@ def parameter_dependent_channel_witness(theta: Fraction) -> CandidateRecord:
 
 
 def fixed_channel_score_gap(theta: Fraction) -> Fraction:
-    """Exact scalar gap for the pinned parameter-dependent-channel fixture."""
-    theta = _fraction(theta)
-    if theta < 0 or theta > 1:
-        raise ValueError("theta must be a probability parameter")
-    return 2 * theta * theta
+    """Derive the exact Fisher-weighted score gap from the explicit fixture."""
+    return parameter_dependent_channel_fixture(theta).fisher_weighted_score_gap
 
 
 def _determinant(matrix: Sequence[Sequence[Fraction]]) -> Fraction:
@@ -425,6 +519,37 @@ def diagonal_spd_conditioning(diagonal: Sequence[Fraction]) -> Fraction:
     return max(values) / min(values)
 
 
+def _witness_denominators(value: object) -> tuple[int, ...]:
+    if isinstance(value, Fraction):
+        return (value.denominator,)
+    if isinstance(value, Mapping):
+        inferred: list[int] = []
+        explicit: list[int] = []
+        for key, nested in value.items():
+            if key in {"denominator", "max_denominator"}:
+                if type(nested) is not int or nested < 1:
+                    raise ValueError("denominator metadata must be a positive int")
+                explicit.append(nested)
+            else:
+                inferred.extend(_witness_denominators(nested))
+        if explicit:
+            if len(set(explicit)) != 1:
+                raise ValueError("denominator metadata fields disagree")
+            if inferred and explicit[0] != max(inferred):
+                raise ValueError(
+                    "denominator metadata does not match witness Fractions"
+                )
+            inferred.extend(explicit)
+        return tuple(inferred)
+    if isinstance(value, (tuple, list)):
+        return tuple(
+            denominator
+            for nested in value
+            for denominator in _witness_denominators(nested)
+        )
+    return ()
+
+
 def _candidate_key(record: CandidateRecord) -> tuple[object, ...]:
     witness = record.smallest_witness
     def size_value(*names: str) -> int:
@@ -433,15 +558,31 @@ def _candidate_key(record: CandidateRecord) -> tuple[object, ...]:
             if type(value) is int and value >= 0:
                 return value
         return 10**18
-    canonical = json.dumps(_json_witness(witness), sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-    return (record.claim_id, size_value("states", "state_count"), size_value("max_denominator", "denominator"), size_value("action_arity", "arity"), canonical, record.classification, record.observed_residual)
+    denominators = _witness_denominators(witness)
+    denominator_complexity = max(denominators, default=1)
+    canonical = json.dumps(
+        _json_witness(witness),
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    )
+    return (
+        record.claim_id,
+        size_value("states", "state_count"),
+        denominator_complexity,
+        size_value("action_arity", "arity"),
+        canonical,
+        record.classification,
+        record.observed_residual,
+    )
 
 
 def minimize_candidates(records: Iterable[CandidateRecord]) -> tuple[CandidateRecord, ...]:
     grouped: dict[str, CandidateRecord] = {}
     for record in records:
+        record_key = _candidate_key(record)
         prior = grouped.get(record.claim_id)
-        if prior is None or _candidate_key(record) < _candidate_key(prior):
+        if prior is None or record_key < _candidate_key(prior):
             grouped[record.claim_id] = record
     return tuple(grouped[claim_id] for claim_id in sorted(grouped))
 

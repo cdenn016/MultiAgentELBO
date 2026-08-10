@@ -24,6 +24,7 @@ from multiagent_elbo.finite.counterexamples import (
     kl_divergence,
     minimize_candidates,
     pairwise_interaction_residual,
+    parameter_dependent_channel_fixture,
     parameter_dependent_channel_witness,
     project_action,
     relabel_channel,
@@ -94,11 +95,32 @@ def test_pairwise_retention_and_parameter_dependent_channel_controls_are_nonzero
     assert projection.reconstruction.values == action.values
     assert projection.residual == Fraction(1)
     assert pairwise_interaction_residual(decomposition.components, retained_order=2) == Fraction(1)
-    assert fixed_channel_score_gap(Fraction(1, 3)) == Fraction(2, 9)
-    witness = parameter_dependent_channel_witness(Fraction(1, 3))
-    assert witness.observed_residual == "2/9"
+    fixture = parameter_dependent_channel_fixture(Fraction(1, 4))
+    assert fixture.fine_law == (Fraction(1, 2), Fraction(1, 2))
+    assert fixture.fine_derivative == (Fraction(0), Fraction(0))
+    assert fixture.channel.rows == (
+        (Fraction(5, 8), Fraction(3, 8)),
+        (Fraction(5, 8), Fraction(3, 8)),
+    )
+    assert fixture.channel_derivative == (
+        (Fraction(1, 2), Fraction(-1, 2)),
+        (Fraction(1, 2), Fraction(-1, 2)),
+    )
+    assert fixture.pushed_law == (Fraction(5, 8), Fraction(3, 8))
+    assert fixture.pushed_derivative == (Fraction(1, 2), Fraction(-1, 2))
+    assert fixture.fine_score == (Fraction(0), Fraction(0))
+    assert fixture.fixed_predicted_coarse_score == (Fraction(0), Fraction(0))
+    assert fixture.actual_coarse_score == (Fraction(4, 5), Fraction(-4, 3))
+    assert fixture.fisher_weighted_score_gap == Fraction(16, 15)
+    assert fixed_channel_score_gap(Fraction(1, 4)) == Fraction(16, 15)
+    witness = parameter_dependent_channel_witness(Fraction(1, 4))
+    assert witness.observed_residual == "16/15"
     assert witness.inside_declared_domain is False
+    assert witness.assumptions_satisfied is False
     assert witness.classification == "assumption_boundary"
+    assert witness.smallest_witness["channel_derivative"] == fixture.channel_derivative
+    with pytest.raises(ValueError, match="-1 < theta < 1"):
+        parameter_dependent_channel_fixture(Fraction(1))
 
 
 def test_bounded_action_and_relabeling_enumerators_have_literal_outputs():
@@ -141,6 +163,67 @@ def test_candidate_witnesses_are_deeply_immutable_and_fraction_serializable():
         CandidateRecord("size", True, True, {"states": 2}, "exact", "0", "no_counterexample", "HYPOTHESIS", "INCONCLUSIVE", "PROJECT_NOVEL"),
     )
     assert minimize_candidates(choices)[0].smallest_witness["states"] == 2
+
+
+def test_candidate_minimizer_uses_nested_fraction_denominator_complexity():
+    lexical_first = CandidateRecord(
+        "denominator",
+        True,
+        True,
+        {"states": 2, "nested": {"sequence": [Fraction(1, 10)]}},
+        "exact",
+        "0",
+        "catalog",
+        "ESTABLISHED",
+        "EVIDENCE_VERIFIED",
+        "STANDARD",
+    )
+    structurally_simpler = CandidateRecord(
+        "denominator",
+        True,
+        True,
+        {
+            "states": 2,
+            "nested": {"sequence": [Fraction(1, 2)]},
+        },
+        "exact",
+        "0",
+        "catalog",
+        "ESTABLISHED",
+        "EVIDENCE_VERIFIED",
+        "STANDARD",
+    )
+
+    minimized = minimize_candidates((lexical_first, structurally_simpler))
+
+    assert minimized == (structurally_simpler,)
+    valid_metadata = CandidateRecord(
+        "metadata",
+        True,
+        True,
+        {"states": 2, "denominator": 2, "nested": [Fraction(1, 2)]},
+        "exact",
+        "0",
+        "catalog",
+        "ESTABLISHED",
+        "EVIDENCE_VERIFIED",
+        "STANDARD",
+    )
+    assert minimize_candidates((valid_metadata,)) == (valid_metadata,)
+    invalid_metadata = CandidateRecord(
+        "denominator",
+        True,
+        True,
+        {"states": 2, "denominator": 3, "nested": [Fraction(1, 2)]},
+        "exact",
+        "0",
+        "catalog",
+        "ESTABLISHED",
+        "EVIDENCE_VERIFIED",
+        "STANDARD",
+    )
+    with pytest.raises(ValueError, match="denominator metadata"):
+        minimize_candidates((invalid_metadata,))
 
 
 def test_outside_domain_candidate_cannot_be_a_theorem_refutation():
