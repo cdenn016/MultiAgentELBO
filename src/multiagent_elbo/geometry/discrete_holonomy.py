@@ -1,0 +1,573 @@
+"""Finite graph-link transport, holonomy, and operational record primitives.
+
+These graph links are declared interaction-complex data.  They are not
+base-connection parallel transports without an additional curve assignment and
+transport-identification hypothesis.  Frame changes below are passive
+coordinate changes; covariance under them is not a dynamical symmetry.
+Floating-point residual checks are implementation evidence, not proofs of the
+finite mathematical criterion.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from types import MappingProxyType
+from typing import Mapping
+
+import numpy as np
+
+
+_ATOL = 1.0e-12
+_RTOL = 1.0e-10
+
+
+def _label(value: object, *, kind: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{kind} labels must be nonempty strings")
+    return value
+
+
+@dataclass(frozen=True)
+class OrientedEdge:
+    """One oriented copy ``source -> target`` and its reversal label."""
+
+    label: str
+    source: str
+    target: str
+    inverse: str
+
+
+@dataclass(frozen=True)
+class OrientedTwoCell:
+    """A declared oriented 2-cell with its boundary in traversal order."""
+
+    label: str
+    boundary: tuple[str, ...]
+
+
+@dataclass(frozen=True, init=False)
+class InteractionComplex:
+    """A finite interaction multigraph with explicitly declared 2-cells."""
+
+    vertices: tuple[str, ...]
+    edges: tuple[OrientedEdge, ...]
+    two_cells: tuple[OrientedTwoCell, ...]
+
+    def __init__(
+        self,
+        vertices: tuple[str, ...],
+        edges: tuple[OrientedEdge, ...],
+        two_cells: tuple[OrientedTwoCell, ...],
+    ) -> None:
+        checked_vertices = tuple(_label(value, kind="vertex") for value in vertices)
+        if not checked_vertices:
+            raise ValueError("interaction complex must contain at least one vertex")
+        if len(set(checked_vertices)) != len(checked_vertices):
+            raise ValueError("vertex labels must be unique")
+        checked_edges = tuple(edges)
+        edge_labels = tuple(_label(edge.label, kind="edge") for edge in checked_edges)
+        if len(set(edge_labels)) != len(edge_labels):
+            raise ValueError("edge labels must be unique")
+        edge_by_label = {edge.label: edge for edge in checked_edges}
+        for edge in checked_edges:
+            if (
+                edge.source not in checked_vertices
+                or edge.target not in checked_vertices
+            ):
+                raise ValueError("edge endpoints must be declared vertices")
+            _label(edge.inverse, kind="inverse edge")
+            if edge.inverse == edge.label:
+                raise ValueError("edge reversal must be fixed-point-free")
+            if edge.inverse not in edge_by_label:
+                raise ValueError("every edge reversal must be declared")
+            inverse = edge_by_label[edge.inverse]
+            if inverse.inverse != edge.label:
+                raise ValueError("edge reversal must be an involution")
+            if inverse.source != edge.target or inverse.target != edge.source:
+                raise ValueError("reversed edge endpoints must be exchanged")
+        checked_cells = tuple(two_cells)
+        cell_labels = tuple(_label(cell.label, kind="2-cell") for cell in checked_cells)
+        if len(set(cell_labels)) != len(cell_labels):
+            raise ValueError("2-cell labels must be unique")
+        for cell in checked_cells:
+            if not cell.boundary:
+                raise ValueError("2-cell boundary must be nonempty")
+            try:
+                boundary_edges = tuple(edge_by_label[label] for label in cell.boundary)
+            except KeyError as error:
+                raise ValueError("2-cell boundary edges must be declared") from error
+            for current, following in zip(
+                boundary_edges, boundary_edges[1:] + boundary_edges[:1], strict=True
+            ):
+                if current.target != following.source:
+                    raise ValueError("2-cell boundary must be a closed oriented cycle")
+        object.__setattr__(self, "vertices", checked_vertices)
+        object.__setattr__(self, "edges", checked_edges)
+        object.__setattr__(self, "two_cells", checked_cells)
+
+
+def _readonly(values: object) -> np.ndarray:
+    result = np.array(values, dtype=np.float64, copy=True)
+    result.setflags(write=False)
+    return result
+
+
+def _gl_positive_2(values: object, *, name: str) -> np.ndarray:
+    matrix = np.asarray(values, dtype=np.float64)
+    if matrix.shape != (2, 2) or not np.all(np.isfinite(matrix)):
+        raise ValueError(f"{name} must be a finite GL+(2) matrix")
+    determinant = float(np.linalg.det(matrix))
+    if not np.isfinite(determinant) or determinant <= 0.0:
+        raise ValueError(f"{name} must be a finite GL+(2) matrix")
+    return _readonly(matrix)
+
+
+def _edge_map(complex_: InteractionComplex) -> dict[str, OrientedEdge]:
+    if not isinstance(complex_, InteractionComplex):
+        raise TypeError("complex_ must be an InteractionComplex")
+    return {edge.label: edge for edge in complex_.edges}
+
+
+@dataclass(frozen=True, init=False)
+class OrientedLinks:
+    """One validated ``GL+(2)`` link for every oriented edge copy."""
+
+    complex: InteractionComplex
+    matrices: Mapping[str, np.ndarray]
+
+    def __init__(
+        self, complex_: InteractionComplex, matrices: Mapping[str, object]
+    ) -> None:
+        edge_by_label = _edge_map(complex_)
+        if not isinstance(matrices, Mapping):
+            raise TypeError("matrices must be a mapping")
+        if set(matrices) != set(edge_by_label):
+            raise ValueError("links require exactly one matrix per oriented edge")
+        checked = {
+            label: _gl_positive_2(matrices[label], name=f"link {label!r}")
+            for label in edge_by_label
+        }
+        for edge in complex_.edges:
+            product = checked[edge.inverse] @ checked[edge.label]
+            if not np.allclose(product, np.eye(2), atol=_ATOL, rtol=_RTOL):
+                raise ValueError("reversed links must be inverse matrices")
+        object.__setattr__(self, "complex", complex_)
+        object.__setattr__(self, "matrices", MappingProxyType(checked))
+
+
+@dataclass(frozen=True)
+class PathTransport:
+    """Endpoint-typed open-path transport; it is not an invariant scalar."""
+
+    source: str
+    target: str
+    edge_labels: tuple[str, ...]
+    matrix: np.ndarray
+
+
+@dataclass(frozen=True)
+class CycleHolonomy:
+    """Ordered graph-link holonomy based at one declared vertex."""
+
+    base_vertex: str
+    edge_labels: tuple[str, ...]
+    matrix: np.ndarray
+
+
+@dataclass(frozen=True)
+class ConjugacyInvariants:
+    """Characteristic-polynomial invariants of a represented 2-cycle."""
+
+    trace: float
+    determinant: float
+    discriminant: float
+
+
+@dataclass(frozen=True)
+class TrivializationResult:
+    """Spanning-forest frames and the exact fundamental-cycle criterion."""
+
+    is_trivializable: bool
+    frames: Mapping[str, np.ndarray]
+    fundamental_holonomies: tuple[CycleHolonomy, ...]
+    max_edge_residual: float
+
+
+@dataclass(frozen=True, init=False)
+class OperationalRecordLaw:
+    """A normalized marked-event law produced by declared measurements."""
+
+    event_marks: tuple[str, ...]
+    observation_vertex: str
+    transported_state: np.ndarray
+    logits: np.ndarray
+    probabilities: np.ndarray
+
+    def __init__(
+        self,
+        event_marks: tuple[str, ...],
+        observation_vertex: str,
+        transported_state: object,
+        logits: object,
+        probabilities: object,
+    ) -> None:
+        marks = tuple(_label(mark, kind="event mark") for mark in event_marks)
+        if not marks or len(set(marks)) != len(marks):
+            raise ValueError("event marks must be nonempty and unique")
+        _label(observation_vertex, kind="observation vertex")
+        state = np.asarray(transported_state, dtype=np.float64)
+        checked_logits = np.asarray(logits, dtype=np.float64)
+        checked_probabilities = np.asarray(probabilities, dtype=np.float64)
+        if state.shape != (2,) or not np.all(np.isfinite(state)):
+            raise ValueError("transported state must be a finite two-vector")
+        if checked_logits.shape != (len(marks),) or not np.all(
+            np.isfinite(checked_logits)
+        ):
+            raise ValueError("logits must be finite with one entry per event mark")
+        if checked_probabilities.shape != (len(marks),) or not np.all(
+            np.isfinite(checked_probabilities)
+        ):
+            raise ValueError(
+                "probabilities must be finite with one entry per event mark"
+            )
+        if np.any(checked_probabilities < 0.0) or not np.isclose(
+            np.sum(checked_probabilities), 1.0, atol=_ATOL, rtol=_RTOL
+        ):
+            raise ValueError("operational record law must be normalized")
+        object.__setattr__(self, "event_marks", marks)
+        object.__setattr__(self, "observation_vertex", observation_vertex)
+        object.__setattr__(self, "transported_state", _readonly(state))
+        object.__setattr__(self, "logits", _readonly(checked_logits))
+        object.__setattr__(self, "probabilities", _readonly(checked_probabilities))
+
+
+@dataclass(frozen=True)
+class LinkOnlyHolonomyDiagnostic:
+    """A link-only diagnostic that cannot establish an operational effect."""
+
+    holonomy: CycleHolonomy
+    invariants: ConjugacyInvariants
+    supports_operational_claim: bool = False
+    operational_conclusion: None = None
+    limitation: str = (
+        "graph-link holonomy alone is insufficient for an "
+        "operational-holonomy conclusion"
+    )
+
+
+def invert_link(matrix: object) -> np.ndarray:
+    """Validate and invert one represented graph link."""
+    checked = _gl_positive_2(matrix, name="link")
+    return _readonly(np.linalg.inv(checked))
+
+
+def _require_matching_links(
+    complex_: InteractionComplex, links: OrientedLinks
+) -> dict[str, OrientedEdge]:
+    edge_by_label = _edge_map(complex_)
+    if not isinstance(links, OrientedLinks) or links.complex != complex_:
+        raise ValueError("links must belong to the supplied interaction complex")
+    return edge_by_label
+
+
+def open_path_transport(
+    complex_: InteractionComplex,
+    links: OrientedLinks,
+    edge_labels: tuple[str, ...],
+) -> PathTransport:
+    """Compose a nonempty path in traversal order, with the last link leftmost."""
+    edge_by_label = _require_matching_links(complex_, links)
+    labels = tuple(edge_labels)
+    if not labels:
+        raise ValueError("open path must contain at least one oriented edge")
+    try:
+        edges = tuple(edge_by_label[label] for label in labels)
+    except KeyError as error:
+        raise ValueError("path edges must be declared") from error
+    for current, following in zip(edges, edges[1:]):
+        if current.target != following.source:
+            raise ValueError("path edges must form an endpoint-compatible walk")
+    matrix = np.eye(2)
+    for label in labels:
+        matrix = links.matrices[label] @ matrix
+    return PathTransport(
+        source=edges[0].source,
+        target=edges[-1].target,
+        edge_labels=labels,
+        matrix=_readonly(matrix),
+    )
+
+
+def cycle_holonomy(
+    complex_: InteractionComplex,
+    links: OrientedLinks,
+    edge_labels: tuple[str, ...],
+) -> CycleHolonomy:
+    """Return ordered holonomy only after checking that the walk closes."""
+    transport = open_path_transport(complex_, links, edge_labels)
+    if transport.source != transport.target:
+        raise ValueError("cycle holonomy requires a closed oriented walk")
+    return CycleHolonomy(
+        base_vertex=transport.source,
+        edge_labels=transport.edge_labels,
+        matrix=transport.matrix,
+    )
+
+
+def conjugacy_invariants(cycle: CycleHolonomy) -> ConjugacyInvariants:
+    """Return trace, determinant, and discriminant for a closed holonomy."""
+    if not isinstance(cycle, CycleHolonomy):
+        raise TypeError("conjugacy invariants require a closed CycleHolonomy")
+    trace = float(np.trace(cycle.matrix))
+    determinant = float(np.linalg.det(cycle.matrix))
+    return ConjugacyInvariants(
+        trace=trace,
+        determinant=determinant,
+        discriminant=trace * trace - 4.0 * determinant,
+    )
+
+
+def _unoriented_edges(complex_: InteractionComplex) -> tuple[OrientedEdge, ...]:
+    seen: set[str] = set()
+    representatives: list[OrientedEdge] = []
+    for edge in complex_.edges:
+        if edge.label in seen:
+            continue
+        representatives.append(edge)
+        seen.update((edge.label, edge.inverse))
+    return tuple(representatives)
+
+
+def _graph_has_cycle(complex_: InteractionComplex) -> bool:
+    representatives = _unoriented_edges(complex_)
+    parent = {vertex: vertex for vertex in complex_.vertices}
+
+    def find(vertex: str) -> str:
+        while parent[vertex] != vertex:
+            parent[vertex] = parent[parent[vertex]]
+            vertex = parent[vertex]
+        return vertex
+
+    for edge in representatives:
+        source_root = find(edge.source)
+        target_root = find(edge.target)
+        if source_root == target_root:
+            return True
+        parent[target_root] = source_root
+    return False
+
+
+def plaquette_curvature(
+    complex_: InteractionComplex, links: OrientedLinks, cell_label: str
+) -> np.ndarray:
+    """Return ``H(boundary)-I`` for one declared oriented 2-cell."""
+    _require_matching_links(complex_, links)
+    if not _graph_has_cycle(complex_):
+        raise ValueError("a tree has no plaquette curvature")
+    cell_by_label = {cell.label: cell for cell in complex_.two_cells}
+    if cell_label not in cell_by_label:
+        raise ValueError("plaquette curvature requires a declared 2-cell")
+    holonomy = cycle_holonomy(complex_, links, cell_by_label[cell_label].boundary)
+    return _readonly(holonomy.matrix - np.eye(2))
+
+
+def trivialization_via_spanning_tree(
+    complex_: InteractionComplex, links: OrientedLinks
+) -> TrivializationResult:
+    """Construct tree frames and check every fundamental cycle/coboundary edge."""
+    _require_matching_links(complex_, links)
+    representatives = _unoriented_edges(complex_)
+    adjacency: dict[str, list[tuple[str, str, frozenset[str]]]] = {
+        vertex: [] for vertex in complex_.vertices
+    }
+    for edge in representatives:
+        pair = frozenset((edge.label, edge.inverse))
+        adjacency[edge.source].append((edge.target, edge.label, pair))
+        adjacency[edge.target].append((edge.source, edge.inverse, pair))
+
+    frames: dict[str, np.ndarray] = {}
+    tree_pairs: set[frozenset[str]] = set()
+    for root in complex_.vertices:
+        if root in frames:
+            continue
+        frames[root] = _readonly(np.eye(2))
+        queue = [root]
+        while queue:
+            current = queue.pop(0)
+            for neighbor, label, pair in adjacency[current]:
+                if neighbor in frames:
+                    continue
+                frames[neighbor] = _readonly(links.matrices[label] @ frames[current])
+                tree_pairs.add(pair)
+                queue.append(neighbor)
+
+    fundamentals: list[CycleHolonomy] = []
+    for edge in representatives:
+        pair = frozenset((edge.label, edge.inverse))
+        if pair in tree_pairs:
+            continue
+        loop_matrix = (
+            frames[edge.source]
+            @ np.linalg.inv(frames[edge.target])
+            @ links.matrices[edge.label]
+        )
+        fundamentals.append(
+            CycleHolonomy(
+                base_vertex=edge.source,
+                edge_labels=(f"fundamental:{edge.label}",),
+                matrix=_readonly(loop_matrix),
+            )
+        )
+
+    residuals = []
+    for edge in complex_.edges:
+        expected = frames[edge.target] @ np.linalg.inv(frames[edge.source])
+        residuals.append(float(np.max(np.abs(links.matrices[edge.label] - expected))))
+    max_residual = max(residuals, default=0.0)
+    is_trivializable = all(
+        np.allclose(cycle.matrix, np.eye(2), atol=_ATOL, rtol=_RTOL)
+        for cycle in fundamentals
+    )
+    return TrivializationResult(
+        is_trivializable=is_trivializable,
+        frames=MappingProxyType(frames),
+        fundamental_holonomies=tuple(fundamentals),
+        max_edge_residual=max_residual,
+    )
+
+
+def _validated_frames(
+    complex_: InteractionComplex, frames: Mapping[str, object]
+) -> dict[str, np.ndarray]:
+    _edge_map(complex_)
+    if not isinstance(frames, Mapping) or set(frames) != set(complex_.vertices):
+        raise ValueError("frames require exactly one GL+(2) matrix per vertex")
+    return {
+        vertex: _gl_positive_2(frames[vertex], name=f"frame {vertex!r}")
+        for vertex in complex_.vertices
+    }
+
+
+def passive_transform_links(
+    complex_: InteractionComplex,
+    links: OrientedLinks,
+    frames: Mapping[str, object],
+) -> OrientedLinks:
+    """Apply ``Theta'_e=A_target^-1 Theta_e A_source`` passively."""
+    edge_by_label = _require_matching_links(complex_, links)
+    checked_frames = _validated_frames(complex_, frames)
+    transformed = {}
+    for label, edge in edge_by_label.items():
+        transformed[label] = (
+            np.linalg.inv(checked_frames[edge.target])
+            @ links.matrices[label]
+            @ checked_frames[edge.source]
+        )
+    return OrientedLinks(complex_, transformed)
+
+
+def passive_transform_states(
+    complex_: InteractionComplex,
+    states: Mapping[str, object],
+    frames: Mapping[str, object],
+) -> Mapping[str, np.ndarray]:
+    """Apply the matching passive vector law ``z'_i=A_i^-1 z_i``."""
+    checked_frames = _validated_frames(complex_, frames)
+    if not isinstance(states, Mapping) or set(states) != set(complex_.vertices):
+        raise ValueError("states require exactly one two-vector per vertex")
+    transformed = {}
+    for vertex in complex_.vertices:
+        state = np.asarray(states[vertex], dtype=np.float64)
+        if state.shape != (2,) or not np.all(np.isfinite(state)):
+            raise ValueError("states must be finite two-vectors")
+        transformed[vertex] = _readonly(np.linalg.solve(checked_frames[vertex], state))
+    return MappingProxyType(transformed)
+
+
+def passive_transform_covectors(
+    complex_: InteractionComplex,
+    covectors: object,
+    observation_vertex: str,
+    frames: Mapping[str, object],
+) -> np.ndarray:
+    """Apply the dual passive law ``c'=A_observation^T c``."""
+    checked_frames = _validated_frames(complex_, frames)
+    if observation_vertex not in complex_.vertices:
+        raise ValueError("observation vertex must be declared")
+    checked = np.asarray(covectors, dtype=np.float64)
+    if checked.ndim != 2 or checked.shape[1:] != (2,) or checked.shape[0] < 1:
+        raise ValueError("mark covectors must have shape (M, 2)")
+    if not np.all(np.isfinite(checked)):
+        raise ValueError("mark covectors must be finite")
+    return _readonly(checked @ checked_frames[observation_vertex])
+
+
+def operational_record_law(
+    complex_: InteractionComplex,
+    links: OrientedLinks,
+    states: Mapping[str, object],
+    observation_vertex: str,
+    source_paths: Mapping[str, tuple[str, ...]],
+    event_marks: tuple[str, ...],
+    mark_covectors: object,
+) -> OperationalRecordLaw:
+    """Transport declared states, measure them, and normalize over event marks."""
+    _require_matching_links(complex_, links)
+    if observation_vertex not in complex_.vertices:
+        raise ValueError("observation vertex must be declared")
+    if not isinstance(states, Mapping) or not isinstance(source_paths, Mapping):
+        raise TypeError("states and source_paths must be mappings")
+    if set(states) != set(source_paths) or not states:
+        raise ValueError("states and source_paths must have the same nonempty sources")
+    total = np.zeros(2)
+    for source, raw_state in states.items():
+        if source not in complex_.vertices:
+            raise ValueError("state sources must be declared vertices")
+        state = np.asarray(raw_state, dtype=np.float64)
+        if state.shape != (2,) or not np.all(np.isfinite(state)):
+            raise ValueError("states must be finite two-vectors")
+        path = tuple(source_paths[source])
+        if not path:
+            if source != observation_vertex:
+                raise ValueError(
+                    "an empty source path must start at the observation vertex"
+                )
+            total += state
+            continue
+        transport = open_path_transport(complex_, links, path)
+        if transport.source != source or transport.target != observation_vertex:
+            raise ValueError("each source path must end at the observation vertex")
+        total += transport.matrix @ state
+
+    marks = tuple(event_marks)
+    covectors = np.asarray(mark_covectors, dtype=np.float64)
+    if covectors.shape != (len(marks), 2) or not np.all(np.isfinite(covectors)):
+        raise ValueError("mark covectors must be finite with shape (M, 2)")
+    logits = covectors @ total
+    shifted = logits - np.max(logits)
+    weights = np.exp(shifted)
+    probabilities = weights / np.sum(weights)
+    return OperationalRecordLaw(marks, observation_vertex, total, logits, probabilities)
+
+
+def operational_observable(
+    law: OperationalRecordLaw, mark_values: Mapping[str, float]
+) -> float:
+    """Return one scalar expectation under a validated normalized record law."""
+    if not isinstance(law, OperationalRecordLaw):
+        raise TypeError(
+            "operational observable requires a normalized OperationalRecordLaw"
+        )
+    if not isinstance(mark_values, Mapping) or set(mark_values) != set(law.event_marks):
+        raise ValueError("mark values require exactly one value per event mark")
+    values = np.array([mark_values[mark] for mark in law.event_marks], dtype=np.float64)
+    if not np.all(np.isfinite(values)):
+        raise ValueError("mark values must be finite")
+    return float(law.probabilities @ values)
+
+
+def link_only_diagnostic(cycle: CycleHolonomy) -> LinkOnlyHolonomyDiagnostic:
+    """Describe link holonomy while explicitly withholding an operational claim."""
+    if not isinstance(cycle, CycleHolonomy):
+        raise TypeError("link diagnostic requires a CycleHolonomy")
+    return LinkOnlyHolonomyDiagnostic(cycle, conjugacy_invariants(cycle))
