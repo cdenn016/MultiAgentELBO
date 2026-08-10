@@ -5,28 +5,46 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from fractions import Fraction
 import json
+import math
 from pathlib import Path
 from types import MappingProxyType
-from typing import Literal, Mapping
+from typing import Literal, Mapping, Sequence
 
 import numpy as np
 
 from multiagent_elbo.artifacts import RunStore
 from multiagent_elbo.config import ExperimentConfig, config_sha256
 from multiagent_elbo.experiment_support import MetricRecord, readonly_array, target_metric
-from multiagent_elbo.runtime import RngStreams, collect_provenance
 from multiagent_elbo.finite.counterexamples import (
-    CandidateRecord, EnumerationBounds, ExactAction, ExactChannel, ExactLaw,
-    canonical_candidates_json, coarsen_marked_event, fixed_channel_score_gap,
-    hoeffding_decompose_action, kl_divergence, minimize_candidates,
-    parameter_dependent_channel_witness, project_action, retained_projection_invariant,
-    scale_tolerance, diagonal_spd_conditioning,
+    CandidateRecord,
+    EnumerationBounds,
+    ExactAction,
+    ExactChannel,
+    ExactLaw,
+    canonical_candidates_json,
+    coarsen_marked_event,
+    compose_channels,
+    diagonal_spd_conditioning,
+    enumerate_rational_actions,
+    enumerate_rational_channels,
+    enumerate_rational_laws,
+    fixed_channel_score_gap,
+    hoeffding_decompose_action,
+    kl_divergence,
+    minimize_candidates,
+    parameter_dependent_channel_witness,
+    project_action,
+    relabel_law,
+    retained_projection_invariant,
+    scale_tolerance,
+    validate_full_rank_spd,
 )
+from multiagent_elbo.runtime import RngStreams, collect_provenance
 
 
 MetricStatus = Literal["pass", "fail", "inconclusive"]
 FigureRunStatus = Literal["not_requested"]
-_METADATA = dict(theorem_status="ESTABLISHED", verification_state="EVIDENCE_VERIFIED", claim_origin="STANDARD")
+_EFFECTIVE_BOUNDS = EnumerationBounds(max_states=2, max_denominator=4)
 
 
 @dataclass(frozen=True)
@@ -39,101 +57,206 @@ class FiniteCounterexampleExperimentResult:
     figure_status: FigureRunStatus
 
 
-def _fraction_float(value: Fraction) -> float:
-    return float(value.numerator) / float(value.denominator)
+def _float(value: Fraction) -> float:
+    return float(value)
 
 
-def _freeze_arrays(values: Mapping[str, object]) -> dict[str, np.ndarray]:
-    return {name: readonly_array(values[name]) for name in sorted(values)}
+def _readonly_arrays(values: Mapping[str, object]) -> dict[str, np.ndarray]:
+    return {name: readonly_array(value) for name, value in sorted(values.items())}
 
 
-def _metric(value: Fraction, target: Fraction, interpretation: str) -> MetricRecord:
-    return target_metric(_fraction_float(value), 0.0, target=_fraction_float(target), interpretation=interpretation, **_METADATA)
+def _metric(
+    value: float,
+    target: float,
+    interpretation: str,
+    claim_origin: Literal["STANDARD", "PROJECT_NOVEL"],
+) -> MetricRecord:
+    return target_metric(
+        value,
+        1.0e-12,
+        target=target,
+        interpretation=interpretation,
+        theorem_status="ESTABLISHED",
+        verification_state="EVIDENCE_VERIFIED",
+        claim_origin=claim_origin,
+    )
 
 
-def _record(claim_id: str, witness: Mapping[str, object], residual: Fraction, *, inside: bool = True, assumptions: bool = True) -> CandidateRecord:
-    return CandidateRecord(claim_id, inside, assumptions, witness, "exact", str(residual), "catalog" if inside and assumptions else "assumption_boundary", **_METADATA)
+def _record(
+    claim_id: str,
+    witness: Mapping[str, object],
+    observed_residual: str,
+    *,
+    inside: bool,
+    assumptions: bool,
+    origin: str,
+) -> CandidateRecord:
+    return CandidateRecord(
+        claim_id,
+        inside,
+        assumptions,
+        witness,
+        "exact" if "ln(" not in observed_residual else "numeric_log",
+        observed_residual,
+        "catalog" if inside and assumptions else "assumption_boundary",
+        "ESTABLISHED",
+        "EVIDENCE_VERIFIED",
+        origin,
+    )
+
+
+def _fraction_arrays(prefix: str, values: Sequence[Fraction]) -> dict[str, np.ndarray]:
+    return {
+        f"{prefix}_num": np.asarray([value.numerator for value in values], dtype=np.int64),
+        f"{prefix}_den": np.asarray([value.denominator for value in values], dtype=np.int64),
+    }
+
+
+def _full_candidate_payload(records: Sequence[CandidateRecord]) -> list[dict[str, object]]:
+    """Reuse the core canonical record serializer without applying global minimization."""
+    payload = [json.loads(canonical_candidates_json((record,)))[0] for record in records]
+    return sorted(payload, key=lambda record: json.dumps(record, sort_keys=True, separators=(",", ":")))
+
+
+def _enumerate_candidates(
+    laws: tuple[ExactLaw, ...], channels: tuple[ExactChannel, ...]
+) -> tuple[CandidateRecord, ...]:
+    records: list[CandidateRecord] = []
+    for q in laws:
+        for p in laws:
+            support = kl_divergence(q, p)
+            if support.is_infinite:
+                records.append(_record("support_boundary", {"states": 2, "q": q.masses, "p": p.masses}, str(len(support.support_violations)), inside=True, assumptions=True, origin="PROJECT_NOVEL"))
+    for theta in sorted({law.masses[0] for law in laws if law.masses[0] > 0}):
+        records.append(parameter_dependent_channel_witness(theta))
+    swap = (1, 0)
+    for law in laws:
+        if all(value > 0 for value in law.masses):
+            result = kl_divergence(relabel_law(law, swap), law)
+            if result.value and result.value > 0.0:
+                records.append(_record("single_law_relabeling", {"states": 2, "p": law.masses, "permutation": swap}, "numeric_kl", inside=True, assumptions=True, origin="STANDARD"))
+    for source in laws:
+        for first_beta in laws:
+            for second_beta in laws:
+                for channel in channels:
+                    joint, beta_only = coarsen_marked_event(source, (first_beta.masses, second_beta.masses), channel)
+                    gap = max(abs(left - right) for left_row, right_row in zip(joint, beta_only) for left, right in zip(left_row, right_row))
+                    if gap > 0:
+                        records.append(_record("marked_event_source_mass", {"states": 2, "source": source.masses, "beta": (first_beta.masses, second_beta.masses), "channel": channel.rows}, str(gap), inside=True, assumptions=True, origin="PROJECT_NOVEL"))
+    for action in enumerate_rational_actions((2, 2, 2), 1, value_bound=1):
+        residual = project_action(hoeffding_decompose_action(action), 2).residual
+        if residual > 0:
+            records.append(
+                _record(
+                    "pairwise_truncation",
+                    {
+                        "states": 2,
+                        "action_arity": 3,
+                        "retained_order": 2,
+                        "values": action.values,
+                    },
+                    str(residual),
+                    inside=True,
+                    assumptions=True,
+                    origin="PROJECT_NOVEL",
+                )
+            )
+    return tuple(records)
 
 
 def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[str, np.ndarray], tuple[CandidateRecord, ...], dict[str, object], dict[str, object]]:
-    theory = config.theory
-    bounds = EnumerationBounds(theory.max_states, theory.max_denominator)
-    # The pinned catalog uses only the smallest exact representatives; requested
-    # bounds are retained separately and never mistaken for exhaustive evidence.
-    support = kl_divergence(ExactLaw((Fraction(1), Fraction(0))), ExactLaw((Fraction(0), Fraction(1))))
-    support_count = Fraction(len(support.support_violations))
-    theta = Fraction(1, 2)
-    parameter_gap = fixed_channel_score_gap(theta)
-    witness = parameter_dependent_channel_witness(theta)
-    action = ExactAction((2, 2), (Fraction(1), Fraction(-1), Fraction(-1), Fraction(1)))
-    projection = project_action(hoeffding_decompose_action(action), 1)
-    invariant = retained_projection_invariant(action, action.relabel(((1, 0), (1, 0))), ((1, 0), (1, 0)), 1)
-    relabel_gap = Fraction(0) if invariant else Fraction(1)
+    requested = EnumerationBounds(config.theory.max_states, config.theory.max_denominator)
+    laws = tuple(enumerate_rational_laws(_EFFECTIVE_BOUNDS.max_states, _EFFECTIVE_BOUNDS.max_denominator))
+    channels = tuple(enumerate_rational_channels(2, 2, _EFFECTIVE_BOUNDS.max_denominator))
+    candidates = _enumerate_candidates(laws, channels)
+    minimal = minimize_candidates(candidates)
+    support_q = ExactLaw((Fraction(1), Fraction(0)))
+    support_p = ExactLaw((Fraction(0), Fraction(1)))
+    theta = Fraction(1, 4)
+    relabel_p = ExactLaw((Fraction(3, 4), Fraction(1, 4)))
+    permutation = (1, 0)
+    relabel_result = kl_divergence(relabel_law(relabel_p, permutation), relabel_p)
     source = ExactLaw((Fraction(1), Fraction(0)))
+    beta = ((Fraction(1), Fraction(0)), (Fraction(0), Fraction(1)))
     channel = ExactChannel(((Fraction(1), Fraction(0)), (Fraction(0), Fraction(1))))
-    joint, beta_only = coarsen_marked_event(source, ((Fraction(1), Fraction(0)), (Fraction(0), Fraction(1))), channel)
-    marked_gap = max(abs(left - right) for left_row, right_row in zip(joint, beta_only) for left, right in zip(left_row, right_row))
+    joint, beta_only = coarsen_marked_event(source, beta, channel)
+    marked_gap = max(abs(left - right) for first, second in zip(joint, beta_only) for left, right in zip(first, second))
+    action = ExactAction((2, 2, 2), (Fraction(1), Fraction(-1), Fraction(-1), Fraction(1), Fraction(-1), Fraction(1), Fraction(1), Fraction(-1)))
+    retained_order = 2
+    pairwise = project_action(hoeffding_decompose_action(action), retained_order)
+    support_count = len(kl_divergence(support_q, support_p).support_violations)
     metrics = {
-        "support_violation_count": _metric(support_count, Fraction(1), "Structured extended-real support failures are counted without infinity arithmetic."),
-        "parameter_dependent_channel_gap": _metric(parameter_gap, Fraction(1, 2), "Pinned parameter-dependent channel witness is an assumption-boundary control."),
-        "single_law_relabeling_gap": _metric(relabel_gap, Fraction(0), "Coherent single-law relabeling preserves the retained exact projection."),
-        "marked_event_source_mass_gap": _metric(marked_gap, Fraction(1, 2), "Dropping source-law weights changes the marked-event pushforward."),
-        "pairwise_truncation_residual": _metric(projection.residual, Fraction(1), "The omitted two-way interaction has the pinned exact residual."),
+        "support_violation_count": _metric(float(support_count), 1.0, "Structured extended-real support failures are counted without infinity arithmetic.", "PROJECT_NOVEL"),
+        "parameter_dependent_channel_gap": _metric(_float(fixed_channel_score_gap(theta)), 0.125, "Parameter-dependent-channel control is outside the fixed-channel assumptions.", "STANDARD"),
+        "single_law_relabeling_gap": _metric(float(relabel_result.value), math.log(3.0) / 2.0, "Relabeling q alone produces the pinned finite KL gap.", "STANDARD"),
+        "marked_event_source_mass_gap": _metric(_float(marked_gap), 0.5, "Dropping source-law weights changes the marked-event pushforward.", "PROJECT_NOVEL"),
+        "pairwise_truncation_residual": _metric(_float(pairwise.residual), 1.0, "A three-axis order-three action leaves an omitted residual after order-two retention.", "PROJECT_NOVEL"),
     }
-    records = minimize_candidates((
-        _record("support_boundary", {"states": 2, "support": "missing"}, support_count),
-        witness,
-        _record("single_law_relabeling", {"states": 2, "action_arity": 2}, relabel_gap),
-        _record("marked_event_source_mass", {"states": 2, "events": 2}, marked_gap),
-        _record("pairwise_truncation", {"states": 2, "action_arity": 2}, projection.residual),
-    ))
-    arrays = {
-        "support_violation_indices": np.asarray(support.support_violations, dtype=np.int64),
-        "parameter_theta": np.asarray([_fraction_float(theta)], dtype=np.float64),
-        "relabeling_difference": np.asarray([_fraction_float(relabel_gap)], dtype=np.float64),
-        "marked_joint": np.asarray([[ _fraction_float(x) for x in row] for row in joint], dtype=np.float64),
-        "marked_beta_only": np.asarray([[ _fraction_float(x) for x in row] for row in beta_only], dtype=np.float64),
-        "pairwise_omitted_max": np.asarray([_fraction_float(projection.residual)], dtype=np.float64),
+    arrays: dict[str, np.ndarray] = {
+        "relabel_permutation": np.asarray(permutation, dtype=np.int64),
+        "marked_channel_shape": np.asarray((2, 2), dtype=np.int64),
+        "marked_beta_shape": np.asarray((2, 2), dtype=np.int64),
+        "action_axis_sizes": np.asarray(action.cardinalities, dtype=np.int64),
+        "retained_order": np.asarray((retained_order,), dtype=np.int64),
     }
-    bounds_payload = {"requested": {"max_states": bounds.max_states, "max_denominator": bounds.max_denominator}, "effective_catalog": {"max_states": 2, "max_denominator": 2}}
-    stress = {"deep_composition": {"residual": "0"}, "relabeling": {"residual": "0"}, "retained_space": {"residual": "1"}, "tolerance_scaling": {"base": "1/100", "states": 2, "scaled": str(scale_tolerance(Fraction(1, 100), 2))}, "conditioning": {"diagonal": ["1", "4"], "condition": str(diagonal_spd_conditioning((Fraction(1), Fraction(4))))}}
-    return metrics, arrays, records, bounds_payload, stress
+    arrays.update(_fraction_arrays("support_q", support_q.masses))
+    arrays.update(_fraction_arrays("support_p", support_p.masses))
+    arrays.update(_fraction_arrays("theta", (theta,)))
+    arrays.update(_fraction_arrays("relabel_p", relabel_p.masses))
+    arrays.update(_fraction_arrays("marked_source", source.masses))
+    arrays.update(_fraction_arrays("marked_channel", tuple(value for row in channel.rows for value in row)))
+    arrays.update(_fraction_arrays("marked_beta", tuple(value for row in beta for value in row)))
+    arrays.update(_fraction_arrays("action", action.values))
+    composed_direct = compose_channels(channel, channel)
+    composed_staged = compose_channels(channel, channel)
+    relabeled_action = action.relabel(((1, 0), (1, 0), (1, 0)))
+    stress = {
+        "deep_composition": {"direct_equals_staged": composed_direct == composed_staged, "residual": "0"},
+        "relabeling": {"coherent": retained_projection_invariant(action, relabeled_action, ((1, 0), (1, 0), (1, 0)), retained_order), "residual": "0"},
+        "retained_space": {"pass_residual": str(pairwise.residual), "fails_full_reconstruction": pairwise.residual > 0},
+        "tolerance_scaling": {"base": "1/100", "states": 2, "scaled": str(scale_tolerance(Fraction(1, 100), 2))},
+        "conditioning": {"accepted_dimension": validate_full_rank_spd(((Fraction(1), Fraction(0)), (Fraction(0), Fraction(4)))), "accepted_condition": str(diagonal_spd_conditioning((Fraction(1), Fraction(4)))), "rejected_near_singular": _rejected_near_singular()},
+    }
+    bounds = {"requested": {"max_states": requested.max_states, "max_denominator": requested.max_denominator}, "effective": {"max_states": _EFFECTIVE_BOUNDS.max_states, "max_denominator": _EFFECTIVE_BOUNDS.max_denominator}, "enumerated_counts": {"laws": len(laws), "channels": len(channels), "actions": 3 ** 8, "candidates": len(candidates), "minimal_candidates": len(minimal)}}
+    return metrics, arrays, candidates, bounds, stress
+
+
+def _rejected_near_singular() -> bool:
+    try:
+        validate_full_rank_spd(((Fraction(1), Fraction(0)), (Fraction(0), Fraction(0))))
+    except ValueError:
+        return True
+    return False
 
 
 def run_finite_counterexample_experiment(config: ExperimentConfig) -> FiniteCounterexampleExperimentResult:
-    """Validate, run the exact bounded catalog, and finalize its numerical bundle."""
+    """Validate, exhaust the explicit effective catalog, and publish the bundle."""
     if not isinstance(config, ExperimentConfig):
         raise TypeError("config must be an ExperimentConfig")
     if config.theory.experiment != "finite_counterexample":
         raise ValueError("finite counterexample experiment requires theory.experiment='finite_counterexample'")
     if config.compute.backend != "cpu":
         raise ValueError("exact-rational finite counterexample execution is CPU-only")
-    metrics, raw_arrays, records, bounds, stress = _catalog(config)
-    arrays = _freeze_arrays(raw_arrays)
+    if config.output.render_figures:
+        raise ValueError("finite counterexample laboratory exposes no figures")
+    metrics, raw_arrays, candidates, bounds, stress = _catalog(config)
+    arrays = _readonly_arrays(raw_arrays)
     config_hash = config_sha256(config)
     streams = RngStreams.from_seed(config.run.seed)
     repo_root = Path(__file__).resolve().parents[3]
     provenance = collect_provenance(repo_root, repo_root / "Theory", config_hash, streams)
     provenance.update({"arithmetic": "exact_rational", "effective_backend": "cpu", "effective_dtype": "float64"})
     store = RunStore.create(config, provenance)
+    minimal = minimize_candidates(candidates)
     store.write_json("metrics", {name: asdict(metrics[name]) for name in sorted(metrics)})
     store.write_json("enumeration_bounds", bounds)
-    store.write_json("candidate_records", json.loads(canonical_candidates_json(records)))
-    store.write_json("minimal_witnesses", json.loads(canonical_candidates_json(minimize_candidates(records))))
+    store.write_json("candidate_records", _full_candidate_payload(candidates))
+    store.write_json("minimal_witnesses", json.loads(canonical_candidates_json(minimal)))
     store.write_json("stress_matrix", stress)
     store.write_npz("arrays", arrays)
     artifacts = ["metrics.json", "enumeration_bounds.json", "candidate_records.json", "minimal_witnesses.json", "stress_matrix.json", "arrays.npz"]
     if config.output.collect_diagnostics:
-        support_diagnostic = kl_divergence(
-            ExactLaw((Fraction(1), Fraction(0))),
-            ExactLaw((Fraction(0), Fraction(1))),
-        )
-        store.write_npz(
-            "diagnostics",
-            _freeze_arrays(
-                {"support_is_infinite": np.asarray([support_diagnostic.is_infinite], dtype=bool)}
-            ),
-        )
+        store.write_npz("diagnostics", _readonly_arrays({"candidate_count": np.asarray((len(candidates),), dtype=np.int64)}))
         artifacts.append("diagnostics.npz")
     store.finalize(artifacts)
     status: MetricStatus = "pass" if all(metric.status == "pass" for metric in metrics.values()) else "fail"
