@@ -14,7 +14,9 @@ if str(SRC) not in sys.path:
 from multiagent_elbo.config import ExperimentConfig  # noqa: E402
 from multiagent_elbo.realizations.gaussian.fixed_ray_experiment import (  # noqa: E402
     GaussianFixedRayExperimentResult,
+    build_confirmatory_gate_record,
     build_cuda_gate_record,
+    publish_confirmatory_experiment,
     publish_cuda_sentinel,
     run_gaussian_fixed_ray_experiment,
 )
@@ -23,6 +25,15 @@ from multiagent_elbo.realizations.gaussian.fixed_ray_experiment import (  # noqa
 OPERATOR_CONTROL_PATH = ROOT / ".verification" / "gaussian-fixed-ray-operator-control.json"
 CUDA_GATE_PATH = ROOT / ".verification" / "gaussian-fixed-ray-cuda-gate.json"
 SENTINEL_STAGING_ROOT = ROOT / ".verification" / "gaussian-fixed-ray-sentinel-staging"
+CONFIRMATORY_CONTROL_PATH = (
+    ROOT / ".verification" / "gaussian-fixed-ray-confirmatory-control.json"
+)
+CONFIRMATORY_GATE_PATH = (
+    ROOT / ".verification" / "gaussian-fixed-ray-confirmatory-gate.json"
+)
+CONFIRMATORY_STAGING_ROOT = (
+    ROOT / ".verification" / "gaussian-fixed-ray-confirmatory-staging"
+)
 RUN = {"name": "gaussian-fixed-ray-pilot", "seed": 20260809}
 THEORY = {
     "experiment": "gaussian_fixed_ray",
@@ -80,7 +91,103 @@ def _operator_control() -> dict[str, object]:
     return control
 
 
+def _confirmatory_control() -> dict[str, object]:
+    if not CONFIRMATORY_CONTROL_PATH.is_file():
+        return {
+            "mode": "pilot",
+            "operator_opt_in": False,
+            "accepted_gate_sha256": "",
+            "accepted_sentinel_manifest_sha256": "",
+        }
+    control = json.loads(CONFIRMATORY_CONTROL_PATH.read_text(encoding="utf-8"))
+    if set(control) != {
+        "mode",
+        "operator_opt_in",
+        "accepted_gate_sha256",
+        "accepted_sentinel_manifest_sha256",
+    }:
+        raise ValueError("confirmatory operator control does not match the frozen schema")
+    return control
+
+
+def _find_accepted_sentinel_run(manifest_sha256: str) -> Path:
+    if not isinstance(manifest_sha256, str) or len(manifest_sha256) != 64:
+        raise ValueError("confirmatory run requires a sentinel manifest SHA-256")
+    root = ROOT / str(OUTPUT["root"]) / str(RUN["name"])
+    matches: list[Path] = []
+    if root.is_dir():
+        for manifest in root.glob("*/manifest.json"):
+            if hashlib.sha256(manifest.read_bytes()).hexdigest() == manifest_sha256:
+                matches.append(manifest.parent)
+    if len(matches) != 1:
+        raise ValueError("accepted sentinel manifest must resolve to exactly one run")
+    return matches[0]
+
+
 def main() -> GaussianFixedRayExperimentResult | dict[str, object]:
+    confirmatory = _confirmatory_control()
+    confirmatory_mode = confirmatory["mode"]
+    if confirmatory_mode in {"confirmatory_gate", "confirmatory_run"}:
+        compute = dict(COMPUTE)
+        compute["backend"] = "cuda"
+        compute["heavy_sweep_enabled"] = True
+        run = dict(RUN)
+        run["name"] = "gaussian-fixed-ray-confirmatory"
+        config = ExperimentConfig.from_dicts(run, THEORY, NUMERICS, OUTPUT, compute)
+        operator_opt_in = confirmatory["operator_opt_in"]
+        accepted_gate_sha256 = confirmatory["accepted_gate_sha256"]
+        accepted_sentinel_manifest_sha256 = confirmatory[
+            "accepted_sentinel_manifest_sha256"
+        ]
+        if confirmatory_mode == "confirmatory_gate":
+            gate = build_confirmatory_gate_record(
+                config, operator_opt_in=operator_opt_in
+            )
+            CONFIRMATORY_GATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+            payload = json.dumps(
+                gate, sort_keys=True, separators=(",", ":"), allow_nan=False
+            )
+            temporary = CONFIRMATORY_GATE_PATH.with_suffix(
+                CONFIRMATORY_GATE_PATH.suffix + ".tmp"
+            )
+            temporary.write_text(payload, encoding="utf-8")
+            temporary.replace(CONFIRMATORY_GATE_PATH)
+            digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+            print(f"confirmatory_gate_path={CONFIRMATORY_GATE_PATH}")
+            print(f"confirmatory_gate_sha256={digest}")
+            print(f"processes_present={gate['processes_present']}")
+            print("acceptance_required=set accepted_gate_sha256 to this exact digest")
+            return gate
+
+        if not accepted_gate_sha256 or not accepted_sentinel_manifest_sha256:
+            raise ValueError(
+                "confirmatory_run requires accepted gate and sentinel manifest digests"
+            )
+        gate = json.loads(CONFIRMATORY_GATE_PATH.read_text(encoding="utf-8"))
+        payload = json.dumps(gate, sort_keys=True, separators=(",", ":"))
+        if hashlib.sha256(payload.encode("utf-8")).hexdigest() != accepted_gate_sha256:
+            raise ValueError("confirmatory accepted gate SHA-256 does not match the gate")
+        sentinel_run_dir = _find_accepted_sentinel_run(
+            str(accepted_sentinel_manifest_sha256)
+        )
+        result = publish_confirmatory_experiment(
+            config,
+            operator_opt_in=bool(operator_opt_in),
+            operator_gate=gate,
+            accepted_gate_sha256=str(accepted_gate_sha256),
+            sentinel_run_dir=sentinel_run_dir,
+            accepted_sentinel_manifest_sha256=str(
+                accepted_sentinel_manifest_sha256
+            ),
+            staging_root=CONFIRMATORY_STAGING_ROOT / str(accepted_gate_sha256),
+        )
+        _print_result(result)
+        return result
+    if confirmatory_mode != "pilot":
+        raise ValueError(
+            "confirmatory MODE must be pilot, confirmatory_gate, or confirmatory_run"
+        )
+
     control = _operator_control()
     mode = control["mode"]
     operator_opt_in = control["operator_opt_in"]

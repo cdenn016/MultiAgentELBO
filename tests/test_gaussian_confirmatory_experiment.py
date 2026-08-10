@@ -9,6 +9,8 @@ from types import MappingProxyType, SimpleNamespace
 import numpy as np
 import pytest
 
+import run_gaussian_fixed_ray_lab as launcher
+
 from multiagent_elbo.config import ExperimentConfig
 from multiagent_elbo.realizations.gaussian import fixed_ray_experiment
 from multiagent_elbo.realizations.gaussian.fixed_ray_experiment import (
@@ -472,3 +474,82 @@ def test_confirmatory_publication_writes_complete_two_stage_artifact_contract(
     metrics = json.loads((result.run_dir / "metrics.json").read_text(encoding="utf-8"))
     assert metrics["confirmatory_primary_classification"]["theorem_status"] == "NUMERICAL"
     assert metrics["confirmatory_primary_classification"]["verification_state"] == "CANDIDATE"
+
+
+def test_launcher_confirmatory_gate_uses_separate_control_and_heavy_config(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    control_path = tmp_path / "confirmatory-control.json"
+    gate_path = tmp_path / "confirmatory-gate.json"
+    control_path.write_text(
+        json.dumps(
+            {
+                "mode": "confirmatory_gate",
+                "operator_opt_in": True,
+                "accepted_gate_sha256": "",
+                "accepted_sentinel_manifest_sha256": "s" * 64,
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(launcher, "CONFIRMATORY_CONTROL_PATH", control_path)
+    monkeypatch.setattr(launcher, "CONFIRMATORY_GATE_PATH", gate_path)
+    monkeypatch.setattr(
+        launcher,
+        "build_confirmatory_gate_record",
+        lambda config, **_: {
+            "schema_version": "cuda-confirmatory-operator-gate-v1",
+            "heavy_sweep_enabled": config.compute.heavy_sweep_enabled,
+            "processes_present": False,
+        },
+    )
+
+    result = launcher.main()
+
+    assert result["heavy_sweep_enabled"] is True
+    assert gate_path.is_file()
+
+
+def test_launcher_confirmatory_run_requires_gate_and_current_sentinel_digest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    gate = {"schema_version": "cuda-confirmatory-operator-gate-v1"}
+    gate_payload = json.dumps(gate, sort_keys=True, separators=(",", ":"))
+    gate_sha256 = hashlib.sha256(gate_payload.encode("utf-8")).hexdigest()
+    control_path = tmp_path / "confirmatory-control.json"
+    gate_path = tmp_path / "confirmatory-gate.json"
+    gate_path.write_text(gate_payload, encoding="utf-8")
+    control_path.write_text(
+        json.dumps(
+            {
+                "mode": "confirmatory_run",
+                "operator_opt_in": True,
+                "accepted_gate_sha256": gate_sha256,
+                "accepted_sentinel_manifest_sha256": "s" * 64,
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(launcher, "CONFIRMATORY_CONTROL_PATH", control_path)
+    monkeypatch.setattr(launcher, "CONFIRMATORY_GATE_PATH", gate_path)
+    monkeypatch.setattr(launcher, "CONFIRMATORY_STAGING_ROOT", tmp_path / "staging")
+    monkeypatch.setattr(
+        launcher,
+        "_find_accepted_sentinel_run",
+        lambda _: tmp_path / "sentinel-run",
+    )
+    captured: dict[str, object] = {}
+
+    def fake_publish(config: ExperimentConfig, **kwargs: object):
+        captured["heavy_sweep_enabled"] = config.compute.heavy_sweep_enabled
+        captured.update(kwargs)
+        return SimpleNamespace(run_dir=tmp_path, status="inconclusive", metrics={})
+
+    monkeypatch.setattr(launcher, "publish_confirmatory_experiment", fake_publish)
+    monkeypatch.setattr(launcher, "_print_result", lambda _: None)
+
+    launcher.main()
+
+    assert captured["heavy_sweep_enabled"] is True
+    assert captured["accepted_gate_sha256"] == gate_sha256
+    assert captured["accepted_sentinel_manifest_sha256"] == "s" * 64
