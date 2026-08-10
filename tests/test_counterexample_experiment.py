@@ -49,6 +49,10 @@ def config(
     render_figures: bool = False,
     max_states: int = 4,
     max_denominator: int = 8,
+    atol: float = 1.0e-12,
+    rtol: float = 1.0e-10,
+    min_spd_rcond: float = 1.0e-12,
+    max_frame_condition: float = 1.0e6,
 ) -> ExperimentConfig:
     return ExperimentConfig.from_dicts(
         {"name": "finite_counterexample", "seed": 20260809},
@@ -61,10 +65,10 @@ def config(
         },
         {
             "dtype": "float64",
-            "atol": 1.0e-12,
-            "rtol": 1.0e-10,
-            "min_spd_rcond": 1.0e-12,
-            "max_frame_condition": 1.0e6,
+            "atol": atol,
+            "rtol": rtol,
+            "min_spd_rcond": min_spd_rcond,
+            "max_frame_condition": max_frame_condition,
         },
         {"root": str(root), "collect_diagnostics": diagnostics, "render_figures": render_figures},
     )
@@ -143,7 +147,7 @@ def _fractions(numerators: np.ndarray, denominators: np.ndarray) -> tuple[Fracti
 def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provenance(tmp_path: Path):
     result = run_finite_counterexample_experiment(config(tmp_path, diagnostics=True))
     assert isinstance(result, FiniteCounterexampleExperimentResult)
-    assert result.status == "pass"
+    assert result.status == "inconclusive"
     assert set(result.metrics) == METRICS
     assert result.metrics["support_violation_count"].value == 1.0
     assert result.metrics["parameter_dependent_channel_gap"].value == pytest.approx(
@@ -255,19 +259,17 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
             assert math.isfinite(float(residual))
             assert float(residual) > 0.0
     stress = json.loads((result.run_dir / "stress_matrix.json").read_text("utf-8"))
-    assert stress["deep_composition"] == {
-        "channels": {
-            "a": [["1", "0"], ["1/2", "1/2"]],
-            "b": [["1/2", "1/2"], ["0", "1"]],
-            "c": [["3/4", "1/4"], ["1/4", "3/4"]],
-        },
-        "direct_rows": [["1/2", "1/2"], ["3/8", "5/8"]],
-        "staged_rows": [["1/2", "1/2"], ["3/8", "5/8"]],
-        "residual": "0",
-        "direct_equals_staged": True,
-    }
-    assert stress["relabeling"] == {"coherent": True, "residual": "0"}
-    assert stress["retained_space"] == {"pass_residual": "1", "fails_full_reconstruction": True}
+    assert stress["deep_composition"]["status"] == "pass"
+    assert stress["deep_composition"]["value"] == "0"
+    assert stress["deep_composition"]["tolerance"] == "0"
+    assert stress["deep_composition"]["expected"] == "0"
+    assert stress["deep_composition"]["direct_equals_staged"] is True
+    assert stress["relabeling"]["status"] == "pass"
+    assert stress["relabeling"]["coherent"] is True
+    assert stress["relabeling"]["residual"] == "0"
+    assert stress["retained_space"]["status"] == "pass"
+    assert stress["retained_space"]["pass_residual"] == "1"
+    assert stress["retained_space"]["fails_full_reconstruction"] is True
     assert stress["tolerance_scaling"] == {"base": "1/100", "states": 2, "scaled": "1/50"}
     near_singular = stress["conditioning"]["rejected_near_singular"]
     assert stress["conditioning"]["accepted_dimension"] == 2
@@ -276,17 +278,23 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     assert near_singular["matrix"] == [["1", "0"], ["0", "1/10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"]]
     assert near_singular["minimum_diagonal"] == "1/10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
     assert near_singular["condition_score"] == "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-    assert near_singular["legacy_condition_number_threshold"] == "1000000000000"
     assert near_singular["positive_definite"] is True
-    assert near_singular["rejected"] is True
+    assert near_singular["rejected"] is False
     assert near_singular["minimum_eigenvalue"] == pytest.approx(1.0e-100)
     assert near_singular["maximum_eigenvalue"] == pytest.approx(1.0)
     assert near_singular["reciprocal_condition"] == pytest.approx(1.0e-100)
     assert near_singular["threshold"] == pytest.approx(1.0e-12)
-    assert near_singular["boundary_tolerance"] == pytest.approx(0.0)
+    assert near_singular["boundary_tolerance"] == pytest.approx(1.0e-12 + 1.0e-22)
     assert near_singular["method"] == "symmetric_eigenvalue_ratio"
-    assert near_singular["decision"] == "fail"
-    assert near_singular["reason"] == "reciprocal condition is below the declared threshold"
+    assert near_singular["decision"] == "inconclusive"
+    assert near_singular["reason"] == "reciprocal condition lies within the declared threshold tolerance band"
+    assert stress["conditioning"]["status"] == "inconclusive"
+    assert stress["conditioning"]["expected"] == "fail"
+    assert stress["numerical_policy"] == {
+        "requested": {"atol": 1.0e-12, "rtol": 1.0e-10, "min_spd_rcond": 1.0e-12},
+        "effective": {"atol": 1.0e-12, "rtol": 1.0e-10, "min_spd_rcond": 1.0e-12},
+        "not_applicable": {"max_frame_condition": 1.0e6},
+    }
     assert Fraction(near_singular["minimum_diagonal"]) > 0
     assert Fraction(near_singular["condition_score"]) > MAX_NEAR_SINGULAR_SCORE
     matrix = tuple(
@@ -412,6 +420,136 @@ def test_primitive_rational_arrays_independently_recompute_all_metrics(tmp_path:
     with pytest.raises(ValueError): arrays["theta_num"][0] = 1
 
 
+def test_session3_numerical_policy_is_serialized_and_reaches_conditioning(
+    tmp_path: Path,
+):
+    passing = run_finite_counterexample_experiment(
+        config(tmp_path / "pass", min_spd_rcond=1.0e-99, atol=1.0e-200, rtol=1.0e-200)
+    )
+    failing = run_finite_counterexample_experiment(
+        config(tmp_path / "fail", min_spd_rcond=1.0e-101, atol=1.0e-200, rtol=1.0e-200)
+    )
+
+    assert passing.status == "pass"
+    assert failing.status == "fail"
+    stress = json.loads((failing.run_dir / "stress_matrix.json").read_text("utf-8"))
+    assert stress["numerical_policy"] == {
+        "requested": {
+            "atol": 1.0e-200,
+            "rtol": 1.0e-200,
+            "min_spd_rcond": 1.0e-101,
+        },
+        "effective": {
+            "atol": 1.0e-200,
+            "rtol": 1.0e-200,
+            "min_spd_rcond": 1.0e-101,
+        },
+        "not_applicable": {"max_frame_condition": 1.0e6},
+    }
+    assert stress["conditioning"]["status"] == "fail"
+
+
+def test_near_threshold_conditioning_is_inconclusive(tmp_path: Path):
+    result = run_finite_counterexample_experiment(
+        config(tmp_path, min_spd_rcond=1.0e-100, atol=1.0e-101, rtol=1.0e-200)
+    )
+
+    assert result.status == "inconclusive"
+
+
+def test_deep_composition_mutation_prevents_pass(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    import multiagent_elbo.finite.counterexample_experiment as experiment
+
+    original = experiment.compose_channels
+    calls = 0
+
+    def mismatched_staged_composition(left: ExactChannel, right: ExactChannel) -> ExactChannel:
+        nonlocal calls
+        calls += 1
+        result = original(left, right)
+        if calls == 3:
+            return ExactChannel(((Fraction(1), Fraction(0)), (Fraction(0), Fraction(1))))
+        return result
+
+    monkeypatch.setattr(experiment, "compose_channels", mismatched_staged_composition)
+
+    assert run_finite_counterexample_experiment(config(tmp_path)).status == "fail"
+
+
+def test_required_relabel_failure_prevents_pass(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    import multiagent_elbo.finite.counterexample_experiment as experiment
+
+    monkeypatch.setattr(
+        experiment,
+        "retained_projection_residual",
+        lambda *_args, **_kwargs: Fraction(1),
+    )
+    monkeypatch.setattr(
+        experiment,
+        "retained_projection_invariant",
+        lambda *_args, **_kwargs: False,
+    )
+
+    assert run_finite_counterexample_experiment(config(tmp_path)).status == "fail"
+
+
+def test_retained_space_negative_control_mutation_prevents_pass(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    import multiagent_elbo.finite.counterexample_experiment as experiment
+
+    original = experiment.project_action
+
+    def erased_omitted_residual(action: object, retained_order: int):
+        projection = original(action, retained_order)
+        pinned_action = getattr(action, "action", action)
+        if isinstance(pinned_action, ExactAction) and pinned_action.values == (
+            Fraction(1), Fraction(-1), Fraction(-1), Fraction(1),
+            Fraction(-1), Fraction(1), Fraction(1), Fraction(-1),
+        ):
+            return replace(projection, residual=Fraction(0))
+        return projection
+
+    monkeypatch.setattr(experiment, "project_action", erased_omitted_residual)
+
+    assert run_finite_counterexample_experiment(config(tmp_path)).status == "fail"
+
+
+def test_aggregate_status_fails_before_inconclusive():
+    import multiagent_elbo.finite.counterexample_experiment as experiment
+
+    passing_metric = experiment._metric(1.0, 1.0, "fixture", "STANDARD")
+    stress = {
+        "inconclusive": experiment.StressAssessment(
+            "inconclusive", "1", "0", "inconclusive", "zero", "fixture"
+        ),
+        "failure": experiment.StressAssessment(
+            "failure", "1", "0", "fail", "zero", "fixture"
+        ),
+    }
+
+    assert experiment._aggregate_status({"metric": passing_metric}, stress) == "fail"
+
+
+def test_conditioning_negative_control_mutation_prevents_pass(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    import multiagent_elbo.finite.counterexample_experiment as experiment
+
+    original = experiment.validate_full_rank_spd
+
+    def accepts_near_singular(*args: object, **kwargs: object):
+        return replace(original(*args, **kwargs), decision="pass")
+
+    monkeypatch.setattr(experiment, "validate_full_rank_spd", accepts_near_singular)
+
+    assert run_finite_counterexample_experiment(config(tmp_path)).status == "fail"
+
+
 def test_output_toggles_and_deterministic_semantic_artifacts(tmp_path: Path):
     no_diagnostics = run_finite_counterexample_experiment(config(tmp_path / "no"))
     with_diagnostics = run_finite_counterexample_experiment(config(tmp_path / "yes", diagnostics=True))
@@ -454,4 +592,4 @@ def test_launcher_runs_without_pythonpath_or_torch_import(tmp_path: Path):
     audit = "import runpy, sys; runpy.run_path(sys.argv[1], run_name='__main__'); assert 'torch' not in sys.modules"
     completed = subprocess.run([sys.executable, "-c", audit, str(launcher)], cwd=tmp_path, env=environment, capture_output=True, text=True, check=False)
     assert completed.returncode == 0, completed.stderr
-    assert "status=pass; metrics=5; figures=not_requested" in completed.stdout
+    assert "status=inconclusive; metrics=5; figures=not_requested" in completed.stdout

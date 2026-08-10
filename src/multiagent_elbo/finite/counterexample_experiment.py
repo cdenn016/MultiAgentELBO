@@ -17,7 +17,6 @@ from multiagent_elbo.config import ExperimentConfig, config_sha256
 from multiagent_elbo.experiment_support import MetricRecord, readonly_array, target_metric
 from multiagent_elbo.finite.permutations import FinitePermutation
 from multiagent_elbo.finite.counterexamples import (
-    MAX_NEAR_SINGULAR_SCORE,
     CandidateRecord,
     EnumerationBounds,
     ExactAction,
@@ -51,7 +50,18 @@ _EFFECTIVE_BOUNDS = EnumerationBounds(max_states=2, max_denominator=4)
 _ACTION_CARDINALITIES = (2, 2, 2)
 _ACTION_MAX_DENOMINATOR = 1
 _ACTION_VALUE_BOUND = 1
-_LEGACY_MIN_SPD_RCOND = 1.0 / float(MAX_NEAR_SINGULAR_SCORE)
+
+
+@dataclass(frozen=True)
+class StressAssessment:
+    """A status-bearing Session-3 stress-control outcome."""
+
+    name: str
+    value: str
+    tolerance: str
+    status: MetricStatus
+    expected: str
+    interpretation: str
 
 
 @dataclass(frozen=True)
@@ -77,10 +87,13 @@ def _metric(
     target: float,
     interpretation: str,
     claim_origin: Literal["STANDARD", "PROJECT_NOVEL", "APPLICATION_SPECIFIC"],
+    *,
+    atol: float = 1.0e-12,
+    rtol: float = 0.0,
 ) -> MetricRecord:
     return target_metric(
         value,
-        1.0e-12,
+        atol + rtol * abs(target),
         target=target,
         interpretation=interpretation,
         theorem_status="ESTABLISHED",
@@ -240,7 +253,46 @@ def _enumerate_candidates(
     return tuple(records)
 
 
-def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[str, np.ndarray], tuple[CandidateRecord, ...], dict[str, object], dict[str, object]]:
+def _aggregate_status(
+    metrics: Mapping[str, MetricRecord], stress: Mapping[str, StressAssessment]
+) -> MetricStatus:
+    """Aggregate primary and stress outcomes with failure precedence."""
+    statuses = [record.status for record in metrics.values()]
+    statuses.extend(record.status for record in stress.values())
+    if "fail" in statuses:
+        return "fail"
+    if "inconclusive" in statuses:
+        return "inconclusive"
+    return "pass"
+
+
+def _stress_status(condition: bool) -> MetricStatus:
+    return "pass" if condition else "fail"
+
+
+def _conditioning_stress_status(decision: MetricStatus) -> MetricStatus:
+    """Treat rejection as the successful near-singular negative control."""
+    if decision == "fail":
+        return "pass"
+    if decision == "inconclusive":
+        return "inconclusive"
+    return "fail"
+
+
+def _assessment_payload(
+    assessment: StressAssessment, details: Mapping[str, object]
+) -> dict[str, object]:
+    return {**details, **asdict(assessment)}
+
+
+def _catalog(config: ExperimentConfig) -> tuple[
+    dict[str, MetricRecord],
+    dict[str, np.ndarray],
+    tuple[CandidateRecord, ...],
+    dict[str, object],
+    Mapping[str, StressAssessment],
+    dict[str, object],
+]:
     requested = EnumerationBounds(config.theory.max_states, config.theory.max_denominator)
     laws = tuple(enumerate_rational_laws(_EFFECTIVE_BOUNDS.max_states, _EFFECTIVE_BOUNDS.max_denominator))
     channels = tuple(enumerate_rational_channels(2, 2, _EFFECTIVE_BOUNDS.max_denominator))
@@ -372,15 +424,61 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
         action_permutations,
         retained_order,
     )
+
+
     accepted_matrix = ((Fraction(1), Fraction(0)), (Fraction(0), Fraction(4)))
     accepted_assessment = validate_full_rank_spd(
         accepted_matrix,
-        min_rcond=_LEGACY_MIN_SPD_RCOND,
-        atol=0.0,
-        rtol=0.0,
+        min_rcond=config.numerics.min_spd_rcond,
+        atol=config.numerics.atol,
+        rtol=config.numerics.rtol,
     )
+    coherent = retained_projection_invariant(
+        action,
+        relabeled_action,
+        action_permutations,
+        retained_order,
+    )
+    near_singular = _rejected_near_singular(config)
+    near_singular_decision = near_singular["decision"]
+    if near_singular_decision not in {"pass", "fail", "inconclusive"}:
+        raise AssertionError("conditioning control returned an invalid decision")
+    stress_assessments: Mapping[str, StressAssessment] = MappingProxyType({
+        "deep_composition": StressAssessment(
+            "deep_composition",
+            _fraction_text(composition_residual),
+            "0",
+            _stress_status(composition_residual == 0 and composed_direct == composed_staged),
+            "0",
+            "Exact direct and staged channel compositions must agree.",
+        ),
+        "relabeling": StressAssessment(
+            "relabeling",
+            _fraction_text(relabel_residual),
+            "0",
+            _stress_status(coherent and relabel_residual == 0),
+            "coherent and 0",
+            "A typed relabeling must preserve the retained projection exactly.",
+        ),
+        "retained_space": StressAssessment(
+            "retained_space",
+            _fraction_text(pairwise.residual),
+            "strictly_positive",
+            _stress_status(pairwise.residual > 0),
+            "> 0",
+            "The omitted higher-order interaction must remain visible after retention.",
+        ),
+        "conditioning": StressAssessment(
+            "conditioning",
+            near_singular_decision,
+            str(near_singular["boundary_tolerance"]),
+            _conditioning_stress_status(near_singular_decision),
+            "fail",
+            "The positive-definite near-singular control must be rejected by the shared spectral policy.",
+        ),
+    })
     stress = {
-        "deep_composition": {
+        "deep_composition": _assessment_payload(stress_assessments["deep_composition"], {
             "channels": {
                 "a": _channel_text(composition_a),
                 "b": _channel_text(composition_b),
@@ -390,25 +488,38 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
             "staged_rows": _channel_text(composed_staged),
             "residual": _fraction_text(composition_residual),
             "direct_equals_staged": composed_direct == composed_staged,
-        },
-        "relabeling": {
-            "coherent": retained_projection_invariant(
-                action,
-                relabeled_action,
-                action_permutations,
-                retained_order,
-            ),
+        }),
+        "relabeling": _assessment_payload(stress_assessments["relabeling"], {
+            "coherent": coherent,
             "residual": _fraction_text(relabel_residual),
-        },
-        "retained_space": {"pass_residual": str(pairwise.residual), "fails_full_reconstruction": pairwise.residual > 0},
+        }),
+        "retained_space": _assessment_payload(stress_assessments["retained_space"], {
+            "pass_residual": str(pairwise.residual),
+            "fails_full_reconstruction": pairwise.residual > 0,
+        }),
         "tolerance_scaling": {"base": "1/100", "states": 2, "scaled": str(scale_tolerance(Fraction(1, 100), 2))},
-        "conditioning": {
+        "conditioning": _assessment_payload(stress_assessments["conditioning"], {
             "accepted_dimension": len(accepted_matrix),
             "accepted_decision": accepted_assessment.decision,
             "accepted_condition": str(
                 diagonal_spd_condition_number((Fraction(1), Fraction(4)))
             ),
-            "rejected_near_singular": _rejected_near_singular(),
+            "rejected_near_singular": near_singular,
+        }),
+        "numerical_policy": {
+            "requested": {
+                "atol": config.numerics.atol,
+                "rtol": config.numerics.rtol,
+                "min_spd_rcond": config.numerics.min_spd_rcond,
+            },
+            "effective": {
+                "atol": config.numerics.atol,
+                "rtol": config.numerics.rtol,
+                "min_spd_rcond": config.numerics.min_spd_rcond,
+            },
+            "not_applicable": {
+                "max_frame_condition": config.numerics.max_frame_condition,
+            },
         },
     }
     bounds = {
@@ -435,10 +546,10 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
             "minimal_candidates": len(minimal),
         },
     }
-    return metrics, arrays, candidates, bounds, stress
+    return metrics, arrays, candidates, bounds, stress_assessments, stress
 
 
-def _rejected_near_singular() -> dict[str, object]:
+def _rejected_near_singular(config: ExperimentConfig) -> dict[str, object]:
     minimum_diagonal = Fraction(1, 10**100)
     matrix = (
         (Fraction(1), Fraction(0)),
@@ -447,12 +558,10 @@ def _rejected_near_singular() -> dict[str, object]:
     condition_score = diagonal_spd_condition_number((Fraction(1), minimum_diagonal))
     assessment = validate_full_rank_spd(
         matrix,
-        min_rcond=_LEGACY_MIN_SPD_RCOND,
-        atol=0.0,
-        rtol=0.0,
+        min_rcond=config.numerics.min_spd_rcond,
+        atol=config.numerics.atol,
+        rtol=config.numerics.rtol,
     )
-    if assessment.decision != "fail":
-        raise AssertionError("near-singular SPD control did not produce a fail decision")
     return {
         "matrix": [
             [_fraction_text(value) for value in row]
@@ -460,9 +569,6 @@ def _rejected_near_singular() -> dict[str, object]:
         ],
         "minimum_diagonal": _fraction_text(minimum_diagonal),
         "condition_score": _fraction_text(condition_score),
-        "legacy_condition_number_threshold": _fraction_text(
-            MAX_NEAR_SINGULAR_SCORE
-        ),
         "positive_definite": minimum_diagonal > 0,
         "rejected": assessment.decision == "fail",
         "minimum_eigenvalue": assessment.minimum_eigenvalue,
@@ -490,7 +596,7 @@ def run_finite_counterexample_experiment(config: ExperimentConfig) -> FiniteCoun
         raise ValueError("max_states must be at least 2 for the pinned catalog")
     if config.theory.max_denominator < _EFFECTIVE_BOUNDS.max_denominator:
         raise ValueError("max_denominator must be at least 4 for the pinned catalog")
-    metrics, raw_arrays, candidates, bounds, stress = _catalog(config)
+    metrics, raw_arrays, candidates, bounds, stress_assessments, stress = _catalog(config)
     arrays = _readonly_arrays(raw_arrays)
     config_hash = config_sha256(config)
     streams = RngStreams.from_seed(config.run.seed)
@@ -510,8 +616,12 @@ def run_finite_counterexample_experiment(config: ExperimentConfig) -> FiniteCoun
         store.write_npz("diagnostics", _readonly_arrays({"candidate_count": np.asarray((len(candidates),), dtype=np.int64)}))
         artifacts.append("diagnostics.npz")
     store.finalize(artifacts)
-    status: MetricStatus = "pass" if all(metric.status == "pass" for metric in metrics.values()) else "fail"
+    status = _aggregate_status(metrics, stress_assessments)
     return FiniteCounterexampleExperimentResult(store.run_dir, store.config_hash, status, MappingProxyType(dict(metrics)), MappingProxyType(arrays), "not_requested")
 
 
-__all__ = ["FiniteCounterexampleExperimentResult", "run_finite_counterexample_experiment"]
+__all__ = [
+    "FiniteCounterexampleExperimentResult",
+    "StressAssessment",
+    "run_finite_counterexample_experiment",
+]
