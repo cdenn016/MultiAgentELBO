@@ -321,9 +321,20 @@ def test_cuda_sentinel_runs_five_frozen_jobs_through_three_float64_lanes(
         ],
     }
     gate_captures = []
+
+    def capture_after_cuda_cooldown(**kwargs: object) -> dict[str, object]:
+        gate_captures.append(kwargs)
+        if len(gate_captures) == 1:
+            raise RuntimeError("GPU is not idle across the required occupancy samples")
+        return dict(gate)
+
     monkeypatch.setattr(
         "multiagent_elbo.realizations.gaussian.fixed_ray_experiment.capture_idle_gpu_gate",
-        lambda **kwargs: gate_captures.append(kwargs) or dict(gate),
+        capture_after_cuda_cooldown,
+    )
+    monkeypatch.setattr(
+        "multiagent_elbo.realizations.gaussian.fixed_ray_experiment.time.sleep",
+        lambda _seconds: None,
     )
     monkeypatch.setattr(
         "multiagent_elbo.realizations.gaussian.fixed_ray_experiment._validate_cuda_gate_bindings",
@@ -381,8 +392,10 @@ def test_cuda_sentinel_runs_five_frozen_jobs_through_three_float64_lanes(
         "negative_control_passed"
     ] is True
     assert sentinel["mutation_negative_control"]["passed"] is False
-    assert len(gate_captures) == 5
+    assert len(gate_captures) == 6
     assert len(sentinel["operator_gate_rechecks"]) == 5
+    assert sentinel["operator_gate_rechecks"][0]["gate"]["idle_wait_attempts"] == 2
+    assert sentinel["operator_gate_rechecks"][0]["gate"]["idle_wait_seconds"] == 1.0
     assert len(sentinel["worker_jobs"]) == 240
     assert len(calls) == 240
     assert all(call["arrays"]["coefficients"].shape == (1, 6) for call in calls)

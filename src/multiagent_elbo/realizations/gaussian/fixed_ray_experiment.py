@@ -201,6 +201,32 @@ def capture_idle_gpu_gate(
     }
 
 
+def _capture_idle_gpu_gate_after_cooldown(
+    *, operator_opt_in: bool
+) -> dict[str, object]:
+    """Wait briefly for this sentinel's prior CUDA work to return to P8."""
+    maximum_attempts = 31
+    poll_seconds = 1.0
+    idle_error = "GPU is not idle across the required occupancy samples"
+    for attempt in range(1, maximum_attempts + 1):
+        try:
+            gate = capture_idle_gpu_gate(
+                operator_opt_in=operator_opt_in,
+                sample_count=1,
+                sample_interval_seconds=0.0,
+                freshness_ttl_seconds=300.0,
+            )
+        except RuntimeError as error:
+            if str(error) != idle_error or attempt == maximum_attempts:
+                raise
+            time.sleep(poll_seconds)
+            continue
+        gate["idle_wait_attempts"] = attempt
+        gate["idle_wait_seconds"] = float((attempt - 1) * poll_seconds)
+        return gate
+    raise AssertionError("unreachable CUDA idle-wait state")
+
+
 def _live_cuda_gate_bindings(config: ExperimentConfig) -> dict[str, object]:
     if config.compute.backend != "cuda" or config.compute.dtype != "float64":
         raise ValueError("CUDA gate requires a CUDA float64 configuration")
@@ -709,11 +735,8 @@ def run_cuda_sentinel(
     gate_rechecks: list[dict[str, object]] = []
 
     for job_index, sentinel_id in enumerate(sentinel_ids):
-        recheck = capture_idle_gpu_gate(
-            operator_opt_in=operator_opt_in,
-            sample_count=1,
-            sample_interval_seconds=0.0,
-            freshness_ttl_seconds=300.0,
+        recheck = _capture_idle_gpu_gate_after_cooldown(
+            operator_opt_in=operator_opt_in
         )
         _validate_gate_recheck(gate, recheck)
         recheck_bytes = json.dumps(
