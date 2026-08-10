@@ -340,7 +340,7 @@ def _run_pilot(
             parity.maximum_absolute_residual,
             status="inconclusive",
             tolerance=parity.atol,
-            interpretation="Controller/worker CPU parity passed, but CUDA float64 parity was not run while the GPU was busy.",
+            interpretation="Controller/worker CPU parity passed; CUDA float64 parity was not requested by this ordinary CPU pilot.",
             theorem_status="OPEN",
             verification_state="INCONCLUSIVE",
         ),
@@ -432,13 +432,14 @@ def _run_pilot(
             "output_identity": worker_response["output_identity"],
         },
         "worker_cuda": {
-            "status": "not_run_busy_gpu",
-            "requested_backend": "cuda",
-            "requested_dtype": "float64",
+            "status": "not_requested_cpu_pilot",
+            "evidence_state": "INCONCLUSIVE_NOT_REQUESTED_CPU_PILOT",
+            "requested_backend": None,
+            "requested_dtype": None,
             "effective_backend": None,
             "effective_dtype": None,
-            "operator_opt_in": False,
             "heavy_sweep_enabled": False,
+            "gate_record": None,
         },
     }
     parity_matrix = {
@@ -446,12 +447,12 @@ def _run_pilot(
         "controller_cpu_vs_worker_cuda": {
             "status": "inconclusive",
             "passed": None,
-            "reason": "GPU busy; CUDA execution prohibited by controller gate.",
+            "reason": "CUDA was not requested by the ordinary CPU pilot.",
         },
         "worker_cpu_vs_worker_cuda": {
             "status": "inconclusive",
             "passed": None,
-            "reason": "GPU busy; CUDA execution prohibited by controller gate.",
+            "reason": "CUDA was not requested by the ordinary CPU pilot.",
         },
         "mutation_negative_control": {
             **asdict(mutation_parity),
@@ -528,7 +529,7 @@ def run_gaussian_fixed_ray_experiment(
     ).hexdigest()
     provenance["effective_backend"] = "cpu_controller_and_cpu_worker"
     provenance["effective_dtype"] = "float64"
-    provenance["cuda_evidence_state"] = "INCONCLUSIVE_NOT_RUN_BUSY_GPU"
+    provenance["cuda_evidence_state"] = "INCONCLUSIVE_NOT_REQUESTED_CPU_PILOT"
 
     store = RunStore.create(config, provenance)
     store.write_json("preregistered_job_table", job_table)

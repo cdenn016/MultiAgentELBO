@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+import json
+import os
 from pathlib import Path
 import subprocess
 
@@ -185,6 +187,156 @@ def test_worker_cpu_handles_zero_support_and_batch_schedule_invariance(tmp_path:
     )
 
 
+@pytest.mark.parametrize(
+    ("case", "mutate", "message"),
+    (
+        ("negative-coefficient", lambda arrays: arrays["coefficients"].__setitem__((0, 0), -1.0), "nonnegative"),
+        ("negative-spatial-map", lambda arrays: arrays["spatial_map"].__setitem__((0, 0), -0.5), "nonnegative"),
+        ("nonnormalized-spatial-map", lambda arrays: arrays["spatial_map"].__setitem__((0, 0), 0.6), "row-stochastic"),
+        ("nan-coefficient", lambda arrays: arrays["coefficients"].__setitem__((0, 0), np.nan), "finite"),
+        ("inf-spatial-map", lambda arrays: arrays["spatial_map"].__setitem__((0, 0), np.inf), "finite"),
+    ),
+)
+def test_controller_rejects_invalid_probability_payload_before_artifacts(
+    tmp_path: Path, case: str, mutate: object, message: str
+):
+    inputs = {name: np.array(value, copy=True) for name, value in literal_inputs().items()}
+    mutate(inputs)
+    output = tmp_path / case
+    with pytest.raises(WorkerBackendError, match=message):
+        run_worker_job(
+            worker_python=ANACONDA,
+            worker_script=WORKER,
+            work_root=output,
+            job_id=f"fixed-ray.cpu.{case}",
+            requested_backend="cpu",
+            requested_dtype="float64",
+            arrays=inputs,
+            environment_lock=ENVIRONMENT_LOCK,
+        )
+    assert not output.exists()
+
+
+def _write_worker_request(
+    root: Path, arrays: dict[str, np.ndarray]
+) -> tuple[Path, Path, Path, Path]:
+    root.mkdir()
+    input_npz = root / "input.npz"
+    request_json = root / "request.json"
+    response_json = root / "response.json"
+    output_npz = root / "output.npz"
+    np.savez(input_npz, **arrays)
+    descriptors = []
+    for name, array in sorted(arrays.items()):
+        dtype = "int64" if array.dtype == np.dtype(np.int64) else "float64"
+        descriptors.append(
+            {
+                "name": name,
+                "shape": list(array.shape),
+                "dtype": dtype,
+                "sha256": canonical_array_sha256(name, array, dtype),
+            }
+        )
+    request_json.write_text(
+        json.dumps(
+            {
+                "schema_version": "cuda-worker-protocol-v1",
+                "message_type": "request",
+                "job_id": "fixed-ray.worker.invalid-payload",
+                "requested_backend": "cpu",
+                "requested_dtype": "float64",
+                "effective_backend": None,
+                "effective_dtype": None,
+                "environment_sha256": "0" * 64,
+                "npz_sha256": hashlib.sha256(input_npz.read_bytes()).hexdigest(),
+                "arrays": descriptors,
+                "output_identity": None,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ),
+        encoding="utf-8",
+    )
+    return request_json, input_npz, response_json, output_npz
+
+
+@pytest.mark.parametrize(
+    ("case", "mutate", "message"),
+    (
+        ("negative", lambda arrays: arrays["coefficients"].__setitem__((0, 0), -1.0), "nonnegative"),
+        ("nonnormalized", lambda arrays: arrays["spatial_map"].__setitem__((0, 0), 0.6), "row-stochastic"),
+        ("nan", lambda arrays: arrays["coefficients"].__setitem__((0, 0), np.nan), "finite"),
+        ("inf", lambda arrays: arrays["spatial_map"].__setitem__((0, 0), np.inf), "finite"),
+    ),
+)
+def test_standalone_worker_independently_rejects_invalid_probability_payload(
+    tmp_path: Path, case: str, mutate: object, message: str
+):
+    inputs = {name: np.array(value, copy=True) for name, value in literal_inputs().items()}
+    mutate(inputs)
+    paths = _write_worker_request(tmp_path / case, inputs)
+    environment = dict(os.environ)
+    environment["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+    completed = subprocess.run(
+        [str(ANACONDA), str(WORKER), *(str(path) for path in paths)],
+        cwd=REPOSITORY,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 2
+    assert message in completed.stderr
+    assert not paths[2].exists()
+    assert not paths[3].exists()
+
+
+def test_torch_probability_checks_are_device_independent_and_fail_closed():
+    script = f"""
+import importlib.util
+import torch
+spec = importlib.util.spec_from_file_location('session6_cuda_worker', {str(WORKER)!r})
+worker = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(worker)
+valid_coefficients = torch.tensor([[0.2, 0.8]], dtype=torch.float64)
+valid_map = torch.tensor([[0.75, 0.25], [0.1, 0.9]], dtype=torch.float64)
+worker._validate_on_device_probability_payload(valid_coefficients, valid_map)
+worker._validate_on_device_probability_output(valid_coefficients)
+invalid_payloads = [
+    (torch.tensor([[-0.2, 1.2]], dtype=torch.float64), valid_map),
+    (valid_coefficients, torch.tensor([[0.8, 0.3], [0.1, 0.9]], dtype=torch.float64)),
+    (torch.tensor([[float('nan'), 1.0]], dtype=torch.float64), valid_map),
+    (valid_coefficients, torch.tensor([[float('inf'), 0.0], [0.1, 0.9]], dtype=torch.float64)),
+]
+for coefficients, spatial_map in invalid_payloads:
+    try:
+        worker._validate_on_device_probability_payload(coefficients, spatial_map)
+    except worker.ProtocolError:
+        pass
+    else:
+        raise AssertionError('invalid on-device payload accepted')
+for output in (
+    torch.tensor([[-1.0]], dtype=torch.float64),
+    torch.tensor([[float('nan')]], dtype=torch.float64),
+    torch.tensor([[float('inf')]], dtype=torch.float64),
+):
+    try:
+        worker._validate_on_device_probability_output(output)
+    except worker.ProtocolError:
+        pass
+    else:
+        raise AssertionError('invalid on-device output accepted')
+"""
+    completed = subprocess.run(
+        [str(ANACONDA), "-c", script],
+        cwd=REPOSITORY,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+
+
 def test_requested_cuda_on_unpinned_cpu_interpreter_fails_before_artifacts(tmp_path: Path):
     output = tmp_path / "must-not-exist"
 
@@ -278,6 +430,31 @@ def test_self_consistent_worker_output_must_match_fixed_kernel_contract(tmp_path
             output_npz=result.output_npz,
         )
 
+
+@pytest.mark.parametrize("invalid_value", (-1.0, np.nan, np.inf))
+def test_self_consistent_support_invalid_or_nonfinite_worker_output_is_rejected(
+    tmp_path: Path, invalid_value: float
+):
+    result = run_worker_job(
+        worker_python=ANACONDA,
+        worker_script=WORKER,
+        work_root=tmp_path / "invalid-output",
+        job_id="fixed-ray.cpu.invalid-output",
+        requested_backend="cpu",
+        requested_dtype="float64",
+        arrays=literal_inputs(rows=5),
+        environment_lock=ENVIRONMENT_LOCK,
+    )
+    with np.load(result.output_npz, allow_pickle=False) as archive:
+        mutated = {name: np.array(archive[name], copy=True) for name in archive.files}
+    mutated["updated_coefficients"][0, 0] = invalid_value
+    response = _rewrite_self_consistent_response(result, mutated)
+    with pytest.raises(WorkerBackendError, match="finite nonnegative"):
+        validate_worker_result(
+            request_manifest=result.request_manifest,
+            response_manifest=response,
+            output_npz=result.output_npz,
+        )
 
 def test_mutated_output_npz_and_parity_candidate_are_rejected(tmp_path: Path):
     result = run_worker_job(

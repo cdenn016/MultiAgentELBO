@@ -338,7 +338,24 @@ def _exact_fixtures(
         for value in table.values()
     ):
         raise ArithmeticError("declared fine action is not pairwise")
-    full_reconstruction = tuple(generated["coarse_action"])
+    coarse_action_by_state = dict(zip(states, generated["coarse_action"]))
+    coarse_interactions = anchored_mobius_decompose(
+        coarse_action_by_state, anchor=(0, 0, 0)
+    )
+    full_reconstruction = tuple(
+        float(coarse_interactions.reconstruct(state)) for state in states
+    )
+    coarse_nonempty_components = [
+        {
+            "subset": list(subset),
+            "table": [
+                {"state": list(assignment), "value": float(value)}
+                for assignment, value in sorted(table.items())
+            ],
+        }
+        for subset, table in coarse_interactions.components.items()
+        if subset
+    ]
     pairwise_reconstruction = tuple(generated["pairwise_reconstruction"])
 
     typed_gap = max(
@@ -545,7 +562,7 @@ def _exact_fixtures(
             },
         },
         "coarse_actions": {
-            "schema_version": "scale-coarse-actions-v1",
+            "schema_version": "scale-coarse-actions-v2",
             "fine_action_maximum_order": 2,
             "fine_state_labels": list(generated["labels"]),
             "fine_reference": [str(value) for value in generated["reference"]],
@@ -556,6 +573,12 @@ def _exact_fixtures(
             "coarse_action": list(generated["coarse_action"]),
             "coarse_triple_log_ratio": str(generated["triple_log_ratio"]),
             "generated_triple_component": generated["triple_component"],
+            "coarse_mobius_anchor": list(coarse_interactions.anchor),
+            "coarse_mobius_anchor_component": float(
+                coarse_interactions.components[()][()]
+            ),
+            "coarse_mobius_nonempty_components": coarse_nonempty_components,
+            "full_reconstruction": list(full_reconstruction),
             "pairwise_reconstruction": list(generated["pairwise_reconstruction"]),
             "fixture_direct_likelihood": [str(value) for value in direct_action.likelihood],
             "fixture_staged_likelihood": [str(value) for value in staged_action.likelihood],

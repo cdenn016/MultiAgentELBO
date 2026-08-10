@@ -127,14 +127,38 @@ def test_pilot_publishes_recomputable_artifacts_with_incomplete_cuda_gate(
     assert backend["worker_cpu"]["effective_dtype"] == "float64"
     assert backend["worker_cpu"]["environment_sha256"]
     assert backend["worker_cpu"]["output_identity"]
-    assert backend["worker_cuda"]["status"] == "not_run_busy_gpu"
+    assert backend["worker_cuda"]["status"] == "not_requested_cpu_pilot"
+    assert backend["worker_cuda"]["evidence_state"] == (
+        "INCONCLUSIVE_NOT_REQUESTED_CPU_PILOT"
+    )
+    assert "operator_opt_in" not in backend["worker_cuda"]
 
     parity = json.loads(
         (result.run_dir / "parity_matrix.json").read_text(encoding="utf-8")
     )
     assert parity["controller_cpu_vs_worker_cpu"]["passed"] is True
     assert parity["controller_cpu_vs_worker_cuda"]["status"] == "inconclusive"
+    assert parity["controller_cpu_vs_worker_cuda"]["reason"] == (
+        "CUDA was not requested by the ordinary CPU pilot."
+    )
     assert parity["mutation_negative_control"]["passed"] is False
+    manifest = json.loads(
+        (result.run_dir / "manifest.json").read_text(encoding="utf-8")
+    )
+    assert manifest["provenance"]["cuda_evidence_state"] == (
+        "INCONCLUSIVE_NOT_REQUESTED_CPU_PILOT"
+    )
+    serialized_cuda_state = json.dumps(
+        {
+            "backend": backend["worker_cuda"],
+            "controller_cuda_parity": parity["controller_cpu_vs_worker_cuda"],
+            "worker_cuda_parity": parity["worker_cpu_vs_worker_cuda"],
+            "provenance": manifest["provenance"]["cuda_evidence_state"],
+        },
+        sort_keys=True,
+    ).lower()
+    assert "busy" not in serialized_cuda_state
+    assert "idle" not in serialized_cuda_state
 
     arrays = np.load(result.run_dir / "initial_conditions.npz", allow_pickle=False)
     assert arrays["initial_coefficients"].shape == (4, 6)

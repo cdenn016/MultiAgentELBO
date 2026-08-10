@@ -250,6 +250,20 @@ def load_and_validate_inputs(
         raise ProtocolError("batch size must be one positive int64 scalar")
     if not all(np.all(np.isfinite(array)) for array in (coefficients, spatial_map, matrix_direction)):
         raise ProtocolError("worker scientific arrays must be finite")
+    if np.any(coefficients < 0.0) or np.any(spatial_map < 0.0):
+        raise ProtocolError(
+            "coefficients and spatial_map must have nonnegative support"
+        )
+    normalization_atol = (
+        1.0e-12 if request["requested_dtype"] == "float64" else 1.0e-6
+    )
+    if not np.allclose(
+        np.sum(spatial_map, axis=1),
+        1.0,
+        rtol=0.0,
+        atol=normalization_atol,
+    ):
+        raise ProtocolError("spatial_map must be row-stochastic")
     if not np.array_equal(matrix_direction, matrix_direction.T):
         raise ProtocolError("matrix direction must be symmetric")
     if np.min(np.linalg.eigvalsh(matrix_direction.astype(np.float64))) <= 0.0:
@@ -262,6 +276,43 @@ def load_and_validate_inputs(
     if any(array.dtype != requested_numpy_dtype for array in (coefficients, spatial_map, matrix_direction)):
         raise ProtocolError("scientific array dtype differs from requested dtype")
     return arrays
+
+
+def _validate_on_device_probability_payload(
+    coefficients: object, spatial_map: object
+) -> None:
+    """Validate Torch probability tensors without moving them off their device."""
+    if not bool(coefficients.isfinite().all().item()) or not bool(
+        spatial_map.isfinite().all().item()
+    ):
+        raise ProtocolError("on-device scientific arrays must be finite")
+    if bool((coefficients < 0.0).any().item()) or bool(
+        (spatial_map < 0.0).any().item()
+    ):
+        raise ProtocolError(
+            "on-device coefficients and spatial_map must have nonnegative support"
+        )
+    normalization_atol = 1.0e-12 if coefficients.element_size() == 8 else 1.0e-6
+    row_error = (spatial_map.sum(dim=1) - 1.0).abs()
+    if bool((row_error > normalization_atol).any().item()):
+        raise ProtocolError("on-device spatial_map must be row-stochastic")
+
+
+def _validate_on_device_probability_output(updated: object) -> None:
+    """Reject nonfinite or support-invalid Torch output before host transfer."""
+    if not bool(updated.isfinite().all().item()) or bool(
+        (updated < 0.0).any().item()
+    ):
+        raise ProtocolError("on-device updated coefficients must be finite nonnegative")
+
+
+def _validate_probability_output(outputs: Mapping[str, np.ndarray]) -> None:
+    updated = outputs["updated_coefficients"]
+    condition = outputs["matrix_condition"]
+    if not np.all(np.isfinite(updated)) or np.any(updated < 0.0):
+        raise ProtocolError("updated coefficients must be finite nonnegative")
+    if not np.all(np.isfinite(condition)) or float(condition) < 1.0:
+        raise ProtocolError("matrix condition must be finite and at least one")
 
 
 def compute_cpu(arrays: Mapping[str, np.ndarray]) -> tuple[dict[str, np.ndarray], dict[str, object]]:
@@ -326,6 +377,7 @@ def compute_cuda(
     torch.cuda.reset_peak_memory_stats(device)
     coefficients = torch.as_tensor(arrays["coefficients"], dtype=torch_dtype, device=device)
     spatial_map = torch.as_tensor(arrays["spatial_map"], dtype=torch_dtype, device=device)
+    _validate_on_device_probability_payload(coefficients, spatial_map)
     batch_size = int(arrays["batch_size"])
     pieces = []
     for start in range(0, coefficients.shape[0], batch_size):
@@ -337,6 +389,7 @@ def compute_cuda(
         updated = torch.empty(
             (0, spatial_map.shape[0]), dtype=torch_dtype, device=device
         )
+    _validate_on_device_probability_output(updated)
     torch.cuda.synchronize(device)
     output = updated.cpu().numpy()
     condition = np.array(
@@ -371,7 +424,9 @@ def compute_cuda(
         "peak_allocated_bytes": int(torch.cuda.max_memory_allocated(device)),
         "peak_reserved_bytes": int(torch.cuda.max_memory_reserved(device)),
     }
-    return {"matrix_condition": condition, "updated_coefficients": output}, provenance
+    outputs = {"matrix_condition": condition, "updated_coefficients": output}
+    _validate_probability_output(outputs)
+    return outputs, provenance
 
 
 def descriptors(arrays: Mapping[str, np.ndarray]) -> list[dict[str, object]]:
@@ -441,6 +496,7 @@ def main() -> int:
         outputs, backend_provenance = compute_cuda(
             arrays, str(request["requested_dtype"])
         )
+    _validate_probability_output(outputs)
     atomic_npz(output_path, outputs)
     response: dict[str, object] = {
         "schema_version": PROTOCOL,

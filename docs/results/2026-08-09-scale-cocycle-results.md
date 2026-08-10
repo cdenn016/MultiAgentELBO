@@ -31,6 +31,7 @@ The comparison map is typed and evaluated in the orientation
 - A raw reversed matrix-order mutation differs from the valid typed derivative composite by exact maximum gap `1`; semantically reversed factors are rejected before composition.
 - Holding the retained projection fixed across a nontrivial comparison violates intertwining with exact gap `1`.
 - The fine likelihood `2^-(ab+ac+bc)` is pairwise. Applying the declared exact noisy channel gives coarse likelihoods `237/256`, `141/256`, and `69/256`; coarse Möbius decomposition produces triple log-ratio `103823/143543` and coefficient `-0.32394711573301693`.
+- The version-2 coarse-action artifact persists the anchor component and all seven nonempty-subset Möbius tables. Summing those independently generated components reconstructs every coarse state with maximum residual `0`; the diagnostic no longer compares an action to a copy of itself.
 - Truncating that coarse hierarchy at pairwise order misses the generated triple term with maximum residual `0.32394711573301693`.
 
 All source arrays needed to recompute the metrics are retained in `arrays.npz`, including the fine pairwise action, exact coarse likelihood, coarse action, triple component, and full versus pairwise reconstructions. The frozen semantic inventory is published separately as `composed_channels.json`, `coarse_actions.json`, `posterior_bridges.json`, `comparison_isomorphisms.json`, `derivative_cocycle.json`, and `retained_projection_residual.json`, in addition to the extension, metrics, and arrays. The version-2 retained-projection artifact now includes the raw exact step, reference input, typed source/target identifications and inverses, both projections, and `delta_log_scale`; an independent test reconstructs the exact, retained, and signed-residual beta vectors and their L-infinity norms from only those raw fields.
@@ -39,6 +40,6 @@ All source arrays needed to recompute the metrics are retained in `arrays.npz`, 
 
 The non-publication evidence run was written under the ignored repository-local path:
 
-`.pytest-tmp/session6-round2-scale-evidence/session6-round2-scale-evidence/67a96f91edb60051eec274c9f0d02da22189716ae0500c6913917b4537342600-20260809`
+`.pytest-tmp/session6-round3-scale-evidence/session6-round3-scale-evidence/9a34720817026a2eea7581792ffc1e67abfaac7e713a980bdf51b8ecbbda27a5-20260809`
 
 Its result is `pass`. These results establish only the checked finite identities under their declared premises.

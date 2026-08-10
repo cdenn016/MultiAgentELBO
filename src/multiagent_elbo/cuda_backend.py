@@ -216,6 +216,18 @@ def _validate_job_inputs(
         raise WorkerBackendError("batch_size must be one positive int64 scalar")
     if not all(np.all(np.isfinite(array)) for array in (coefficients, spatial_map, matrix_direction)):
         raise WorkerBackendError("scientific worker inputs must be finite")
+    if np.any(coefficients < 0.0) or np.any(spatial_map < 0.0):
+        raise WorkerBackendError(
+            "coefficients and spatial_map must have nonnegative support"
+        )
+    normalization_atol = 1.0e-12 if requested_dtype == "float64" else 1.0e-6
+    if not np.allclose(
+        np.sum(spatial_map, axis=1),
+        1.0,
+        rtol=0.0,
+        atol=normalization_atol,
+    ):
+        raise WorkerBackendError("spatial_map must be row-stochastic")
     if not np.allclose(matrix_direction, matrix_direction.T, rtol=0.0, atol=0.0):
         raise WorkerBackendError("matrix_direction must be exactly symmetric")
     if np.min(np.linalg.eigvalsh(matrix_direction.astype(np.float64))) <= 0.0:
@@ -489,6 +501,17 @@ def validate_worker_result(
         if canonical_array_sha256(descriptor.name, array, dtype) != descriptor.sha256:
             raise WorkerBackendError(f"worker output array SHA-256 mismatch: {descriptor.name}")
         array.setflags(write=False)
+    updated_values = arrays["updated_coefficients"]
+    matrix_condition = arrays["matrix_condition"]
+    if not np.all(np.isfinite(updated_values)) or np.any(updated_values < 0.0):
+        raise WorkerBackendError(
+            "worker updated_coefficients must be finite nonnegative"
+        )
+    if (
+        not np.all(np.isfinite(matrix_condition))
+        or float(matrix_condition) < 1.0
+    ):
+        raise WorkerBackendError("worker matrix_condition must be finite and at least one")
     return MappingProxyType(arrays)
 
 

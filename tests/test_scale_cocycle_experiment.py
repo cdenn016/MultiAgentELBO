@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from fractions import Fraction
+from itertools import combinations
 import json
+import math
 import os
 from pathlib import Path
 import shutil
@@ -274,6 +276,90 @@ def test_retained_projection_artifact_independently_reconstructs_beta_outputs(
     )
     assert max(abs(value) for value in signed_residual) == Fraction(
         artifact["signed_residual_linf_norm"]
+    )
+
+
+def test_coarse_action_artifact_independently_reconstructs_all_mobius_components(
+    tmp_path: Path,
+):
+    result = run_scale_cocycle_experiment(scale_config(tmp_path))
+    artifact = json.loads(
+        (result.run_dir / "coarse_actions.json").read_text(encoding="utf-8")
+    )
+    states = tuple(tuple(int(bit) for bit in label) for label in artifact["fine_state_labels"])
+    state_index = {state: index for index, state in enumerate(states)}
+    reference = tuple(Fraction(value) for value in artifact["fine_reference"])
+    likelihood = tuple(Fraction(value) for value in artifact["fine_likelihood"])
+    evidence = tuple(base * density for base, density in zip(reference, likelihood))
+    channel = tuple(
+        tuple(Fraction(value) for value in row)
+        for row in artifact["coarse_channel_rows"]
+    )
+    coarse_reference = tuple(
+        sum((reference[row] * channel[row][column] for row in range(len(states))), Fraction(0))
+        for column in range(len(states))
+    )
+    coarse_evidence = tuple(
+        sum((evidence[row] * channel[row][column] for row in range(len(states))), Fraction(0))
+        for column in range(len(states))
+    )
+    coarse_action = tuple(
+        -math.log(float(numerator / denominator))
+        for numerator, denominator in zip(coarse_evidence, coarse_reference)
+    )
+
+    anchor = (0, 0, 0)
+    anchor_value = coarse_action[state_index[anchor]]
+    components: dict[tuple[int, ...], dict[tuple[int, ...], float]] = {}
+    for size in range(1, 4):
+        for subset in combinations(range(3), size):
+            table: dict[tuple[int, ...], float] = {}
+            for assignment in (
+                tuple((mask >> position) & 1 for position in range(size))
+                for mask in range(2**size)
+            ):
+                value = 0.0
+                for active_size in range(size + 1):
+                    for active_positions in combinations(range(size), active_size):
+                        state = list(anchor)
+                        for position in active_positions:
+                            state[subset[position]] = assignment[position]
+                        value += (-1) ** (size - active_size) * coarse_action[
+                            state_index[tuple(state)]
+                        ]
+                table[assignment] = value
+            components[subset] = table
+
+    emitted = {
+        tuple(record["subset"]): {
+            tuple(entry["state"]): entry["value"] for entry in record["table"]
+        }
+        for record in artifact["coarse_mobius_nonempty_components"]
+    }
+    assert set(emitted) == set(components)
+    assert artifact["coarse_mobius_anchor_component"] == pytest.approx(anchor_value)
+    for subset, table in components.items():
+        assert emitted[subset] == pytest.approx(table, abs=2.0e-15)
+
+    reconstruction = tuple(
+        anchor_value
+        + sum(
+            table[tuple(state[index] for index in subset)]
+            for subset, table in components.items()
+        )
+        for state in states
+    )
+    np.testing.assert_allclose(
+        reconstruction,
+        artifact["full_reconstruction"],
+        rtol=0.0,
+        atol=2.0e-15,
+    )
+    np.testing.assert_allclose(
+        reconstruction,
+        coarse_action,
+        rtol=0.0,
+        atol=2.0e-15,
     )
 
 

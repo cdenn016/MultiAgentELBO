@@ -6,7 +6,7 @@ Preregistration: `2026-08-09-gaussian-fixed-ray-v1`
 
 Execution: four paired pilot jobs only; Python 3.14 CPU controller plus isolated Python 3.12 worker CPU
 
-CUDA: not run because the fresh preflight reported a busy RTX 5090 and no operator opt-in was given
+CUDA: not requested by this ordinary CPU pilot; no gate-state assertion is emitted
 
 ## Outcome
 
@@ -23,7 +23,7 @@ Positive finite trends are typed `NUMERICAL`. They do not select a unique matrix
 | Final signed retained beta component range | `[-2.409409114073506e-3, 1.5281165231984949e-3]` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
 | Basin-exit rate | `0` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
 | Median scale-8 scheme dispersion | `4.647541415137177e-4` | pass | `NUMERICAL / EVIDENCE_VERIFIED / APPLICATION_SPECIFIC` |
-| Controller CPU versus worker CPU maximum residual | `2.220446049250313e-16` | CPU subcheck passed | CUDA metric remains `OPEN / INCONCLUSIVE / APPLICATION_SPECIFIC` |
+| Controller CPU versus worker CPU maximum residual | `2.220446049250313e-16` | CPU subcheck passed | CUDA metric remains `OPEN / INCONCLUSIVE_NOT_REQUESTED_CPU_PILOT / APPLICATION_SPECIFIC` |
 
 The eight preregistered-window pilot slopes ranged from approximately `-4.97e-3` to `-2.77e-4` radians per scale. None reaches the preregistered practical confirmatory threshold of `-0.02`; this is descriptive pilot output only and cannot be used to retune the frozen threshold or population.
 
@@ -39,12 +39,12 @@ The eight preregistered-window pilot slopes ranged from approximately `-4.97e-3`
 
 The worker request and response were bound by immutable job ID `PILOT-CPU-ONE-STEP`, exact output inventory, request-derived shapes/dtypes, per-array hashes, NPZ hashes, and output identity `3e5c563e5a43cd5ac393408fda5d6a16acabd2f922de028a3812165febf040c1`. The frozen lock digest was `b1309f089eda1914df7e87704628e367706e50203441aba775517fefa02838a2`; the worker executable hash was `6965927a96b81d1717c1d2186de7feb9b29ebf8775464020ebc2f25de6ef8ee0`. Requested and effective worker values were both `cpu/float64`. The validated CPU provenance records `rowwise_spatial_map_matvec`, runtime, retry lineage, lock consistency, and explicit null CUDA driver/cuBLAS/library fields.
 
-The CUDA lanes are explicitly recorded as `not_run_busy_gpu`, with null effective backend/dtype and null CUDA runtime/memory. No CPU fallback is presented as CUDA evidence. `heavy_sweep_enabled` remained false and `confirmatory_executed` remained false.
+The CUDA lanes are explicitly recorded as `not_requested_cpu_pilot` / `INCONCLUSIVE_NOT_REQUESTED_CPU_PILOT`, with null requested/effective backend and dtype, a null gate record, and null CUDA runtime/memory. The CPU pilot makes no busy/idle or operator-decision assertion; such a state would require a separately validated, timestamped, hash-bound gate record. No CPU fallback is presented as CUDA evidence. `heavy_sweep_enabled` remained false and `confirmatory_executed` remained false.
 
 ## Evidence artifact
 
 The non-publication evidence run was written under the ignored repository-local path:
 
-`.pytest-tmp/session6-round1-pilot-evidence/session6-round1-pilot-evidence/feab619e1e476b18a82c76b47547668d0cd9ace52a707baf852d66fe757ad897-20260809`
+`.pytest-tmp/session6-round3-pilot-evidence/session6-round3-pilot-evidence/5380a859c02eee1581bd764dba42ef8412d2e64348cff012c95cb36749e48f4c-20260809`
 
 It contains the full 44-job planned table, four CPU-generated pilot literals, every pilot trajectory and diagnostic array, per-seed endpoints, backend provenance, request/response manifests, parity matrix, performance record, and typed metrics.
