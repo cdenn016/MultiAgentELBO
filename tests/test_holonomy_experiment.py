@@ -112,13 +112,13 @@ def test_default_nonflat_run_publishes_frozen_contract_and_literal_oracle(
 
 
 @pytest.mark.parametrize(
-    ("scenario", "trivializable", "raw_trivialization"),
+    ("scenario", "trivializable", "raw_trivialization", "expected_status"),
     [
-        ("flat_tree", True, 0.0),
-        ("flat_cycle", True, 0.0),
-        ("nonflat_plaquette", False, 1.0),
-        ("frustrated_transport", False, 1.0),
-        ("staged_aggregation", False, 1.0),
+        ("flat_tree", True, 0.0, "inconclusive"),
+        ("flat_cycle", True, 0.0, "pass"),
+        ("nonflat_plaquette", False, 1.0, "pass"),
+        ("frustrated_transport", False, 1.0, "pass"),
+        ("staged_aggregation", False, 1.0, "pass"),
     ],
 )
 def test_all_frozen_scenarios_publish_their_declared_finite_records(
@@ -126,6 +126,7 @@ def test_all_frozen_scenarios_publish_their_declared_finite_records(
     scenario: str,
     trivializable: bool,
     raw_trivialization: float,
+    expected_status: str,
 ):
     """Mutation caught: routing a declared scenario through the wrong graph fixture."""
     experiment = importlib.import_module(
@@ -136,7 +137,7 @@ def test_all_frozen_scenarios_publish_their_declared_finite_records(
         holonomy_config(tmp_path, scenario=scenario)
     )
 
-    assert result.status == "pass"
+    assert result.status == expected_status
     assert result.scenario == scenario
     assert {path.name for path in result.run_dir.iterdir()} == RUN_FILES
     record = json.loads(
@@ -160,6 +161,22 @@ def test_all_frozen_scenarios_publish_their_declared_finite_records(
     assert result.arrays[
         "cycle_holonomies.trivialization_max_edge_residual"
     ][0] == pytest.approx(raw_trivialization)
+
+
+def test_result_status_propagates_an_inconclusive_metric(tmp_path: Path):
+    """Mutation caught: treating no failures as sufficient for an overall pass."""
+    experiment = importlib.import_module(
+        "multiagent_elbo.geometry.holonomy_experiment"
+    )
+
+    result = experiment.run_holonomy_experiment(
+        holonomy_config(tmp_path, scenario="flat_tree")
+    )
+
+    assert result.metrics["cycle_conjugacy_invariant_residual"].status == (
+        "inconclusive"
+    )
+    assert result.status == "inconclusive"
 
 
 @pytest.mark.parametrize(

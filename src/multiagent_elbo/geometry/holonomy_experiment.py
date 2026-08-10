@@ -685,8 +685,13 @@ def run_holonomy_experiment(config: ExperimentConfig) -> HolonomyExperimentResul
         Path(filename).stem: store.run_dir / filename
         for filename in _SCIENTIFIC_ARTIFACTS
     }
+    metric_statuses = {metric.status for metric in metrics.values()}
     status: MetricStatus = (
-        "pass" if all(metric.status != "fail" for metric in metrics.values()) else "fail"
+        "fail"
+        if "fail" in metric_statuses
+        else "inconclusive"
+        if "inconclusive" in metric_statuses
+        else "pass"
     )
     return HolonomyExperimentResult(
         run_dir=store.run_dir,
