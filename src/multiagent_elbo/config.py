@@ -41,8 +41,98 @@ class CategoricalDqmTheoryConfig:
     dqm_step_sizes: tuple[float, ...]
 
 
+NEW_EXPERIMENT_NAMES = (
+    "multiagent_network",
+    "theory_oracle",
+    "finite_counterexample",
+    "information_history",
+    "gauge_holonomy",
+    "scale_cocycle",
+    "gaussian_fixed_ray",
+)
+
+
+@dataclass(frozen=True)
+class MultiagentNetworkTheoryConfig:
+    experiment: Literal["multiagent_network"]
+    fixture: Literal["two_scale_application_v1"]
+    scenario: Literal[
+        "aligned", "frustrated", "asymmetric_evidence", "higher_order"
+    ]
+    arithmetic: Literal["exact_rational"]
+
+
+@dataclass(frozen=True)
+class TheoryOracleTheoryConfig:
+    experiment: Literal["theory_oracle"]
+    fixture: Literal["two_scale_application_v1"]
+    oracle_set: Literal["core_identities"]
+    arithmetic: Literal["exact_rational"]
+
+
+@dataclass(frozen=True)
+class FiniteCounterexampleTheoryConfig:
+    experiment: Literal["finite_counterexample"]
+    fixture: Literal["counterexample_catalog_v1"]
+    max_states: int
+    max_denominator: int
+    arithmetic: Literal["exact_rational"]
+
+
+@dataclass(frozen=True)
+class InformationHistoryTheoryConfig:
+    experiment: Literal["information_history"]
+    fixture: Literal["two_scale_application_v1"]
+    family: Literal["categorical_softmax"]
+    history_steps: int
+    step_size: float
+
+
+@dataclass(frozen=True)
+class GaugeHolonomyTheoryConfig:
+    experiment: Literal["gauge_holonomy"]
+    fixture: Literal["two_scale_application_v1"]
+    scenario: Literal[
+        "flat_tree",
+        "flat_cycle",
+        "nonflat_plaquette",
+        "frustrated_transport",
+        "staged_aggregation",
+    ]
+    group: Literal["GL+(2)"]
+
+
+@dataclass(frozen=True)
+class ScaleCocycleTheoryConfig:
+    experiment: Literal["scale_cocycle"]
+    fixture: Literal["two_scale_application_v1"]
+    extension: Literal["three_level_composition_v1"]
+    retained_interaction_order: int
+    arithmetic: Literal["exact_rational"]
+
+
+@dataclass(frozen=True)
+class GaussianFixedRayTheoryConfig:
+    experiment: Literal["gaussian_fixed_ray"]
+    fixture: Literal["gaussian_fixed_ray_v1"]
+    preregistration: Literal["2026-08-09-gaussian-fixed-ray-v1"]
+    blocking_schemes: tuple[
+        Literal["adjacent_pairs"], Literal["balanced_alternating"]
+    ]
+    matrix_dimension: int
+
+
 ExperimentTheoryConfig = (
-    TheoryConfig | AttentionTheoryConfig | CategoricalDqmTheoryConfig
+    TheoryConfig
+    | AttentionTheoryConfig
+    | CategoricalDqmTheoryConfig
+    | MultiagentNetworkTheoryConfig
+    | TheoryOracleTheoryConfig
+    | FiniteCounterexampleTheoryConfig
+    | InformationHistoryTheoryConfig
+    | GaugeHolonomyTheoryConfig
+    | ScaleCocycleTheoryConfig
+    | GaussianFixedRayTheoryConfig
 )
 
 
@@ -63,11 +153,45 @@ class OutputConfig:
 
 
 @dataclass(frozen=True)
+class ComputeConfig:
+    backend: Literal["cpu", "cuda"]
+    dtype: Literal["float64", "float32", "bfloat16"]
+    device_index: int
+    batch_size: int
+    deterministic: bool
+    allow_tf32: bool
+    cpu_cuda_parity: bool
+    cuda_worker_python: Path
+    heavy_sweep_enabled: bool
+
+
+def _default_compute_config() -> ComputeConfig:
+    return ComputeConfig(
+        backend="cpu",
+        dtype="float64",
+        device_index=0,
+        batch_size=4096,
+        deterministic=True,
+        allow_tf32=False,
+        cpu_cuda_parity=True,
+        cuda_worker_python=Path(r"C:\anaconda\python.exe"),
+        heavy_sweep_enabled=False,
+    )
+
+
+@dataclass(frozen=True)
 class ExperimentConfig:
     run: RunConfig
     theory: ExperimentTheoryConfig
     numerics: NumericsConfig
     output: OutputConfig
+    compute: ComputeConfig
+    _compute_explicit: bool
+
+    @property
+    def compute_explicit(self) -> bool:
+        """Whether the caller supplied the optional COMPUTE dictionary."""
+        return self._compute_explicit
 
     @classmethod
     def from_dicts(
@@ -76,10 +200,16 @@ class ExperimentConfig:
         theory: Mapping[str, object],
         numerics: Mapping[str, object],
         output: Mapping[str, object],
+        compute: Mapping[str, object] | None = None,
     ) -> "ExperimentConfig":
         """Validate dictionaries before any RNG or filesystem operation."""
         _require_exact_keys(run, "run", {"name", "seed"})
         theory_config = _resolve_theory_config(theory)
+        compute_config = (
+            _default_compute_config()
+            if compute is None
+            else _resolve_compute_config(compute, theory_config)
+        )
         _require_exact_keys(
             numerics,
             "numerics",
@@ -148,6 +278,8 @@ class ExperimentConfig:
                 collect_diagnostics=collect_diagnostics,
                 render_figures=render_figures,
             ),
+            compute=compute_config,
+            _compute_explicit=compute is not None,
         )
 
 
@@ -221,9 +353,262 @@ def _resolve_theory_config(theory: Mapping[str, object]) -> ExperimentTheoryConf
             dqm_step_sizes=dqm_step_sizes,
         )
 
+    if experiment == "multiagent_network":
+        _require_exact_keys(
+            theory,
+            "theory",
+            {"experiment", "fixture", "scenario", "arithmetic"},
+        )
+        fixture = _require_literal(
+            theory["fixture"], "fixture", ("two_scale_application_v1",)
+        )
+        scenario = _require_literal(
+            theory["scenario"],
+            "scenario",
+            ("aligned", "frustrated", "asymmetric_evidence", "higher_order"),
+        )
+        arithmetic = _require_literal(
+            theory["arithmetic"], "arithmetic", ("exact_rational",)
+        )
+        return MultiagentNetworkTheoryConfig(
+            experiment=experiment,
+            fixture=fixture,
+            scenario=scenario,
+            arithmetic=arithmetic,
+        )
+
+    if experiment == "theory_oracle":
+        _require_exact_keys(
+            theory,
+            "theory",
+            {"experiment", "fixture", "oracle_set", "arithmetic"},
+        )
+        return TheoryOracleTheoryConfig(
+            experiment=experiment,
+            fixture=_require_literal(
+                theory["fixture"], "fixture", ("two_scale_application_v1",)
+            ),
+            oracle_set=_require_literal(
+                theory["oracle_set"], "oracle_set", ("core_identities",)
+            ),
+            arithmetic=_require_literal(
+                theory["arithmetic"], "arithmetic", ("exact_rational",)
+            ),
+        )
+
+    if experiment == "finite_counterexample":
+        _require_exact_keys(
+            theory,
+            "theory",
+            {
+                "experiment",
+                "fixture",
+                "max_states",
+                "max_denominator",
+                "arithmetic",
+            },
+        )
+        return FiniteCounterexampleTheoryConfig(
+            experiment=experiment,
+            fixture=_require_literal(
+                theory["fixture"], "fixture", ("counterexample_catalog_v1",)
+            ),
+            max_states=_require_positive_int(theory["max_states"], "max_states"),
+            max_denominator=_require_positive_int(
+                theory["max_denominator"], "max_denominator"
+            ),
+            arithmetic=_require_literal(
+                theory["arithmetic"], "arithmetic", ("exact_rational",)
+            ),
+        )
+
+    if experiment == "information_history":
+        _require_exact_keys(
+            theory,
+            "theory",
+            {"experiment", "fixture", "family", "history_steps", "step_size"},
+        )
+        return InformationHistoryTheoryConfig(
+            experiment=experiment,
+            fixture=_require_literal(
+                theory["fixture"], "fixture", ("two_scale_application_v1",)
+            ),
+            family=_require_literal(
+                theory["family"], "family", ("categorical_softmax",)
+            ),
+            history_steps=_require_positive_int(
+                theory["history_steps"], "history_steps"
+            ),
+            step_size=_require_positive_float(theory["step_size"], "step_size"),
+        )
+
+    if experiment == "gauge_holonomy":
+        _require_exact_keys(
+            theory,
+            "theory",
+            {"experiment", "fixture", "scenario", "group"},
+        )
+        return GaugeHolonomyTheoryConfig(
+            experiment=experiment,
+            fixture=_require_literal(
+                theory["fixture"], "fixture", ("two_scale_application_v1",)
+            ),
+            scenario=_require_literal(
+                theory["scenario"],
+                "scenario",
+                (
+                    "flat_tree",
+                    "flat_cycle",
+                    "nonflat_plaquette",
+                    "frustrated_transport",
+                    "staged_aggregation",
+                ),
+            ),
+            group=_require_literal(theory["group"], "group", ("GL+(2)",)),
+        )
+
+    if experiment == "scale_cocycle":
+        _require_exact_keys(
+            theory,
+            "theory",
+            {
+                "experiment",
+                "fixture",
+                "extension",
+                "retained_interaction_order",
+                "arithmetic",
+            },
+        )
+        return ScaleCocycleTheoryConfig(
+            experiment=experiment,
+            fixture=_require_literal(
+                theory["fixture"], "fixture", ("two_scale_application_v1",)
+            ),
+            extension=_require_literal(
+                theory["extension"], "extension", ("three_level_composition_v1",)
+            ),
+            retained_interaction_order=_require_positive_int(
+                theory["retained_interaction_order"], "retained_interaction_order"
+            ),
+            arithmetic=_require_literal(
+                theory["arithmetic"], "arithmetic", ("exact_rational",)
+            ),
+        )
+
+    if experiment == "gaussian_fixed_ray":
+        _require_exact_keys(
+            theory,
+            "theory",
+            {
+                "experiment",
+                "fixture",
+                "preregistration",
+                "blocking_schemes",
+                "matrix_dimension",
+            },
+        )
+        blocking_schemes = _require_str_tuple(
+            theory["blocking_schemes"], "blocking_schemes"
+        )
+        if blocking_schemes != ("adjacent_pairs", "balanced_alternating"):
+            raise ConfigError(
+                "blocking_schemes must contain exactly adjacent_pairs then "
+                "balanced_alternating"
+            )
+        return GaussianFixedRayTheoryConfig(
+            experiment=experiment,
+            fixture=_require_literal(
+                theory["fixture"], "fixture", ("gaussian_fixed_ray_v1",)
+            ),
+            preregistration=_require_literal(
+                theory["preregistration"],
+                "preregistration",
+                ("2026-08-09-gaussian-fixed-ray-v1",),
+            ),
+            blocking_schemes=(blocking_schemes[0], blocking_schemes[1]),
+            matrix_dimension=_require_positive_int(
+                theory["matrix_dimension"], "matrix_dimension"
+            ),
+        )
+
     raise ConfigError(
         "experiment must be one of: finite_exact, gaussian_realization, "
-        "attention_marked_event, categorical_dqm"
+        "attention_marked_event, categorical_dqm, " + ", ".join(NEW_EXPERIMENT_NAMES)
+    )
+
+
+def _resolve_compute_config(
+    compute: Mapping[str, object], theory: ExperimentTheoryConfig
+) -> ComputeConfig:
+    _require_exact_keys(
+        compute,
+        "compute",
+        {
+            "backend",
+            "dtype",
+            "device_index",
+            "batch_size",
+            "deterministic",
+            "allow_tf32",
+            "cpu_cuda_parity",
+            "cuda_worker_python",
+            "heavy_sweep_enabled",
+        },
+    )
+    backend = _require_literal(compute["backend"], "backend", ("cpu", "cuda"))
+    dtype = _require_literal(
+        compute["dtype"], "dtype", ("float64", "float32", "bfloat16")
+    )
+    device_index = _require_int(compute["device_index"], "device_index")
+    if device_index < 0:
+        raise ConfigError("device_index must be a nonnegative int")
+    batch_size = _require_positive_int(compute["batch_size"], "batch_size")
+    deterministic = _require_bool(compute["deterministic"], "deterministic")
+    allow_tf32 = _require_bool(compute["allow_tf32"], "allow_tf32")
+    cpu_cuda_parity = _require_bool(
+        compute["cpu_cuda_parity"], "cpu_cuda_parity"
+    )
+    cuda_worker_value = _require_str(
+        compute["cuda_worker_python"], "cuda_worker_python"
+    )
+    cuda_worker_python = Path(cuda_worker_value)
+    if not cuda_worker_python.is_absolute():
+        raise ConfigError("cuda_worker_python must be an absolute path")
+    heavy_sweep_enabled = _require_bool(
+        compute["heavy_sweep_enabled"], "heavy_sweep_enabled"
+    )
+
+    exact_rational = getattr(theory, "arithmetic", None) == "exact_rational"
+    if exact_rational and backend != "cpu":
+        raise ConfigError("exact-rational experiments are CPU-only")
+    if dtype in {"float32", "bfloat16"} and backend != "cuda":
+        raise ConfigError("float32 and bfloat16 require CUDA")
+    if dtype in {"float32", "bfloat16"} and not heavy_sweep_enabled:
+        raise ConfigError("reduced precision requires heavy_sweep_enabled")
+    if backend == "cuda" and not isinstance(theory, GaussianFixedRayTheoryConfig):
+        raise ConfigError("CUDA is reserved for gaussian_fixed_ray in this freeze")
+    if backend == "cuda" and not cpu_cuda_parity:
+        raise ConfigError("CUDA requires cpu_cuda_parity")
+    if backend == "cpu" and device_index != 0:
+        raise ConfigError("CPU device_index must be 0")
+    if allow_tf32 and not (
+        backend == "cuda"
+        and dtype == "float32"
+        and heavy_sweep_enabled
+        and not deterministic
+    ):
+        raise ConfigError("allow_tf32 requires CUDA float32 screening")
+
+    return ComputeConfig(
+        backend=backend,
+        dtype=dtype,
+        device_index=device_index,
+        batch_size=batch_size,
+        deterministic=deterministic,
+        allow_tf32=allow_tf32,
+        cpu_cuda_parity=cpu_cuda_parity,
+        cuda_worker_python=cuda_worker_python,
+        heavy_sweep_enabled=heavy_sweep_enabled,
     )
 
 
@@ -231,6 +616,12 @@ def canonical_config_json(config: ExperimentConfig) -> str:
     """Return an unambiguous serialization of a resolved configuration."""
     payload = asdict(config)
     payload["output"]["root"] = str(config.output.root)
+    payload["compute"]["cuda_worker_python"] = str(
+        config.compute.cuda_worker_python
+    )
+    payload.pop("_compute_explicit")
+    if not config.compute_explicit:
+        payload.pop("compute")
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
 
@@ -262,6 +653,34 @@ def _require_int(value: object, field: str) -> int:
     if type(value) is not int:
         raise ConfigError(f"{field} must be an int")
     return value
+
+
+def _require_positive_int(value: object, field: str) -> int:
+    value = _require_int(value, field)
+    if value <= 0:
+        raise ConfigError(f"{field} must be a positive int")
+    return value
+
+
+def _require_literal(
+    value: object, field: str, allowed: tuple[str, ...]
+) -> str:
+    value = _require_str(value, field)
+    if value not in allowed:
+        if len(allowed) == 2:
+            raise ConfigError(f"{field} must be '{allowed[0]}' or '{allowed[1]}'")
+        raise ConfigError(f"{field} must be one of: {', '.join(allowed)}")
+    return value
+
+
+def _require_str_tuple(value: object, field: str) -> tuple[str, ...]:
+    if type(value) not in {list, tuple}:
+        raise ConfigError(f"{field} must be a list or tuple")
+    values = tuple(value)
+    for index, item in enumerate(values):
+        if type(item) is not str:
+            raise ConfigError(f"{field}[{index}] must be a str")
+    return values
 
 
 def _require_positive_float(value: object, field: str) -> float:

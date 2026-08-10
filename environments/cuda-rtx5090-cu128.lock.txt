@@ -1,0 +1,42 @@
+# MultiAgentELBO standalone CUDA worker environment
+# Captured 2026-08-09 with the CUDA interpreter; this is evidence, not a project dependency.
+record_schema=cuda-worker-environment-v1
+record_hash_rule=SHA-256 of the exact UTF-8 file bytes; the digest is stored in run provenance, not self-embedded
+controller_python_requirement=>=3.14
+worker_python_requirement=3.12.x standalone process; never import an installed Python-3.14 project package
+python_executable=C:\anaconda\python.exe
+python_executable_sha256=6965927a96b81d1717c1d2186de7feb9b29ebf8775464020ebc2f25de6ef8ee0
+python_version=3.12.7 | packaged by Anaconda, Inc. | MSC v.1929 64 bit (AMD64)
+os=Windows-10-10.0.19045-SP0
+torch_version=2.10.0.dev20251210+cu128
+torch_cuda_build_runtime=12.8
+cuda_available=true
+driver_version=576.88
+driver_reported_cuda_max=12.9
+device_index=0
+device_name=NVIDIA GeForce RTX 5090
+compute_capability=12.0
+device_count=1
+cudnn_version=91002
+cudnn_available=true
+cublas_preferred_backend=_BlasBackend.Cublas
+cublas64_12_dll_file_version=6.14.11.1284
+cublasLt64_12_dll_file_version=6.14.11.1284
+captured_torch_default_dtype=torch.float32
+captured_deterministic_algorithms=false
+captured_deterministic_warn_only=false
+captured_matmul_allow_tf32=false
+captured_cudnn_allow_tf32=true
+captured_CUBLAS_WORKSPACE_CONFIG=UNSET
+required_CUBLAS_WORKSPACE_CONFIG=:4096:8
+required_torch_use_deterministic_algorithms=true
+required_deterministic_warn_only=false
+required_matmul_allow_tf32=false
+required_cudnn_allow_tf32=false
+required_scientific_confirmation_dtype=float64
+required_rng_source=explicit Torch generator substream derived from immutable job ID
+worker_dependencies_canonical={"numpy":"2.0.0","torch":"2.10.0.dev20251210+cu128"}
+worker_dependencies_sha256=5c0131dfdcbd1b2d042d51cedf323a710954f8eca878351803b1f2a4d3b2ca88
+worker_dependency_scope=numpy and torch only; JSON, hashing, and process control use the Python standard library
+cublas_version_query=DLL file version recorded because the Torch public API exposes the selected backend but no numeric cuBLAS runtime version
+preflight_command=C:\anaconda\python.exe -c "import torch; print(torch.__version__, torch.cuda.is_available(), torch.cuda.get_device_name(0))"

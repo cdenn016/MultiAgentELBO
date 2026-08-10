@@ -1,0 +1,245 @@
+{
+  "schema_version": "two-scale-application-v1",
+  "application_id": "30a4bd77e738fbb73b3326ec009995ec7b2bc94f20c96e9e286644bdeec620cd",
+  "hash_rule": {
+    "algorithm": "sha256",
+    "canonicalization": "UTF-8 JSON with sort_keys=true, separators=(',', ':'), ensure_ascii=true, omitting only the top-level application_id field"
+  },
+  "epistemic_boundary": {
+    "scope": "finite conditional application witness",
+    "excludes": [
+      "universality",
+      "continuum limit",
+      "fixed-point theorem",
+      "graph-link to base-connection identification"
+    ]
+  },
+  "agents": [
+    {"agent_id": "0", "state_labels": ["0", "1"]},
+    {"agent_id": "1", "state_labels": ["0", "1"]},
+    {"agent_id": "2", "state_labels": ["0", "1"]},
+    {"agent_id": "3", "state_labels": ["0", "1"]}
+  ],
+  "organization": {
+    "blocks": [
+      {"block_id": "B01", "agents": ["0", "1"]},
+      {"block_id": "B23", "agents": ["2", "3"]}
+    ]
+  },
+  "state_spaces": {
+    "fine": {
+      "axis_order": ["agent_0", "agent_1", "agent_2", "agent_3"],
+      "labels": [
+        "0000", "0001", "0010", "0011",
+        "0100", "0101", "0110", "0111",
+        "1000", "1001", "1010", "1011",
+        "1100", "1101", "1110", "1111"
+      ]
+    },
+    "coarse": {
+      "axis_order": ["block_B01", "block_B23"],
+      "labels": ["00", "01", "10", "11"]
+    }
+  },
+  "interaction_complex": {
+    "vertices": ["0", "1", "2", "3"],
+    "oriented_edges": [
+      {"edge_id": "e01", "source": "0", "target": "1"},
+      {"edge_id": "e12", "source": "1", "target": "2"},
+      {"edge_id": "e23", "source": "2", "target": "3"},
+      {"edge_id": "e30", "source": "3", "target": "0"}
+    ],
+    "two_cells": [
+      {"cell_id": "p0123", "boundary": ["e01", "e12", "e23", "e30"]}
+    ],
+    "hyperedges": [
+      {
+        "hyperedge_id": "h012",
+        "members": ["0", "1", "2"],
+        "role": "higher_order_negative_control"
+      }
+    ]
+  },
+  "channel": {
+    "arrows": [
+      {
+        "arrow_id": "fine_to_coarse",
+        "source": "fine",
+        "target": "coarse",
+        "kind": "normalized_markov_kernel",
+        "recognition_independent": true,
+        "source_labels": [
+          "0000", "0001", "0010", "0011",
+          "0100", "0101", "0110", "0111",
+          "1000", "1001", "1010", "1011",
+          "1100", "1101", "1110", "1111"
+        ],
+        "target_labels": ["00", "01", "10", "11"],
+        "rows": [
+          ["9/16", "3/16", "3/16", "1/16"],
+          ["3/16", "9/16", "1/16", "3/16"],
+          ["3/16", "9/16", "1/16", "3/16"],
+          ["9/16", "3/16", "3/16", "1/16"],
+          ["3/16", "1/16", "9/16", "3/16"],
+          ["1/16", "3/16", "3/16", "9/16"],
+          ["1/16", "3/16", "3/16", "9/16"],
+          ["3/16", "1/16", "9/16", "3/16"],
+          ["3/16", "1/16", "9/16", "3/16"],
+          ["1/16", "3/16", "3/16", "9/16"],
+          ["1/16", "3/16", "3/16", "9/16"],
+          ["3/16", "1/16", "9/16", "3/16"],
+          ["9/16", "3/16", "3/16", "1/16"],
+          ["3/16", "9/16", "1/16", "3/16"],
+          ["3/16", "9/16", "1/16", "3/16"],
+          ["9/16", "3/16", "3/16", "1/16"]
+        ]
+      }
+    ]
+  },
+  "reference_laws": {
+    "fine": {
+      "reference_type": "product_reference",
+      "factor_axis_order": ["agent_0", "agent_1", "agent_2", "agent_3"],
+      "factor_values": [
+        ["1/2", "1/2"],
+        ["1/2", "1/2"],
+        ["1/2", "1/2"],
+        ["1/2", "1/2"]
+      ],
+      "values": [
+        "1/16", "1/16", "1/16", "1/16",
+        "1/16", "1/16", "1/16", "1/16",
+        "1/16", "1/16", "1/16", "1/16",
+        "1/16", "1/16", "1/16", "1/16"
+      ]
+    },
+    "coarse": {
+      "reference_type": "block_product_reference",
+      "factor_axis_order": ["block_B01", "block_B23"],
+      "factor_values": [["1/2", "1/2"], ["1/2", "1/2"]],
+      "values": ["1/4", "1/4", "1/4", "1/4"],
+      "hoeffding_equivalence_witness": "strict_positive_common_support"
+    }
+  },
+  "generative_structure": {
+    "correlated_baseline": [
+      "3/32", "1/32", "1/32", "3/32",
+      "1/32", "3/32", "3/32", "1/32",
+      "1/32", "3/32", "3/32", "1/32",
+      "3/32", "1/32", "1/32", "3/32"
+    ],
+    "correlation_witness": "even_parity_states_have_triple_odd_parity_mass",
+    "observation_labels": ["0", "1"],
+    "observed_record": "1",
+    "observation_record_kernel": [
+      ["3/4", "1/4"], ["3/4", "1/4"],
+      ["3/4", "1/4"], ["3/4", "1/4"],
+      ["3/4", "1/4"], ["3/4", "1/4"],
+      ["3/4", "1/4"], ["3/4", "1/4"],
+      ["1/4", "3/4"], ["1/4", "3/4"],
+      ["1/4", "3/4"], ["1/4", "3/4"],
+      ["1/4", "3/4"], ["1/4", "3/4"],
+      ["1/4", "3/4"], ["1/4", "3/4"]
+    ],
+    "evidence_submeasure": [
+      "3/128", "1/128", "1/128", "3/128",
+      "1/128", "3/128", "3/128", "1/128",
+      "3/128", "9/128", "9/128", "3/128",
+      "9/128", "3/128", "3/128", "9/128"
+    ],
+    "evidence_mass": "1/2",
+    "posterior": [
+      "3/64", "1/64", "1/64", "3/64",
+      "1/64", "3/64", "3/64", "1/64",
+      "3/64", "9/64", "9/64", "3/64",
+      "9/64", "3/64", "3/64", "9/64"
+    ]
+  },
+  "recognition": {
+    "family": "strictly_positive_product_bernoulli",
+    "parameter_domain": "open_unit_cube",
+    "fine_law": [
+      "1/16", "1/16", "1/16", "1/16",
+      "1/16", "1/16", "1/16", "1/16",
+      "1/16", "1/16", "1/16", "1/16",
+      "1/16", "1/16", "1/16", "1/16"
+    ],
+    "coarse_law": ["1/4", "1/4", "1/4", "1/4"],
+    "extraction": {
+      "domain": "strictly_positive_product_bernoulli_laws",
+      "codomain": "open_unit_cube",
+      "coordinates": ["p0", "p1", "p2", "p3"]
+    },
+    "lift": {
+      "domain": "open_unit_cube",
+      "codomain": "strictly_positive_product_bernoulli_laws",
+      "construction": "ordered_product_of_four_binary_factors"
+    },
+    "right_inverse": {
+      "typed_equation": "extraction_after_lift_equals_identity_on_open_unit_cube",
+      "check_state": "NOT_CHECKED"
+    }
+  },
+  "configuration": {
+    "fine_coordinates": ["p0", "p1", "p2", "p3"],
+    "coarse_coordinates": ["pB01", "pB23"],
+    "coarse_map": "block_average",
+    "coarse_map_matrix": [
+      ["1/2", "1/2", "0", "0"],
+      ["0", "0", "1/2", "1/2"]
+    ],
+    "comparison_isomorphisms": {
+      "fine_type": "native_to_reference_linear_isomorphism",
+      "fine": [
+        ["1", "0", "0", "0"],
+        ["0", "1", "0", "0"],
+        ["0", "0", "1", "0"],
+        ["0", "0", "0", "1"]
+      ],
+      "coarse_type": "native_to_reference_linear_isomorphism",
+      "coarse": [["1", "0"], ["0", "1"]]
+    }
+  },
+  "local_blocks": [
+    {
+      "block_id": "local_B01",
+      "updated_axes": ["agent_0", "agent_1"],
+      "outside_axes": ["agent_2", "agent_3"]
+    },
+    {
+      "block_id": "local_B23",
+      "updated_axes": ["agent_2", "agent_3"],
+      "outside_axes": ["agent_0", "agent_1"]
+    }
+  ],
+  "claims": {
+    "assumptions": [
+      {
+        "claim_id": "APP-HYP-CHANNEL",
+        "statement": "The displayed arrow is the declared application channel.",
+        "theorem_status": "HYPOTHESIS",
+        "verification_state": "CANDIDATE",
+        "claim_origin": "APPLICATION_SPECIFIC"
+      }
+    ],
+    "witness_data": [
+      {
+        "claim_id": "APP-WIT-LITERALS",
+        "statement": "This file supplies literal witness data but no scientific-lane conclusion.",
+        "theorem_status": "HYPOTHESIS",
+        "verification_state": "CANDIDATE",
+        "claim_origin": "APPLICATION_SPECIFIC"
+      }
+    ],
+    "checked_conclusions": [
+      {
+        "claim_id": "APP-CHECK-PREMISES",
+        "statement": "The later application-premise and right-inverse checks are not yet claimed.",
+        "check_state": "NOT_CHECKED",
+        "theorem_status": "HYPOTHESIS",
+        "verification_state": "CANDIDATE",
+        "claim_origin": "APPLICATION_SPECIFIC"
+      }
+    ]
+  }
+}

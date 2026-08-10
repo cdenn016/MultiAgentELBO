@@ -9,6 +9,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
+import multiagent_elbo.experiment_support as experiment_support
 from multiagent_elbo.experiment_support import (
     lower_bounded_metric,
     readonly_array,
@@ -35,10 +36,13 @@ def test_target_and_lower_bound_metrics_keep_established_json_schema():
 
     assert asdict(exact).keys() == {
         "value", "tolerance", "status", "interpretation",
-        "assessment_scope", "theorem_status",
+        "assessment_scope", "theorem_status", "verification_state",
+        "claim_origin",
     }
     assert exact.status == "pass"
     assert control.status == "pass"
+    assert exact.verification_state == "CANDIDATE"
+    assert exact.claim_origin == "PROJECT_NOVEL"
 
 
 def test_readonly_array_makes_a_c_contiguous_float64_copy():
@@ -199,3 +203,215 @@ def test_validated_renderer_status_rejects_a_publication_symlink_escape(
 
     with pytest.raises(ValueError, match="unbacked"):
         validated_renderer_status(manifest, run_dir, output_dir, requested)
+
+
+def test_canonical_metric_fields_are_explicit_and_orthogonal():
+    passing_open = target_metric(
+        0.0,
+        1.0e-12,
+        target=0.0,
+        interpretation="finite diagnostic only",
+        theorem_status="OPEN",
+        verification_state="INCONCLUSIVE",
+        claim_origin="PROJECT_NOVEL",
+    )
+    failing_established = target_metric(
+        1.0,
+        1.0e-12,
+        target=0.0,
+        interpretation="implementation mutation",
+        theorem_status="ESTABLISHED",
+        verification_state="EVIDENCE_VERIFIED",
+        claim_origin="STANDARD",
+    )
+
+    assert passing_open.status == "pass"
+    assert passing_open.theorem_status == "OPEN"
+    assert passing_open.verification_state == "INCONCLUSIVE"
+    assert failing_established.status == "fail"
+    assert failing_established.theorem_status == "ESTABLISHED"
+    assert failing_established.verification_state == "EVIDENCE_VERIFIED"
+
+
+def test_canonical_metric_metadata_cannot_be_omitted_or_misspelled():
+    with pytest.raises(ValueError, match="canonical metrics require explicit"):
+        target_metric(
+            0.0,
+            1.0e-12,
+            target=0.0,
+            interpretation="missing metadata",
+            theorem_status="NUMERICAL",
+        )
+
+    with pytest.raises(ValueError, match="invalid verification_state"):
+        target_metric(
+            0.0,
+            1.0e-12,
+            target=0.0,
+            interpretation="bad metadata",
+            theorem_status="NUMERICAL",
+            verification_state="verified",  # type: ignore[arg-type]
+            claim_origin="APPLICATION_SPECIFIC",
+        )
+
+
+def test_experiment_registry_is_complete_typed_and_immutable():
+    registry = experiment_support.EXPERIMENT_REGISTRY
+
+    assert tuple(registry) == (
+        "multiagent_network",
+        "theory_oracle",
+        "finite_counterexample",
+        "information_history",
+        "gauge_holonomy",
+        "scale_cocycle",
+        "gaussian_fixed_ray",
+    )
+    for name, contract in registry.items():
+        assert contract.experiment == name
+        assert contract.launcher.startswith("run_")
+        assert contract.launcher.endswith("_lab.py")
+        assert contract.config_keys[0] == "experiment"
+        assert contract.artifact_inventory
+        assert contract.metric_inventory
+        assert contract.lane_owner.startswith("session_")
+    with pytest.raises(TypeError):
+        registry["other"] = registry["multiagent_network"]  # type: ignore[index]
+    with pytest.raises(AttributeError):
+        registry["multiagent_network"].launcher = "changed.py"  # type: ignore[misc]
+
+
+def _valid_worker_manifest(message_type: str) -> dict[str, object]:
+    response = message_type == "response"
+    manifest: dict[str, object] = {
+        "schema_version": "cuda-worker-protocol-v1",
+        "message_type": message_type,
+        "job_id": "job-0001",
+        "requested_backend": "cuda",
+        "requested_dtype": "float64",
+        "effective_backend": "cuda" if response else None,
+        "effective_dtype": "float64" if response else None,
+        "environment_sha256": "1" * 64,
+        "npz_sha256": "2" * 64,
+        "arrays": [
+            {
+                "name": "couplings",
+                "shape": [2, 3],
+                "dtype": "float64",
+                "sha256": "3" * 64,
+            }
+        ],
+        "output_identity": None,
+    }
+    if response:
+        manifest["output_identity"] = experiment_support.worker_output_identity(
+            manifest
+        )
+    return manifest
+
+
+def test_worker_protocol_validates_request_and_self_hashed_response():
+    request = _valid_worker_manifest("request")
+    response = _valid_worker_manifest("response")
+
+    validated_request = experiment_support.validate_worker_protocol_manifest(
+        request, expected_message_type="request"
+    )
+    validated_response = experiment_support.validate_worker_protocol_manifest(
+        response, expected_message_type="response"
+    )
+
+    assert validated_request.message_type == "request"
+    assert validated_request.arrays[0].shape == (2, 3)
+    assert validated_response.output_identity == response["output_identity"]
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ({"schema_version": "v2"}, "schema_version"),
+        ({"job_id": "../escape"}, "job_id"),
+        ({"requested_dtype": "float16"}, "requested_dtype"),
+        ({"effective_backend": "cpu"}, "effective backend"),
+        ({"environment_sha256": "bad"}, "environment_sha256"),
+        ({"npz_sha256": "bad"}, "npz_sha256"),
+        ({"arrays": []}, "arrays must not be empty"),
+        ({"output_identity": "0" * 64}, "output_identity"),
+    ],
+)
+def test_worker_protocol_rejects_malformed_or_mismatched_response(
+    mutation: dict[str, object], message: str
+):
+    manifest = _valid_worker_manifest("response")
+    manifest.update(mutation)
+
+    with pytest.raises(ValueError, match=message):
+        experiment_support.validate_worker_protocol_manifest(
+            manifest, expected_message_type="response"
+        )
+
+
+def test_worker_protocol_rejects_bad_shape_dtype_and_array_hash():
+    for key, value, message in (
+        ("shape", [2, -1], "shape"),
+        ("dtype", "float16", "dtype"),
+        ("sha256", "bad", "sha256"),
+    ):
+        manifest = _valid_worker_manifest("response")
+        manifest["arrays"][0][key] = value  # type: ignore[index]
+        manifest["output_identity"] = experiment_support.worker_output_identity(
+            manifest
+        )
+        with pytest.raises(ValueError, match=message):
+            experiment_support.validate_worker_protocol_manifest(
+                manifest, expected_message_type="response"
+            )
+
+
+def test_two_scale_literal_fixture_has_valid_digest_and_typed_sections():
+    fixture_path = Path(__file__).parent / "fixtures" / "two_scale_application_v1.json"
+    payload = json.loads(fixture_path.read_text(encoding="utf-8"))
+
+    application_id = experiment_support.validate_two_scale_application_fixture(
+        payload
+    )
+
+    assert application_id == payload["application_id"]
+    assert payload["state_spaces"]["fine"]["labels"] == [
+        f"{value:04b}" for value in range(16)
+    ]
+    assert payload["state_spaces"]["coarse"]["labels"] == [
+        "00", "01", "10", "11"
+    ]
+    assert payload["organization"]["blocks"] == [
+        {"block_id": "B01", "agents": ["0", "1"]},
+        {"block_id": "B23", "agents": ["2", "3"]},
+    ]
+    assert len(payload["channel"]["arrows"]) == 1
+    assert "three_level" not in json.dumps(payload)
+
+
+def test_fixture_validation_rejects_digest_numeric_literal_and_bad_channel():
+    fixture_path = Path(__file__).parent / "fixtures" / "two_scale_application_v1.json"
+    payload = json.loads(fixture_path.read_text(encoding="utf-8"))
+
+    bad_digest = json.loads(json.dumps(payload))
+    bad_digest["application_id"] = "0" * 64
+    with pytest.raises(ValueError, match="application_id"):
+        experiment_support.validate_two_scale_application_fixture(bad_digest)
+
+    numeric_literal = json.loads(json.dumps(payload))
+    numeric_literal["reference_laws"]["fine"]["values"][0] = 0.0625
+    numeric_literal["application_id"] = experiment_support.fixture_application_id(
+        numeric_literal
+    )
+    with pytest.raises(ValueError, match="rational string"):
+        experiment_support.validate_two_scale_application_fixture(numeric_literal)
+
+    bad_channel = json.loads(json.dumps(payload))
+    bad_channel["channel"]["arrows"][0]["rows"][0][0] = "1/2"
+    bad_channel["application_id"] = experiment_support.fixture_application_id(
+        bad_channel
+    )
+    with pytest.raises(ValueError, match="normalized"):
+        experiment_support.validate_two_scale_application_fixture(bad_channel)
