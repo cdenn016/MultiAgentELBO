@@ -50,12 +50,12 @@ def gauge_fixture():
         ((1.0, 0.0), (1.0, 0.0), (0.0, 1.0), (0.0, 1.0)),
         NUMERICS,
     )
-    first_flip = FinitePermutation(
+    first_flip = FinitePermutation.from_matrix(
         ((0, 0, 1, 0), (0, 0, 0, 1), (1, 0, 0, 0), (0, 1, 0, 0))
     )
-    target_swap = FinitePermutation(((0, 1), (1, 0)))
-    bit_flip = FinitePermutation(((0, 1), (1, 0)))
-    identity = FinitePermutation(((1, 0), (0, 1)))
+    target_swap = FinitePermutation.from_matrix(((0, 1), (1, 0)))
+    bit_flip = FinitePermutation.from_matrix(((0, 1), (1, 0)))
+    identity = FinitePermutation.from_matrix(((1, 0), (0, 1)))
     values = np.array([[-1.0, 1.0], [2.0, -2.0]])
     references = (np.array([0.7, 0.3]), np.array([0.4, 0.6]))
     return (
@@ -126,7 +126,7 @@ def test_relabeling_only_recognition_is_a_detectable_mismatch_control():
 
 
 def test_permutation_is_exactly_typed_and_read_only():
-    permutation = FinitePermutation(((0, 1), (1, 0)))
+    permutation = FinitePermutation.from_matrix(((0, 1), (1, 0)))
 
     assert permutation.size == 2
     assert permutation.old_to_new == (1, 0)
@@ -146,7 +146,7 @@ def test_permutation_is_exactly_typed_and_read_only():
 )
 def test_finite_permutation_rejects_nonpermutations(matrix, message):
     with pytest.raises(ValueError, match=message):
-        FinitePermutation(matrix)
+        FinitePermutation.from_matrix(matrix)
 
 
 def test_apply_site_relabeling_rejects_untyped_or_mismatched_permutations():
@@ -171,7 +171,7 @@ def test_apply_site_relabeling_rejects_untyped_or_mismatched_permutations():
             channel=channel,
             values=values,
             axis_references=references,
-            source_permutation=FinitePermutation(((1, 0), (0, 1))),
+            source_permutation=FinitePermutation.from_matrix(((1, 0), (0, 1))),
             target_permutation=target,
             axis_permutations=axes,
             retained_interaction_order=1,

@@ -19,6 +19,7 @@ from multiagent_elbo.finite.measures import (
     MeasurePair,
     ProbabilityMeasure,
 )
+from multiagent_elbo.finite.permutations import FinitePermutation
 from multiagent_elbo.finite.vfe import kl_divergence, vfe_channel_decomposition
 
 
@@ -29,43 +30,6 @@ def _readonly(values: object) -> np.ndarray:
     result = np.array(values, dtype=np.float64, copy=True, order="C")
     result.setflags(write=False)
     return result
-
-
-@dataclass(frozen=True, init=False)
-class FinitePermutation:
-    """An exactly validated finite permutation and its old-to-new index map."""
-
-    matrix: np.ndarray
-    old_to_new: tuple[int, ...]
-
-    def __init__(self, matrix: Sequence[Sequence[float]]) -> None:
-        values = np.array(matrix, dtype=np.float64, copy=True, order="C")
-        if values.ndim != 2 or values.shape[0] != values.shape[1]:
-            raise ValueError("permutation matrix must be square")
-        if values.shape[0] == 0:
-            raise ValueError("permutation matrix must be nonempty")
-        if not np.all(np.isfinite(values)):
-            raise ValueError("permutation matrix must be finite")
-        if not np.all((values == 0.0) | (values == 1.0)):
-            raise ValueError("permutation matrix must be exactly zero-one")
-        if not (
-            np.all(values.sum(axis=0) == 1.0)
-            and np.all(values.sum(axis=1) == 1.0)
-        ):
-            raise ValueError("each permutation row and column must contain one unit entry")
-        values.setflags(write=False)
-        object.__setattr__(self, "matrix", values)
-        object.__setattr__(
-            self, "old_to_new", tuple(int(index) for index in np.argmax(values, axis=1))
-        )
-
-    @property
-    def size(self) -> int:
-        return self.matrix.shape[0]
-
-    @property
-    def new_to_old(self) -> tuple[int, ...]:
-        return tuple(int(index) for index in np.argmax(self.matrix, axis=0))
 
 
 @dataclass(frozen=True)
@@ -102,16 +66,12 @@ def _require_permutation(value: object, name: str) -> FinitePermutation:
     return value
 
 
-def _pull_axis(values: np.ndarray, permutation: FinitePermutation, axis: int) -> np.ndarray:
-    return np.take(values, permutation.new_to_old, axis=axis)
-
-
 def _pull_product_array(
     values: np.ndarray, permutations: tuple[FinitePermutation, ...]
 ) -> np.ndarray:
     result = np.array(values, dtype=np.float64, copy=True, order="C")
     for axis, permutation in enumerate(permutations):
-        result = _pull_axis(result, permutation, axis)
+        result = permutation.pullback_axis(result, axis)
     return result
 
 

@@ -28,6 +28,7 @@ from .information_history_experiment import (
     run_information_history_experiment,
 )
 from .measures import FiniteMeasure, MarkovKernel, MeasurePair, ProbabilityMeasure
+from .permutations import FinitePermutation
 from .scale_cocycle_experiment import (
     ScaleCocycleExperimentResult,
     run_scale_cocycle_experiment,
@@ -56,6 +57,7 @@ __all__ = [
     "DqmRemainderLadder",
     "FiniteCounterexampleExperimentResult",
     "FiniteMeasure",
+    "FinitePermutation",
     "MarkovKernel",
     "MeasurePair",
     "InformationHistoryExperimentResult",

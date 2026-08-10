@@ -8,10 +8,10 @@ from .attention_gauge import (
 )
 from .finite_gauge import (
     FiniteGaugeResiduals,
-    FinitePermutation,
     FiniteRelabelingResult,
     apply_site_relabeling,
 )
+from multiagent_elbo.finite.permutations import FinitePermutation
 from .holonomy_experiment import HolonomyExperimentResult, run_holonomy_experiment
 
 __all__ = [
