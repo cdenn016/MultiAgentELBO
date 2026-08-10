@@ -65,7 +65,7 @@ C:\Python314\python.exe .verification\gauge-holonomy\run_reproduction_evidence.p
 
 The ignored harness runs the launcher with no arguments in a fresh isolated working directory, then loads that run's saved `config.json`, redirects only `output.root`, and invokes the experiment for a second-root replay. Its durable latest record is `.verification/gauge-holonomy/reproduction-evidence.json` (SHA-256 `069206202c1bfbd5894138238edcaec78619e52c00a6029c040ee6404b117e2c`).
 
-The record preserves the exact launcher command and working directory, `time.perf_counter` around `subprocess.Popen`/`communicate` as its wall-clock method, and Windows `GetProcessMemoryInfo(PROCESS_MEMORY_COUNTERS_EX)` as its primary-process working-set metric. In the fresh recorded execution, wall-clock duration was `0.3770372999988467 s`; the maximum of `19` samples taken every `0.020 s` was `42,102,784` bytes (`40.15234375 MiB`). This is a sampled process-memory observation, not a hardware-capacity assertion. The focused test invocation completed in `3.406 s` wall-clock time.
+The record preserves the exact launcher command and working directory, `time.perf_counter` around `subprocess.Popen`/`communicate` as its wall-clock method, and Windows `GetProcessMemoryInfo(PROCESS_MEMORY_COUNTERS_EX)` as its primary-process working-set metric. In the fresh recorded execution, wall-clock duration was `0.3770372999988467 s`; the maximum of `19` samples taken every `0.020 s` was `42,102,784` bytes (`40.15234375 MiB`). This is a sampled process-memory observation, not a hardware-capacity assertion.
 
 ## Parsed mechanical evidence
 
