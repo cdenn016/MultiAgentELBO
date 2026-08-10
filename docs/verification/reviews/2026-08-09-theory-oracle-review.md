@@ -3,8 +3,10 @@
 **Review basis.** This is an independent mathematical review of the Session 2
 core theorem-boundary repair at commit
 `3b4192cdea63b9e1669416d7524e5e097dc781ce` and the current reviewed
-implementation, including the final inverse-congruence provenance repair, at
-commit `36d1d09131b06c7ef52ba90e0e96f45fa007ee91`. The
+implementation at commit `2cc8a52ec97a5b409f67e142ebf2bbf6abe41d13`,
+which includes the final inverse-congruence provenance repair
+`36d1d09131b06c7ef52ba90e0e96f45fa007ee91` and the strengthened canonical
+literal and scoped-congruence contracts. The
 reviewed implementation is `src/multiagent_elbo/finite/theory_oracles.py` and
 `src/multiagent_elbo/finite/theory_oracle_experiment.py`; the principal literal
 checks are in `tests/test_theory_oracles.py` and
@@ -332,16 +334,20 @@ output dimensions does not identify them.
 
 ### 5.1 Inverse congruence and the transformed prolongator
 
-Let $A\in\mathbb Q^{n\times n}$, let $G_f\in\mathrm{GL}_n(\mathbb Q)$,
-and let $S\in\mathbb Q^{n\times m}$. If old and new fine coordinates obey
+Let the square rational fine precision be
+$A_f\in\mathbb Q^{n\times n}$, let the invertible rational fine frame be
+$G_f\in\mathrm{GL}_n(\mathbb Q)$, and let the declared prolongator be
+$S\in\mathbb Q^{n\times m}$. These dimensions must be compatible. If old and
+new fine coordinates obey
 $x_{\rm old}=G_f^{-1}x_{\rm new}$, the quadratic matrix in the new frame is
 
 \[
-A'=G_f^{-T}AG_f^{-1}.
+A_f'=G_f^{-T}A_fG_f^{-1}.
 \]
 
-With an independent coarse frame $G_c\in\mathrm{GL}_m(\mathbb Q)$, the
-same prolongation map is represented by
+With an invertible rational coarse frame
+$G_c\in\mathrm{GL}_m(\mathbb Q)$ compatible with the coarse dimension of
+$S$, the same prolongation map is represented by
 
 \[
 S'=G_fSG_c^{-1}.
@@ -350,27 +356,33 @@ S'=G_fSG_c^{-1}.
 Consequently
 
 \[
-S'^TA'S'
-=G_c^{-T}S^TAG_c^{-1}.
+S'^TA_f'S'
+=G_c^{-T}(S^TA_fS)G_c^{-1}.
 \]
 
-This proves the commuting congruence square. Holding the numerical matrix
-$S$ fixed is valid only under the intertwining condition
+Substitution of $S'=G_fSG_c^{-1}$ and
+$A_f'=G_f^{-T}A_fG_f^{-1}$ proves the transformed coarse-square identity by
+exact cancellation of $G_f^TG_f^{-T}$ and $G_f^{-1}G_f$. The scoped exact
+conclusions are precisely the fine inverse congruence and this transformed
+coarse square for the declared prolongator and compatible invertible frames.
+They do not establish an application-specific prolongator, Gaussian
+normalizability, or any approximation property. Holding the numerical matrix
+$S$ fixed is a further specialization valid only under the intertwining condition
 $G_fS=SG_c$, which the implementation checks when requested.
 
-For the exact packet, $A=\operatorname{diag}(2,3,4,5)$, the declared
+For the exact packet, $A_f=\operatorname{diag}(2,3,4,5)$, the declared
 prolongator ties coordinates $(0,2)$ and $(1,3)$,
 $G_f=\operatorname{diag}(2,1,1,3)$, and
 $G_c=\operatorname{diag}(5,2)$. The calculations give
 
 \[
-S^TAS=\operatorname{diag}(6,8),\qquad
-S'^TA'S'=\operatorname{diag}(6/25,2)
-=G_c^{-T}(S^TAS)G_c^{-1}.
+S^TA_fS=\operatorname{diag}(6,8),\qquad
+S'^TA_f'S'=\operatorname{diag}(6/25,2)
+=G_c^{-T}(S^TA_fS)G_c^{-1}.
 \]
 
 Invertibility of both frames is necessary for these inverse congruences. If
-$A$ is symmetric positive definite, inverse congruence preserves that
+$A_f$ is symmetric positive definite, inverse congruence preserves that
 property; the rational routine itself correctly implements the more general
 algebraic operation and does not pretend to prove SPD from unchecked input.
 
@@ -490,7 +502,10 @@ whereas changing the second coarse comparison factor to $4$ makes the two
 paths unequal. The loader also checks the canonical fixture digest, the
 source-row channel shape and normalization, rational literal canonicality,
 probability normalization, evidence/posterior consistency, and invertibility
-of the two declared comparison maps.
+of the two declared comparison maps. The strict rational parser requires the
+input string to equal Python's canonical `str(Fraction(...))` rendering after
+parsing. It therefore rejects not only nonreduced values such as `2/4`, but
+also aliases such as `-0`, `0/1`, `1/1`, and `2/1`.
 
 Those checks do **not** establish the full application theorem. In particular,
 the fixture's typed equation "extraction after lift equals the identity on the
@@ -560,12 +575,13 @@ proof.
 
 | Subject | Frozen mathematical source | Exact implementation | Literal and negative controls |
 |---|---|---|---|
-| Evidence/ELBO (`evidence_elbo`) | `Theory/05_elbo.tex:180-190,212-274` | `theory_oracles.py:527` | `test_theory_oracles.py:59,97` |
-| Fisher algebra (`fixed_channel_fisher_defect_algebraic`) and statistical interpretation (`fixed_channel_fisher_statistical_interpretation`) | `Theory/05c_pullback_geometry.tex:1078-1152` | `theory_oracles.py:599` | `test_theory_oracles.py:119,148,763` |
-| Marked events (`marked_event_associativity`) | `Theory/07b_agent_network_rg.tex:1748+` | `theory_oracles.py:874` | `test_theory_oracles.py:221,263,289,396` |
-| Hoeffding/Mobius (`full_hoeffding_mobius`) | `Theory/07b_agent_network_rg.tex:1182-1250,1468-1507` | `theory_oracles.py:1027` | `test_theory_oracles.py:418,444` |
-| Inverse congruence (`gaussian_inverse_congruence`) | `Theory/08_infogeometry.tex:424-431` | `theory_oracles.py:1153` | `test_theory_oracles.py:526,588` |
-| Galerkin restriction (`gaussian_galerkin_restriction`) | `Theory/09_coarsegraining.tex:50-88` | `theory_oracles.py:1190` | `test_theory_oracles.py:526,620` |
-| Schur algebra and marginal interpretation (`gaussian_schur_complement_algebraic`, `gaussian_schur_gaussian_marginal_interpretation`) | `Theory/09_coarsegraining.tex:90-166` | `theory_oracles.py:1224` | `test_theory_oracles.py:620,763` |
-| Two-scale square (`two_scale_literal_commuting_square`) | `Theory/SPEC.md:207+` and `tests/fixtures/two_scale_application_v1.json` | `theory_oracles.py:1091,1450` | `test_theory_oracles.py:656,680` |
-| Origin and record-boundary checks | theorem-assumption records above | `theory_oracles.py:357-477` | `test_theory_oracles.py:763,793` |
+| Canonical rational parser | exact-oracle serialization contract | `theory_oracles.py:24` | `test_theory_oracles.py:12,26,37` |
+| Evidence/ELBO (`evidence_elbo`) | `Theory/05_elbo.tex:180-190,212-274` | `theory_oracles.py:538` | `test_theory_oracles.py:72,110` |
+| Fisher algebra (`fixed_channel_fisher_defect_algebraic`) and statistical interpretation (`fixed_channel_fisher_statistical_interpretation`) | `Theory/05c_pullback_geometry.tex:1078-1152` | `theory_oracles.py:610` | `test_theory_oracles.py:132,161,776` |
+| Marked events (`marked_event_associativity`) | `Theory/07b_agent_network_rg.tex:1748+` | `theory_oracles.py:885` | `test_theory_oracles.py:234,276,302,409` |
+| Hoeffding/Mobius (`full_hoeffding_mobius`) | `Theory/07b_agent_network_rg.tex:1182-1250,1468-1507` | `theory_oracles.py:1038` | `test_theory_oracles.py:431,457` |
+| Inverse congruence (`gaussian_inverse_congruence`) | `Theory/08_infogeometry.tex:424-431` | `theory_oracles.py:1164` | `test_theory_oracles.py:539,601,806` |
+| Galerkin restriction (`gaussian_galerkin_restriction`) | `Theory/09_coarsegraining.tex:50-88` | `theory_oracles.py:1201` | `test_theory_oracles.py:539,633` |
+| Schur algebra and marginal interpretation (`gaussian_schur_complement_algebraic`, `gaussian_schur_gaussian_marginal_interpretation`) | `Theory/09_coarsegraining.tex:90-166` | `theory_oracles.py:1235` | `test_theory_oracles.py:633,776` |
+| Two-scale square (`two_scale_literal_commuting_square`) | `Theory/SPEC.md:207+` and `tests/fixtures/two_scale_application_v1.json` | `theory_oracles.py:1102,1461` | `test_theory_oracles.py:669,693` |
+| Origin and record-boundary checks | theorem-assumption records above | `theory_oracles.py:361-490` | `test_theory_oracles.py:776,806,827` |
