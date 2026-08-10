@@ -174,15 +174,15 @@ def test_three_cycle_matches_geometry_pullback_for_law_channel_and_action():
 
 def test_projection_residual_is_the_canonical_omitted_action_sup_norm():
     action = ExactAction((2, 2, 2, 2), FOUR_AXIS_LITERAL_VALUES)
-    projection = project_action(hoeffding_decompose_action(action), retained_order=2)
+    projection = project_action(hoeffding_decompose_action(action), retained_order=1)
     assert projection.residual == Fraction(17, 16)
     assert retained_projection_residual(
         action, action.relabel((SWAP, IDENTITY, IDENTITY, IDENTITY)),
-        (SWAP, IDENTITY, IDENTITY, IDENTITY), 2
+        (SWAP, IDENTITY, IDENTITY, IDENTITY), 1
     ) == 0
 ```
 
-Define `FOUR_AXIS_LITERAL_VALUES`, `SWAP`, and `IDENTITY` in the test as literal `Fraction` fixtures so this regression does not invoke the production decomposition to construct its expected value.
+Define `FOUR_AXIS_LITERAL_VALUES` as the exact tuple `(0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 1, -1, 1, -1, 0, -1)` and define `SWAP` and `IDENTITY` as typed literal permutation fixtures. This regression must not invoke the production decomposition to construct its expected `17/16` value. The old component-sup helper returns `25/16` for this witness at retained order one.
 
 - [ ] **Step 2: Run focused tests and verify the convention and 25/16 residual failures**
 
