@@ -45,6 +45,79 @@ class OrientedTwoCell:
     boundary: tuple[str, ...]
 
 
+def _validated_vertices(vertices: tuple[str, ...]) -> tuple[str, ...]:
+    checked = tuple(_label(value, kind="vertex") for value in vertices)
+    if not checked:
+        raise ValueError("interaction complex must contain at least one vertex")
+    if len(set(checked)) != len(checked):
+        raise ValueError("vertex labels must be unique")
+    return checked
+
+
+def _validate_oriented_edge(
+    edge: OrientedEdge,
+    vertices: tuple[str, ...],
+    edge_by_label: Mapping[str, OrientedEdge],
+) -> None:
+    if edge.source not in vertices or edge.target not in vertices:
+        raise ValueError("edge endpoints must be declared vertices")
+    _label(edge.inverse, kind="inverse edge")
+    if edge.inverse == edge.label:
+        raise ValueError("edge reversal must be fixed-point-free")
+    if edge.inverse not in edge_by_label:
+        raise ValueError("every edge reversal must be declared")
+    inverse = edge_by_label[edge.inverse]
+    if inverse.inverse != edge.label:
+        raise ValueError("edge reversal must be an involution")
+    if inverse.source != edge.target or inverse.target != edge.source:
+        raise ValueError("reversed edge endpoints must be exchanged")
+
+
+def _validated_edges(
+    vertices: tuple[str, ...], edges: tuple[OrientedEdge, ...]
+) -> tuple[tuple[OrientedEdge, ...], dict[str, OrientedEdge]]:
+    checked = tuple(edges)
+    labels = tuple(_label(edge.label, kind="edge") for edge in checked)
+    if len(set(labels)) != len(labels):
+        raise ValueError("edge labels must be unique")
+    edge_by_label = {edge.label: edge for edge in checked}
+    for edge in checked:
+        _validate_oriented_edge(edge, vertices, edge_by_label)
+    return checked, edge_by_label
+
+
+def _validate_cell_boundary(
+    boundary: tuple[str, ...], edge_by_label: Mapping[str, OrientedEdge]
+) -> None:
+    if not boundary:
+        raise ValueError("2-cell boundary must be nonempty")
+    try:
+        boundary_edges = tuple(edge_by_label[label] for label in boundary)
+    except KeyError as error:
+        raise ValueError("2-cell boundary edges must be declared") from error
+    for current, following in zip(
+        boundary_edges, boundary_edges[1:] + boundary_edges[:1], strict=True
+    ):
+        if current.target != following.source:
+            raise ValueError("2-cell boundary must be a closed oriented cycle")
+
+
+def _validated_cells(
+    two_cells: tuple[OrientedTwoCell, ...],
+    edge_by_label: Mapping[str, OrientedEdge],
+) -> tuple[OrientedTwoCell, ...]:
+    raw_cells = tuple(two_cells)
+    labels = tuple(_label(cell.label, kind="2-cell") for cell in raw_cells)
+    if len(set(labels)) != len(labels):
+        raise ValueError("2-cell labels must be unique")
+    checked = []
+    for cell in raw_cells:
+        boundary = tuple(cell.boundary)
+        _validate_cell_boundary(boundary, edge_by_label)
+        checked.append(OrientedTwoCell(cell.label, boundary))
+    return tuple(checked)
+
+
 @dataclass(frozen=True, init=False)
 class InteractionComplex:
     """A finite interaction multigraph with explicitly declared 2-cells."""
@@ -59,48 +132,9 @@ class InteractionComplex:
         edges: tuple[OrientedEdge, ...],
         two_cells: tuple[OrientedTwoCell, ...],
     ) -> None:
-        checked_vertices = tuple(_label(value, kind="vertex") for value in vertices)
-        if not checked_vertices:
-            raise ValueError("interaction complex must contain at least one vertex")
-        if len(set(checked_vertices)) != len(checked_vertices):
-            raise ValueError("vertex labels must be unique")
-        checked_edges = tuple(edges)
-        edge_labels = tuple(_label(edge.label, kind="edge") for edge in checked_edges)
-        if len(set(edge_labels)) != len(edge_labels):
-            raise ValueError("edge labels must be unique")
-        edge_by_label = {edge.label: edge for edge in checked_edges}
-        for edge in checked_edges:
-            if (
-                edge.source not in checked_vertices
-                or edge.target not in checked_vertices
-            ):
-                raise ValueError("edge endpoints must be declared vertices")
-            _label(edge.inverse, kind="inverse edge")
-            if edge.inverse == edge.label:
-                raise ValueError("edge reversal must be fixed-point-free")
-            if edge.inverse not in edge_by_label:
-                raise ValueError("every edge reversal must be declared")
-            inverse = edge_by_label[edge.inverse]
-            if inverse.inverse != edge.label:
-                raise ValueError("edge reversal must be an involution")
-            if inverse.source != edge.target or inverse.target != edge.source:
-                raise ValueError("reversed edge endpoints must be exchanged")
-        checked_cells = tuple(two_cells)
-        cell_labels = tuple(_label(cell.label, kind="2-cell") for cell in checked_cells)
-        if len(set(cell_labels)) != len(cell_labels):
-            raise ValueError("2-cell labels must be unique")
-        for cell in checked_cells:
-            if not cell.boundary:
-                raise ValueError("2-cell boundary must be nonempty")
-            try:
-                boundary_edges = tuple(edge_by_label[label] for label in cell.boundary)
-            except KeyError as error:
-                raise ValueError("2-cell boundary edges must be declared") from error
-            for current, following in zip(
-                boundary_edges, boundary_edges[1:] + boundary_edges[:1], strict=True
-            ):
-                if current.target != following.source:
-                    raise ValueError("2-cell boundary must be a closed oriented cycle")
+        checked_vertices = _validated_vertices(vertices)
+        checked_edges, edge_by_label = _validated_edges(checked_vertices, edges)
+        checked_cells = _validated_cells(two_cells, edge_by_label)
         object.__setattr__(self, "vertices", checked_vertices)
         object.__setattr__(self, "edges", checked_edges)
         object.__setattr__(self, "two_cells", checked_cells)
@@ -421,12 +455,9 @@ def plaquette_curvature(
     return _readonly(holonomy.matrix - np.eye(2))
 
 
-def trivialization_via_spanning_tree(
-    complex_: InteractionComplex, links: OrientedLinks
-) -> TrivializationResult:
-    """Construct tree frames and check every fundamental cycle/coboundary edge."""
-    _require_matching_links(complex_, links)
-    representatives = _unoriented_edges(complex_)
+def _spanning_adjacency(
+    complex_: InteractionComplex, representatives: tuple[OrientedEdge, ...]
+) -> dict[str, list[tuple[str, str, frozenset[str]]]]:
     adjacency: dict[str, list[tuple[str, str, frozenset[str]]]] = {
         vertex: [] for vertex in complex_.vertices
     }
@@ -434,7 +465,14 @@ def trivialization_via_spanning_tree(
         pair = frozenset((edge.label, edge.inverse))
         adjacency[edge.source].append((edge.target, edge.label, pair))
         adjacency[edge.target].append((edge.source, edge.inverse, pair))
+    return adjacency
 
+
+def _spanning_forest_frames(
+    complex_: InteractionComplex,
+    links: OrientedLinks,
+    adjacency: Mapping[str, list[tuple[str, str, frozenset[str]]]],
+) -> tuple[dict[str, np.ndarray], set[frozenset[str]]]:
     frames: dict[str, np.ndarray] = {}
     tree_pairs: set[frozenset[str]] = set()
     for root in complex_.vertices:
@@ -450,50 +488,81 @@ def trivialization_via_spanning_tree(
                 frames[neighbor] = _readonly(links.matrices[label] @ frames[current])
                 tree_pairs.add(pair)
                 queue.append(neighbor)
+    return frames, tree_pairs
 
-    fundamentals: list[CycleHolonomy] = []
 
-    def tree_path(start: str, target: str) -> tuple[str, ...]:
-        previous: dict[str, tuple[str | None, str | None]] = {
-            start: (None, None)
-        }
-        queue = [start]
-        while queue and target not in previous:
-            current = queue.pop(0)
-            for neighbor, label, pair in adjacency[current]:
-                if pair not in tree_pairs or neighbor in previous:
-                    continue
-                previous[neighbor] = (current, label)
-                queue.append(neighbor)
-        if target not in previous:
-            raise RuntimeError("spanning-tree path construction failed")
-        reverse_labels: list[str] = []
-        current = target
-        while previous[current][0] is not None:
-            predecessor, label = previous[current]
-            if predecessor is None or label is None:
-                raise RuntimeError("spanning-tree predecessor is incomplete")
-            reverse_labels.append(label)
-            current = predecessor
-        return tuple(reversed(reverse_labels))
+def _spanning_tree_path(
+    start: str,
+    target: str,
+    adjacency: Mapping[str, list[tuple[str, str, frozenset[str]]]],
+    tree_pairs: set[frozenset[str]],
+) -> tuple[str, ...]:
+    previous: dict[str, tuple[str | None, str | None]] = {start: (None, None)}
+    queue = [start]
+    while queue and target not in previous:
+        current = queue.pop(0)
+        for neighbor, label, pair in adjacency[current]:
+            if pair not in tree_pairs or neighbor in previous:
+                continue
+            previous[neighbor] = (current, label)
+            queue.append(neighbor)
+    if target not in previous:
+        raise RuntimeError("spanning-tree path construction failed")
+    reverse_labels: list[str] = []
+    current = target
+    while previous[current][0] is not None:
+        predecessor, label = previous[current]
+        if predecessor is None or label is None:
+            raise RuntimeError("spanning-tree predecessor is incomplete")
+        reverse_labels.append(label)
+        current = predecessor
+    return tuple(reversed(reverse_labels))
 
+
+def _fundamental_holonomies(
+    complex_: InteractionComplex,
+    links: OrientedLinks,
+    representatives: tuple[OrientedEdge, ...],
+    adjacency: Mapping[str, list[tuple[str, str, frozenset[str]]]],
+    tree_pairs: set[frozenset[str]],
+) -> tuple[CycleHolonomy, ...]:
+    fundamentals = []
     for edge in representatives:
         pair = frozenset((edge.label, edge.inverse))
         if pair in tree_pairs:
             continue
         cycle_labels = (
             edge.label,
-            *tree_path(edge.target, edge.source),
+            *_spanning_tree_path(edge.target, edge.source, adjacency, tree_pairs),
         )
-        fundamentals.append(
-            cycle_holonomy(complex_, links, cycle_labels)
-        )
+        fundamentals.append(cycle_holonomy(complex_, links, cycle_labels))
+    return tuple(fundamentals)
 
+
+def _max_coboundary_residual(
+    complex_: InteractionComplex,
+    links: OrientedLinks,
+    frames: Mapping[str, np.ndarray],
+) -> float:
     residuals = []
     for edge in complex_.edges:
         expected = frames[edge.target] @ np.linalg.inv(frames[edge.source])
         residuals.append(float(np.max(np.abs(links.matrices[edge.label] - expected))))
-    max_residual = max(residuals, default=0.0)
+    return max(residuals, default=0.0)
+
+
+def trivialization_via_spanning_tree(
+    complex_: InteractionComplex, links: OrientedLinks
+) -> TrivializationResult:
+    """Construct tree frames and check every fundamental cycle/coboundary edge."""
+    _require_matching_links(complex_, links)
+    representatives = _unoriented_edges(complex_)
+    adjacency = _spanning_adjacency(complex_, representatives)
+    frames, tree_pairs = _spanning_forest_frames(complex_, links, adjacency)
+    fundamentals = _fundamental_holonomies(
+        complex_, links, representatives, adjacency, tree_pairs
+    )
+    max_residual = _max_coboundary_residual(complex_, links, frames)
     is_trivializable = all(
         np.allclose(cycle.matrix, np.eye(2), atol=_ATOL, rtol=_RTOL)
         for cycle in fundamentals
@@ -501,7 +570,7 @@ def trivialization_via_spanning_tree(
     return TrivializationResult(
         is_trivializable=is_trivializable,
         frames=MappingProxyType(frames),
-        fundamental_holonomies=tuple(fundamentals),
+        fundamental_holonomies=fundamentals,
         max_edge_residual=max_residual,
     )
 
@@ -572,23 +641,13 @@ def passive_transform_covectors(
     return _readonly(checked @ checked_frames[observation_vertex])
 
 
-def operational_record_law(
+def _transported_state_sum(
     complex_: InteractionComplex,
     links: OrientedLinks,
     states: Mapping[str, object],
     observation_vertex: str,
     source_paths: Mapping[str, tuple[str, ...]],
-    event_marks: tuple[str, ...],
-    mark_covectors: object,
-) -> OperationalRecordLaw:
-    """Transport declared states, measure them, and normalize over event marks."""
-    _require_matching_links(complex_, links)
-    if observation_vertex not in complex_.vertices:
-        raise ValueError("observation vertex must be declared")
-    if not isinstance(states, Mapping) or not isinstance(source_paths, Mapping):
-        raise TypeError("states and source_paths must be mappings")
-    if set(states) != set(source_paths) or not states:
-        raise ValueError("states and source_paths must have the same nonempty sources")
+) -> np.ndarray:
     total = np.zeros(2)
     for source, raw_state in states.items():
         if source not in complex_.vertices:
@@ -608,15 +667,45 @@ def operational_record_law(
         if transport.source != source or transport.target != observation_vertex:
             raise ValueError("each source path must end at the observation vertex")
         total += transport.matrix @ state
+    return total
 
-    marks = tuple(event_marks)
+
+def _record_logits_and_probabilities(
+    total: np.ndarray, marks: tuple[str, ...], mark_covectors: object
+) -> tuple[np.ndarray, np.ndarray]:
     covectors = np.asarray(mark_covectors, dtype=np.float64)
     if covectors.shape != (len(marks), 2) or not np.all(np.isfinite(covectors)):
         raise ValueError("mark covectors must be finite with shape (M, 2)")
     logits = covectors @ total
     shifted = logits - np.max(logits)
     weights = np.exp(shifted)
-    probabilities = weights / np.sum(weights)
+    return logits, weights / np.sum(weights)
+
+
+def operational_record_law(
+    complex_: InteractionComplex,
+    links: OrientedLinks,
+    states: Mapping[str, object],
+    observation_vertex: str,
+    source_paths: Mapping[str, tuple[str, ...]],
+    event_marks: tuple[str, ...],
+    mark_covectors: object,
+) -> OperationalRecordLaw:
+    """Transport declared states, measure them, and normalize over event marks."""
+    _require_matching_links(complex_, links)
+    if observation_vertex not in complex_.vertices:
+        raise ValueError("observation vertex must be declared")
+    if not isinstance(states, Mapping) or not isinstance(source_paths, Mapping):
+        raise TypeError("states and source_paths must be mappings")
+    if set(states) != set(source_paths) or not states:
+        raise ValueError("states and source_paths must have the same nonempty sources")
+    total = _transported_state_sum(
+        complex_, links, states, observation_vertex, source_paths
+    )
+    marks = tuple(event_marks)
+    logits, probabilities = _record_logits_and_probabilities(
+        total, marks, mark_covectors
+    )
     return OperationalRecordLaw(marks, observation_vertex, total, logits, probabilities)
 
 
