@@ -364,9 +364,7 @@ def pairwise_interaction_residual(components: Mapping[tuple[int, ...], object], 
 def parameter_dependent_channel_witness(theta: Fraction) -> CandidateRecord:
     """Construct the pinned non-refuting parameter-dependent-channel witness."""
     theta = _fraction(theta)
-    if theta < 0 or theta > 1:
-        raise ValueError("theta must be a probability parameter")
-    gap = 2 * theta * theta
+    gap = fixed_channel_score_gap(theta)
     return CandidateRecord(
         "fixed_channel_score_fisher",
         False,
@@ -381,9 +379,12 @@ def parameter_dependent_channel_witness(theta: Fraction) -> CandidateRecord:
     )
 
 
-def fixed_channel_score_gap(theta: Fraction) -> CandidateRecord:
-    """Compatibility name for the safe, classified parameter-dependent witness."""
-    return parameter_dependent_channel_witness(theta)
+def fixed_channel_score_gap(theta: Fraction) -> Fraction:
+    """Exact scalar gap for the pinned parameter-dependent-channel fixture."""
+    theta = _fraction(theta)
+    if theta < 0 or theta > 1:
+        raise ValueError("theta must be a probability parameter")
+    return 2 * theta * theta
 
 
 def _determinant(matrix: Sequence[Sequence[Fraction]]) -> Fraction:

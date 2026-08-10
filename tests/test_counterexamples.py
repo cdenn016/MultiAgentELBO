@@ -94,8 +94,8 @@ def test_pairwise_retention_and_parameter_dependent_channel_controls_are_nonzero
     assert projection.reconstruction.values == action.values
     assert projection.residual == Fraction(1)
     assert pairwise_interaction_residual(decomposition.components, retained_order=2) == Fraction(1)
-    witness = fixed_channel_score_gap(Fraction(1, 3))
-    assert witness == parameter_dependent_channel_witness(Fraction(1, 3))
+    assert fixed_channel_score_gap(Fraction(1, 3)) == Fraction(2, 9)
+    witness = parameter_dependent_channel_witness(Fraction(1, 3))
     assert witness.observed_residual == "2/9"
     assert witness.inside_declared_domain is False
     assert witness.classification == "assumption_boundary"
