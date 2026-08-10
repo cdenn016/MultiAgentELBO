@@ -1,0 +1,45 @@
+{
+  "schema_version": "gauge-holonomy-durable-reproduction-extract-v1",
+  "captured_at_utc": "2026-08-10T04:37:12.288461Z",
+  "source_record": {
+    "location": ".verification/gauge-holonomy/reproduction-evidence.json",
+    "sha256": "7104fae7649ab0b6098453c8fd16f257d38cf2d9bfe82657c30e1b9c89bb0fa4",
+    "source_commit": "2905cc3f762de0209bae669dc542c4ea3110a13c",
+    "harness_sha256": "ccf9cea332b6b255ae668b1e182c97cac3a75533cbdc9b7d52de808341fd0454"
+  },
+  "launcher": {
+    "exit_code": 0,
+    "wall_clock_method": "time.perf_counter around subprocess.Popen/communicate",
+    "wall_clock_seconds": 0.5004997000032745,
+    "memory_api": "Windows GetProcessMemoryInfo(PROCESS_MEMORY_COUNTERS_EX)",
+    "peak_sampled_primary_process_working_set_bytes": 41566208,
+    "peak_sampled_primary_process_working_set_mebibytes": 39.640625,
+    "sample_count": 25,
+    "sampling_interval_seconds": 0.02
+  },
+  "source_run": {
+    "config_hash": "10fbd1855196e092ecc5f36caa8af8d6ac1ce37b513c92c03f802de18535c317",
+    "fixture_application_id": "30a4bd77e738fbb73b3326ec009995ec7b2bc94f20c96e9e286644bdeec620cd",
+    "fixture_file_sha256": "a207eba1e9f3a36e80d809940405dce178f20c52dffc2482bbc24f4fc26df567",
+    "manifest_complete": true
+  },
+  "replay": {
+    "status": "pass",
+    "manifest_complete": true,
+    "semantic_file_count": 7,
+    "array_count": 53,
+    "all_semantic_files_byte_identical": true,
+    "array_names_identical": true,
+    "all_arrays_identical": true,
+    "semantic_file_sha256": {
+      "aggregation_stages.npz": "e27791c29194f63496d62250e0b833f75fa24b3dc16be5cfee528f5503097961",
+      "cycle_holonomies.npz": "a4d1dd0668c8a4fb919e02f58a6332f0a3719a9b130c42cd0d7f46c0a68d952c",
+      "interaction_complex.json": "54aa59a352ec68db5add77f55dc4eaa192ecb2f7a8fbe468e895c10be6c4ea3f",
+      "metrics.json": "cc00c8517859af11a6abe86f6d733f79247d351d71a4f4cfa8b89a3329072f0c",
+      "operational_record_laws.npz": "031ccde4eb4ab0009b7bed2267d8ec6e2022b0f3f34a52830d797efa1a70522b",
+      "oriented_links.npz": "3d582d4fd098e6fe99d78f63d8c26474d2ed54caa4cb486b3f741e50a8aa9e7e",
+      "vertex_frames.npz": "7e113c428e506e4b4952174aff839e10648269a1f2f5d7a9133c02e2b0c3c06d"
+    }
+  },
+  "scope": "Sanitized immutable extract of the mutable ignored reproduction slot; no CUDA or continuum claim."
+}

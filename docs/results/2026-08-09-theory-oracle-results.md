@@ -285,9 +285,14 @@ were byte-identical:
 | `theorem_assumption_matrix.json` | `1f9d7c4865951508c6c3d11c705e940b21c206a018baf225d9a3a5278053c6b2` |
 | `literal_commuting_diagrams.json` | `8cc8502cfb8eb5fd9c086b613de6be24f603b75d38863708b814cffd3a1f11d5` |
 
-`config.json` and `manifest.json` are correctly excluded from byte equality
-because each records its distinct output root and resulting configuration
-hash.
+`config.json` and `manifest.json` were excluded by artifact-class policy rather
+than because their bytes differed. In this replay both files were also
+byte-identical: `config.json` had SHA-256
+`38866cf9752e71f3593ce16b83fc3c933c7537fc98045e1ee240d6c9f9eb1677`,
+and `manifest.json` had SHA-256
+`b4a092368b6eba7330e8f19b3558d3d66371ed1e7429c69f8020c128de0f3cd6`.
+Both runs used the same relative `output.root="artifacts"` from distinct
+working directories.
 
 The replay is recorded as machine-readable JSON at
 `.verification/session2-results-draft/03a1f9c/deterministic-replay.json`,

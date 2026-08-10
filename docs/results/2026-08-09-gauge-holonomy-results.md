@@ -65,9 +65,9 @@ Set-Location "<worktree>"
 C:\Python314\python.exe .verification\gauge-holonomy\run_reproduction_evidence.py
 ```
 
-The ignored harness runs the launcher with no arguments in a fresh isolated working directory, then loads that run's saved `config.json`, redirects only `output.root`, and invokes the experiment for a second-root replay. Its durable latest record is `.verification/gauge-holonomy/reproduction-evidence.json` (SHA-256 `843446e5cc1e5470f8adfca1aa5563bfb25fb8ed47285f8ea875c38dbb3a0dbb`).
+The ignored harness runs the launcher with no arguments in a fresh isolated working directory, then loads that run's saved `config.json`, redirects only `output.root`, and invokes the experiment for a second-root replay. The ignored `.verification/gauge-holonomy/reproduction-evidence.json` path is a mutable latest-run slot, not a durable citation target; the earlier `843446e5...` record was superseded. A sanitized immutable extract of the latest reviewed run is tracked at `docs/results/evidence/2026-08-10-gauge-holonomy-reproduction-2905cc3.json`. It binds source commit `2905cc3f762de0209bae669dc542c4ea3110a13c` and the source-record SHA-256 `7104fae7649ab0b6098453c8fd16f257d38cf2d9bfe82657c30e1b9c89bb0fa4`.
 
-The record preserves the exact launcher command and working directory, `time.perf_counter` around `subprocess.Popen`/`communicate` as its wall-clock method, and Windows `GetProcessMemoryInfo(PROCESS_MEMORY_COUNTERS_EX)` as its primary-process working-set metric. In the fresh recorded execution, wall-clock duration was `0.4334947999996075 s`; the maximum of `22` samples taken every `0.020 s` was `41,955,328` bytes (`40.01171875 MiB`). This is a sampled process-memory observation, not a hardware-capacity assertion.
+The durable extract preserves the launcher exit state, hashes, semantic replay identities, `time.perf_counter` around `subprocess.Popen`/`communicate` as its wall-clock method, and Windows `GetProcessMemoryInfo(PROCESS_MEMORY_COUNTERS_EX)` as its primary-process working-set metric. In that execution, wall-clock duration was `0.5004997000032745 s`; the maximum of `25` samples taken every `0.020 s` was `41,566,208` bytes (`39.640625 MiB`). This is a sampled process-memory observation, not a hardware-capacity assertion.
 
 ## Parsed mechanical evidence
 
