@@ -44,7 +44,7 @@ C:\Python314\python.exe -m pytest tests/test_discrete_holonomy.py tests/test_hol
   --junitxml=.verification/gauge-holonomy/pytest-focused.xml -q -p no:cacheprovider
 ```
 
-Coverage check (the `pytest-cov` plugin is incompatible with this Python 3.14/NumPy environment, so the permitted direct Coverage.py route was used):
+Coverage check (direct Coverage.py branch measurement was used):
 
 ```powershell
 $env:COVERAGE_FILE = "$PWD/.verification/gauge-holonomy/.coverage"
@@ -56,13 +56,16 @@ C:\Python314\python.exe -m coverage xml `
   --include='src/multiagent_elbo/geometry/discrete_holonomy.py,src/multiagent_elbo/geometry/holonomy_experiment.py'
 ```
 
-The no-argument reproduction command, run from an isolated output directory, was:
+The click-to-run evidence harness is invoked from the worktree with:
 
 ```powershell
-C:\Python314\python.exe "<worktree>\run_gauge_holonomy_lab.py"
+Set-Location "<worktree>"
+C:\Python314\python.exe .verification\gauge-holonomy\run_reproduction_evidence.py
 ```
 
-It completed in `0.372418 s`; the sampled primary-process peak working set was `41,922,560` bytes (`39.980469 MiB`). The focused test invocation completed in `3.406 s` wall-clock time. This memory number is an observed Windows working-set maximum, not a hardware-capacity assertion.
+The ignored harness runs the launcher with no arguments in a fresh isolated working directory, then loads that run's saved `config.json`, redirects only `output.root`, and invokes the experiment for a second-root replay. Its durable latest record is `.verification/gauge-holonomy/reproduction-evidence.json` (SHA-256 `069206202c1bfbd5894138238edcaec78619e52c00a6029c040ee6404b117e2c`).
+
+The record preserves the exact launcher command and working directory, `time.perf_counter` around `subprocess.Popen`/`communicate` as its wall-clock method, and Windows `GetProcessMemoryInfo(PROCESS_MEMORY_COUNTERS_EX)` as its primary-process working-set metric. In the fresh recorded execution, wall-clock duration was `0.3770372999988467 s`; the maximum of `19` samples taken every `0.020 s` was `42,102,784` bytes (`40.15234375 MiB`). This is a sampled process-memory observation, not a hardware-capacity assertion. The focused test invocation completed in `3.406 s` wall-clock time.
 
 ## Parsed mechanical evidence
 
@@ -79,16 +82,16 @@ The frozen gate is a line-coverage gate, so both modules clear it. The XML and i
 
 ## Finalized launcher bundle and deterministic replay
 
-The clean, finalized default bundle is:
+The fresh harness's clean, finalized default bundle is:
 
 ```text
-.verification/gauge-holonomy/launcher-cwd-provenance/artifacts/gauge_holonomy/
+.verification/gauge-holonomy/runs/20260810T031446.506135Z/launcher-cwd/artifacts/gauge_holonomy/
 10fbd1855196e092ecc5f36caa8af8d6ac1ce37b513c92c03f802de18535c317-20260809
 ```
 
-Its manifest has `complete=true`, exactly nine complete files, `git_commit=2016042a0f10b13e9fbfc44b8f0741b4ed09eb95`, `git_dirty=false`, CPU/float64 provenance, the four named RNG streams, and the project-module path in this worktree. The frozen application identity is `30a4bd77e738fbb73b3326ec009995ec7b2bc94f20c96e9e286644bdeec620cd`; the physical fixture SHA-256 is `a207eba1e9f3a36e80d809940405dce178f20c52dffc2482bbc24f4fc26df567`.
+Its manifest has `complete=true`, exactly nine complete files, `git_commit=4e15677e52004420156b3fde009aec643b4f3c9d`, `git_dirty=false`, CPU/float64 provenance, the four named RNG streams, and the project-module path in this worktree. The scientific implementation remains revision `2016042a0f10b13e9fbfc44b8f0741b4ed09eb95`; the newer manifest revision includes this first results-record commit only. The frozen application identity is `30a4bd77e738fbb73b3326ec009995ec7b2bc94f20c96e9e286644bdeec620cd`; the physical fixture SHA-256 is `a207eba1e9f3a36e80d809940405dce178f20c52dffc2482bbc24f4fc26df567`.
 
-The saved `config.json` was read, its output root alone was redirected to `.verification/gauge-holonomy/replay-root`, and the experiment was rerun. The resulting configuration hash changed to `f449dfe154f3c5c50f40f5e0a5344eddd6932ee12428f19a651b36680810e8b7` solely because its output root is part of the resolved configuration. The default run and second root had identical `metrics.json`, `interaction_complex.json`, and all five scientific NPZ bundles byte-for-byte; all `53` saved arrays had equal names, shapes, dtypes, and values.
+The harness's recorded replay method is `load source config.json; replace output.root only; run_holonomy_experiment`, with the replay call made from the worktree and output root `.verification/gauge-holonomy/runs/20260810T031446.506135Z/replay-root`. The resulting replay configuration hash is `dc1b6bde07ffee904e1e0c8f2fc7e8e1f9f0fa1c7484e1c5130a39a8c9e7f776`, differing only because output root is part of the resolved configuration. The JSON mechanically records `semantic_file_count=7`, `all_semantic_files_byte_identical=true`, `array_count=53`, `array_names_identical=true`, and `all_arrays_identical=true`.
 
 | Semantic artifact | SHA-256 in source run | Second-root comparison |
 | --- | --- | --- |
@@ -133,6 +136,16 @@ The `CANDIDATE` values below are the serialized metric fields. They are delibera
 ## Remaining concerns
 
 - This CPU result does not make any CUDA availability, parity, or performance claim.
-- Direct Coverage.py was required because `pytest-cov` fails during Python 3.14/NumPy instrumentation with a duplicate module-load error. Coverage.py still produced the required branch-measurement XML.
+- Direct Coverage.py produced the required branch-measurement XML.
 - The launcher was run with no arguments. A temporary process-local Git safe-directory setting was needed in this sandbox to let the manifest bind the worktree revision; it did not alter repository configuration.
 - The serialized metric verification states intentionally remain `CANDIDATE`; no mathematical proof or shared-ledger closure is claimed here.
+
+## Explicit unresolved-assumption inventory
+
+| Unresolved assumption or bridge | theorem_status | verification_state | Why this laboratory is insufficient |
+| --- | --- | --- | --- |
+| Graph-to-base curve/transport bridge | `OPEN` | `INCONCLUSIVE` | The artifacts declare finite graph links only; no base curve, principal connection, or identification of graph transport with base parallel transport is supplied. |
+| Dynamical-symmetry premise | `OPEN` | `INCONCLUSIVE` | The checked passive coordinate covariance transforms links, states, and covectors coherently; no action, dynamics, or equivariant evolution law is declared or tested. |
+| Continuum and universality premises | `OPEN` | `INCONCLUSIVE` | The run is one finite four-vertex construction with no scaling family, limiting measure, or universality argument. |
+| Physical-time bridge | `OPEN` | `INCONCLUSIVE` | The finite calculations have no identified physical-time parameter or validated connection between computation, inference duration, and physical time. |
+| Application-specific operational-law assumptions | `OPEN` | `INCONCLUSIVE` | States, marked-event covectors, observation vertex, and paths are declared numerical inputs. Their empirical or application-level interpretation and any external calibration are not established by the normalized-law calculation. |
