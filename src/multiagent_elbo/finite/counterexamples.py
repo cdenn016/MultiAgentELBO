@@ -474,7 +474,7 @@ def parameter_dependent_channel_witness(theta: Fraction) -> CandidateRecord:
         "assumption_boundary",
         "ESTABLISHED",
         "EVIDENCE_VERIFIED",
-        "STANDARD",
+        "APPLICATION_SPECIFIC",
     )
 
 

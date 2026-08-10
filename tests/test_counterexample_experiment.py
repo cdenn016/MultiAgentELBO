@@ -203,7 +203,11 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
         assert set(record) == fields
         assert record["theorem_status"] == "ESTABLISHED"
         assert record["verification_state"] == "EVIDENCE_VERIFIED"
-        assert record["claim_origin"] in {"STANDARD", "PROJECT_NOVEL"}
+        assert record["claim_origin"] in {
+            "STANDARD",
+            "PROJECT_NOVEL",
+            "APPLICATION_SPECIFIC",
+        }
         assert record["exact_or_numeric"] in {"exact", "numeric_log"}
         assert record["classification"] in {"catalog", "assumption_boundary"}
         if record["classification"] == "catalog":
@@ -219,7 +223,7 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     assert relabel["inside_declared_domain"] is False
     assert relabel["assumptions_satisfied"] is False
     assert relabel["classification"] == "assumption_boundary"
-    assert relabel["claim_origin"] == "STANDARD"
+    assert relabel["claim_origin"] == "APPLICATION_SPECIFIC"
     parameter = next(
         record
         for record in candidates
@@ -229,7 +233,7 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     assert parameter["inside_declared_domain"] is False
     assert parameter["assumptions_satisfied"] is False
     assert parameter["classification"] == "assumption_boundary"
-    assert parameter["claim_origin"] == "STANDARD"
+    assert parameter["claim_origin"] == "APPLICATION_SPECIFIC"
     assert parameter["observed_residual"] == "16/15"
     assert parameter["smallest_witness"]["fine_law"] == ["1/2", "1/2"]
     assert parameter["smallest_witness"]["fine_derivative"] == ["0", "0"]

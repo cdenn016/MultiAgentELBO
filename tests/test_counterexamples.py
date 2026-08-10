@@ -132,6 +132,7 @@ def test_pairwise_retention_and_parameter_dependent_channel_controls_are_nonzero
     assert witness.inside_declared_domain is False
     assert witness.assumptions_satisfied is False
     assert witness.classification == "assumption_boundary"
+    assert witness.claim_origin == "APPLICATION_SPECIFIC"
     assert witness.smallest_witness["channel_derivative"] == fixture.channel_derivative
     with pytest.raises(ValueError, match="-1 < theta < 1"):
         parameter_dependent_channel_fixture(Fraction(1))

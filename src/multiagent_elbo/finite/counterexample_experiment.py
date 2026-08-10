@@ -177,7 +177,7 @@ def _enumerate_candidates(
                         residual,
                         inside=False,
                         assumptions=False,
-                        origin="STANDARD",
+                        origin="APPLICATION_SPECIFIC",
                         exact_or_numeric="numeric_log",
                         classification="assumption_boundary",
                     )
