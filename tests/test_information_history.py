@@ -200,6 +200,17 @@ def test_chart_reparameterization_changes_raw_speed_but_not_information_duration
 
     assert diagnostic.raw_coordinate_length_ratio == pytest.approx(2.0)
     assert diagnostic.information_duration_residual < 1.0e-14
+    np.testing.assert_allclose(diagnostic.chart_parameters, 2.0 * history)
+    np.testing.assert_allclose(diagnostic.chart_jacobian, 2.0 * np.eye(2))
+    np.testing.assert_allclose(
+        diagnostic.transformed_segment_fisher,
+        diagnostic.original_segment_fisher / 4.0,
+        atol=1.0e-15,
+    )
+    assert diagnostic.untransformed_metric_duration[-1] == pytest.approx(
+        2.0 * diagnostic.original_information_duration[-1]
+    )
+    assert diagnostic.metric_pullback_mutation_gap > 0.1
 
 
 def test_semiconjugacy_defect_uses_the_typed_minus_sign_and_rejects_plus_mutation():
@@ -228,10 +239,54 @@ def test_frozen_fixture_builds_the_declared_fine_and_coarse_statistical_charts()
     assert model.coarse_family.labels == ("00", "01", "10", "11")
     assert model.coarse_family.parameter_count == 2
     np.testing.assert_allclose(
-        model.coarse_map,
+        model.configuration_map.probability_matrix,
         [[0.5, 0.5, 0.0, 0.0], [0.0, 0.0, 0.5, 0.5]],
     )
     assert model.family_scope == "finite_positive_categorical_softmax_open_chart"
+
+
+def test_fixture_probability_map_induces_literal_nonlinear_natural_map_and_jacobian():
+    module = _sut()
+    payload = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    model = module.build_information_history_model(payload, NUMERICS)
+    theta = np.array([math.log(3.0), 0.0, math.log(2.0), -math.log(3.0)])
+
+    fine_probability = model.configuration_map.fine_probability_coordinates(theta)
+    coarse_probability = model.configuration_map.coarse_probability_coordinates(theta)
+    coarse_natural = model.configuration_map.coarse_natural_parameters(theta)
+    jacobian = model.configuration_map.jacobian(theta)
+
+    np.testing.assert_allclose(fine_probability, [3 / 4, 1 / 2, 2 / 3, 1 / 4])
+    np.testing.assert_allclose(coarse_probability, [5 / 8, 11 / 24])
+    np.testing.assert_allclose(coarse_natural, [math.log(5 / 3), math.log(11 / 13)])
+    np.testing.assert_allclose(
+        jacobian,
+        [[2 / 5, 8 / 15, 0.0, 0.0], [0.0, 0.0, 64 / 143, 54 / 143]],
+        atol=1.0e-14,
+    )
+    assert not np.allclose(jacobian, model.configuration_map.probability_matrix)
+
+
+def test_fixture_natural_map_jacobian_matches_independent_centered_difference():
+    module = _sut()
+    payload = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    coordinate_map = module.build_information_history_model(
+        payload, NUMERICS
+    ).configuration_map
+    theta = np.array([-0.37, 0.21, -0.13, 0.44])
+    step = 1.0e-6
+    finite_difference = np.column_stack(
+        [
+            (
+                coordinate_map.coarse_natural_parameters(theta + step * np.eye(4)[index])
+                - coordinate_map.coarse_natural_parameters(theta - step * np.eye(4)[index])
+            )
+            / (2.0 * step)
+            for index in range(4)
+        ]
+    )
+
+    np.testing.assert_allclose(coordinate_map.jacobian(theta), finite_difference, atol=1.0e-9)
 
 
 def test_default_history_has_separate_orbit_rg_duration_and_nonzero_defect_records():
@@ -250,6 +305,24 @@ def test_default_history_has_separate_orbit_rg_duration_and_nonzero_defect_recor
     assert history.information_duration.shape == (16,)
     assert history.wall_time_seconds >= 0.0
     assert history.semiconjugacy_defects.shape == (16, 2)
+    assert history.coarse_map_jacobian.shape == (16, 2, 4)
+    np.testing.assert_allclose(
+        history.semiconjugacy_defects,
+        np.einsum(
+            "sij,sj->si", history.coarse_map_jacobian, history.fine_natural_gradient
+        )
+        - history.coarse_natural_gradient,
+        atol=1.0e-15,
+    )
+    assert not np.allclose(
+        history.coarse_map_jacobian[0], history.coarse_map_jacobian[-1]
+    )
+    np.testing.assert_allclose(
+        history.reparameterized_fine_parameters, 2.0 * history.fine_parameters
+    )
+    assert history.metric_pullback_mutation_duration[-1] > (
+        history.reparameterized_information_duration[-1] + 0.1
+    )
     assert np.max(history.semiconjugacy_defect_norms) > 1.0e-3
     assert np.all(np.diff(history.information_duration) >= 0.0)
     assert all(not array.flags.writeable for array in history.semantic_arrays())

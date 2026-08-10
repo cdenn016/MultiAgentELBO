@@ -325,6 +325,14 @@ def fisher_path_duration(
 class ChartReparameterizationDiagnostic:
     raw_coordinate_length_ratio: float
     information_duration_residual: float
+    chart_parameters: np.ndarray
+    chart_jacobian: np.ndarray
+    original_segment_fisher: np.ndarray
+    transformed_segment_fisher: np.ndarray
+    original_information_duration: np.ndarray
+    transformed_information_duration: np.ndarray
+    untransformed_metric_duration: np.ndarray
+    metric_pullback_mutation_gap: float
 
 
 def linear_chart_reparameterization_diagnostic(
@@ -340,34 +348,62 @@ def linear_chart_reparameterization_diagnostic(
     parameters = np.array(history, dtype=np.float64, copy=True, order="C")
     original_duration = fisher_path_duration(family, parameters)
     transformed = scale * parameters
+    dimension = family.parameter_count
+    chart_jacobian = scale * np.eye(dimension)
+    segment_count = max(0, len(parameters) - 1)
+    original_segment_fisher = np.empty((segment_count, dimension, dimension))
+    transformed_segment_fisher = np.empty_like(original_segment_fisher)
+    for index in range(segment_count):
+        midpoint = 0.5 * (parameters[index] + parameters[index + 1])
+        original_segment_fisher[index] = family.fisher_information(midpoint)
+        transformed_segment_fisher[index] = (
+            original_segment_fisher[index] / (scale * scale)
+        )
 
     def transformed_metric(phi: np.ndarray) -> np.ndarray:
         return family.fisher_information(phi / scale) / (scale * scale)
 
     transformed_duration = _metric_path_duration(transformed, transformed_metric)
+    untransformed_metric_duration = _metric_path_duration(
+        transformed, lambda phi: family.fisher_information(phi / scale)
+    )
     raw_original = float(np.sum(np.linalg.norm(np.diff(parameters, axis=0), axis=1)))
     raw_transformed = float(
         np.sum(np.linalg.norm(np.diff(transformed, axis=0), axis=1))
     )
     return ChartReparameterizationDiagnostic(
-        raw_coordinate_length_ratio=raw_transformed / raw_original,
+        raw_coordinate_length_ratio=(
+            raw_transformed / raw_original if raw_original > 0.0 else scale
+        ),
         information_duration_residual=abs(
             float(transformed_duration[-1] - original_duration[-1])
+        ),
+        chart_parameters=_readonly(transformed),
+        chart_jacobian=_readonly(chart_jacobian),
+        original_segment_fisher=_readonly(original_segment_fisher),
+        transformed_segment_fisher=_readonly(transformed_segment_fisher),
+        original_information_duration=original_duration,
+        transformed_information_duration=transformed_duration,
+        untransformed_metric_duration=untransformed_metric_duration,
+        metric_pullback_mutation_gap=abs(
+            float(untransformed_metric_duration[-1] - transformed_duration[-1])
         ),
     )
 
 
 def semiconjugacy_defect(
-    coarse_map: Sequence[Sequence[float]],
+    coarse_map_jacobian: Sequence[Sequence[float]],
     fine_vector: Sequence[float],
     coarse_vector: Sequence[float],
 ) -> np.ndarray:
     """Return the typed defect ``dC(v_fine) - v_coarse(C(theta))``."""
-    matrix = np.array(coarse_map, dtype=np.float64, copy=True, order="C")
+    matrix = np.array(
+        coarse_map_jacobian, dtype=np.float64, copy=True, order="C"
+    )
     fine = np.array(fine_vector, dtype=np.float64, copy=True, order="C")
     coarse = np.array(coarse_vector, dtype=np.float64, copy=True, order="C")
     if matrix.ndim != 2 or fine.shape != (matrix.shape[1],):
-        raise ValueError("coarse_map and fine_vector have incompatible shapes")
+        raise ValueError("coarse_map_jacobian and fine_vector have incompatible shapes")
     if coarse.shape != (matrix.shape[0],):
         raise ValueError("coarse_vector has the wrong target dimension")
     if not all(np.all(np.isfinite(value)) for value in (matrix, fine, coarse)):
@@ -387,6 +423,89 @@ def _fraction_matrix(values: Sequence[Sequence[str]]) -> np.ndarray:
 
 
 @dataclass(frozen=True)
+class ProbabilityCoordinateConfigurationMap:
+    """Fixture block average transported between product-Bernoulli natural charts."""
+
+    fine_family: CategoricalExponentialFamily
+    coarse_family: CategoricalExponentialFamily
+    probability_matrix: np.ndarray
+
+    def __post_init__(self) -> None:
+        for name, family in (
+            ("fine_family", self.fine_family),
+            ("coarse_family", self.coarse_family),
+        ):
+            if not isinstance(family, CategoricalExponentialFamily):
+                raise TypeError(f"{name} must be a CategoricalExponentialFamily")
+            expected_statistics = {
+                tuple(float(bit) for bit in f"{value:0{family.parameter_count}b}")
+                for value in range(2**family.parameter_count)
+            }
+            actual_statistics = {
+                tuple(float(value) for value in row)
+                for row in family.sufficient_statistics
+            }
+            if (
+                not np.array_equal(family.base_logits, np.zeros(len(family.labels)))
+                or len(family.labels) != len(expected_statistics)
+                or actual_statistics != expected_statistics
+            ):
+                raise ValueError(
+                    f"{name} must be the declared zero-base product-Bernoulli chart"
+                )
+        matrix = np.array(
+            self.probability_matrix, dtype=np.float64, copy=True, order="C"
+        )
+        expected_shape = (
+            self.coarse_family.parameter_count,
+            self.fine_family.parameter_count,
+        )
+        if matrix.shape != expected_shape:
+            raise ValueError("probability_matrix has the wrong configuration dimensions")
+        if not np.all(np.isfinite(matrix)) or np.any(matrix < 0.0):
+            raise ValueError("probability_matrix must be finite and nonnegative")
+        if not np.allclose(
+            np.sum(matrix, axis=1),
+            1.0,
+            atol=self.fine_family.numerics.atol,
+            rtol=self.fine_family.numerics.rtol,
+        ):
+            raise ValueError("each probability-coordinate row must sum to one")
+        object.__setattr__(self, "probability_matrix", _readonly(matrix))
+
+    def fine_probability_coordinates(self, theta: Sequence[float]) -> np.ndarray:
+        """Return the fixture coordinates p_i = E_theta[T_i]."""
+        probabilities = self.fine_family.probabilities(theta)
+        coordinates = probabilities @ self.fine_family.sufficient_statistics
+        if np.any(coordinates <= 0.0) or np.any(coordinates >= 1.0):
+            raise ValueError("fine probability coordinates must lie in the open unit cube")
+        return _readonly(coordinates)
+
+    def coarse_probability_coordinates(self, theta: Sequence[float]) -> np.ndarray:
+        """Apply the frozen block-average matrix in its declared probability chart."""
+        coarse = self.probability_matrix @ self.fine_probability_coordinates(theta)
+        if np.any(coarse <= 0.0) or np.any(coarse >= 1.0):
+            raise ValueError("coarse probability coordinates must lie in the open unit cube")
+        return _readonly(coarse)
+
+    def coarse_natural_parameters(self, theta: Sequence[float]) -> np.ndarray:
+        """Transport the probability block average into coarse log-odds coordinates."""
+        coarse = self.coarse_probability_coordinates(theta)
+        return _readonly(np.log(coarse) - np.log1p(-coarse))
+
+    def jacobian(self, theta: Sequence[float]) -> np.ndarray:
+        """Return d(logit(A E[T]))/d theta at the supplied fine point."""
+        coarse = self.coarse_probability_coordinates(theta)
+        inverse_logit_derivative = 1.0 / (coarse * (1.0 - coarse))
+        fine_probability_jacobian = self.fine_family.fisher_information(theta)
+        jacobian = (
+            inverse_logit_derivative[:, None]
+            * (self.probability_matrix @ fine_probability_jacobian)
+        )
+        return _readonly(jacobian)
+
+
+@dataclass(frozen=True)
 class InformationHistoryModel:
     application_id: str
     fine_family: CategoricalExponentialFamily
@@ -394,7 +513,7 @@ class InformationHistoryModel:
     channel: MarkovKernel
     fine_target: np.ndarray
     coarse_target: np.ndarray
-    coarse_map: np.ndarray
+    configuration_map: ProbabilityCoordinateConfigurationMap
     initial_theta: np.ndarray
     family_scope: FamilyScope
 
@@ -440,7 +559,7 @@ def build_information_history_model(
         fixture_payload["generative_structure"]["posterior"]
     )
     coarse_target = fine_target @ channel.matrix
-    coarse_map = _fraction_matrix(
+    coarse_probability_map = _fraction_matrix(
         fixture_payload["configuration"]["coarse_map_matrix"]
     )
     return InformationHistoryModel(
@@ -450,7 +569,9 @@ def build_information_history_model(
         channel=channel,
         fine_target=_readonly(fine_target),
         coarse_target=_readonly(coarse_target),
-        coarse_map=_readonly(coarse_map),
+        configuration_map=ProbabilityCoordinateConfigurationMap(
+            fine_family, coarse_family, coarse_probability_map
+        ),
         initial_theta=_readonly((-0.4, 0.25, -0.2, 0.35)),
         family_scope="finite_positive_categorical_softmax_open_chart",
     )
@@ -460,6 +581,9 @@ def build_information_history_model(
 class InformationHistory:
     fine_parameters: np.ndarray
     coarse_parameters: np.ndarray
+    fine_probability_coordinates: np.ndarray
+    coarse_probability_coordinates: np.ndarray
+    coarse_map_jacobian: np.ndarray
     inference_orbit_parameter: np.ndarray
     rg_depth: np.ndarray
     fine_score: np.ndarray
@@ -487,6 +611,11 @@ class InformationHistory:
     coarse_positive_condition: np.ndarray
     information_duration: np.ndarray
     reparameterized_information_duration: np.ndarray
+    reparameterized_fine_parameters: np.ndarray
+    chart_reparameterization_jacobian: np.ndarray
+    fine_segment_fisher: np.ndarray
+    reparameterized_segment_fisher: np.ndarray
+    metric_pullback_mutation_duration: np.ndarray
     reparameterization_parameter: np.ndarray
     raw_coordinate_cumulative: np.ndarray
     semiconjugacy_defects: np.ndarray
@@ -604,6 +733,11 @@ def simulate_information_history(
 
     fine_parameters = np.empty((history_steps, fine_dimension))
     coarse_parameters = np.empty((history_steps, coarse_dimension))
+    fine_probability_coordinates = np.empty_like(fine_parameters)
+    coarse_probability_coordinates = np.empty_like(coarse_parameters)
+    coarse_map_jacobian = np.empty(
+        (history_steps, coarse_dimension, fine_dimension)
+    )
     fine_score = np.empty((history_steps, fine_states, fine_dimension))
     fine_fd = np.empty_like(fine_score)
     pushed_score = np.empty((history_steps, coarse_states, fine_dimension))
@@ -633,7 +767,10 @@ def simulate_information_history(
     theta = np.array(model.initial_theta, copy=True)
 
     for index in range(history_steps):
-        phi = model.coarse_map @ theta
+        fine_configuration = model.configuration_map.fine_probability_coordinates(theta)
+        coarse_configuration = model.configuration_map.coarse_probability_coordinates(theta)
+        phi = model.configuration_map.coarse_natural_parameters(theta)
+        configuration_jacobian = model.configuration_map.jacobian(theta)
         fine_point = categorical_information_point(
             model.fine_family, theta, model.fine_target, rcond=rcond
         )
@@ -648,14 +785,17 @@ def simulate_information_history(
         )
         fisher_channel = channel_point.fisher_result
         defect = semiconjugacy_defect(
-            model.coarse_map,
+            configuration_jacobian,
             fine_point.natural_gradient,
             coarse_point.natural_gradient,
         )
-        pushed_vector = model.coarse_map @ fine_point.natural_gradient
+        pushed_vector = configuration_jacobian @ fine_point.natural_gradient
 
         fine_parameters[index] = theta
         coarse_parameters[index] = phi
+        fine_probability_coordinates[index] = fine_configuration
+        coarse_probability_coordinates[index] = coarse_configuration
+        coarse_map_jacobian[index] = configuration_jacobian
         fine_score[index] = fine_point.score
         fine_fd[index] = finite_difference_score(
             model.fine_family, theta, finite_difference_step
@@ -692,10 +832,11 @@ def simulate_information_history(
         if index + 1 < history_steps:
             theta = theta + step_size * fine_point.natural_gradient
 
-    information_duration = fisher_path_duration(model.fine_family, fine_parameters)
-    reparameterized_duration = fisher_path_duration(
-        model.fine_family, fine_parameters
+    chart_diagnostic = linear_chart_reparameterization_diagnostic(
+        model.fine_family, fine_parameters, chart_scale=2.0
     )
+    information_duration = chart_diagnostic.original_information_duration
+    reparameterized_duration = chart_diagnostic.transformed_information_duration
     reparameterization_parameter = np.linspace(0.0, 1.0, history_steps) ** 2
     raw_cumulative = np.zeros(history_steps)
     if history_steps > 1:
@@ -708,6 +849,9 @@ def simulate_information_history(
     return InformationHistory(
         fine_parameters=_readonly(fine_parameters),
         coarse_parameters=_readonly(coarse_parameters),
+        fine_probability_coordinates=_readonly(fine_probability_coordinates),
+        coarse_probability_coordinates=_readonly(coarse_probability_coordinates),
+        coarse_map_jacobian=_readonly(coarse_map_jacobian),
         inference_orbit_parameter=_readonly(
             np.arange(history_steps, dtype=np.float64) * step_size
         ),
@@ -737,6 +881,13 @@ def simulate_information_history(
         coarse_positive_condition=_readonly(coarse_condition),
         information_duration=information_duration,
         reparameterized_information_duration=reparameterized_duration,
+        reparameterized_fine_parameters=chart_diagnostic.chart_parameters,
+        chart_reparameterization_jacobian=chart_diagnostic.chart_jacobian,
+        fine_segment_fisher=chart_diagnostic.original_segment_fisher,
+        reparameterized_segment_fisher=chart_diagnostic.transformed_segment_fisher,
+        metric_pullback_mutation_duration=(
+            chart_diagnostic.untransformed_metric_duration
+        ),
         reparameterization_parameter=_readonly(reparameterization_parameter),
         raw_coordinate_cumulative=_readonly(raw_cumulative),
         semiconjugacy_defects=_readonly(defects),
@@ -754,6 +905,7 @@ __all__ = [
     "InformationHistoryModel",
     "InformationPoint",
     "ParameterDependentChannelControl",
+    "ProbabilityCoordinateConfigurationMap",
     "RecoveryDiagnostics",
     "RequiredNegativeControls",
     "build_information_history_model",

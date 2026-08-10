@@ -67,7 +67,9 @@ def _artifact_arrays(
         "history_parameters": _freeze_artifact(
             {
                 "coarse_parameters": history.coarse_parameters,
+                "coarse_probability_coordinates": history.coarse_probability_coordinates,
                 "fine_parameters": history.fine_parameters,
+                "fine_probability_coordinates": history.fine_probability_coordinates,
                 "inference_orbit_parameter": history.inference_orbit_parameter,
                 "rg_depth": history.rg_depth,
             }
@@ -122,9 +124,15 @@ def _artifact_arrays(
         "information_durations": _freeze_artifact(
             {
                 "information_duration": history.information_duration,
+                "fine_parameters": history.fine_parameters,
+                "fine_segment_fisher": history.fine_segment_fisher,
+                "metric_pullback_mutation_duration": history.metric_pullback_mutation_duration,
                 "raw_coordinate_cumulative": history.raw_coordinate_cumulative,
                 "reparameterization_parameter": history.reparameterization_parameter,
+                "reparameterized_fine_parameters": history.reparameterized_fine_parameters,
                 "reparameterized_information_duration": history.reparameterized_information_duration,
+                "reparameterized_segment_fisher": history.reparameterized_segment_fisher,
+                "reparameterization_jacobian": history.chart_reparameterization_jacobian,
                 "chart_information_duration_residual": controls.chart_information_duration_residual,
                 "chart_raw_coordinate_length_ratio": controls.chart_raw_length_ratio,
                 "same_endpoint_detour_duration": controls.detour_duration,
@@ -136,7 +144,10 @@ def _artifact_arrays(
         "semiconjugacy_defects": _freeze_artifact(
             {
                 "coarse_comparison_vector": history.coarse_comparison_vector,
+                "coarse_map_jacobian": history.coarse_map_jacobian,
+                "coarse_probability_coordinates": history.coarse_probability_coordinates,
                 "defect": history.semiconjugacy_defects,
+                "fine_probability_coordinates": history.fine_probability_coordinates,
                 "norm": history.semiconjugacy_defect_norms,
                 "pushed_fine_vector": history.pushed_fine_vector,
                 "literal_minus_sign_oracle": controls.semiconjugacy_minus_oracle,
@@ -218,8 +229,9 @@ def _metrics(
                 identity_tolerance,
                 target=0.0,
                 interpretation=(
-                    "The saved polygonal Fisher duration is independent of the separate "
-                    "orientation-preserving history parameter labels."
+                    "The saved polygonal Fisher duration agrees in the original natural "
+                    "chart and a distinct orientation-preserving dilated chart when the "
+                    "Fisher tensor is transformed covariantly."
                 ),
                 theorem_status="ESTABLISHED",
                 verification_state="EVIDENCE_VERIFIED",
@@ -305,7 +317,7 @@ def run_information_history_experiment(
     provenance["experiment_scope"] = model.family_scope
     provenance["channel_scope"] = "declared_fixed_parameter_independent"
     provenance["semiconjugacy_scope"] = (
-        "typed_pointwise_defect_not_assumed_to_vanish"
+        "fixture_probability_map_transport_pointwise_defect_not_assumed_to_vanish"
     )
 
     store = RunStore.create(config, provenance)

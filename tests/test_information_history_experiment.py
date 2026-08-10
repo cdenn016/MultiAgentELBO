@@ -178,8 +178,55 @@ def test_artifact_fields_recompute_every_registered_metric(tmp_path: Path):
     assert result.metrics["arc_length_reparameterization_residual"].value == pytest.approx(
         abs(float(durations["information_duration"][-1]) - float(durations["reparameterized_information_duration"][-1]))
     )
+    original_delta = np.diff(durations["fine_parameters"], axis=0)
+    transformed_delta = np.diff(durations["reparameterized_fine_parameters"], axis=0)
+    original_oracle = np.concatenate(
+        ([0.0], np.cumsum(np.sqrt(np.einsum(
+            "si,sij,sj->s", original_delta, durations["fine_segment_fisher"], original_delta
+        ))))
+    )
+    transformed_oracle = np.concatenate(
+        ([0.0], np.cumsum(np.sqrt(np.einsum(
+            "si,sij,sj->s",
+            transformed_delta,
+            durations["reparameterized_segment_fisher"],
+            transformed_delta,
+        ))))
+    )
+    mutation_oracle = np.concatenate(
+        ([0.0], np.cumsum(np.sqrt(np.einsum(
+            "si,sij,sj->s",
+            transformed_delta,
+            durations["fine_segment_fisher"],
+            transformed_delta,
+        ))))
+    )
+    np.testing.assert_allclose(durations["information_duration"], original_oracle, atol=1.0e-15)
+    np.testing.assert_allclose(
+        durations["reparameterized_information_duration"], transformed_oracle, atol=1.0e-15
+    )
+    np.testing.assert_allclose(
+        durations["reparameterization_jacobian"], 2.0 * np.eye(4), atol=0.0
+    )
+    np.testing.assert_allclose(
+        durations["reparameterized_segment_fisher"],
+        durations["fine_segment_fisher"] / 4.0,
+        atol=1.0e-15,
+    )
+    np.testing.assert_allclose(
+        durations["metric_pullback_mutation_duration"], mutation_oracle, atol=1.0e-15
+    )
+    assert mutation_oracle[-1] > transformed_oracle[-1] + 0.1
     assert result.metrics["semiconjugacy_defect_norm"].value == pytest.approx(
         float(np.max(defects["norm"]))
+    )
+    np.testing.assert_allclose(
+        defects["defect"],
+        np.einsum(
+            "sij,sj->si", defects["coarse_map_jacobian"], natural["fine"]
+        )
+        - natural["coarse"],
+        atol=1.0e-15,
     )
     assert score_residual <= tolerance
 
