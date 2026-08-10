@@ -82,18 +82,29 @@ The durable extract preserves the launcher exit state, hashes, semantic replay i
 
 The frozen gate is a line-coverage gate, so both modules clear it. The XML and its Coverage.py data file are ignored under `.verification/gauge-holonomy/`.
 
-## Finalized launcher bundle and deterministic replay
+## Historical scientific bundle and durable deterministic replay
 
-The fresh harness's clean, finalized default bundle is:
+The last Session 5 production-code change is `74a1894`. The immutable replay
+extract was executed later at `2905cc3`, whose Session 5 source and launcher
+blobs retain that scientific implementation unchanged. The tracked extract
+preserves a complete nine-file source manifest, `git_dirty=false`, CPU/float64
+provenance, the four named RNG streams, manifest SHA-256
+`b91489e7063c45818340451d21552bfd3b75926dc38f61a98ac02b4438d9b691`,
+and configuration hash
+`10fbd1855196e092ecc5f36caa8af8d6ac1ce37b513c92c03f802de18535c317`.
+The frozen application identity is
+`30a4bd77e738fbb73b3326ec009995ec7b2bc94f20c96e9e286644bdeec620cd`;
+the physical fixture SHA-256 is
+`a207eba1e9f3a36e80d809940405dce178f20c52dffc2482bbc24f4fc26df567`.
 
-```text
-.verification/gauge-holonomy/runs/20260810T042303.952054Z/launcher-cwd/artifacts/gauge_holonomy/
-10fbd1855196e092ecc5f36caa8af8d6ac1ce37b513c92c03f802de18535c317-20260809
-```
-
-Its manifest has `complete=true`, exactly nine complete files, `git_commit=74a1894d20445f6f635f2a7bcc5f02fc8e874499`, `git_dirty=false`, CPU/float64 provenance, the four named RNG streams, and the project-module path in this worktree. That revision includes the frame-condition enforcement, the immutable two-cell-boundary fix, and the C901-motivated factoring through `74a1894d20445f6f635f2a7bcc5f02fc8e874499`. The frozen application identity is `30a4bd77e738fbb73b3326ec009995ec7b2bc94f20c96e9e286644bdeec620cd`; the physical fixture SHA-256 is `a207eba1e9f3a36e80d809940405dce178f20c52dffc2482bbc24f4fc26df567`.
-
-The harness's recorded replay method is `load source config.json; replace output.root only; run_holonomy_experiment`, with the replay call made from the worktree and output root `.verification/gauge-holonomy/runs/20260810T042303.952054Z/replay-root`. The resulting replay configuration hash is `c376a33ffb0a45fcf649db1af2671dcf4dba4682353380a835c025de719e88e3`, differing only because output root is part of the resolved configuration. The JSON mechanically records `semantic_file_count=7`, `all_semantic_files_byte_identical=true`, `array_count=53`, `array_names_identical=true`, and `all_arrays_identical=true`.
+The immutable replay evidence was captured later at source commit `2905cc3`,
+which retains the same Session 5 production content from `74a1894`. Its method
+is `load source config.json; replace output.root only;
+run_holonomy_experiment`, and its replay configuration hash is
+`9c8c32847148b3613887094cdf2962b99f430de6033bfe2552a4b22caceae1a5`.
+The tracked JSON mechanically records `semantic_file_count=7`,
+`all_semantic_files_byte_identical=true`, `array_count=53`,
+`array_names_identical=true`, and `all_arrays_identical=true`.
 
 | Semantic artifact | SHA-256 in source run | Second-root comparison |
 | --- | --- | --- |

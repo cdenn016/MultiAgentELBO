@@ -4,7 +4,8 @@
   "source_record": {
     "location": ".verification/gauge-holonomy/reproduction-evidence.json",
     "sha256": "7104fae7649ab0b6098453c8fd16f257d38cf2d9bfe82657c30e1b9c89bb0fa4",
-    "source_commit": "2905cc3f762de0209bae669dc542c4ea3110a13c",
+    "scientific_implementation_revision": "74a1894d20445f6f635f2a7bcc5f02fc8e874499",
+    "evidence_execution_revision": "2905cc3f762de0209bae669dc542c4ea3110a13c",
     "harness_sha256": "ccf9cea332b6b255ae668b1e182c97cac3a75533cbdc9b7d52de808341fd0454"
   },
   "launcher": {
@@ -19,12 +20,33 @@
   },
   "source_run": {
     "config_hash": "10fbd1855196e092ecc5f36caa8af8d6ac1ce37b513c92c03f802de18535c317",
+    "config_file_sha256": "8f534b30ec952af29dbd688cd4797ab944cb99c1928ca83fcd65268168bc43a1",
     "fixture_application_id": "30a4bd77e738fbb73b3326ec009995ec7b2bc94f20c96e9e286644bdeec620cd",
     "fixture_file_sha256": "a207eba1e9f3a36e80d809940405dce178f20c52dffc2482bbc24f4fc26df567",
-    "manifest_complete": true
+    "manifest_sha256": "b91489e7063c45818340451d21552bfd3b75926dc38f61a98ac02b4438d9b691",
+    "manifest_complete": true,
+    "manifest_file_count": 9,
+    "manifest_git_commit": "2905cc3f762de0209bae669dc542c4ea3110a13c",
+    "manifest_git_dirty": false,
+    "effective_backend": "cpu",
+    "effective_dtype": "float64",
+    "arithmetic_provenance": "floating_point_float64",
+    "experiment_scope": "finite_declared_graph_link_holonomy",
+    "graph_to_base_identification": false,
+    "rng": {
+      "seed": 20260809,
+      "named_streams": {
+        "problem": [0],
+        "recognition": [1],
+        "controls": [2],
+        "figures": [3]
+      }
+    }
   },
   "replay": {
     "status": "pass",
+    "method": "load source config.json; replace output.root only; run_holonomy_experiment",
+    "config_hash": "9c8c32847148b3613887094cdf2962b99f430de6033bfe2552a4b22caceae1a5",
     "manifest_complete": true,
     "semantic_file_count": 7,
     "array_count": 53,
