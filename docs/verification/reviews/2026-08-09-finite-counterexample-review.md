@@ -6,9 +6,9 @@
 
 **Contract freeze:** `b80df01f239c2f9a18842f6887cdeca67dff508f`
 
-**Reviewed implementation revision:** `ab747008b970c0c6a162be1ee1501a9baa163cb3`
+**Reviewed implementation revision:** `3df4b92db525c612716ecc67fdd3efdf7e6e876d`
 
-**Reviewed result-record revision:** `86b45515ed4842f99ad05a6e3798429d3caf24c5`
+**Reviewed result-record revision:** `812725074d3c671dd33c46632e1dd1c7346de67b`
 
 **Verdict:** **APPROVED**
 
@@ -67,28 +67,46 @@ scoped fix. Commit `86b4551` refreshed the durable result record and all cited
 mechanical evidence at the corrected implementation revision. This rereview
 independently parsed that refreshed evidence and resolves the original blocker.
 
+A final whole-lane code review at `b2fa7ee` subsequently found two Important
+defects and one Minor defect: accepted low enumeration bounds did not constrain
+the executed pinned catalog; the parameter-dependent-channel gap was a bare
+formula without saved finite primitives or an independent derivation; and
+witness denominator minimization was inert for produced nested rational
+values. Commit `3df4b92` addressed all three. Its scoped rereview confirmed the
+implementation corrections but withheld merge approval because the durable
+result and review documents still described the superseded implementation.
+Commit `8127250` refreshed the result record and all evidence. This final
+rereview verifies that remediation and updates the remaining stale review
+record without erasing any earlier finding trail.
+
 ## Current mechanical evidence
 
 The cited focused JUnit XML at
-`.verification/session3/task3-refresh-focused.xml` parses to 21 tests, 0
-failures, 0 errors, 0 skips, and 22.132 seconds. The cited full-suite JUnit XML
-at `.verification/session3/task3-refresh-full.xml` parses to 461 tests, 0
-failures, 0 errors, 2 skips, and 42.024 seconds. The two skips are the existing
+`.verification/session3/task3-final-focused.xml` parses to 26 tests, 0
+failures, 0 errors, 0 skips, and 35.591 seconds. The cited full-suite JUnit XML
+at `.verification/session3/task3-final-full.xml` parses to 466 tests, 0
+failures, 0 errors, 2 skips, and 54.098 seconds. The two skips are the existing
 Windows-privilege-dependent link tests.
 
 The cited coverage XML at
-`.verification/session3/task3-refresh-coverage.xml` reports 90.24% line and
-75.83% branch coverage for `counterexamples.py`, and 97.56% line and 92.86%
+`.verification/session3/task3-final-coverage.xml` reports 91.40% line and
+78.26% branch coverage for `counterexamples.py`, and 97.77% line and 93.48%
 branch coverage for `counterexample_experiment.py`. Both new production modules
 exceed the required 80% line threshold.
 
-The refreshed clean launcher manifest binds implementation revision `ab74700`,
+The final clean launcher manifest binds implementation revision `3df4b92`,
 records `git_dirty=false`, CPU/float64 execution, exact-rational arithmetic,
 and the canonical configuration hash
 `ecb50ab6806a296629778ecbd9965859c4de5b99df406a7a1b408acf3efc9af0`.
-The six semantic artifact hashes match the refreshed result record, including
-corrected `stress_matrix.json` SHA-256
-`04ad19a198e3130118dc657acc053e4f6a3be250ed484e333c1d9de194c9c576`.
+The six semantic artifact hashes match the final result record:
+
+- `arrays.npz`: `aafa135e901d5425eaaf996c535903a5c0dc59a52ff5cb82ec87667d82f678de`;
+- `candidate_records.json`: `187c7ac65269f0c166c26fa19feb53640230368486135e07a08df7d1861475b8`;
+- `enumeration_bounds.json`: `6919d7f9ea4bc17698fe806c9947157debbfbae03f71e041b2db26a77d64656e`;
+- `metrics.json`: `4bcc4826e43f8bddbd44dd170ec455c50ac7bd59cff9f852ef08b9504fb4a6d0`;
+- `minimal_witnesses.json`: `8cdab56605783b9912071a0830f46657957f0e2c55f8c78e65a46c73c8e85bd4`;
+- `stress_matrix.json`: `04ad19a198e3130118dc657acc053e4f6a3be250ed484e333c1d9de194c9c576`.
+
 Fresh independent replay under two output roots produced byte-identical
 semantic artifacts after excluding the deliberately root-sensitive
 configuration identity.
@@ -103,7 +121,7 @@ The enumeration record truthfully distinguishes the requested bound (four
 states, denominator eight) from the effective exhaustive domains: two-state
 laws and 2-by-2 channels through denominator four, plus three binary axes with
 ternary integer action values. The saved counts are 7 laws, 49 channels, 6,561
-actions, 19,588 candidates, and 5 claim-wise minimal witnesses. No claim over
+actions, 19,587 candidates, and 5 claim-wise minimal witnesses. No claim over
 the larger requested domain is supported.
 
 Candidate minimization uses an explicit structural key before canonical JSON
@@ -128,7 +146,9 @@ CPU/memory scaling risks if effective bounds are increased.
 The required controls are otherwise present and correctly scoped:
 
 - a structured extended-real support violation without `inf - inf`;
-- a parameter-dependent-channel boundary with a nonzero exact gap;
+- an explicit parameter-dependent-channel boundary fixture with saved exact
+  `p,p',K,K',r,r'` and score primitives, literal gap `16/15` at `theta=1/4`,
+  globally minimal `theta=1/2` gap `4/3`, and endpoint `theta=1` exclusion;
 - coherent relabeling invariance and one-sided relabeling with `ln(3)/2`;
 - source-mass versus beta-only marked-event pushforward;
 - an order-three action with an order-two retained projection residual;
@@ -174,6 +194,53 @@ No critical security issue or high-priority vulnerability was found in this
 offline, CPU-only lane. No residual critical or important implementation issue
 was found in the correction or the complete reviewed scope.
 
+## Final code-review findings and resolution
+
+The final whole-lane review initially withheld merge approval at `b2fa7ee`.
+The following trail is retained because each item materially changed the final
+evidence contract.
+
+**Important -- accepted low bounds did not constrain execution. Resolved.**
+The prior experiment always ran the pinned 2-state/denominator-4 catalog, even
+when an accepted configuration requested smaller maxima. At `3df4b92`,
+`max_states < 2` and `max_denominator < 4` are rejected before `_catalog`,
+configuration hashing, RNG, provenance, `RunStore.create`, or artifact effects.
+The focused JUnit contains both low-bound parameterizations with every effect
+seam replaced by a forbidden callable. Separate exact `(2,4)` and larger
+`(5,9)` cases publish the requested/effective distinction and prove that the
+effective domain does not exceed the accepted maxima.
+
+**Important -- the parameter-channel gap was a circular bare formula.
+Resolved.** The corrected exact fixture defines `p=(1/2,1/2)`, `p'=(0,0)`,
+identical rows `K=((1+theta)/2,(1-theta)/2)`, derivative rows
+`K'=(1/2,-1/2)`, and derives `r=pK` and `r'=p'K+pK'`. At `theta=1/4`, direct
+reconstruction from saved numerator/denominator arrays gives
+`r=(5/8,3/8)`, `r'=(1/2,-1/2)`, zero fine score and fixed-channel prediction,
+actual coarse score `(4/5,-4/3)`, and literal Fisher-weighted gap `16/15`.
+This independent calculation does not call the production gap helper. The
+candidate catalog contains all primitives, has no `theta=1` record, and the
+fixture rejects that endpoint under `-1 < theta < 1`. Denominator-aware global
+minimization selects `theta=1/2` with residual `4/3`. Every parameter witness
+remains outside the fixed-channel premises and is classified
+`assumption_boundary`, not theorem refutation.
+
+**Minor -- rational denominator minimization was inert. Resolved.** The final
+minimizer recursively extracts denominators from nested `Fraction` values,
+validates optional denominator metadata, and ranks denominator complexity
+before canonical JSON. The focused adversary proves nested `1/2` beats
+lexically earlier `1/10` and rejects inconsistent declared denominator 3 for a
+`1/2` witness.
+
+**Important evidence-integrity follow-up -- durable records were stale after
+the code fix. Resolved.** The scoped remediation rereview correctly withheld
+approval at `3df4b92` because the result and independent-review documents still
+described `ab74700`. Result commit `8127250` now records the final tested code,
+26 focused tests, 466 full-suite tests with 2 skips, updated coverage, 19,587
+candidates, the exact parameter primitives and values, endpoint exclusion,
+low-bound controls, denominator adversary, current hashes, and final two-root
+replay. This review supplies the remaining current revision-bound independent
+assessment.
+
 ## Claim boundaries and unresolved obligations
 
 The parameter-dependent-channel and one-sided-relabeling witnesses violate
@@ -204,10 +271,16 @@ Gaussian-generality, external-application, or physical-time conclusion.
 
 ## Verdict
 
-**APPROVED.** The conditioning artifact now measures a genuinely
-positive-definite near-singular matrix and truthfully records its exact policy
-threshold and rejection reason. The core boundary behavior, exhaustive finite
-catalog, primitive recomputation, deterministic replay, launcher validation,
-and required negative controls are supported by fresh revision-bound evidence.
-The stated `OPEN` and `INCONCLUSIVE` obligations remain unchanged and are not
-promoted by this approval.
+**APPROVED.** All core, experiment, conditioning, bound-validation,
+parameter-fixture, structural-minimization, artifact-integrity, and stale-record
+findings are resolved. The final exact fixture and all five metrics are
+independently recomputable from saved primitives; the exhaustive finite catalog
+contains 19,587 candidates within its truthful effective bounds; invalid lower
+bounds fail before effects; endpoint `theta=1` is excluded; and final semantic
+artifacts replay byte-identically across roots. Focused and full JUnit are
+green, both new production modules exceed 80% line coverage, the seven-path
+allowlist is exact, and no residual Critical or Important issue was found.
+
+This approval is revision-bound implementation and finite-experiment closure,
+not mathematical proof. The stated `OPEN` and `INCONCLUSIVE` obligations remain
+unchanged and are not promoted by this approval.
