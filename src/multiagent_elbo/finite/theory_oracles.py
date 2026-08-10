@@ -163,8 +163,12 @@ class FisherDefectOracle:
     coarse_fisher: FractionMatrix
     defect: FractionMatrix
     conditional_covariance: FractionMatrix
+    zero_mass_coarse_score_rows: tuple[int, ...]
     assumption_boundary: str = (
-        "finite identity only; DQM and parameter independence are declared premises"
+        "finite algebraic identity only; statistical Fisher interpretation requires "
+        "a regular DQM family, a parameter-independent normalized channel, and "
+        "square-integrable centered score versions; zero rows at zero coarse mass "
+        "are nonsemantic version sentinels excluded by every mass-weighted result"
     )
 
 
@@ -357,19 +361,40 @@ THEOREM_ASSUMPTION_MATRIX = (
         "Theory/05_elbo.tex:180-190,212-274",
         "ESTABLISHED",
         "CANDIDATE",
-        "PROJECT_NOVEL",
+        "STANDARD",
         "exact_fraction_derivation_witness",
         "A nonzero canonical formal-log residual or mishandled support violation falsifies the encoding.",
     ),
     TheoremAssumptionRecord(
-        "fixed_channel_fisher_defect",
-        ("normalized parameter-independent source-row channel", "centered declared scores", "positive-mass conditional disintegration"),
+        "fixed_channel_fisher_defect_algebraic",
+        (
+            "finite normalized source probability law",
+            "normalized nonnegative source-row channel",
+            "finite centered score array",
+            "coarse scores are joint-weighted conditional averages on positive-mass targets",
+            "zero-mass coarse-score rows are arbitrary nonsemantic versions excluded by coarse mass",
+        ),
         "Theory/05c_pullback_geometry.tex:1078-1152",
         "ESTABLISHED",
         "CANDIDATE",
-        "PROJECT_NOVEL",
+        "STANDARD",
         "exact_fraction_derivation_witness",
-        "A mismatch between the Fisher difference and joint-weighted conditional covariance falsifies the encoding.",
+        "A mismatch between the finite Fisher difference and mass-weighted conditional covariance falsifies the algebraic identity.",
+    ),
+    TheoremAssumptionRecord(
+        "fixed_channel_fisher_statistical_interpretation",
+        (
+            "regular differentiable-in-quadratic-mean statistical family",
+            "normalized Markov channel independent of the statistical parameter",
+            "square-integrable centered score version",
+            "positive-mass conditional disintegration with arbitrary zero-mass versions excluded almost surely",
+        ),
+        "Theory/05c_pullback_geometry.tex:1078-1152",
+        "ESTABLISHED",
+        "CANDIDATE",
+        "STANDARD",
+        "theory_derivation_boundary",
+        "A parameter-dependent channel, non-DQM family, non-L2 score, or semantic use of a zero-mass version invalidates the Fisher interpretation.",
     ),
     TheoremAssumptionRecord(
         "marked_event_associativity",
@@ -377,7 +402,7 @@ THEOREM_ASSUMPTION_MATRIX = (
         "Theory/07b_agent_network_rg.tex:1748+",
         "ESTABLISHED",
         "CANDIDATE",
-        "PROJECT_NOVEL",
+        "STANDARD",
         "exact_fraction_derivation_witness",
         "A direct/staged joint-law mismatch or a conditional formed on zero mass falsifies the encoding.",
     ),
@@ -387,7 +412,7 @@ THEOREM_ASSUMPTION_MATRIX = (
         "Theory/07b_agent_network_rg.tex:1182-1250,1468-1507",
         "ESTABLISHED",
         "CANDIDATE",
-        "PROJECT_NOVEL",
+        "STANDARD",
         "exact_fraction_derivation_witness",
         "A nonzero full reconstruction residual or missing higher-order retained residual falsifies the encoding.",
     ),
@@ -397,7 +422,7 @@ THEOREM_ASSUMPTION_MATRIX = (
         "Theory/09_coarsegraining.tex:50-166",
         "ESTABLISHED",
         "CANDIDATE",
-        "PROJECT_NOVEL",
+        "STANDARD",
         "exact_fraction_derivation_witness",
         "Failure of G^-T A G^-1 or its transformed coarse square falsifies the encoding.",
     ),
@@ -407,19 +432,37 @@ THEOREM_ASSUMPTION_MATRIX = (
         "Theory/09_coarsegraining.tex:50-88",
         "ESTABLISHED",
         "CANDIDATE",
-        "PROJECT_NOVEL",
+        "STANDARD",
         "exact_fraction_derivation_witness",
         "A result different from S^T A S falsifies the encoding.",
     ),
     TheoremAssumptionRecord(
-        "gaussian_schur_complement",
-        ("retained/eliminated partition", "invertible eliminated block"),
+        "gaussian_schur_complement_algebraic",
+        (
+            "square rational block matrix",
+            "retained/eliminated coordinate partition",
+            "invertible eliminated block",
+        ),
         "Theory/09_coarsegraining.tex:90-166",
         "ESTABLISHED",
         "CANDIDATE",
-        "PROJECT_NOVEL",
+        "STANDARD",
         "exact_fraction_derivation_witness",
         "A result different from A_RR-A_RE A_EE^-1 A_ER falsifies the encoding.",
+    ),
+    TheoremAssumptionRecord(
+        "gaussian_schur_gaussian_marginal_interpretation",
+        (
+            "symmetric positive-definite joint precision",
+            "proper nondegenerate Gaussian law",
+            "retained/eliminated coordinate partition",
+        ),
+        "Theory/09_coarsegraining.tex:90-166",
+        "ESTABLISHED",
+        "CANDIDATE",
+        "STANDARD",
+        "theory_derivation_boundary",
+        "A non-SPD precision, improper Gaussian law, or marginal precision different from the Schur complement invalidates the probabilistic interpretation.",
     ),
     TheoremAssumptionRecord(
         "two_scale_literal_commuting_square",
@@ -631,6 +674,9 @@ def exact_fisher_defect(
         coarse_fisher=_matrix_from_rows(coarse),
         defect=_matrix_from_rows(defect),
         conditional_covariance=_matrix_from_rows(conditional),
+        zero_mass_coarse_score_rows=tuple(
+            target for target, mass in enumerate(coarse_mass_values) if mass == 0
+        ),
     )
 
 

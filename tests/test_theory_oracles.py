@@ -164,6 +164,60 @@ def test_fixed_channel_fisher_defect_rejects_transposed_channel_orientation():
         )
 
 
+def test_zero_mass_coarse_score_row_is_a_nonsemantic_excluded_version_sentinel():
+    from multiagent_elbo.finite.theory_oracles import (
+        FractionMatrix,
+        FractionVector,
+        exact_fisher_defect,
+    )
+
+    probability = FractionVector((Fraction(1, 3), Fraction(2, 3)))
+    scores = FractionMatrix(((Fraction(2),), (Fraction(-1),)))
+    with_zero_mass_target = exact_fisher_defect(
+        probability,
+        FractionMatrix(
+            (
+                (Fraction(1), Fraction(0)),
+                (Fraction(1), Fraction(0)),
+            )
+        ),
+        scores,
+    )
+    positive_mass_only = exact_fisher_defect(
+        probability,
+        FractionMatrix(((Fraction(1),), (Fraction(1),))),
+        scores,
+    )
+
+    assert with_zero_mass_target.coarse_mass.values == (Fraction(1), Fraction(0))
+    assert with_zero_mass_target.coarse_scores.rows == (
+        (Fraction(0),),
+        (Fraction(0),),
+    )
+    assert with_zero_mass_target.zero_mass_coarse_score_rows == (1,)
+    assert with_zero_mass_target.fine_fisher.rows == ((Fraction(2),),)
+    assert with_zero_mass_target.coarse_fisher.rows == ((Fraction(0),),)
+    assert with_zero_mass_target.defect.rows == ((Fraction(2),),)
+    assert with_zero_mass_target.conditional_covariance.rows == ((Fraction(2),),)
+    assert (
+        with_zero_mass_target.fine_fisher,
+        with_zero_mass_target.coarse_fisher,
+        with_zero_mass_target.defect,
+        with_zero_mass_target.conditional_covariance,
+    ) == (
+        positive_mass_only.fine_fisher,
+        positive_mass_only.coarse_fisher,
+        positive_mass_only.defect,
+        positive_mass_only.conditional_covariance,
+    )
+    assert with_zero_mass_target.assumption_boundary == (
+        "finite algebraic identity only; statistical Fisher interpretation requires "
+        "a regular DQM family, a parameter-independent normalized channel, and "
+        "square-integrable centered score versions; zero rows at zero coarse mass "
+        "are nonsemantic version sentinels excluded by every mass-weighted result"
+    )
+
+
 def test_marked_event_pushforward_includes_source_state_mass_before_disintegration():
     from multiagent_elbo.finite.theory_oracles import (
         FractionMatrix,
@@ -706,6 +760,66 @@ def test_fixture_loader_rejects_nonreduced_literal_before_hash_check(tmp_path: P
         load_two_scale_application(mutated)
 
 
+def test_assumption_matrix_splits_algebraic_and_interpretive_premises():
+    from multiagent_elbo.finite.theory_oracles import THEOREM_ASSUMPTION_MATRIX
+
+    records = {record.identity_id: record for record in THEOREM_ASSUMPTION_MATRIX}
+
+    assert records["fixed_channel_fisher_defect_algebraic"].premises == (
+        "finite normalized source probability law",
+        "normalized nonnegative source-row channel",
+        "finite centered score array",
+        "coarse scores are joint-weighted conditional averages on positive-mass targets",
+        "zero-mass coarse-score rows are arbitrary nonsemantic versions excluded by coarse mass",
+    )
+    assert records["fixed_channel_fisher_statistical_interpretation"].premises == (
+        "regular differentiable-in-quadratic-mean statistical family",
+        "normalized Markov channel independent of the statistical parameter",
+        "square-integrable centered score version",
+        "positive-mass conditional disintegration with arbitrary zero-mass versions excluded almost surely",
+    )
+    assert records["gaussian_schur_complement_algebraic"].premises == (
+        "square rational block matrix",
+        "retained/eliminated coordinate partition",
+        "invertible eliminated block",
+    )
+    assert records["gaussian_schur_gaussian_marginal_interpretation"].premises == (
+        "symmetric positive-definite joint precision",
+        "proper nondegenerate Gaussian law",
+        "retained/eliminated coordinate partition",
+    )
+
+
+def test_standard_identity_origins_exclude_project_novel_packaging_label():
+    from multiagent_elbo.finite.theory_oracles import THEOREM_ASSUMPTION_MATRIX
+
+    records = {record.identity_id: record for record in THEOREM_ASSUMPTION_MATRIX}
+    standard_identity_ids = (
+        "evidence_elbo",
+        "fixed_channel_fisher_defect_algebraic",
+        "fixed_channel_fisher_statistical_interpretation",
+        "marked_event_associativity",
+        "full_hoeffding_mobius",
+        "gaussian_inverse_congruence",
+        "gaussian_galerkin_restriction",
+        "gaussian_schur_complement_algebraic",
+        "gaussian_schur_gaussian_marginal_interpretation",
+    )
+
+    assert tuple(records[identity_id].claim_origin for identity_id in standard_identity_ids) == (
+        "STANDARD",
+        "STANDARD",
+        "STANDARD",
+        "STANDARD",
+        "STANDARD",
+        "STANDARD",
+        "STANDARD",
+        "STANDARD",
+        "STANDARD",
+    )
+    assert records["two_scale_literal_commuting_square"].claim_origin == "APPLICATION_SPECIFIC"
+
+
 def test_theorem_assumption_matrix_is_immutable_complete_and_boundary_preserving():
     from multiagent_elbo.finite.theory_oracles import (
         LANE_PRIVATE_AUXILIARY_PACKETS,
@@ -723,23 +837,40 @@ def test_theorem_assumption_matrix_is_immutable_complete_and_boundary_preserving
             "Theory/05_elbo.tex:180-190,212-274",
             "ESTABLISHED",
             "CANDIDATE",
-            "PROJECT_NOVEL",
+            "STANDARD",
             "exact_fraction_derivation_witness",
             "A nonzero canonical formal-log residual or mishandled support violation falsifies the encoding.",
         ),
         (
-            "fixed_channel_fisher_defect",
+            "fixed_channel_fisher_defect_algebraic",
             (
-                "normalized parameter-independent source-row channel",
-                "centered declared scores",
-                "positive-mass conditional disintegration",
+                "finite normalized source probability law",
+                "normalized nonnegative source-row channel",
+                "finite centered score array",
+                "coarse scores are joint-weighted conditional averages on positive-mass targets",
+                "zero-mass coarse-score rows are arbitrary nonsemantic versions excluded by coarse mass",
             ),
             "Theory/05c_pullback_geometry.tex:1078-1152",
             "ESTABLISHED",
             "CANDIDATE",
-            "PROJECT_NOVEL",
+            "STANDARD",
             "exact_fraction_derivation_witness",
-            "A mismatch between the Fisher difference and joint-weighted conditional covariance falsifies the encoding.",
+            "A mismatch between the finite Fisher difference and mass-weighted conditional covariance falsifies the algebraic identity.",
+        ),
+        (
+            "fixed_channel_fisher_statistical_interpretation",
+            (
+                "regular differentiable-in-quadratic-mean statistical family",
+                "normalized Markov channel independent of the statistical parameter",
+                "square-integrable centered score version",
+                "positive-mass conditional disintegration with arbitrary zero-mass versions excluded almost surely",
+            ),
+            "Theory/05c_pullback_geometry.tex:1078-1152",
+            "ESTABLISHED",
+            "CANDIDATE",
+            "STANDARD",
+            "theory_derivation_boundary",
+            "A parameter-dependent channel, non-DQM family, non-L2 score, or semantic use of a zero-mass version invalidates the Fisher interpretation.",
         ),
         (
             "marked_event_associativity",
@@ -751,7 +882,7 @@ def test_theorem_assumption_matrix_is_immutable_complete_and_boundary_preserving
             "Theory/07b_agent_network_rg.tex:1748+",
             "ESTABLISHED",
             "CANDIDATE",
-            "PROJECT_NOVEL",
+            "STANDARD",
             "exact_fraction_derivation_witness",
             "A direct/staged joint-law mismatch or a conditional formed on zero mass falsifies the encoding.",
         ),
@@ -765,7 +896,7 @@ def test_theorem_assumption_matrix_is_immutable_complete_and_boundary_preserving
             "Theory/07b_agent_network_rg.tex:1182-1250,1468-1507",
             "ESTABLISHED",
             "CANDIDATE",
-            "PROJECT_NOVEL",
+            "STANDARD",
             "exact_fraction_derivation_witness",
             "A nonzero full reconstruction residual or missing higher-order retained residual falsifies the encoding.",
         ),
@@ -775,7 +906,7 @@ def test_theorem_assumption_matrix_is_immutable_complete_and_boundary_preserving
             "Theory/09_coarsegraining.tex:50-166",
             "ESTABLISHED",
             "CANDIDATE",
-            "PROJECT_NOVEL",
+            "STANDARD",
             "exact_fraction_derivation_witness",
             "Failure of G^-T A G^-1 or its transformed coarse square falsifies the encoding.",
         ),
@@ -785,19 +916,37 @@ def test_theorem_assumption_matrix_is_immutable_complete_and_boundary_preserving
             "Theory/09_coarsegraining.tex:50-88",
             "ESTABLISHED",
             "CANDIDATE",
-            "PROJECT_NOVEL",
+            "STANDARD",
             "exact_fraction_derivation_witness",
             "A result different from S^T A S falsifies the encoding.",
         ),
         (
-            "gaussian_schur_complement",
-            ("retained/eliminated partition", "invertible eliminated block"),
+            "gaussian_schur_complement_algebraic",
+            (
+                "square rational block matrix",
+                "retained/eliminated coordinate partition",
+                "invertible eliminated block",
+            ),
             "Theory/09_coarsegraining.tex:90-166",
             "ESTABLISHED",
             "CANDIDATE",
-            "PROJECT_NOVEL",
+            "STANDARD",
             "exact_fraction_derivation_witness",
             "A result different from A_RR-A_RE A_EE^-1 A_ER falsifies the encoding.",
+        ),
+        (
+            "gaussian_schur_gaussian_marginal_interpretation",
+            (
+                "symmetric positive-definite joint precision",
+                "proper nondegenerate Gaussian law",
+                "retained/eliminated coordinate partition",
+            ),
+            "Theory/09_coarsegraining.tex:90-166",
+            "ESTABLISHED",
+            "CANDIDATE",
+            "STANDARD",
+            "theory_derivation_boundary",
+            "A non-SPD precision, improper Gaussian law, or marginal precision different from the Schur complement invalidates the probabilistic interpretation.",
         ),
         (
             "two_scale_literal_commuting_square",
