@@ -419,7 +419,7 @@ THEOREM_ASSUMPTION_MATRIX = (
     TheoremAssumptionRecord(
         "gaussian_inverse_congruence",
         ("invertible rational frame", "square rational precision"),
-        "Theory/09_coarsegraining.tex:50-166",
+        "Theory/08_infogeometry.tex:424-431",
         "ESTABLISHED",
         "CANDIDATE",
         "STANDARD",

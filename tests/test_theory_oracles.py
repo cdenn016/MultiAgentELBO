@@ -820,6 +820,28 @@ def test_standard_identity_origins_exclude_project_novel_packaging_label():
     assert records["two_scale_literal_commuting_square"].claim_origin == "APPLICATION_SPECIFIC"
 
 
+def test_gaussian_theorem_provenance_separates_infogeometry_from_coarsegraining():
+    from multiagent_elbo.finite.theory_oracles import THEOREM_ASSUMPTION_MATRIX
+
+    sources = {
+        record.identity_id: record.theory_source
+        for record in THEOREM_ASSUMPTION_MATRIX
+    }
+
+    assert sources["gaussian_inverse_congruence"] == (
+        "Theory/08_infogeometry.tex:424-431"
+    )
+    assert sources["gaussian_galerkin_restriction"] == (
+        "Theory/09_coarsegraining.tex:50-88"
+    )
+    assert sources["gaussian_schur_complement_algebraic"] == (
+        "Theory/09_coarsegraining.tex:90-166"
+    )
+    assert sources["gaussian_schur_gaussian_marginal_interpretation"] == (
+        "Theory/09_coarsegraining.tex:90-166"
+    )
+
+
 def test_theorem_assumption_matrix_is_immutable_complete_and_boundary_preserving():
     from multiagent_elbo.finite.theory_oracles import (
         LANE_PRIVATE_AUXILIARY_PACKETS,
@@ -903,7 +925,7 @@ def test_theorem_assumption_matrix_is_immutable_complete_and_boundary_preserving
         (
             "gaussian_inverse_congruence",
             ("invertible rational frame", "square rational precision"),
-            "Theory/09_coarsegraining.tex:50-166",
+            "Theory/08_infogeometry.tex:424-431",
             "ESTABLISHED",
             "CANDIDATE",
             "STANDARD",
