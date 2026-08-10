@@ -26,7 +26,7 @@ from multiagent_elbo.finite.counterexamples import (
     canonical_candidates_json,
     coarsen_marked_event,
     compose_channels,
-    diagonal_spd_conditioning,
+    diagonal_spd_condition_number,
     enumerate_rational_actions,
     enumerate_rational_channels,
     enumerate_rational_laws,
@@ -51,6 +51,7 @@ _EFFECTIVE_BOUNDS = EnumerationBounds(max_states=2, max_denominator=4)
 _ACTION_CARDINALITIES = (2, 2, 2)
 _ACTION_MAX_DENOMINATOR = 1
 _ACTION_VALUE_BOUND = 1
+_LEGACY_MIN_SPD_RCOND = 1.0 / float(MAX_NEAR_SINGULAR_SCORE)
 
 
 @dataclass(frozen=True)
@@ -371,6 +372,13 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
         action_permutations,
         retained_order,
     )
+    accepted_matrix = ((Fraction(1), Fraction(0)), (Fraction(0), Fraction(4)))
+    accepted_assessment = validate_full_rank_spd(
+        accepted_matrix,
+        min_rcond=_LEGACY_MIN_SPD_RCOND,
+        atol=0.0,
+        rtol=0.0,
+    )
     stress = {
         "deep_composition": {
             "channels": {
@@ -394,7 +402,14 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
         },
         "retained_space": {"pass_residual": str(pairwise.residual), "fails_full_reconstruction": pairwise.residual > 0},
         "tolerance_scaling": {"base": "1/100", "states": 2, "scaled": str(scale_tolerance(Fraction(1, 100), 2))},
-        "conditioning": {"accepted_dimension": validate_full_rank_spd(((Fraction(1), Fraction(0)), (Fraction(0), Fraction(4)))), "accepted_condition": str(diagonal_spd_conditioning((Fraction(1), Fraction(4)))), "rejected_near_singular": _rejected_near_singular()},
+        "conditioning": {
+            "accepted_dimension": len(accepted_matrix),
+            "accepted_decision": accepted_assessment.decision,
+            "accepted_condition": str(
+                diagonal_spd_condition_number((Fraction(1), Fraction(4)))
+            ),
+            "rejected_near_singular": _rejected_near_singular(),
+        },
     }
     bounds = {
         "requested": {
@@ -429,26 +444,36 @@ def _rejected_near_singular() -> dict[str, object]:
         (Fraction(1), Fraction(0)),
         (Fraction(0), minimum_diagonal),
     )
-    condition_score = diagonal_spd_conditioning((Fraction(1), minimum_diagonal))
-    try:
-        validate_full_rank_spd(matrix)
-    except ValueError as error:
-        reason = str(error)
-        if reason != "near-singular SPD input exceeds the exact conditioning boundary":
-            raise
-        return {
-            "matrix": [
-                [_fraction_text(value) for value in row]
-                for row in matrix
-            ],
-            "minimum_diagonal": _fraction_text(minimum_diagonal),
-            "condition_score": _fraction_text(condition_score),
-            "threshold": _fraction_text(MAX_NEAR_SINGULAR_SCORE),
-            "positive_definite": minimum_diagonal > 0,
-            "rejected": True,
-            "reason": reason,
-        }
-    raise AssertionError("near-singular SPD control was unexpectedly accepted")
+    condition_score = diagonal_spd_condition_number((Fraction(1), minimum_diagonal))
+    assessment = validate_full_rank_spd(
+        matrix,
+        min_rcond=_LEGACY_MIN_SPD_RCOND,
+        atol=0.0,
+        rtol=0.0,
+    )
+    if assessment.decision != "fail":
+        raise AssertionError("near-singular SPD control did not produce a fail decision")
+    return {
+        "matrix": [
+            [_fraction_text(value) for value in row]
+            for row in matrix
+        ],
+        "minimum_diagonal": _fraction_text(minimum_diagonal),
+        "condition_score": _fraction_text(condition_score),
+        "legacy_condition_number_threshold": _fraction_text(
+            MAX_NEAR_SINGULAR_SCORE
+        ),
+        "positive_definite": minimum_diagonal > 0,
+        "rejected": assessment.decision == "fail",
+        "minimum_eigenvalue": assessment.minimum_eigenvalue,
+        "maximum_eigenvalue": assessment.maximum_eigenvalue,
+        "reciprocal_condition": assessment.reciprocal_condition,
+        "threshold": assessment.threshold,
+        "boundary_tolerance": assessment.boundary_tolerance,
+        "method": assessment.method,
+        "decision": assessment.decision,
+        "reason": assessment.reason,
+    }
 
 
 def run_finite_counterexample_experiment(config: ExperimentConfig) -> FiniteCounterexampleExperimentResult:

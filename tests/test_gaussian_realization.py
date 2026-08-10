@@ -227,6 +227,21 @@ def test_cholesky_and_rcond_gates_reject_singular_or_unacceptable_precision():
         )
 
 
+def test_gaussian_spd_adapter_uses_the_shared_inconclusive_band():
+    boundary_numerics = NumericsConfig(
+        dtype="float64",
+        atol=1.0e-7,
+        rtol=0.0,
+        min_spd_rcond=1.0e-6,
+        max_frame_condition=1.0e6,
+    )
+
+    with pytest.raises(GaussianNumericalError, match="inconclusive"):
+        GaussianInteraction.from_self_and_edges(
+            (np.diag([1.0, 1.05e-6]),), {}, boundary_numerics
+        )
+
+
 def test_inverse_congruence_preserves_both_quadratic_energies_and_exact_determinants(
     monkeypatch: pytest.MonkeyPatch,
 ):

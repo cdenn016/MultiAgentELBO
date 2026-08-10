@@ -31,7 +31,7 @@ from multiagent_elbo.finite.counterexamples import (
     relabel_law,
     retained_projection_residual,
     scale_tolerance,
-    diagonal_spd_conditioning,
+    diagonal_spd_condition_number,
     retained_projection_invariant,
     validate_full_rank_spd,
 )
@@ -295,14 +295,48 @@ def test_outside_domain_candidate_cannot_be_a_theorem_refutation():
         CandidateRecord("bad", False, False, {}, "exact", "1", "theorem_refutation", "ESTABLISHED", "REFUTED", "STANDARD")
 
 
-def test_near_singular_spd_is_rejected_before_computation():
-    assert validate_full_rank_spd(((Fraction(2), Fraction(0)), (Fraction(0), Fraction(3)))) == 2
+def test_exact_sylvester_gate_precedes_shared_spectral_conditioning():
+    accepted = validate_full_rank_spd(
+        ((Fraction(2), Fraction(0)), (Fraction(0), Fraction(3))),
+        min_rcond=1.0e-12,
+        atol=0.0,
+        rtol=0.0,
+    )
+    assert accepted.decision == "pass"
     with pytest.raises(ValueError, match="positive definite"):
-        validate_full_rank_spd(((Fraction(1), Fraction(1)), (Fraction(1), Fraction(1))))
-    with pytest.raises(ValueError, match="near-singular"):
-        validate_full_rank_spd(((Fraction(1), Fraction(0)), (Fraction(0), Fraction(1, 10**100))))
+        validate_full_rank_spd(
+            ((Fraction(1), Fraction(1)), (Fraction(1), Fraction(1))),
+            min_rcond=1.0e-12,
+            atol=0.0,
+            rtol=0.0,
+        )
 
 
-def test_tolerance_scaling_and_diagonal_conditioning_stress_are_exact():
+def test_exact_finite_adapter_reverses_both_determinant_proxy_decisions():
+    correlated = validate_full_rank_spd(
+        (
+            (Fraction(1), Fraction(10**12 - 1, 10**12)),
+            (Fraction(10**12 - 1, 10**12), Fraction(1)),
+        ),
+        min_rcond=1.0e-12,
+        atol=0.0,
+        rtol=0.0,
+    )
+    repeated_small = validate_full_rank_spd(
+        (
+            (Fraction(1), Fraction(0), Fraction(0)),
+            (Fraction(0), Fraction(1, 10**7), Fraction(0)),
+            (Fraction(0), Fraction(0), Fraction(1, 10**7)),
+        ),
+        min_rcond=1.0e-12,
+        atol=0.0,
+        rtol=0.0,
+    )
+
+    assert correlated.decision == "fail"
+    assert repeated_small.decision == "pass"
+
+
+def test_tolerance_scaling_and_diagonal_condition_number_are_exact():
     assert scale_tolerance(Fraction(1, 1000), 8) == Fraction(1, 125)
-    assert diagonal_spd_conditioning((Fraction(1, 16), Fraction(4))) == Fraction(64)
+    assert diagonal_spd_condition_number((Fraction(1, 16), Fraction(4))) == Fraction(64)

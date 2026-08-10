@@ -18,6 +18,7 @@ from multiagent_elbo.finite.permutations import FinitePermutation
 
 
 Rational = Fraction
+# Retained for historical artifact metadata; admission now uses the shared policy.
 MAX_NEAR_SINGULAR_SCORE = Fraction(10**12)
 
 
@@ -540,19 +541,25 @@ def _determinant(matrix: Sequence[Sequence[Fraction]]) -> Fraction:
     return sum(((-1) ** column) * _fraction(matrix[0][column]) * _determinant(tuple(tuple(matrix[row][col] for col in range(size) if col != column) for row in range(1, size))) for column in range(size))
 
 
-def validate_full_rank_spd(matrix: Sequence[Sequence[Fraction]]) -> int:
+def validate_full_rank_spd(
+    matrix: Sequence[Sequence[Fraction]],
+    *,
+    min_rcond: float = 1.0e-12,
+    atol: float = 0.0,
+    rtol: float = 0.0,
+) -> SpectralConditioningAssessment:
+    """Establish exact SPD membership, then assess shared spectral conditioning."""
+    from multiagent_elbo.conditioning import assess_spectral_spd
+
     values = tuple(tuple(_fraction(entry) for entry in row) for row in matrix)
     size = len(values)
     if size < 1 or any(len(row) != size for row in values) or any(values[i][j] != values[j][i] for i in range(size) for j in range(size)):
         raise ValueError("SPD matrix must be square and symmetric")
     if any(_determinant(tuple(tuple(values[row][column] for column in range(k)) for row in range(k))) <= 0 for k in range(1, size + 1)):
         raise ValueError("matrix is not positive definite; near-singular inputs require a different model")
-    diagonal = tuple(values[index][index] for index in range(size))
-    diagonal_score = diagonal_spd_conditioning(diagonal)
-    determinant_score = max(diagonal) ** size / _determinant(values)
-    if max(diagonal_score, determinant_score) > MAX_NEAR_SINGULAR_SCORE:
-        raise ValueError("near-singular SPD input exceeds the exact conditioning boundary")
-    return size
+    return assess_spectral_spd(
+        values, min_rcond=min_rcond, atol=atol, rtol=rtol
+    )
 
 
 def scale_tolerance(base_tolerance: Fraction, state_count: int) -> Fraction:
@@ -563,12 +570,17 @@ def scale_tolerance(base_tolerance: Fraction, state_count: int) -> Fraction:
     return tolerance * state_count
 
 
-def diagonal_spd_conditioning(diagonal: Sequence[Fraction]) -> Fraction:
-    """Exact condition ratio for an explicitly diagonal positive-definite input."""
+def diagonal_spd_condition_number(diagonal: Sequence[Fraction]) -> Fraction:
+    """Exact diagonal condition number retained as a diagnostic."""
     values = tuple(_fraction(entry) for entry in diagonal)
     if not values or any(value <= 0 for value in values):
         raise ValueError("diagonal SPD entries must be positive")
     return max(values) / min(values)
+
+
+def diagonal_spd_conditioning(diagonal: Sequence[Fraction]) -> Fraction:
+    """Backward-compatible alias for the diagonal diagnostic."""
+    return diagonal_spd_condition_number(diagonal)
 
 
 def _witness_denominators(value: object) -> tuple[int, ...]:

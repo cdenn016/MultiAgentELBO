@@ -272,23 +272,28 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     near_singular = stress["conditioning"]["rejected_near_singular"]
     assert stress["conditioning"]["accepted_dimension"] == 2
     assert stress["conditioning"]["accepted_condition"] == "4"
-    assert near_singular == {
-        "matrix": [["1", "0"], ["0", "1/10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"]],
-        "minimum_diagonal": "1/10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        "condition_score": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        "threshold": "1000000000000",
-        "positive_definite": True,
-        "rejected": True,
-        "reason": "near-singular SPD input exceeds the exact conditioning boundary",
-    }
+    assert stress["conditioning"]["accepted_decision"] == "pass"
+    assert near_singular["matrix"] == [["1", "0"], ["0", "1/10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"]]
+    assert near_singular["minimum_diagonal"] == "1/10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    assert near_singular["condition_score"] == "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    assert near_singular["legacy_condition_number_threshold"] == "1000000000000"
+    assert near_singular["positive_definite"] is True
+    assert near_singular["rejected"] is True
+    assert near_singular["minimum_eigenvalue"] == pytest.approx(1.0e-100)
+    assert near_singular["maximum_eigenvalue"] == pytest.approx(1.0)
+    assert near_singular["reciprocal_condition"] == pytest.approx(1.0e-100)
+    assert near_singular["threshold"] == pytest.approx(1.0e-12)
+    assert near_singular["boundary_tolerance"] == pytest.approx(0.0)
+    assert near_singular["method"] == "symmetric_eigenvalue_ratio"
+    assert near_singular["decision"] == "fail"
+    assert near_singular["reason"] == "reciprocal condition is below the declared threshold"
     assert Fraction(near_singular["minimum_diagonal"]) > 0
     assert Fraction(near_singular["condition_score"]) > MAX_NEAR_SINGULAR_SCORE
     matrix = tuple(
         tuple(Fraction(value) for value in row)
         for row in near_singular["matrix"]
     )
-    with pytest.raises(ValueError, match="near-singular SPD input"):
-        validate_full_rank_spd(matrix)
+    assert validate_full_rank_spd(matrix).decision == "fail"
 
 
 def test_primitive_rational_arrays_independently_recompute_all_metrics(tmp_path: Path):

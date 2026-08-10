@@ -9,6 +9,7 @@ from typing import Iterable, Mapping, Sequence
 import numpy as np
 import scipy.linalg
 
+from ...conditioning import assess_spectral_spd
 from ...config import NumericsConfig
 
 
@@ -63,17 +64,21 @@ def _validate_spd(
         )
     except scipy.linalg.LinAlgError as error:
         raise GaussianNumericalError(f"{label} is not positive definite") from error
-    condition = float(np.linalg.cond(symmetric))
-    reciprocal_condition = 0.0 if not math_isfinite_positive(condition) else 1.0 / condition
-    if reciprocal_condition < numerics.min_spd_rcond:
+    assessment = assess_spectral_spd(
+        symmetric,
+        min_rcond=numerics.min_spd_rcond,
+        atol=numerics.atol,
+        rtol=numerics.rtol,
+    )
+    if assessment.decision == "fail":
         raise GaussianNumericalError(
-            f"{label} reciprocal condition {reciprocal_condition:.6g} is below min_spd_rcond"
+            f"{label} reciprocal condition {assessment.reciprocal_condition:.6g} is below min_spd_rcond"
         )
-    return cholesky, reciprocal_condition, condition
-
-
-def math_isfinite_positive(value: float) -> bool:
-    return bool(np.isfinite(value) and value > 0.0)
+    if assessment.decision == "inconclusive":
+        raise GaussianNumericalError(
+            f"{label} reciprocal condition {assessment.reciprocal_condition:.6g} is inconclusive within the min_spd_rcond tolerance band"
+        )
+    return cholesky, assessment.reciprocal_condition, 1.0 / assessment.reciprocal_condition
 
 
 def _coerce_blocks(
