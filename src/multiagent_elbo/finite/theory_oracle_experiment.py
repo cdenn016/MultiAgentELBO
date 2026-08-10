@@ -94,6 +94,63 @@ _METRIC_ARRAY_PAIRS = {
     ),
 }
 
+_METRIC_EXACT_LAYOUT = {
+    "elbo_oracle_residual": [
+        {"kind": "formal_log", "name": "elbo.evidence_log"},
+        {"kind": "formal_log", "name": "elbo.elbo"},
+        {"kind": "formal_log", "name": "elbo.kl"},
+        {"kind": "formal_log", "name": "elbo.structural_residual"},
+    ],
+    "fisher_defect_oracle_residual": [
+        {"kind": "rational_array", "name": f"fisher.{name}"}
+        for name in (
+            "joint_weights",
+            "coarse_mass",
+            "coarse_scores",
+            "fine_fisher",
+            "coarse_fisher",
+            "defect",
+            "conditional_covariance",
+        )
+    ],
+    "marked_event_associativity_residual": [
+        {"kind": "rational_array", "name": f"marked.{stage}.{name}"}
+        for stage in ("direct", "staged")
+        for name in ("joint", "coarse_state_mass", "conditional_events")
+    ],
+    "hoeffding_oracle_residual": [
+        {"kind": "rational_array", "name": f"hoeffding.component.{subset}"}
+        for subset in (
+            "empty",
+            "0",
+            "1",
+            "2",
+            "0_1",
+            "0_2",
+            "1_2",
+            "0_1_2",
+        )
+    ]
+    + [
+        {"kind": "rational_array", "name": f"hoeffding.{name}"}
+        for name in (
+            "reconstruction",
+            "reconstruction_residual",
+            "retained_values",
+            "retained_residual",
+        )
+    ],
+    "gaussian_linear_algebra_oracle_residual": [
+        {"kind": "rational_array", "name": f"gaussian.{name}"}
+        for name in (
+            "inverse_congruence",
+            "transformed_prolongator",
+            "galerkin",
+            "schur",
+        )
+    ],
+}
+
 
 @dataclass(frozen=True)
 class TheoryOracleExperimentResult:
@@ -512,8 +569,11 @@ def _oracle_gaussian(
     fine_frame = _matrix(literals["fine_frame"], 4, 4)
     coarse_frame = _matrix(literals["coarse_frame"], 2, 2)
     schur_precision = _matrix(literals["schur_precision"], 3, 3)
-    retained = tuple(value.numerator for value in literals["schur_retained"])
-    eliminated = tuple(value.numerator for value in literals["schur_eliminated"])
+    retained, eliminated = _validated_schur_indices(
+        literals["schur_retained"],
+        literals["schur_eliminated"],
+        size=schur_precision.shape[0],
+    )
     exact_congruence = inverse_congruence(precision, fine_frame)
     exact_prolongator = exact_transform_prolongator(
         prolongator, fine_frame, coarse_frame
@@ -581,6 +641,33 @@ def _oracle_gaussian(
         "gaussian_prolongator": prolongator_float,
     }
     return oracle_values, production_values, details, diagnostics
+
+
+def _validated_schur_indices(
+    retained_values: tuple[Fraction, ...],
+    eliminated_values: tuple[Fraction, ...],
+    *,
+    size: int,
+) -> tuple[tuple[int, ...], tuple[int, ...]]:
+    if not retained_values or not eliminated_values:
+        raise ValueError("Schur indices require nonempty retained and eliminated sets")
+    if any(
+        value.denominator != 1 for value in retained_values + eliminated_values
+    ):
+        raise ValueError("Schur packet indices must be integer indices")
+    retained = tuple(int(value) for value in retained_values)
+    eliminated = tuple(int(value) for value in eliminated_values)
+    if len(set(retained)) != len(retained) or len(set(eliminated)) != len(
+        eliminated
+    ):
+        raise ValueError("Schur retained and eliminated indices must be unique")
+    if set(retained).intersection(eliminated):
+        raise ValueError("Schur retained and eliminated indices must be disjoint")
+    if any(index < 0 or index >= size for index in retained + eliminated):
+        raise ValueError("Schur retained and eliminated indices must be in range")
+    if set(retained).union(eliminated) != set(range(size)):
+        raise ValueError("Schur indices must form the required full partition")
+    return retained, eliminated
 
 
 def _matrix_literals(matrix: FractionMatrix) -> list[list[str]]:
@@ -785,7 +872,7 @@ def _build_bundle(config: ExperimentConfig) -> _OracleBundle:
     for name, value in diagram_exact.items():
         _add_rational(rational_arrays, f"diagram.{name}", value)
 
-    return _OracleBundle(
+    bundle = _OracleBundle(
         arrays=arrays,
         diagnostics=diagnostics,
         rational_arrays=rational_arrays,
@@ -795,6 +882,25 @@ def _build_bundle(config: ExperimentConfig) -> _OracleBundle:
         theorem_assumptions=assumptions,
         commuting_diagrams=diagrams,
     )
+    for metric_name, (oracle_name, _) in _METRIC_ARRAY_PAIRS.items():
+        reconstructed = _exact_layout_values(bundle, metric_name)
+        if not np.array_equal(reconstructed, bundle.arrays[oracle_name]):
+            raise ValueError(
+                f"exact JSON layout does not reproduce {metric_name} oracle values"
+            )
+    return bundle
+
+
+def _exact_layout_values(bundle: _OracleBundle, metric_name: str) -> np.ndarray:
+    pieces: list[np.ndarray] = []
+    for component in _METRIC_EXACT_LAYOUT[metric_name]:
+        name = component["name"]
+        if component["kind"] == "rational_array":
+            _, values = bundle.rational_arrays[name]
+            pieces.append(np.asarray([float(value) for value in values]))
+        else:
+            pieces.append(np.asarray([bundle.formal_logs[name].evaluate_float()]))
+    return np.concatenate(pieces)
 
 
 def _split_exact_artifact(
@@ -804,6 +910,7 @@ def _split_exact_artifact(
     return {
         "schema_version": "exact-rational-components-v1",
         "component": attribute,
+        "metric_oracle_layout": _METRIC_EXACT_LAYOUT,
         "rational_arrays": {
             name: {
                 "shape": list(shape),
