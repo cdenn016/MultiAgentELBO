@@ -6,27 +6,26 @@
 
 **Contract freeze:** `b80df01f239c2f9a18842f6887cdeca67dff508f`
 
-**Reviewed implementation revision:** `4b61565eec9fe02543e3ad58ab6fb3ae66ae0375`
+**Reviewed implementation revision:** `ab747008b970c0c6a162be1ee1501a9baa163cb3`
 
-**Reviewed result-record revision:** `71a6de00d247971ec7916fb542fc85f8604470a5`
+**Reviewed result-record revision:** `86b45515ed4842f99ad05a6e3798429d3caf24c5`
 
-**Verdict:** **REJECTED pending one scientific-artifact integrity fix**
+**Verdict:** **APPROVED**
 
 ## Scope and ownership
 
-The base-to-result-record diff contains exactly these six Session-3 allowlisted
+The base-to-result-record diff contains exactly these seven Session-3 allowlisted
 paths:
 
 - `docs/results/2026-08-09-finite-counterexample-results.md`
+- `docs/verification/reviews/2026-08-09-finite-counterexample-review.md`
 - `run_finite_counterexample_lab.py`
 - `src/multiagent_elbo/finite/counterexample_experiment.py`
 - `src/multiagent_elbo/finite/counterexamples.py`
 - `tests/test_counterexample_experiment.py`
 - `tests/test_counterexamples.py`
 
-This review adds only
-`docs/verification/reviews/2026-08-09-finite-counterexample-review.md`, the
-seventh and final Session-3 allowlisted path. No frozen shared interface,
+This rereview updates only the lane-unique review path. No frozen shared interface,
 package export, `Theory/**` source, CUDA path, or dependency file changed.
 
 ## Review history
@@ -60,31 +59,43 @@ reparsed its named evidence and inspected the current base-to-head code and
 tests. It found the artifact-integrity defect described below, which was not
 identified in the earlier scoped rereviews.
 
+The original rejection was committed as `db604e6`. Commit `ab74700` then
+replaced the singular stress input with exact positive-definite
+`diag(1,10^-100)`, serialized its threshold comparison and rejection reason,
+and added a literal reconstruction test. The experiment reviewer approved that
+scoped fix. Commit `86b4551` refreshed the durable result record and all cited
+mechanical evidence at the corrected implementation revision. This rereview
+independently parsed that refreshed evidence and resolves the original blocker.
+
 ## Current mechanical evidence
 
 The cited focused JUnit XML at
-`.verification/session3/task3-focused.xml` parses to 21 tests, 0 failures, 0
-errors, 0 skips, and 22.362 seconds. The cited full-suite JUnit XML at
-`.verification/session3/task3-full.xml` parses to 461 tests, 0 failures, 0
-errors, 2 skips, and 40.841 seconds. The two skips are the existing
+`.verification/session3/task3-refresh-focused.xml` parses to 21 tests, 0
+failures, 0 errors, 0 skips, and 22.132 seconds. The cited full-suite JUnit XML
+at `.verification/session3/task3-refresh-full.xml` parses to 461 tests, 0
+failures, 0 errors, 2 skips, and 42.024 seconds. The two skips are the existing
 Windows-privilege-dependent link tests.
 
-The cited coverage XML at `.verification/session3/task3-coverage.xml` reports
-90.24% line and 75.83% branch coverage for `counterexamples.py`, and 98.10%
-line and 95.00% branch coverage for `counterexample_experiment.py`. Both new
-production modules exceed the required 80% line threshold.
+The cited coverage XML at
+`.verification/session3/task3-refresh-coverage.xml` reports 90.24% line and
+75.83% branch coverage for `counterexamples.py`, and 97.56% line and 92.86%
+branch coverage for `counterexample_experiment.py`. Both new production modules
+exceed the required 80% line threshold.
 
-The clean launcher manifest binds the implementation revision `4b61565`,
+The refreshed clean launcher manifest binds implementation revision `ab74700`,
 records `git_dirty=false`, CPU/float64 execution, exact-rational arithmetic,
 and the canonical configuration hash
 `ecb50ab6806a296629778ecbd9965859c4de5b99df406a7a1b408acf3efc9af0`.
-The six semantic artifact hashes match the result record. Independent replay
-under two output roots produced byte-identical semantic artifacts after
-excluding the deliberately root-sensitive configuration identity.
+The six semantic artifact hashes match the refreshed result record, including
+corrected `stress_matrix.json` SHA-256
+`04ad19a198e3130118dc657acc053e4f6a3be250ed484e333c1d9de194c9c576`.
+Fresh independent replay under two output roots produced byte-identical
+semantic artifacts after excluding the deliberately root-sensitive
+configuration identity.
 
-These files are eligible implementation and finite-experiment evidence for
-the tested code revision. They are not mathematical proof. Any subsequent
-tracked source or artifact fix requires fresh evidence at the new revision.
+These files are eligible implementation and finite-experiment evidence for the
+corrected tested code revision. They are not mathematical proof. Any subsequent
+tracked source or artifact change requires fresh evidence at the new revision.
 
 ## Technical assessment
 
@@ -127,27 +138,41 @@ The required controls are otherwise present and correctly scoped:
 - exact tolerance scaling; and
 - singular and near-singular SPD rejection in the core test suite.
 
-## Blocking finding
+## Original blocking finding and resolution
 
-**Medium -- the published conditioning stress datum is semantically false.**
-`stress_matrix.json` publishes
+**Original Medium finding -- the published conditioning stress datum was
+semantically false.**
+The original `stress_matrix.json` published
 `"conditioning":{"rejected_near_singular":true,...}`. However,
-`_rejected_near_singular()` calls `validate_full_rank_spd` with
+the original `_rejected_near_singular()` called `validate_full_rank_spd` with
 `diag(1,0)`, which is singular, not near-singular. The experiment test merely
 asserts the resulting mislabeled Boolean. A separate core test does correctly
 reject `diag(1,10^-100)` at the declared exact conditioning boundary, so this
-does not show that the validator is broken. It does show that the durable
-stress artifact does not measure what its field says it measures.
+did not show that the validator was broken. It showed that the original durable
+stress artifact did not measure what its field said it measured.
 
-This is a scientific-artifact integrity failure and therefore blocks approval.
-The required repair is narrow: make the stress producer exercise an actually
-positive-definite near-singular input, add a test that distinguishes that input
-from the singular control, reproduce the launcher bundle/JUnit/coverage at the
-new revision, and update the result record and hashes. This review does not
-change code or the result record.
+At the original reviewed revision, this scientific-artifact integrity failure
+blocked approval. The required repair was narrow: make the stress producer
+exercise an actually positive-definite near-singular input, add a test that
+distinguishes that input from the singular control, reproduce the launcher
+bundle/JUnit/coverage at the new revision, and update the result record and
+hashes.
+
+**Resolution -- addressed by `ab74700` and rebound by `86b4551`.** The producer
+now uses exact `diag(1,10^-100)`. Independent parsing confirms both diagonal
+entries and the determinant are strictly positive, the serialized minimum
+diagonal matches `10^-100`, the condition score is exactly `10^100`, and
+`10^100 > 10^12`. The record preserves `positive_definite=true`,
+`rejected=true`, and reason
+`near-singular SPD input exceeds the exact conditioning boundary`. The test
+reconstructs the serialized matrix as `Fraction` values and reaches that exact
+near-singular rejection. The singular control remains separate. Fresh focused
+and full JUnit, coverage, launcher provenance, semantic hashes, and two-root
+replay all bind the corrected implementation. The original blocker is closed.
 
 No critical security issue or high-priority vulnerability was found in this
-offline, CPU-only lane. The rejection is about evidence fidelity, not security.
+offline, CPU-only lane. No residual critical or important implementation issue
+was found in the correction or the complete reviewed scope.
 
 ## Claim boundaries and unresolved obligations
 
@@ -172,14 +197,17 @@ The following obligations remain explicitly unresolved:
   Sessions 1, 2, 4, 5, and 6; and
 - `OPEN`: exhaustive coverage beyond the saved effective bounds.
 
-Residual risks after the blocker is fixed are bounded-domain scaling, the use
+Residual risks are bounded-domain scaling, the use
 of floating logarithms for generally irrational KL values, and deferred
 cross-laboratory integration checks. None supports a continuum, universality,
 Gaussian-generality, external-application, or physical-time conclusion.
 
 ## Verdict
 
-**REJECTED pending the conditioning stress-artifact correction and fresh,
-revision-bound reproduction.** The core boundary behavior, exhaustive finite
+**APPROVED.** The conditioning artifact now measures a genuinely
+positive-definite near-singular matrix and truthfully records its exact policy
+threshold and rejection reason. The core boundary behavior, exhaustive finite
 catalog, primitive recomputation, deterministic replay, launcher validation,
-and other negative controls are otherwise supported by the cited evidence.
+and required negative controls are supported by fresh revision-bound evidence.
+The stated `OPEN` and `INCONCLUSIVE` obligations remain unchanged and are not
+promoted by this approval.
