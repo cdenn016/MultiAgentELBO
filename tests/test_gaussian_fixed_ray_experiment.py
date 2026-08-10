@@ -49,7 +49,7 @@ def fixed_ray_config(
             "deterministic": True,
             "allow_tf32": False,
             "cpu_cuda_parity": True,
-            "cuda_worker_python": r"C:\anaconda\python.exe",
+            "cuda_worker_python": str(Path(sys.executable).resolve()),
             "heavy_sweep_enabled": False,
         },
     )
@@ -178,6 +178,38 @@ def test_pilot_publishes_recomputable_artifacts_with_incomplete_cuda_gate(
         rtol=0.0,
         atol=1.0e-12,
     )
+
+
+def test_cpu_worker_temporary_files_stay_under_configured_output_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import multiagent_elbo.realizations.gaussian.fixed_ray_experiment as experiment
+
+    output_root = tmp_path / "configured-output"
+    checkout_worker_root = Path(__file__).resolve().parents[1] / ".pytest-tmp"
+    observed_work_roots: list[Path] = []
+    real_run_worker_job = experiment.run_worker_job
+
+    def recording_run_worker_job(**kwargs):
+        observed_work_roots.append(Path(kwargs["work_root"]).resolve())
+        return real_run_worker_job(**kwargs)
+
+    monkeypatch.setattr(experiment, "run_worker_job", recording_run_worker_job)
+
+    result = experiment.run_gaussian_fixed_ray_experiment(
+        fixed_ray_config(output_root)
+    )
+
+    assert len(observed_work_roots) == 1
+    worker_root = observed_work_roots[0]
+    assert worker_root.parent.parent == output_root.resolve()
+    assert worker_root.parent.parent != checkout_worker_root.resolve()
+    backend = json.loads(
+        (result.run_dir / "backend_provenance.json").read_text(encoding="utf-8")
+    )
+    assert Path(backend["worker_cpu"]["python_executable"]).resolve() == Path(
+        sys.executable
+    ).resolve()
 
 
 def test_pilot_is_same_seed_deterministic_across_output_roots(tmp_path: Path):

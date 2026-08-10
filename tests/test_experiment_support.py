@@ -4,6 +4,7 @@ from dataclasses import asdict
 import hashlib
 import json
 from pathlib import Path
+import sys
 from types import SimpleNamespace
 
 import numpy as np
@@ -57,7 +58,7 @@ _CPU_COMPUTE = {
     "deterministic": True,
     "allow_tf32": False,
     "cpu_cuda_parity": True,
-    "cuda_worker_python": r"C:\anaconda\python.exe",
+    "cuda_worker_python": str(Path(sys.executable).resolve()),
     "heavy_sweep_enabled": False,
 }
 
@@ -210,6 +211,10 @@ ALL_LAB_RUNNERS = (
     (run_holonomy_experiment, _holonomy_config),
     (run_gaussian_fixed_ray_experiment, _gaussian_fixed_ray_config),
 )
+_EXPECTED_INCONCLUSIVE_METRICS = {
+    run_information_history_experiment: {"semiconjugacy_defect_norm"},
+    run_gaussian_fixed_ray_experiment: {"cpu_cuda_parity_residual"},
+}
 
 
 def test_target_and_lower_bound_metrics_keep_established_json_schema():
@@ -248,10 +253,20 @@ def test_laboratory_producers_do_not_self_promote(
     runner, config_factory, tmp_path: Path
 ):
     result = runner(config_factory(tmp_path))
+    expected_inconclusive = _EXPECTED_INCONCLUSIVE_METRICS.get(runner, set())
 
+    assert {
+        metric.verification_state for metric in result.metrics.values()
+    } <= {"CANDIDATE", "INCONCLUSIVE"}
+    assert {
+        name
+        for name, metric in result.metrics.items()
+        if metric.verification_state == "INCONCLUSIVE"
+    } == expected_inconclusive
     assert all(
-        metric.verification_state != "EVIDENCE_VERIFIED"
-        for metric in result.metrics.values()
+        metric.verification_state == "CANDIDATE"
+        for name, metric in result.metrics.items()
+        if name not in expected_inconclusive
     )
 
 

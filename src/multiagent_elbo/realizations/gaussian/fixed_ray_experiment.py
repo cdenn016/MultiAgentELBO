@@ -232,7 +232,7 @@ def _run_pilot(
 
     worker_script = repo_root / "tools" / "cuda_worker.py"
     environment_lock = repo_root / "environments" / "cuda-rtx5090-cu128.lock.txt"
-    temporary_parent = repo_root / ".pytest-tmp"
+    temporary_parent = Path(config.output.root).resolve()
     temporary_parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(
         prefix="session6-fixed-ray-worker-", dir=temporary_parent
