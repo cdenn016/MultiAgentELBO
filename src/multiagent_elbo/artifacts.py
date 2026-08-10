@@ -194,6 +194,17 @@ def _strict_resolved_run_dir(run_dir: Path) -> Path:
     return resolved
 
 
+def resolve_owned_artifact(run_dir: Path, filename: str) -> Path:
+    """Resolve one portable, regular artifact owned solely by ``run_dir``."""
+    validated_filename = _artifact_filename(filename, "")
+    resolved_run_dir = _strict_resolved_run_dir(run_dir)
+    return _require_owned_regular_file(
+        run_dir / validated_filename,
+        resolved_run_dir,
+        missing_label="finalized",
+    )
+
+
 def _require_owned_regular_file(
     path: Path, resolved_run_dir: Path, *, missing_label: str
 ) -> Path:

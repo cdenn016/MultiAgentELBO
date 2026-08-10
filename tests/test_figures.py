@@ -4,6 +4,7 @@ from dataclasses import FrozenInstanceError
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import re
 import struct
@@ -315,6 +316,48 @@ def test_buildout_replay_supports_split_numeric_archives_and_all_lab_figures(
     caption = json.loads(manifest.manifest_path.read_text("utf-8"))["caption"]
     assert "heterogeneous units" in caption
     assert "cuda parity remains inconclusive" in caption.lower()
+
+
+@pytest.mark.parametrize("external_name", ("../outside.npz", "ABSOLUTE"))
+def test_buildout_replay_rejects_numeric_archives_outside_the_run_bundle(
+    tmp_path: Path, external_name: str
+):
+    run_dir = tmp_path / "buildout-run"
+    _write_buildout_metric_run(run_dir)
+    outside = tmp_path / "outside.npz"
+    with outside.open("wb") as handle:
+        np.savez(handle, witness=np.array([2.0]))
+    manifest_path = run_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text("utf-8"))
+    del manifest["artifacts"]["laboratory_arrays.npz"]
+    filename = str(outside.resolve()) if external_name == "ABSOLUTE" else external_name
+    manifest["artifacts"][filename] = "complete"
+    manifest_path.write_text(
+        json.dumps(manifest, sort_keys=True, separators=(",", ":")), "utf-8"
+    )
+
+    result = render_run(
+        run_dir, tmp_path / "figures", requested=("multiagent_network",)
+    )
+
+    assert result.status == "failed"
+    assert "invalid artifact filename" in result.message
+
+
+def test_buildout_replay_rejects_a_hard_linked_numeric_archive(tmp_path: Path):
+    run_dir = tmp_path / "buildout-run"
+    _write_buildout_metric_run(run_dir)
+    archive = run_dir / "laboratory_arrays.npz"
+    outside = tmp_path / "outside.npz"
+    archive.replace(outside)
+    os.link(outside, archive)
+
+    result = render_run(
+        run_dir, tmp_path / "figures", requested=("multiagent_network",)
+    )
+
+    assert result.status == "failed"
+    assert "exactly one hard link" in result.message
 
 
 def test_finite_replay_uses_finalized_saved_artifacts_and_local_style(tmp_path: Path):

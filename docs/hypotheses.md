@@ -392,7 +392,9 @@ named implementation or fixture claim.
   detectably nonzero.
 - **Inconclusive rule:** A changed application digest, failed premise, unsupported
   scenario, or incomplete artifact prevents application-level closure.
-- **Current state:** `EVIDENCE_VERIFIED` for the registered CPU fixture checks.
+- **Current state:** The lane record reports passing CPU fixture checks.
+  Integration-wide verification state is assigned only by the validated live
+  final-SHA ledger, not by this registry.
 
 ### BUILD-02 — Independent theory oracles
 
@@ -404,7 +406,9 @@ named implementation or fixture claim.
   literal commuting-diagram mutations must be rejected or remain separated.
 - **Inconclusive rule:** A missing theorem premise, changed frozen application, or
   incomplete exact numerator/denominator record prevents closure.
-- **Current state:** `EVIDENCE_VERIFIED` for all five registered CPU oracles.
+- **Current state:** The lane record reports passing results for all five CPU
+  oracles. Integration-wide verification state is assigned only by the validated
+  live final-SHA ledger.
 
 ### BUILD-03 — Minimal finite counterexamples
 
@@ -418,7 +422,9 @@ named implementation or fixture claim.
   guard catalog construction.
 - **Inconclusive rule:** Search outside the enumerated state/denominator bounds or a
   changed ordering rule is not covered by the catalog.
-- **Current state:** `EVIDENCE_VERIFIED` for the five pinned finite witnesses.
+- **Current state:** The lane record reports five replayable finite witnesses.
+  Integration-wide verification state is assigned only by the validated live
+  final-SHA ledger.
 
 ### BUILD-04 — Information histories
 
@@ -433,7 +439,9 @@ named implementation or fixture claim.
   separation.
 - **Inconclusive rule:** Rank, support, smoothness, or comparison-map premise failure
   makes the corresponding identity inapplicable rather than refuted.
-- **Current state:** `EVIDENCE_VERIFIED` for the registered deterministic CPU history.
+- **Current state:** The lane record reports passing deterministic CPU history
+  checks. Integration-wide verification state is assigned only by the validated
+  live final-SHA ledger.
 
 ### BUILD-05 — Gauge holonomy and operational records
 
@@ -446,7 +454,9 @@ named implementation or fixture claim.
   bounds; the broken-link control collapses or a nonflat cycle is mislabeled flat.
 - **Inconclusive rule:** Ill-conditioned frames, absent comparison data, or a claim
   about continuum connection geometry lies outside this finite experiment.
-- **Current state:** `EVIDENCE_VERIFIED` for the five finite scenarios and controls.
+- **Current state:** The lane record reports the five finite scenarios and controls;
+  its own shared-ledger obligation remains distinct. Integration-wide verification
+  state is assigned only by the validated live final-SHA ledger.
 
 ### BUILD-06 — Exact scale cocycle
 
@@ -460,8 +470,9 @@ named implementation or fixture claim.
   collapses, or a typed wrong-order mutation is silently accepted.
 - **Inconclusive rule:** A changed comparison isomorphism, interaction basis, or
   extension digest requires a new preregistration and evidence run.
-- **Current state:** `EVIDENCE_VERIFIED` for the registered CPU scale identities and
-  finite generated-interaction diagnostics.
+- **Current state:** The lane record reports passing CPU scale identities and finite
+  generated-interaction diagnostics. Integration-wide verification state is
+  assigned only by the validated live final-SHA ledger.
 
 ### BUILD-07 — Gaussian fixed-ray pilot and CUDA parity
 
@@ -476,6 +487,7 @@ named implementation or fixture claim.
 - **Inconclusive rule:** Pilot-only execution, absent CUDA gate, missing operator
   opt-in, an unverified worker/environment hash, or an unrun confirmatory job table
   leaves the CUDA and attraction claims inconclusive.
-- **Current state:** CPU pilot diagnostics are `EVIDENCE_VERIFIED`; CUDA parity and
-  confirmatory attraction remain `INCONCLUSIVE`. `heavy_sweep_enabled=false` and
-  `confirmatory_executed=false`.
+- **Current state:** The CPU pilot metric records retain their lane-scoped states;
+  integration-wide state is assigned only by the validated live final-SHA ledger.
+  CUDA parity and confirmatory attraction remain `INCONCLUSIVE`.
+  `heavy_sweep_enabled=false` and `confirmatory_executed=false`.

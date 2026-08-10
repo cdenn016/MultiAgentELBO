@@ -15,7 +15,7 @@ allowlists, and independently green before serial integration. They were merged
 in the plan's exact order in an isolated worktree. The live `main` checkout and
 its uncommitted files were not modified.
 
-The merged CPU source checkpoint passes 683 tests with two Windows
+The post-review CPU source checkpoint passes 686 tests with two Windows
 symlink-privilege skips. All seven new launchers import without side effects,
 run from a sanitized working directory without an editable install, and publish
 complete manifests. All seven new figures replay from finalized saved artifacts
@@ -39,6 +39,22 @@ job was run.
 | 6-7 | Session 6 scale/CUDA infrastructure and CPU Gaussian pilot (`198febf`) | `977688b`, then `0255c1c` | 661 passed, 2 skipped |
 | 8 | Shared exports and launcher matrix | `f483a33` | 682 passed, 2 skipped |
 | 9 | Saved-artifact renderers | `d5a0514` | 683 passed, 2 skipped |
+
+## Final-review remediation
+
+Independent final review found that the first split-archive renderer accepted
+tampered manifest keys naming an absolute or parent-relative NPZ path. The
+renderer now applies the numerical artifact store's portable-name, resolved
+ownership, regular-file, reparse-point, and single-hard-link checks to the
+manifest, metrics, and every numeric archive before reading. New traversal,
+absolute-path, and hard-link regressions pass; the existing shared ownership
+tests retain the symlink/reparse coverage.
+
+The mathematical review also found that the initial registry supplement used
+`EVIDENCE_VERIFIED` as if it were an integration-wide state. The registry now
+reports lane outcomes descriptively and reserves integration-wide state for the
+validated live final-SHA ledger. The focused code and mathematical re-reviews
+both pass after these corrections.
 
 The Session 6 merge initially exposed three integration-only failures because
 Git's Windows checkout conversion changed the byte representation of a frozen

@@ -15,6 +15,8 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
 import numpy as np
 
+from .artifacts import resolve_owned_artifact
+
 
 FigureStatus = Literal["complete", "failed"]
 
@@ -379,7 +381,7 @@ def _resolve_replay_paths(run_dir: Path, output_dir: Path) -> tuple[Path, Path]:
 def _load_finalized_artifacts(
     run_dir: Path,
 ) -> tuple[dict[str, object], dict[str, np.ndarray]]:
-    manifest_path = run_dir / "manifest.json"
+    manifest_path = resolve_owned_artifact(run_dir, "manifest.json")
     try:
         manifest = json.loads(manifest_path.read_text("utf-8"))
     except (OSError, json.JSONDecodeError) as error:
@@ -389,9 +391,7 @@ def _load_finalized_artifacts(
     inventory = manifest.get("artifacts")
     if not isinstance(inventory, dict):
         raise ValueError("finalized numerical manifest has no artifact inventory")
-    if inventory.get("metrics.json") != "complete" or not (
-        run_dir / "metrics.json"
-    ).is_file():
+    if inventory.get("metrics.json") != "complete":
         raise ValueError("finalized numerical run lacks metrics.json")
     numeric_archives = tuple(
         sorted(
@@ -402,31 +402,31 @@ def _load_finalized_artifacts(
     )
     if not numeric_archives:
         raise ValueError("finalized numerical run lacks a complete numeric archive")
+    metrics_path = resolve_owned_artifact(run_dir, "metrics.json")
     try:
-        metrics = json.loads((run_dir / "metrics.json").read_text("utf-8"))
+        metrics = json.loads(metrics_path.read_text("utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise ValueError("metrics.json is not readable JSON") from error
     if not isinstance(metrics, dict):
         raise ValueError("metrics.json must contain an object")
     arrays: dict[str, np.ndarray] = {}
-    try:
-        for filename in numeric_archives:
-            archive_path = run_dir / filename
-            if not archive_path.is_file():
-                raise ValueError(f"finalized numerical run lacks {filename}")
-            prefix = "" if filename == "arrays.npz" else f"{archive_path.stem}__"
+    for filename in numeric_archives:
+        archive_path = resolve_owned_artifact(run_dir, filename)
+        prefix = "" if filename == "arrays.npz" else f"{archive_path.stem}__"
+        try:
             with np.load(archive_path, allow_pickle=False) as archive:
-                for name in archive.files:
-                    qualified = f"{prefix}{name}"
-                    if qualified in arrays:
-                        raise ValueError(
-                            f"duplicate saved numeric array name: {qualified}"
-                        )
-                    arrays[qualified] = np.array(archive[name], copy=True)
-    except (OSError, ValueError) as error:
-        if str(error).startswith(("finalized numerical run", "duplicate saved")):
-            raise
-        raise ValueError("saved NPZ artifact is not a readable numeric archive") from error
+                loaded = {
+                    name: np.array(archive[name], copy=True) for name in archive.files
+                }
+        except (OSError, ValueError) as error:
+            raise ValueError(
+                "saved NPZ artifact is not a readable numeric archive"
+            ) from error
+        for name, value in loaded.items():
+            qualified = f"{prefix}{name}"
+            if qualified in arrays:
+                raise ValueError(f"duplicate saved numeric array name: {qualified}")
+            arrays[qualified] = value
     return metrics, arrays
 
 
