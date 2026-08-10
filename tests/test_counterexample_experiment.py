@@ -86,16 +86,68 @@ def test_counterexample_run_emits_frozen_metrics_complete_candidates_and_provena
     manifest = json.loads((result.run_dir / "manifest.json").read_text("utf-8"))
     assert manifest["complete"] is True
     assert manifest["provenance"]["arithmetic"] == "exact_rational"
+    candidates = json.loads(
+        (result.run_dir / "candidate_records.json").read_text("utf-8")
+    )
+    minimal = json.loads(
+        (result.run_dir / "minimal_witnesses.json").read_text("utf-8")
+    )
     bounds = json.loads((result.run_dir / "enumeration_bounds.json").read_text("utf-8"))
     assert bounds["requested"] == {"max_states": 4, "max_denominator": 8}
-    assert bounds["effective"] == {"max_states": 2, "max_denominator": 4}
-    assert bounds["enumerated_counts"]["laws"] == 7
-    candidates = json.loads((result.run_dir / "candidate_records.json").read_text("utf-8"))
-    minimal = json.loads((result.run_dir / "minimal_witnesses.json").read_text("utf-8"))
-    assert len(candidates) > len(minimal) == 5
+    assert bounds["effective"] == {
+        "laws_channels": {"max_states": 2, "max_denominator": 4},
+        "actions": {
+            "axis_cardinalities": [2, 2, 2],
+            "max_denominator": 1,
+            "value_bound": 1,
+        },
+    }
+    assert bounds["enumerated_counts"] == {
+        "laws": 7,
+        "channels": 49,
+        "actions": 6561,
+        "candidates": 19588,
+        "minimal_candidates": 5,
+    }
+    assert len(candidates) == 19588
+    assert len(minimal) == 5
+    fields = {"claim_id", "inside_declared_domain", "assumptions_satisfied", "smallest_witness", "exact_or_numeric", "observed_residual", "classification", "theorem_status", "verification_state", "claim_origin"}
     for record in candidates + minimal:
-        assert set(record) == {"claim_id", "inside_declared_domain", "assumptions_satisfied", "smallest_witness", "exact_or_numeric", "observed_residual", "classification", "theorem_status", "verification_state", "claim_origin"}
+        assert set(record) == fields
+        assert record["theorem_status"] == "ESTABLISHED"
+        assert record["verification_state"] == "EVIDENCE_VERIFIED"
+        assert record["claim_origin"] in {"STANDARD", "PROJECT_NOVEL"}
+        assert record["exact_or_numeric"] in {"exact", "numeric_log"}
         assert record["classification"] in {"catalog", "assumption_boundary"}
+        if record["classification"] == "catalog":
+            assert record["inside_declared_domain"] is True
+            assert record["assumptions_satisfied"] is True
+            assert record["exact_or_numeric"] == "exact"
+        else:
+            assert record["inside_declared_domain"] is False
+            assert record["assumptions_satisfied"] is False
+    relabel = next(record for record in candidates if record["claim_id"] == "single_law_relabeling" and record["smallest_witness"]["p"] == ["3/4", "1/4"])
+    assert relabel["observed_residual"] == "ln(3)/2"
+    assert relabel["exact_or_numeric"] == "numeric_log"
+    assert relabel["inside_declared_domain"] is False
+    assert relabel["assumptions_satisfied"] is False
+    assert relabel["classification"] == "assumption_boundary"
+    stress = json.loads((result.run_dir / "stress_matrix.json").read_text("utf-8"))
+    assert stress["deep_composition"] == {
+        "channels": {
+            "a": [["1", "0"], ["1/2", "1/2"]],
+            "b": [["1/2", "1/2"], ["0", "1"]],
+            "c": [["3/4", "1/4"], ["1/4", "3/4"]],
+        },
+        "direct_rows": [["1/2", "1/2"], ["3/8", "5/8"]],
+        "staged_rows": [["1/2", "1/2"], ["3/8", "5/8"]],
+        "residual": "0",
+        "direct_equals_staged": True,
+    }
+    assert stress["relabeling"] == {"coherent": True, "residual": "0"}
+    assert stress["retained_space"] == {"pass_residual": "1", "fails_full_reconstruction": True}
+    assert stress["tolerance_scaling"] == {"base": "1/100", "states": 2, "scaled": "1/50"}
+    assert stress["conditioning"] == {"accepted_dimension": 2, "accepted_condition": "4", "rejected_near_singular": True}
 
 
 def test_primitive_rational_arrays_independently_recompute_all_metrics(tmp_path: Path):

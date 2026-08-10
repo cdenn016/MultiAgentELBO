@@ -45,6 +45,9 @@ from multiagent_elbo.runtime import RngStreams, collect_provenance
 MetricStatus = Literal["pass", "fail", "inconclusive"]
 FigureRunStatus = Literal["not_requested"]
 _EFFECTIVE_BOUNDS = EnumerationBounds(max_states=2, max_denominator=4)
+_ACTION_CARDINALITIES = (2, 2, 2)
+_ACTION_MAX_DENOMINATOR = 1
+_ACTION_VALUE_BOUND = 1
 
 
 @dataclass(frozen=True)
@@ -90,15 +93,17 @@ def _record(
     inside: bool,
     assumptions: bool,
     origin: str,
+    exact_or_numeric: Literal["exact", "numeric_log"],
+    classification: Literal["catalog", "assumption_boundary"],
 ) -> CandidateRecord:
     return CandidateRecord(
         claim_id,
         inside,
         assumptions,
         witness,
-        "exact" if "ln(" not in observed_residual else "numeric_log",
+        exact_or_numeric,
         observed_residual,
-        "catalog" if inside and assumptions else "assumption_boundary",
+        classification,
         "ESTABLISHED",
         "EVIDENCE_VERIFIED",
         origin,
@@ -118,6 +123,14 @@ def _full_candidate_payload(records: Sequence[CandidateRecord]) -> list[dict[str
     return sorted(payload, key=lambda record: json.dumps(record, sort_keys=True, separators=(",", ":")))
 
 
+def _fraction_text(value: Fraction) -> str:
+    return str(value.numerator) if value.denominator == 1 else str(value)
+
+
+def _channel_text(channel: ExactChannel) -> list[list[str]]:
+    return [[_fraction_text(value) for value in row] for row in channel.rows]
+
+
 def _enumerate_candidates(
     laws: tuple[ExactLaw, ...], channels: tuple[ExactChannel, ...]
 ) -> tuple[CandidateRecord, ...]:
@@ -126,7 +139,18 @@ def _enumerate_candidates(
         for p in laws:
             support = kl_divergence(q, p)
             if support.is_infinite:
-                records.append(_record("support_boundary", {"states": 2, "q": q.masses, "p": p.masses}, str(len(support.support_violations)), inside=True, assumptions=True, origin="PROJECT_NOVEL"))
+                records.append(
+                    _record(
+                        "support_boundary",
+                        {"states": 2, "q": q.masses, "p": p.masses},
+                        str(len(support.support_violations)),
+                        inside=True,
+                        assumptions=True,
+                        origin="PROJECT_NOVEL",
+                        exact_or_numeric="exact",
+                        classification="catalog",
+                    )
+                )
     for theta in sorted({law.masses[0] for law in laws if law.masses[0] > 0}):
         records.append(parameter_dependent_channel_witness(theta))
     swap = (1, 0)
@@ -134,7 +158,23 @@ def _enumerate_candidates(
         if all(value > 0 for value in law.masses):
             result = kl_divergence(relabel_law(law, swap), law)
             if result.value and result.value > 0.0:
-                records.append(_record("single_law_relabeling", {"states": 2, "p": law.masses, "permutation": swap}, "numeric_kl", inside=True, assumptions=True, origin="STANDARD"))
+                residual = (
+                    "ln(3)/2"
+                    if law.masses == (Fraction(3, 4), Fraction(1, 4))
+                    else "numeric_log"
+                )
+                records.append(
+                    _record(
+                        "single_law_relabeling",
+                        {"states": 2, "p": law.masses, "permutation": swap},
+                        residual,
+                        inside=False,
+                        assumptions=False,
+                        origin="STANDARD",
+                        exact_or_numeric="numeric_log",
+                        classification="assumption_boundary",
+                    )
+                )
     for source in laws:
         for first_beta in laws:
             for second_beta in laws:
@@ -142,8 +182,28 @@ def _enumerate_candidates(
                     joint, beta_only = coarsen_marked_event(source, (first_beta.masses, second_beta.masses), channel)
                     gap = max(abs(left - right) for left_row, right_row in zip(joint, beta_only) for left, right in zip(left_row, right_row))
                     if gap > 0:
-                        records.append(_record("marked_event_source_mass", {"states": 2, "source": source.masses, "beta": (first_beta.masses, second_beta.masses), "channel": channel.rows}, str(gap), inside=True, assumptions=True, origin="PROJECT_NOVEL"))
-    for action in enumerate_rational_actions((2, 2, 2), 1, value_bound=1):
+                        records.append(
+                            _record(
+                                "marked_event_source_mass",
+                                {
+                                    "states": 2,
+                                    "source": source.masses,
+                                    "beta": (first_beta.masses, second_beta.masses),
+                                    "channel": channel.rows,
+                                },
+                                str(gap),
+                                inside=True,
+                                assumptions=True,
+                                origin="PROJECT_NOVEL",
+                                exact_or_numeric="exact",
+                                classification="catalog",
+                            )
+                        )
+    for action in enumerate_rational_actions(
+        _ACTION_CARDINALITIES,
+        _ACTION_MAX_DENOMINATOR,
+        value_bound=_ACTION_VALUE_BOUND,
+    ):
         residual = project_action(hoeffding_decompose_action(action), 2).residual
         if residual > 0:
             records.append(
@@ -159,6 +219,8 @@ def _enumerate_candidates(
                     inside=True,
                     assumptions=True,
                     origin="PROJECT_NOVEL",
+                    exact_or_numeric="exact",
+                    classification="catalog",
                 )
             )
     return tuple(records)
@@ -181,7 +243,13 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
     channel = ExactChannel(((Fraction(1), Fraction(0)), (Fraction(0), Fraction(1))))
     joint, beta_only = coarsen_marked_event(source, beta, channel)
     marked_gap = max(abs(left - right) for first, second in zip(joint, beta_only) for left, right in zip(first, second))
-    action = ExactAction((2, 2, 2), (Fraction(1), Fraction(-1), Fraction(-1), Fraction(1), Fraction(-1), Fraction(1), Fraction(1), Fraction(-1)))
+    action = ExactAction(
+        _ACTION_CARDINALITIES,
+        (
+            Fraction(1), Fraction(-1), Fraction(-1), Fraction(1),
+            Fraction(-1), Fraction(1), Fraction(1), Fraction(-1),
+        ),
+    )
     retained_order = 2
     pairwise = project_action(hoeffding_decompose_action(action), retained_order)
     support_count = len(kl_divergence(support_q, support_p).support_violations)
@@ -207,17 +275,64 @@ def _catalog(config: ExperimentConfig) -> tuple[dict[str, MetricRecord], dict[st
     arrays.update(_fraction_arrays("marked_channel", tuple(value for row in channel.rows for value in row)))
     arrays.update(_fraction_arrays("marked_beta", tuple(value for row in beta for value in row)))
     arrays.update(_fraction_arrays("action", action.values))
-    composed_direct = compose_channels(channel, channel)
-    composed_staged = compose_channels(channel, channel)
+    composition_a = ExactChannel(
+        ((Fraction(1), Fraction(0)), (Fraction(1, 2), Fraction(1, 2)))
+    )
+    composition_b = ExactChannel(
+        ((Fraction(1, 2), Fraction(1, 2)), (Fraction(0), Fraction(1)))
+    )
+    composition_c = ExactChannel(
+        ((Fraction(3, 4), Fraction(1, 4)), (Fraction(1, 4), Fraction(3, 4)))
+    )
+    composed_direct = compose_channels(compose_channels(composition_a, composition_b), composition_c)
+    composed_staged = compose_channels(composition_a, compose_channels(composition_b, composition_c))
+    composition_residual = max(
+        abs(left - right)
+        for direct_row, staged_row in zip(composed_direct.rows, composed_staged.rows)
+        for left, right in zip(direct_row, staged_row)
+    )
     relabeled_action = action.relabel(((1, 0), (1, 0), (1, 0)))
     stress = {
-        "deep_composition": {"direct_equals_staged": composed_direct == composed_staged, "residual": "0"},
+        "deep_composition": {
+            "channels": {
+                "a": _channel_text(composition_a),
+                "b": _channel_text(composition_b),
+                "c": _channel_text(composition_c),
+            },
+            "direct_rows": _channel_text(composed_direct),
+            "staged_rows": _channel_text(composed_staged),
+            "residual": _fraction_text(composition_residual),
+            "direct_equals_staged": composed_direct == composed_staged,
+        },
         "relabeling": {"coherent": retained_projection_invariant(action, relabeled_action, ((1, 0), (1, 0), (1, 0)), retained_order), "residual": "0"},
         "retained_space": {"pass_residual": str(pairwise.residual), "fails_full_reconstruction": pairwise.residual > 0},
         "tolerance_scaling": {"base": "1/100", "states": 2, "scaled": str(scale_tolerance(Fraction(1, 100), 2))},
         "conditioning": {"accepted_dimension": validate_full_rank_spd(((Fraction(1), Fraction(0)), (Fraction(0), Fraction(4)))), "accepted_condition": str(diagonal_spd_conditioning((Fraction(1), Fraction(4)))), "rejected_near_singular": _rejected_near_singular()},
     }
-    bounds = {"requested": {"max_states": requested.max_states, "max_denominator": requested.max_denominator}, "effective": {"max_states": _EFFECTIVE_BOUNDS.max_states, "max_denominator": _EFFECTIVE_BOUNDS.max_denominator}, "enumerated_counts": {"laws": len(laws), "channels": len(channels), "actions": 3 ** 8, "candidates": len(candidates), "minimal_candidates": len(minimal)}}
+    bounds = {
+        "requested": {
+            "max_states": requested.max_states,
+            "max_denominator": requested.max_denominator,
+        },
+        "effective": {
+            "laws_channels": {
+                "max_states": _EFFECTIVE_BOUNDS.max_states,
+                "max_denominator": _EFFECTIVE_BOUNDS.max_denominator,
+            },
+            "actions": {
+                "axis_cardinalities": list(_ACTION_CARDINALITIES),
+                "max_denominator": _ACTION_MAX_DENOMINATOR,
+                "value_bound": _ACTION_VALUE_BOUND,
+            },
+        },
+        "enumerated_counts": {
+            "laws": len(laws),
+            "channels": len(channels),
+            "actions": 3 ** 8,
+            "candidates": len(candidates),
+            "minimal_candidates": len(minimal),
+        },
+    }
     return metrics, arrays, candidates, bounds, stress
 
 
