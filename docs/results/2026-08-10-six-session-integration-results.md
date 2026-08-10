@@ -9,6 +9,17 @@ Contract freeze: `b80df01f239c2f9a18842f6887cdeca67dff508f`
 Authoritative final artifact identity: the post-closeout validated live
 `.verification/ledger.json`
 
+## Current scientific-contract supersession
+
+The integration results below remain the historical record for their stated
+revisions. For current behavior at scientific code revision
+`f4966db1127ad952e3f3f1ce118b518ca58b5811`, see
+[Shared Scientific Contract Remediation Results](2026-08-10-shared-scientific-contract-remediation-results.md).
+That revision-bound record supersedes only the current interpretation of the
+shared relabeling, SPD-conditioning, Session-3 producer-state, and aggregate
+status contracts. It does not rewrite this document's historical bytes, test
+totals, review findings, or ledger disposition.
+
 ## Outcome
 
 All six session branches were clean, committed, confined to their frozen
