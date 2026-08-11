@@ -1285,6 +1285,78 @@ def _diagnostic_config(
     return replace(config, run=run)
 
 
+def _require_matching_diagnostic_identity(
+    config: ExperimentConfig,
+    source: ValidatedConfirmatorySource,
+) -> None:
+    """Bind every science-bearing diagnostic setting to the validated source."""
+
+    resolved = _mapping(source.config.get("resolved_config"), "resolved config")
+    missing = object()
+    sections = (
+        (
+            "theory",
+            config.theory,
+            (
+                "experiment",
+                "fixture",
+                "preregistration",
+                "blocking_schemes",
+                "matrix_dimension",
+            ),
+        ),
+        (
+            "numerics",
+            config.numerics,
+            (
+                "dtype",
+                "atol",
+                "rtol",
+                "min_spd_rcond",
+                "max_frame_condition",
+            ),
+        ),
+        ("run", config.run, ("seed",)),
+    )
+    for section_name, diagnostic_section, fields in sections:
+        source_section = _mapping(
+            resolved.get(section_name),
+            f"resolved {section_name} config",
+        )
+        for field in fields:
+            diagnostic_value = getattr(diagnostic_section, field, missing)
+            source_value = source_section.get(field, missing)
+            if (
+                diagnostic_value is missing
+                or source_value is missing
+                or type(diagnostic_value) is not type(source_value)
+                or diagnostic_value != source_value
+            ):
+                raise ValueError(
+                    f"diagnostic {section_name}.{field} does not match "
+                    "the validated source configuration"
+                )
+
+    source_compute = _mapping(resolved.get("compute"), "resolved compute config")
+    for field, frozen_value in (
+        ("dtype", "float64"),
+        ("deterministic", True),
+        ("allow_tf32", False),
+    ):
+        diagnostic_value = getattr(config.compute, field)
+        source_value = source_compute.get(field, missing)
+        if (
+            type(diagnostic_value) is not type(frozen_value)
+            or diagnostic_value != frozen_value
+            or type(source_value) is not type(frozen_value)
+            or source_value != frozen_value
+        ):
+            raise ValueError(
+                f"diagnostic compute.{field} does not match the validated "
+                "source and frozen CPU diagnostic contract"
+            )
+
+
 def _require_clean_diagnostic_provenance(
     config: ExperimentConfig,
     binding: ConfirmatorySourceBinding,
@@ -1642,6 +1714,7 @@ def run_fixed_model_diagnostic(
         raise ValueError("fixed-model diagnostics prohibit the heavy sweep")
 
     source = validate_scientific_extract(source_dir, source_binding)
+    _require_matching_diagnostic_identity(config, source)
     replay = replay_confirmatory_diagnostics(source)
     payloads, arrays, array_sha256 = _build_diagnostic_payloads(
         config,

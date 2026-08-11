@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from hashlib import sha256
 import importlib
 import json
@@ -122,6 +122,16 @@ def _diagnostic_config(root: Path) -> ExperimentConfig:
             "heavy_sweep_enabled": False,
         },
     )
+
+
+def _drift_diagnostic_config(
+    config: ExperimentConfig,
+    section: str,
+    field: str,
+    value: object,
+) -> ExperimentConfig:
+    nested = replace(getattr(config, section), **{field: value})
+    return replace(config, **{section: nested})
 
 
 def _patch_clean_provenance(
@@ -385,10 +395,27 @@ def synthetic_extract(tmp_path: Path) -> SyntheticExtract:
 
     resolved_config = {
         "compute": {
+            "allow_tf32": False,
             "backend": "cuda",
+            "batch_size": 4096,
+            "cpu_cuda_parity": True,
+            "cuda_worker_python": r"C:\anaconda\python.exe",
             "deterministic": True,
+            "device_index": 0,
             "dtype": "float64",
             "heavy_sweep_enabled": True,
+        },
+        "numerics": {
+            "atol": 1.0e-12,
+            "dtype": "float64",
+            "max_frame_condition": 1.0e6,
+            "min_spd_rcond": 1.0e-12,
+            "rtol": 1.0e-10,
+        },
+        "output": {
+            "collect_diagnostics": True,
+            "render_figures": False,
+            "root": "artifacts",
         },
         "run": {"name": "synthetic-confirmatory", "seed": 20260809},
         "theory": {
@@ -791,6 +818,107 @@ def test_publication_rejects_bad_diagnostic_arrays_before_output_creation(
             synthetic_extract.path,
         )
     assert not output_root.exists()
+
+
+@pytest.mark.parametrize(
+    ("section", "field", "drift"),
+    [
+        ("theory", "experiment", "other_experiment"),
+        ("theory", "fixture", "other_fixture"),
+        ("theory", "preregistration", "other_preregistration"),
+        ("theory", "blocking_schemes", tuple(reversed(SCHEMES))),
+        ("theory", "matrix_dimension", 3),
+        ("numerics", "dtype", "float32"),
+        ("numerics", "atol", 2.0e-12),
+        ("numerics", "rtol", 2.0e-10),
+        ("numerics", "min_spd_rcond", 2.0e-12),
+        ("numerics", "max_frame_condition", 2.0e6),
+        ("run", "seed", 20260810),
+        ("compute", "dtype", "float32"),
+        ("compute", "deterministic", False),
+        ("compute", "allow_tf32", True),
+    ],
+    ids=(
+        "theory-experiment",
+        "theory-fixture",
+        "theory-preregistration",
+        "theory-blocking-order",
+        "theory-matrix-dimension",
+        "numerics-dtype",
+        "numerics-atol",
+        "numerics-rtol",
+        "numerics-min-spd-rcond",
+        "numerics-max-frame-condition",
+        "run-seed",
+        "compute-dtype",
+        "compute-deterministic",
+        "compute-allow-tf32",
+    ),
+)
+def test_publication_rejects_diagnostic_identity_drift_before_replay_with_zero_writes(
+    synthetic_extract: SyntheticExtract,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    section: str,
+    field: str,
+    drift: object,
+) -> None:
+    module = _diagnostic_module()
+    output_root = tmp_path / "must-not-exist"
+    config = _drift_diagnostic_config(
+        _diagnostic_config(output_root),
+        section,
+        field,
+        drift,
+    )
+
+    def forbidden_replay(_source: object) -> None:
+        raise AssertionError("identity drift reached deterministic replay")
+
+    monkeypatch.setattr(module, "replay_confirmatory_diagnostics", forbidden_replay)
+
+    with pytest.raises(ValueError, match=rf"{section}\.{field}"):
+        module.run_fixed_model_diagnostic(
+            config,
+            synthetic_extract.binding(),
+            synthetic_extract.path,
+        )
+
+    assert not output_root.exists()
+
+
+def test_publication_allows_operational_config_differences(
+    synthetic_extract: SyntheticExtract,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _diagnostic_module()
+    _patch_clean_provenance(monkeypatch, module)
+    output_root = tmp_path / "diagnostic-output"
+    config = _diagnostic_config(output_root)
+    source_config = json.loads(
+        (synthetic_extract.path / "config.json").read_text("utf-8")
+    )["resolved_config"]
+
+    assert source_config["run"]["name"] == "synthetic-confirmatory"
+    assert config.run.name == "fixed-model-attraction-diagnostic"
+    assert source_config["output"]["root"] == "artifacts"
+    assert config.output.root == output_root
+    assert source_config["compute"]["backend"] == "cuda"
+    assert config.compute.backend == "cpu"
+    assert source_config["compute"]["cpu_cuda_parity"] is True
+    assert config.compute.cpu_cuda_parity is False
+    assert source_config["compute"]["heavy_sweep_enabled"] is True
+    assert config.compute.heavy_sweep_enabled is False
+
+    result = module.run_fixed_model_diagnostic(
+        config,
+        synthetic_extract.binding(),
+        synthetic_extract.path,
+    )
+
+    assert result.status == "complete"
+    assert result.run_dir.is_relative_to(output_root)
 
 
 def test_publication_rejects_dirty_provenance_with_zero_writes(
