@@ -1,287 +1,300 @@
 # Fixed-Model Attraction Diagnosis and Results Closeout Design
 
 Date approved: 2026-08-10
+
+Adversarial amendment: 2026-08-10
+
 Scientific implementation revision: `fcb2c49efdca2ad3ee502dc08fbb82fc285e7a05`
+
 Parent protocol: `2026-08-09-gaussian-fixed-ray-v1a`
 Execution state: design only; no new CUDA run or parameter search authorized
 
 ## Purpose
 
 The Gaussian fixed-ray confirmatory experiment completed all 30 primary and 10
-holdout jobs at the scientific implementation revision above. The frozen primary
-analysis returned `inconclusive`: the median projective-angle slope was
-`-0.00026786510016806844`, with 95% interval
-`[-0.00029802317797700826, -0.00021070275415133334]`. The upper endpoint did not
-meet the preregistered practical-support boundary `-0.02`, while none of the
-counterevidence rules fired. The descriptive holdout estimate was
-`-0.00030310407296303384`, with interval
-`[-0.00040771248808456155, -0.00019982541962230285]`, and failed the same practical
-threshold without becoming a second confirmatory test.
+descriptive holdout jobs. The frozen primary analysis returned `inconclusive`:
+the median projective-angle slope was `-0.00026786510016806844`, with 95% interval
+`[-0.00029802317797700826, -0.00021070275415133334]`. The interval did not meet
+the preregistered practical-support boundary `-0.02`, and no counterevidence rule
+fired. The descriptive holdout estimate was `-0.00030310407296303384`, with
+interval `[-0.00040771248808456155, -0.00019982541962230285]`.
 
-This design has two goals:
+This wave will:
 
-1. close the durable documentation gap by recording the successful CUDA sentinel,
-   complete confirmatory execution, and bounded scientific result; and
-2. explain the weak observed absolute slopes inside the exact frozen model before
-   introducing any new parameter, map, population, endpoint, or threshold.
+1. durably record the completed CUDA sentinel and confirmatory result;
+2. prove whether the practical-support boundary was reachable inside the frozen
+   coefficient basin and endpoint definition; and
+3. publish continuous fixed-map diagnostics that explain the observed finite
+   trajectories without tuning a model, seed population, window, or threshold.
 
-The diagnostic may close claims about the finite linear maps, their normalized
-projective dynamics, and the reproduced 40-job trajectories. It cannot prove
-unrestricted Gaussian attraction, attraction on the full matrix coupling cone,
-an infinite hierarchy, universality, or a continuum/thermodynamic limit.
+The wave may close finite claims about the two frozen maps, the endpoint's
+feasible range, and deterministic replay of the 40 jobs. It cannot prove or
+refute unrestricted Gaussian attraction, attraction on the full matrix coupling
+cone, an infinite hierarchy, universality, or a continuum limit.
 
-## Considered approaches
+## Why the design was amended
 
-Three approaches were considered.
+Independent mathematical, numerical, implementation, and adversarial reviews
+found that the first approved draft pinned a false adjacent-map spectrum and
+used post hoc mechanism thresholds that did not identify causes. The source map
+is
 
-1. **Fixed-model analytic diagnosis, then artifact comparison.** Derive the exact
-   spectral and projective behavior of the two frozen spatial maps, predict the
-   finite-window diagnostics, and compare those predictions with every primary
-   and holdout trajectory. This is selected because it can distinguish structural
-   scale effects from seed variation without post hoc model changes.
-2. **Immediate exploratory parameter sweep.** Vary coupling strength, temperature,
-   scale window, or map family to locate regimes with larger negative slopes. This
-   is deferred because it would answer a different question and could turn the
-   failed practical threshold into a tuning target.
-3. **Documentation-only closeout.** Record the completed run and stop. This is
-   necessary but insufficient because it leaves the reproducible factor-of-about-75
-   mismatch between the observed point estimate and the practical threshold
-   unexplained.
+$$
+A_{\mathrm{adj}}=\frac25 I+\frac1{10}\mathbf 1\mathbf 1^\top,
+$$
+
+so its spectrum is `1` together with five copies of `2/5`, not two copies of
+`2/5` and three zeros. The amendment replaces the heuristic headline classifier
+with an analytic feasibility certificate and continuous diagnostics. No
+scientific implementation, execution artifact, preregistered endpoint, or result
+is changed.
 
 ## Frozen scientific boundary
 
-The first diagnostic wave holds the following objects fixed:
+The following remain fixed:
 
-- the two six-dimensional row-stochastic maps `adjacent_pairs` and
-  `balanced_alternating` returned by `build_preregistered_system()`;
-- the Perron ray `(1,1,1,1,1,1)`;
-- the fixed positive matrix direction `M0` and the scalarized construction
-  `W_e = c_e M0`;
-- the deterministic `C001`-`C030` and `H001`-`H010` master-seed job literals;
-- eight map applications and the recorded scale labels;
-- the projective-angle definition, paired least-favorable reduction, bootstrap
-  procedure, and all preregistered thresholds; and
-- the interpretation of `H` as hash-bound descriptive replication only.
+- both six-dimensional row-stochastic maps returned by
+  `build_preregistered_system()`;
+- the Perron ray `(1,1,1,1,1,1)`, positive matrix direction `M0`, and scalarized
+  construction `W_e=c_e M0`;
+- `C001`-`C030` and `H001`-`H010` master-seed job literals;
+- eight map applications and scales 4 through 8 for the endpoint;
+- projective angle, raw-angle OLS, paired least-favorable reduction, bootstrap,
+  and all preregistered thresholds; and
+- `H` as hash-bound descriptive replication only.
 
-No implementation step may retune a threshold, replace the raw-angle OLS endpoint
-with a logarithmic endpoint, select favorable seeds, change a spatial map, alter
-the scale window, or use holdout observations to define a new primary statistic.
-Any later parameter study requires a separate exploratory design after this wave.
+This wave cannot retune `-0.02`, replace raw-angle OLS by log-angle OLS, select
+seeds, alter a map or scale window, pool `C` and `H`, or use `H` to define any
+primary conclusion. Any parameter or endpoint study requires a later exploratory
+design.
 
-## Mathematical diagnostic
+## Decisive analytic certificate
 
-For either frozen spatial map `A`, the coefficient dynamics are exactly
-
-$$
-c_{k+1}=A c_k.
-$$
-
-Let
+Write an admissible initial coefficient vector as
 
 $$
-u_k=\frac{c_k}{\lVert c_k\rVert_2},
-\qquad
-\mathcal N_A(u)=\frac{Au}{\lVert Au\rVert_2}.
+c_0=m\mathbf 1+d,\qquad d\perp\mathbf 1,
 $$
 
-If `v = N_A(u)`, the derivative acting on a perturbation `h` is
+and let `theta_k` be its projective angle to the Perron ray after `k` adjacent-map
+applications. The adjacent map preserves the radial component and multiplies
+every transverse component by `2/5`, hence
 
 $$
-D\mathcal N_A(u)[h]
-=\frac{(I-vv^\top)Ah}{\lVert Au\rVert_2}.
+\tan\theta_k=\left(\frac25\right)^k\frac{\lVert d\rVert_2}{\sqrt6\,m}.
 $$
 
-This formula separates three effects that the confirmatory endpoint currently
-combines: linear mixing by `A`, removal of the radial component by projective
-normalization, and conversion of the remaining transverse error into a raw angle.
-At the normalized Perron ray, the tangent restriction
-`(I-uu^T)A` controls local projective contraction. Because the maps need not be
-normal, the analysis reports both eigenvalue moduli and tangent singular values;
-it does not infer transient contraction from eigenvalues alone.
+For entries in the frozen basin `[1/4,4]`, the Bhatia-Davis variance inequality
+gives the coefficient-of-variation bound
 
-The diagnostic computes, for each map:
+$$
+\frac{\lVert d\rVert_2}{\sqrt6\,m}\le
+\frac{4-1/4}{2\sqrt{4(1/4)}}=\frac{15}{8}.
+$$
 
-- exact rational entries, characteristic polynomial, eigenvalues when exactly
-  representable, Perron eigenspace, and invariant tangent subspace;
-- floating Schur/eigen and singular-value decompositions with residuals;
-- the tangent Jacobian at the Perron ray and along each recorded trajectory;
-- one-step transverse norm ratios, cumulative tangent propagators, and their
-  condition numbers;
-- exact and numerical predictions for normalized distance and projective angle;
-- OLS slopes on the unchanged raw-angle scale labels used by the confirmatory
-  analysis; and
-- a decomposition of the gap between relative contraction and the small absolute
-  raw-angle slope after the trajectory is already close to the Perron ray.
+Therefore
 
-The preferred explanatory hypotheses are assessed in this order:
+$$
+\theta_4\le\arctan\left(\left(\frac25\right)^4\frac{15}{8}\right)
+=\arctan\left(\frac6{125}\right).
+$$
 
-1. **Endpoint-scale effect:** relative contraction remains appreciable, but raw
-   angles are already so small at scales 4 through 8 that their absolute OLS slope
-   is necessarily much smaller than `0.02` radians per scale.
-2. **Weak transverse contraction:** the tangent operator has a subdominant mode
-   close to one or a large tangent singular value.
-3. **Nonnormal transient behavior:** eigenvalues predict asymptotic contraction but
-   finite-window singular behavior delays it.
-4. **Seed/mode alignment:** the initial literals place little mass in the slowest
-   transverse mode or create cancellations that vary across jobs.
-5. **Metric/estimator mismatch:** the frozen raw-angle slope is a valid finite
-   endpoint but is not a scale-free estimate of the asymptotic contraction factor.
+The frozen OLS slope on scales 4 through 8 is
 
-These are diagnostic alternatives, not outcomes assumed in advance.
+$$
+s=\frac{-2\theta_4-\theta_5+\theta_7+2\theta_8}{10}.
+$$
+
+The adjacent angles are nonnegative and decreasing, so
+
+$$
+s\ge-\frac3{10}\theta_4
+\ge-\frac3{10}\arctan\left(\frac6{125}\right)
+>-\frac9{625}=-0.0144>-\frac1{50}=-0.02.
+$$
+
+The last strict inequality uses `arctan(x) < x` for positive `x`. It leaves the
+exact rational margin `7/1250` above the support boundary.
+
+The preregistered paired endpoint is the least-favorable maximum of the adjacent
+and alternating slopes. It is therefore at least the adjacent slope. For the
+actual complete, in-basin run, every paired job endpoint, every resampled median,
+and the upper percentile endpoint must remain above `-0.02`. Thus practical
+`support` was structurally unreachable under the frozen basin and endpoint.
+
+This is an application-specific endpoint-feasibility theorem. It does not show
+that projective attraction is false; it shows that this preregistered practical
+support rule could not certify it in the admitted finite model.
+
+## Continuous map and trajectory diagnostics
+
+The analytic certificate is the headline result. The remaining diagnostics are
+continuous explanatory quantities, not a post hoc causal classifier.
+
+For nonzero `u`, define
+
+$$
+\mathcal N_A(u)=\frac{Au}{\lVert Au\rVert_2},\qquad
+D\mathcal N_A(u)[h]=\frac{(I-vv^\top)Ah}{\lVert Au\rVert_2},
+\quad v=\mathcal N_A(u).
+$$
+
+The ambient Jacobian has a radial null direction and is therefore singular.
+Condition numbers and propagator norms must be computed only after restriction to
+orthonormal tangent bases. If `B_k` spans `T_{u_k}S^5`, define
+
+$$
+K_k=B_{k+1}^\top D\mathcal N_A(u_k)B_k.
+$$
+
+All trajectory propagators are products of these reduced `5 x 5` matrices. For
+`balanced_alternating`, the Euclidean tangent is not invariant under `A`; Schur
+and mode diagnostics therefore operate on the reduced normalized-map tangent
+operator, not raw eigenvectors of `A`.
+
+For seed/mode diagnostics, freeze the normalized Perron ray `u_*`,
+`P_*=I-u_*u_*^T`, any orthonormal tangent basis `B_*`, and
+
+$$
+T_*=B_*^\top P_*AB_*.
+$$
+
+For `balanced_alternating`, the slow cluster is exactly the spectral-radius
+cluster: the real eigenvalue `1/5` and the conjugate pair
+`(3 +/- i sqrt(7))/20`, of total real dimension three. Use an ordered real-Schur
+basis `Q_s` for that cluster and the orthogonal ambient projector
+`Pi_s=B_*Q_sQ_s^TB_*^T`; do not use an oblique Riesz projector while calling the
+result energy. For an initial literal, set
+`delta_0=P_*(c_0/||c_0||_2)` and define
+
+$$
+g_m(\delta_0)=\frac{\lVert T_*^m B_*^\top\delta_0\rVert_2}
+{\lVert B_*^\top\delta_0\rVert_2},\qquad
+e_s(\delta_0)=\frac{\lVert\Pi_s\delta_0\rVert_2^2}
+{\lVert\delta_0\rVert_2^2}.
+$$
+
+These are continuous reported quantities. The adjacent spectral-radius cluster is
+the entire five-dimensional tangent, so a narrower adjacent slow-mode energy is
+not identifiable and remains not applicable.
+
+The diagnostic reports, separately for each map:
+
+- exact characteristic polynomials for canonical rational map literals and a
+  conformance check against the runtime float64 matrices;
+- multiplicity-aware eigenvalue and Schur residuals;
+- reduced Perron-tangent eigenvalues, singular values, and invariant-subspace
+  projector residuals;
+- absolute gains `||T^m||_2`, spectral-excess ratios
+  `||T^m||_2/rho(T)^m`, and the frozen actual-direction gains above for
+  `m=1,...,8`;
+- reduced tangent propagators along every trajectory;
+- exact use of the frozen projective-angle and OLS endpoint routines;
+- map-specific and paired least-favorable `C` summaries; and
+- an identically defined, separate `H` descriptive replication.
+
+`Nonnormal amplification` is used only if an absolute gain exceeds one. Excess
+over asymptotic spectral decay with all absolute gains below one is reported as
+`nonnormal spectral excess`, not transient amplification. The adjacent tangent
+spectrum is fivefold degenerate, so a narrower adjacent slow-mode alignment is
+not identifiable and is marked not applicable. Alternating slow-subspace energy
+is reported continuously through basis-independent spectral projectors.
+
+The explanation record has two layers:
+
+1. `support_boundary_unreachable_in_frozen_basin`, supported by the derivation;
+2. continuous evidence about endpoint scale, reduced contraction, nonnormal
+   spectral excess, and realized mode content.
+
+It does not choose among heuristic labels using post hoc cutoffs.
 
 ## Software architecture
 
-The implementation will keep exact theory, numerical reproduction, and reporting
-separate.
+### Pure mathematics and diagnostics
 
-### Pure diagnostic module
+Create `fixed_ray_diagnostics.py` with no filesystem or Git access. It owns
+canonical Fraction map literals, exact characteristic polynomials, the basin
+certificate, normalized-map derivatives, tangent bases, reduced propagators,
+Schur/projector diagnostics, and continuous trajectory summaries.
 
-Create `src/multiagent_elbo/realizations/gaussian/fixed_ray_diagnostics.py`.
-It will expose pure functions for normalized-map Jacobians, tangent bases,
-spectral diagnostics, trajectory-mode decompositions, and frozen-window endpoint
-predictions. It will accept arrays explicitly and will not read artifacts, inspect
-Git, or select configuration values.
+### Durable source evidence and replay
 
-### Artifact-backed diagnostic experiment
+Track a compact scientific extract of the completed confirmatory run under
+`docs/verification/evidence/`. It contains the eight small scientific artifacts
+needed for replay plus a source-binding JSON that records all ten original file
+hashes and the coordinator-evidence hash. The two large execution logs remain
+omitted but hash-bound. Unit tests use synthetic fixture factories; a dedicated
+integration test checks the full tracked extract.
 
-Create an artifact publisher adjacent to the existing fixed-ray experiment. It
-will consume an explicitly configured final confirmatory run directory, validate
-the recorded source/config/job-table/primary/holdout identities, reconstruct the
-two frozen maps and all job literals independently, and require equality or frozen
-tolerance agreement with the published trajectories and endpoints before issuing
-an interpretation.
+The diagnostic experiment accepts a typed source binding, validates every owned
+file before publication, regenerates all 80 trajectories through the frozen
+production functions, and records scientific and diagnostic revisions
+separately. Calling the production path is deterministic replay, not independent
+reconstruction. A separate tracked derivation and independent oracle provide the
+independent checks.
 
-The diagnostic revision and the earlier scientific implementation revision will
-be recorded separately. New diagnostic code must not relabel regenerated data as
-if they were executed at `fcb2c49`.
+### Publication and launcher
 
-### Click-to-run launcher
+The click-to-run launcher exposes editable dictionaries and runs on CPU only. Its
+source defaults to the tracked extract relative to repository root. Its output
+root remains explicitly overrideable. The manifest records `artifact_kind`, the
+typed source-binding digest, both revisions, and recomputed hashes for every
+non-manifest artifact. NPZ replay compares canonical per-array hashes rather than
+ZIP-container bytes.
 
-Add a small click-to-run Python launcher with editable dictionaries rather than a
-CLI. Its default mode performs CPU-only exact/numerical analysis. It has no CUDA
-gate, no heavy-sweep option, and no parameter-grid mode. The source confirmatory
-run path is explicit and fails closed when absent or mismatched.
+Every producer-emitted record remains `CANDIDATE`. Only an external validated
+ledger may promote a claim to `EVIDENCE_VERIFIED` or `REFUTED`.
 
-### Published diagnostic artifacts
+## Repository and Research closeout
 
-The new run publishes canonical JSON plus compact NPZ arrays:
+The tracked result document retains pilot and failed-sentinel history but adds a
+single authoritative current-state section backed by machine-readable JSON. It
+separates the primary boundary p-value, reported as the bootstrap resolution
+floor `p <= 2/10001`, from the six Holm-adjusted secondary tests.
 
-- `fixed_model_spectral_diagnostics.json`;
-- `fixed_model_trajectory_diagnostics.json`;
-- `fixed_model_explanation.json`;
-- `fixed_model_diagnostic_arrays.npz`;
-- `metrics.json`; and
-- a manifest containing hashes, both source revisions, the source confirmatory
-  manifest hash, and the primary/holdout analysis hashes.
+After the final MultiAgentELBO result, evidence extract, derivation, tests, and
+ledger validate at one exact clean revision, the Research wiki receives one
+immutable run note and calibrated project/RG updates. `C` is the only primary
+population; `H` remains descriptive. The dirty Research checkout is not switched
+or advanced because it is on a non-main review branch. Research publication uses
+an isolated clean `main` worktree.
 
-The explanation record uses a finite classification such as
-`endpoint_scale_explains_gap`, `weak_transverse_contraction`,
-`nonnormal_transient`, `seed_mode_alignment`, `multiple_mechanisms`, or
-`inconclusive`. A classification is emitted only from frozen quantitative rules
-defined in the implementation plan; prose intuition alone cannot select it.
+## Validation and failure behavior
 
-## Repository results closeout
+Validation requires:
 
-Revise `docs/results/2026-08-09-gaussian-fixed-ray-results.md` without deleting its
-pilot or failed-sentinel history. Add clearly dated sections for:
+- exact Fraction derivations and a tracked mathematics derivation;
+- a sphere-geodesic or scale-aware finite-difference ladder near
+  `eps_machine^(1/3)`;
+- reduced-tangent, not ambient-Jacobian, conditioning;
+- scale-normalized Schur and subspace residual tolerances;
+- all source-binding hashes and deterministic per-array hashes;
+- separate `C` primary and `H` descriptive outputs;
+- synthetic negative controls and a full tracked-extract integration test;
+- two clean-root semantic reproductions;
+- current machine-readable JUnit output; and
+- independent code, mathematics, numerical, and experiment adjudication plus a
+  validating revision-bound ledger.
 
-- the successful revision-bound CUDA sentinel;
-- the complete 40-job confirmatory execution;
-- the primary estimate, interval, practical threshold comparison, and exact
-  `inconclusive` classification;
-- the descriptive holdout estimate and its primary-analysis binding;
-- secondary Holm results with an explicit warning that the small p-value at the
-  `-0.02` primary boundary points in the unfavorable direction;
-- zero missing, rejected, censored, basin-exit, and retry counts;
-- source, manifest, artifact, JUnit, and ledger hashes; and
-- claim typing: implementation/parity/classification integrity may be
-  `EVIDENCE_VERIFIED`, the practical-support criterion is not met, and the
-  mathematical attraction/universality claims remain `INCONCLUSIVE`/open.
-
-The document title will be broadened from pilot-only wording while retaining the
-pilot as the historical first phase.
-
-## Research-wiki ingest
-
-After the repository result record is validated, ingest the result into
-`C:\Users\chris and christine\Desktop\Research` under the wiki's schema:
-
-1. create one immutable `sources/runs/` note containing the frozen configuration,
-   source/artifact hashes, primary and holdout estimates, classification, and
-   exact scope limitations;
-2. update `wiki/projects/Gauge-Theoretic Multi-Agent VFE Model.md` with the completed
-   finite instantiation and the next fixed-model diagnostic obligation;
-3. update `wiki/concepts/Renormalization-group flow of beliefs.md` to distinguish
-   the new finite numerical result from an RG fixed-point or universality result;
-4. update `index.md` for the new source note and append the required `INGEST` entry
-   to `log.md`; and
-5. run the vault link/identity lint and preserve any unrelated Research WIP.
-
-The wiki ingest occurs only after the repository result text and hashes are final,
-so the immutable run note does not need correction afterward.
-
-## Validation strategy
-
-Validation is layered by claim type.
-
-### Exact and mathematical checks
-
-- Reconstruct both maps as exact rational matrices and verify row stochasticity,
-  Perron-ray membership, characteristic polynomials, and any claimed invariant
-  subspaces.
-- Derive the normalized-map Jacobian independently and compare it with centered
-  finite differences over multiple positive directions and tangent vectors.
-- Require analytic/numerical agreement before assigning any mechanism label.
-
-### Numerical and artifact checks
-
-- Recompute all 40 CPU trajectories from the immutable job table and compare them
-  with the final confirmatory bundle.
-- Recompute all primary and holdout diagnostic inputs without changing the frozen
-  classifier.
-- Verify every output is finite, deterministic, hash-bound, and identical across
-  two clean output roots.
-- Include negative controls for a perturbed map, incorrect normalization, omitted
-  tangent projection, and shuffled job identity.
-
-### Regression and review gates
-
-- Add focused tests for exact spectra, Jacobian finite differences, nonnormal-map
-  handling, mode decomposition, artifact rejection, and deterministic publication.
-- Run the complete CPU suite with machine-readable JUnit evidence. No CUDA claim is
-  created by this CPU-only wave.
-- Obtain independent mathematics, numerical-analysis, experiment, and code review
-  of the exact clean revision.
-- Record one claim per check in the revision-bound verification ledger and validate
-  it before publication.
-
-## Failure behavior
-
-The diagnostic fails closed when the source artifact is missing, its hashes or
-revision bindings drift, a map is not the frozen map, regenerated trajectories do
-not match, exact and floating spectral calculations disagree beyond their declared
-tolerances, a Jacobian finite-difference control fails, or an explanation rule is
-not uniquely satisfied. Such a run may publish an immutable failure record but may
-not publish a positive mechanism classification.
-
-If no frozen mechanism quantitatively explains the observed finite-window slopes,
-the correct result is `inconclusive` with a named mathematical or numerical
-obligation. The implementation must not respond by changing parameters within the
-same wave.
+The diagnostic fails closed on any source drift, nonfinite output, recurrence or
+endpoint mismatch, derivative-control failure, or artifact hash mismatch. It may
+publish a failure record but cannot promote a producer claim. Unresolved causal
+interpretation remains `INCONCLUSIVE` even though the endpoint-feasibility theorem
+is `ESTABLISHED`.
 
 ## Definition of done
 
 This wave is complete only when:
 
-- the repository result document accurately records the successful sentinel and
-  complete confirmatory result;
-- the Research wiki contains a lint-clean immutable run record and calibrated
-  synthesis updates;
-- exact and numerical fixed-model diagnostics reproduce the frozen trajectories
-  and quantify the observed primary and holdout slopes;
-- the selected explanation, or the residual inconclusive obligation, follows from
-  frozen machine-readable rules;
-- full regression and independent review gates pass at one exact clean revision;
-  and
-- the branch is committed, pushed, merged, and fast-forwarded without modifying
-  unrelated Desktop or Research-vault WIP.
+- the result document accurately records the sentinel, 40-job run, and analytic
+  endpoint-feasibility conclusion;
+- the exact adjacent spectrum and basin certificate have derivation evidence;
+- the 80 trajectories replay and continuous diagnostics are deterministic;
+- all runtime records remain `CANDIDATE` and the external ledger validates at the
+  exact final revision;
+- the compact source and diagnostic evidence extracts are durable in Git;
+- the full CPU suite and independent reviews pass;
+- MultiAgentELBO is pushed, merged, and safely fast-forwarded without touching
+  Desktop WIP; and
+- the Research ingest is lint-clean, published through an isolated main worktree,
+  and leaves the dirty live Research review branch untouched.
