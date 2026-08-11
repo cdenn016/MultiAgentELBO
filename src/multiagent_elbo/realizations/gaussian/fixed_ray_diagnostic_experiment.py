@@ -1156,10 +1156,11 @@ def replay_confirmatory_diagnostics(
     Exactly 80 calls are made directly to the frozen production iterator.
     ``iterate_fn`` remains in the planned public interface as a provenance
     guard, but overrides are rejected rather than treated as result authority.
-    ``call_observer`` may observe each validated call and must return ``None``.
-    Initial coefficients are regenerated from each master-seed/job-ID pair
-    rather than loaded as replay outputs.  Stored trajectories and endpoints
-    are comparison targets only.
+    ``call_observer`` may observe each validated call only after the complete
+    immutable result is constructed, and it must return ``None``.  Initial
+    coefficients are regenerated from each master-seed/job-ID pair rather than
+    loaded as replay outputs.  Stored trajectories and endpoints are comparison
+    targets only.
     """
     if not isinstance(source, ValidatedConfirmatorySource):
         raise TypeError("source must be a ValidatedConfirmatorySource")
@@ -1173,6 +1174,7 @@ def replay_confirmatory_diagnostics(
     maxima = {field: 0.0 for field in _REPLAY_FIELDS}
     maxima["blocking_scheme_dispersion"] = 0.0
     replayed: dict[str, Mapping[str, FixedRayTrajectory]] = {}
+    observation_events: list[tuple[str, str]] = []
     for job, record, job_id in zip(
         source.jobs, source.endpoint_records, source.job_ids
     ):
@@ -1205,10 +1207,7 @@ def replay_confirmatory_diagnostics(
             for field, error in errors.items():
                 maxima[field] = max(maxima[field], error)
             per_scheme[scheme] = _copy_trajectory(trajectory)
-            if call_observer is not None:
-                observation = call_observer(job_id, scheme)
-                if observation is not None:
-                    raise ValueError("call_observer must not produce replay results")
+            observation_events.append((job_id, scheme))
         dispersion = blocking_scheme_dispersion(
             per_scheme[_SCHEMES[0]].coefficients,
             per_scheme[_SCHEMES[1]].coefficients,
@@ -1227,7 +1226,7 @@ def replay_confirmatory_diagnostics(
         raise ValueError(
             "deterministic replay must invoke the frozen iterator 80 times"
         )
-    return ReplayResult(
+    result = ReplayResult(
         operation="deterministic_replay",
         scientific_revision=source.scientific_revision,
         diagnostic_revision=source.diagnostic_revision,
@@ -1237,6 +1236,12 @@ def replay_confirmatory_diagnostics(
         max_absolute_errors=MappingProxyType(maxima),
         recorded_execution_metadata=source.recorded_execution_metadata,
     )
+    if call_observer is not None:
+        for job_id, scheme in observation_events:
+            observation = call_observer(job_id, scheme)
+            if observation is not None:
+                raise ValueError("call_observer must not produce replay results")
+    return result
 
 
 __all__ = [

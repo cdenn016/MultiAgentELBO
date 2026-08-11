@@ -916,6 +916,49 @@ def test_call_observer_cannot_replace_subsequent_production_invocations(
     )
 
 
+def test_call_observer_runs_after_production_function_globals_are_no_longer_used(
+    synthetic_extract: SyntheticExtract,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _diagnostic_module()
+    source = module.validate_scientific_extract(
+        synthetic_extract.path,
+        synthetic_extract.binding(),
+    )
+    system = build_preregistered_system()
+    observed: list[tuple[str, str]] = []
+    replacement_calls: list[tuple[str, str]] = []
+    production_globals = module._FROZEN_PRODUCTION_ITERATOR.__globals__
+
+    def stored_output_factory(**fields: object) -> FixedRayTrajectory:
+        scheme = str(fields["scheme"])
+        job_index = len(observed) // 2
+        job_id = JOB_IDS[job_index]
+        replacement_calls.append((job_id, scheme))
+        return _stored_output_trajectory(source, job_index, scheme, system)
+
+    def observe(job_id: str, scheme: str) -> None:
+        observed.append((job_id, scheme))
+        if len(observed) == 1:
+            monkeypatch.setitem(
+                production_globals,
+                "FixedRayTrajectory",
+                stored_output_factory,
+            )
+
+    result = module.replay_confirmatory_diagnostics(
+        source,
+        call_observer=observe,
+    )
+
+    assert result.call_count == 80
+    assert observed == [(job_id, scheme) for job_id in JOB_IDS for scheme in SCHEMES]
+    assert replacement_calls == [], (
+        "observer replaced "
+        f"{len(replacement_calls)} results through production-function globals"
+    )
+
+
 def test_synthetic_replay_rejects_a_result_outside_the_frozen_cpu_tolerance(
     synthetic_extract: SyntheticExtract,
     monkeypatch: pytest.MonkeyPatch,
