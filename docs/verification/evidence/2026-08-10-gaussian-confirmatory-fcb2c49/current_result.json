@@ -1,0 +1,57 @@
+{
+  "schema_version": "gaussian-confirmatory-current-result-v1",
+  "scientific_revision": "fcb2c49efdca2ad3ee502dc08fbb82fc285e7a05",
+  "source_binding": "source_binding.json",
+  "completed_jobs": 40,
+  "missing_jobs": 0,
+  "rejected_jobs": 0,
+  "retried_jobs": 0,
+  "terminal_basin_exit_events": 0,
+  "producer_verification_state": "CANDIDATE",
+  "confirmatory_execution": {
+    "worker_exchange_count": 640,
+    "operator_gate_recheck_count": 40,
+    "stopping_reason": "planned_table_complete"
+  },
+  "primary": {
+    "job_count": 30,
+    "classification": "inconclusive",
+    "theorem_status": "NUMERICAL",
+    "mathematical_verification_state": "INCONCLUSIVE",
+    "estimate": -0.00026786510016806844,
+    "interval": [
+      -0.00029802317797700826,
+      -0.00021070275415133334
+    ],
+    "null_boundary": -0.02,
+    "boundary_result": "p <= 2/10001",
+    "boundary_result_scope": "bootstrap resolution floor; unfavorable direction"
+  },
+  "holdout": {
+    "job_count": 10,
+    "scope": "descriptive_replication_only",
+    "theorem_status": "NUMERICAL",
+    "mathematical_verification_state": "INCONCLUSIVE",
+    "estimate": -0.00030310407296303384,
+    "interval": [
+      -0.00040771248808456155,
+      -0.00019982541962230285
+    ]
+  },
+  "successful_cuda_sentinel": {
+    "manifest_sha256": "beb0c5bcf0217aabf06cacc974bf44db29e6bbab8e0c16b64fc2e331b99617c7",
+    "parity_sha256": "50f7e9889db083c17d6d55649aaa9b3577b64fbbf54b512a6c0217a1d6cc135c",
+    "job_count": 5,
+    "step_record_count": 80,
+    "endpoint_record_count": 10,
+    "worker_exchange_count": 240,
+    "operator_gate_recheck_count": 5,
+    "all_parity_passed": true,
+    "scientific_decision_parity_passed": true,
+    "scientific_analysis_eligible": false
+  },
+  "secondary_tests": {
+    "family": "six Holm-adjusted secondary tests",
+    "classification_role": "secondary; not the primary practical-support boundary result"
+  }
+}

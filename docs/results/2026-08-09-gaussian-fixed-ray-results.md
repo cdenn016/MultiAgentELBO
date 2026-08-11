@@ -1,4 +1,4 @@
-# Gaussian Fixed-Ray Pilot Results
+# Gaussian Fixed-Ray Results
 
 Date: 2026-08-09
 
@@ -8,7 +8,67 @@ Execution: four paired pilot jobs only; Python 3.14 CPU controller plus isolated
 
 CUDA: not requested by this ordinary CPU pilot; no gate-state assertion is emitted
 
-## Outcome
+## Current state
+
+The final frozen confirmatory extract is bound to scientific revision
+`fcb2c49efdca2ad3ee502dc08fbb82fc285e7a05`. Its machine-readable current state
+is [current result](../verification/evidence/2026-08-10-gaussian-confirmatory-fcb2c49/current_result.json),
+and all ten original source hashes and sizes are in its
+[source binding](../verification/evidence/2026-08-10-gaussian-confirmatory-fcb2c49/source_binding.json).
+The coordinator evidence SHA-256 is
+`7fb07f04d709a3d07613fa220529875c7ddd63601940f3bbb2b87d2440b055fa`.
+The copied confirmatory manifest, primary analysis, and holdout analysis hashes
+are respectively `7e0a050850b48b446c70bff3a67010c84d2daa1fada6c48742d3ab152d43a1fb`,
+`f8b58ae7f8777e18800c37d63b55d37c0052cd47b407a40497405ef5f6375155`,
+and `ff09a656d7638a233d21149132367b95072fae6030187ee997290aa1a0596d1d`.
+The raw SHA-256 of the copied published job-table file is
+`a50dd3893ce1ad9c081a8e2f2cbc5adc676e2b217c9c3ec321e8b0d62b453adf`.
+It is intentionally distinct from the frozen planned-table canonical JSON hash
+`c3d019beb7c7cc1e6c1d383c3069745c528859aba4b1ded0de1c3a97449075cd`
+embedded by the primary analysis, holdout analysis, and manifest. The binding
+records the exact producer serialization and the reconstruction from the
+published execution wrapper; the former is a scientific payload hash, not a
+second raw-file SHA-256.
+
+The successful final float64 CUDA sentinel completed its five parity-only jobs:
+all 240 controller/worker exchanges and all scientific-decision parity checks
+passed. Its manifest SHA-256 is
+`beb0c5bcf0217aabf06cacc974bf44db29e6bbab8e0c16b64fc2e331b99617c7` and
+its parity SHA-256 is
+`50f7e9889db083c17d6d55649aaa9b3577b64fbbf54b512a6c0217a1d6cc135c`.
+The sentinel is not scientific analysis evidence, but it clears the required
+execution parity check for the completed confirmatory run.
+
+The planned 40-job confirmatory run completed all 40 jobs: the 30
+`C001`--`C030` primary jobs and the separate 10 `H001`--`H010` holdout jobs.
+The terminal counts are zero missing jobs, zero rejected jobs, zero retried
+jobs, and zero basin-exit events.
+The 30-job primary estimate is `-0.00026786510016806844`, with the bootstrap
+interval `[-0.00029802317797700826, -0.00021070275415133334]`; its frozen
+classification remains `inconclusive`.
+
+The primary practical-support boundary result is `p <= 2/10001`, the bootstrap
+resolution floor, in the unfavorable direction relative to the frozen `-0.02`
+boundary. This result is distinct from the six Holm-adjusted secondary tests:
+conditioning trend, construction residual, retained beta trend, scheme
+dispersion, basin-exit rate, and rejection rate. Those secondary tests do not
+replace, retune, or reverse the primary boundary classification.
+
+The holdout is a separate descriptive replication only, not pooled with `C`.
+Its estimate is `-0.00030310407296303384` with bootstrap interval
+`[-0.00040771248808456155, -0.00019982541962230285]`. All producer records
+represented by this extract, including the primary, holdout, and sentinel
+records, remain
+`CANDIDATE`; the finite result remains `NUMERICAL`, and mathematical attraction
+remains `INCONCLUSIVE`.
+
+## Historical pilot record
+
+The pilot and failed-sentinel material below is retained as dated history. Any
+ledger or verification labels in those sections are revision-bound to the
+artifacts named there; they are not the current producer state above.
+
+## Pilot outcome
 
 The pilot completed all `P001`-`P004` jobs, both noncommuting blocking schemes, and all eight finite scale steps without rejection or basin exit. The overall status remains `inconclusive`: the pilot is excluded from confirmatory inference, the preregistered `C` and `H` jobs were not run, and the required float64 CUDA sentinel parity evidence is absent.
 
@@ -41,7 +101,7 @@ The worker request and response were bound by immutable job ID `PILOT-CPU-ONE-ST
 
 The CUDA lanes are explicitly recorded as `not_requested_cpu_pilot` / `INCONCLUSIVE_NOT_REQUESTED_CPU_PILOT`, with null requested/effective backend and dtype, a null gate record, and null CUDA runtime/memory. The CPU pilot makes no busy/idle or operator-decision assertion; such a state would require a separately validated, timestamped, hash-bound gate record. No CPU fallback is presented as CUDA evidence. `heavy_sweep_enabled` remained false and `confirmatory_executed` remained false.
 
-## 2026-08-10 CUDA sentinel attempt and numerical correction
+## 2026-08-10 CUDA sentinel attempt and numerical correction (historical failed attempt)
 
 A later float64 parity sentinel at source revision `f3d26921424d012aee472b08cff998b6c0cc1b5e` used operator-gate digest `210bbbbd9226121061600d402e504c212f9887c6921f7d77665ffe2a1a692158`. It completed all 240 controller/worker exchanges for `C001`, `C015`, `C030`, `H001`, and `H010`, while preserving the `H` jobs as parity-only and ineligible for scientific analysis. Every stepwise controller-CPU, worker-CPU, worker-CUDA, and repeated-worker-CUDA comparison passed, CUDA repeatability was exact, and every basin/rejection/threshold decision agreed.
 
