@@ -33,6 +33,7 @@ from .fixed_ray import (
 
 
 CPU_REPLAY_ATOL = 2.0e-14
+_FROZEN_PRODUCTION_ITERATOR = iterate_fixed_ray
 
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 _REVISION_PATTERN = re.compile(r"[0-9a-f]{40}")
@@ -133,8 +134,11 @@ def _plain_json(value: object) -> object:
 
 def _readonly(values: object, *, dtype: object | None = None) -> np.ndarray:
     array = np.array(values, dtype=dtype, copy=True, order="C")
-    array.setflags(write=False)
-    return array
+    immutable_bytes = array.tobytes(order="C")
+    return np.frombuffer(immutable_bytes, dtype=array.dtype).reshape(
+        array.shape,
+        order="C",
+    )
 
 
 def _mapping(value: object, label: str) -> Mapping[str, object]:
@@ -1145,17 +1149,24 @@ def replay_confirmatory_diagnostics(
     source: ValidatedConfirmatorySource,
     *,
     iterate_fn: Callable[..., FixedRayTrajectory] = iterate_fixed_ray,
+    call_observer: Callable[[str, str], None] | None = None,
 ) -> ReplayResult:
     """Deterministically replay all 40 jobs through both frozen schemes.
 
-    Exactly 80 calls are made to ``iterate_fn``.  Initial coefficients are
-    regenerated from each master-seed/job-ID pair rather than loaded as replay
-    outputs.  Stored trajectories and endpoints are comparison targets only.
+    Exactly 80 calls are made directly to the frozen production iterator.
+    ``iterate_fn`` remains in the planned public interface as a provenance
+    guard, but overrides are rejected rather than treated as result authority.
+    ``call_observer`` may observe each validated call and must return ``None``.
+    Initial coefficients are regenerated from each master-seed/job-ID pair
+    rather than loaded as replay outputs.  Stored trajectories and endpoints
+    are comparison targets only.
     """
     if not isinstance(source, ValidatedConfirmatorySource):
         raise TypeError("source must be a ValidatedConfirmatorySource")
-    if not callable(iterate_fn):
-        raise TypeError("iterate_fn must be callable")
+    if iterate_fn is not _FROZEN_PRODUCTION_ITERATOR:
+        raise ValueError("iterate_fn must remain the frozen production iterator")
+    if call_observer is not None and not callable(call_observer):
+        raise TypeError("call_observer must be callable or None")
     system = build_preregistered_system()
     call_count = 0
     maxima = {field: 0.0 for field in _REPLAY_FIELDS}
@@ -1176,7 +1187,7 @@ def replay_confirmatory_diagnostics(
         per_scheme: dict[str, FixedRayTrajectory] = {}
         for scheme in source.schemes:
             iterator_initial = _readonly(regenerated, dtype=np.float64)
-            trajectory = iterate_fn(
+            trajectory = _FROZEN_PRODUCTION_ITERATOR(
                 system,
                 iterator_initial,
                 scheme=scheme,
@@ -1193,6 +1204,10 @@ def replay_confirmatory_diagnostics(
             for field, error in errors.items():
                 maxima[field] = max(maxima[field], error)
             per_scheme[scheme] = _copy_trajectory(trajectory)
+            if call_observer is not None:
+                observation = call_observer(job_id, scheme)
+                if observation is not None:
+                    raise ValueError("call_observer must not produce replay results")
         dispersion = blocking_scheme_dispersion(
             per_scheme[_SCHEMES[0]].coefficients,
             per_scheme[_SCHEMES[1]].coefficients,

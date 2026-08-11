@@ -69,6 +69,62 @@ def _diagnostic_module():
     )
 
 
+def _stored_output_trajectory(
+    source: object,
+    job_index: int,
+    scheme: str,
+    system: object,
+) -> FixedRayTrajectory:
+    job_id = JOB_IDS[job_index]
+    coefficients = np.asarray(
+        source.arrays[f"{job_id}_{scheme}_coefficients"],
+        dtype=np.float64,
+    )
+    endpoint = source.endpoint_records[job_index]["schemes"][scheme]
+    ray = np.asarray(system.perron_ray, dtype=np.float64)
+    projection = np.outer(ray, ray) / float(np.dot(ray, ray))
+    retained_vectors = np.asarray(
+        [
+            (np.eye(coefficients.shape[1]) - projection)
+            @ difference
+            / system.log_block_scale
+            for difference in coefficients[1:] - coefficients[:-1]
+        ],
+        dtype=np.float64,
+    )
+    return FixedRayTrajectory(
+        scheme=scheme,
+        coefficients=coefficients,
+        coupling_matrices=(coefficients[:, :, None, None] * system.matrix_direction),
+        projective_ray_angles=np.asarray(
+            endpoint["projective_ray_angles"],
+            dtype=np.float64,
+        ),
+        normalized_coupling_distances=np.asarray(
+            endpoint["normalized_coupling_distances"],
+            dtype=np.float64,
+        ),
+        scalarized_ray_construction_residuals=np.asarray(
+            endpoint["scalarized_ray_construction_residuals"],
+            dtype=np.float64,
+        ),
+        retained_beta_residual_vectors=retained_vectors,
+        retained_beta_residuals=np.asarray(
+            endpoint["retained_beta_residuals"],
+            dtype=np.float64,
+        ),
+        basin_exits=np.any(
+            (coefficients < system.basin_lower) | (coefficients > system.basin_upper),
+            axis=1,
+        ),
+        coefficient_conditioning=np.asarray(
+            endpoint["coefficient_conditioning"],
+            dtype=np.float64,
+        ),
+        matrix_condition=float(endpoint["matrix_condition"]),
+    )
+
+
 def _canonical_bytes(payload: object) -> bytes:
     return json.dumps(
         payload,
@@ -457,6 +513,21 @@ def test_synthetic_extract_validates_into_immutable_defensive_copies(
     assert np.array_equal(source.arrays["C001_initial_coefficients"], original)
 
 
+def test_validated_source_array_backing_cannot_be_made_writeable(
+    synthetic_extract: SyntheticExtract,
+) -> None:
+    module = _diagnostic_module()
+    source = module.validate_scientific_extract(
+        synthetic_extract.path,
+        synthetic_extract.binding(),
+    )
+
+    validated = source.arrays["C001_initial_coefficients"]
+    assert not validated.flags.writeable
+    with pytest.raises(ValueError):
+        validated.setflags(write=True)
+
+
 @pytest.mark.parametrize("name", TRACKED_SCIENTIFIC_SUBSET)
 def test_synthetic_extract_fails_closed_on_every_owned_hash(
     synthetic_extract: SyntheticExtract,
@@ -625,37 +696,34 @@ def test_npz_loader_explicitly_disables_pickle(
 
 def test_synthetic_replay_regenerates_initials_and_invokes_80_calls(
     synthetic_extract: SyntheticExtract,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     module = _diagnostic_module()
     source = module.validate_scientific_extract(
         synthetic_extract.path,
         synthetic_extract.binding(),
     )
-    calls: list[tuple[str, str, int]] = []
+    generated: list[tuple[int, str]] = []
+    calls: list[tuple[str, str]] = []
+    frozen_generator = module.generate_initial_coefficients
 
-    def counting_iterator(
-        system: object,
-        initial: object,
-        *,
-        scheme: str,
-        steps: int,
-    ) -> FixedRayTrajectory:
-        job_index = len(calls) // 2
-        job_id = JOB_IDS[job_index]
-        expected = generate_initial_coefficients(
-            int(source.jobs[job_index]["master_seed"]),
-            job_id,
-        )
-        assert np.array_equal(np.asarray(initial), expected)
-        calls.append((job_id, scheme, steps))
-        return iterate_fixed_ray(system, initial, scheme=scheme, steps=steps)
+    def generation_spy(master_seed: int, job_id: str) -> np.ndarray:
+        generated.append((master_seed, job_id))
+        return frozen_generator(master_seed, job_id)
 
+    def observe(job_id: str, scheme: str) -> None:
+        calls.append((job_id, scheme))
+
+    monkeypatch.setattr(module, "generate_initial_coefficients", generation_spy)
     result = module.replay_confirmatory_diagnostics(
         source,
-        iterate_fn=counting_iterator,
+        call_observer=observe,
     )
 
-    expected_calls = [(job_id, scheme, 8) for job_id in JOB_IDS for scheme in SCHEMES]
+    assert generated == [
+        (int(job["master_seed"]), job_id) for job, job_id in zip(source.jobs, JOB_IDS)
+    ]
+    expected_calls = [(job_id, scheme) for job_id in JOB_IDS for scheme in SCHEMES]
     assert calls == expected_calls
     assert result.operation == "deterministic_replay"
     assert result.call_count == 80
@@ -676,8 +744,134 @@ def test_synthetic_replay_regenerates_initials_and_invokes_80_calls(
         result.trajectories["new"] = {}
 
 
+def test_replay_trajectory_array_backing_cannot_be_made_writeable(
+    synthetic_extract: SyntheticExtract,
+) -> None:
+    module = _diagnostic_module()
+    source = module.validate_scientific_extract(
+        synthetic_extract.path,
+        synthetic_extract.binding(),
+    )
+
+    result = module.replay_confirmatory_diagnostics(source)
+    replayed = result.trajectories["C001"][SCHEMES[0]].coefficients
+
+    assert not replayed.flags.writeable
+    with pytest.raises(ValueError):
+        replayed.setflags(write=True)
+
+
+def test_stored_output_supplier_cannot_replace_frozen_production_iterator(
+    synthetic_extract: SyntheticExtract,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _diagnostic_module()
+    source = module.validate_scientific_extract(
+        synthetic_extract.path,
+        synthetic_extract.binding(),
+    )
+    supplier_calls: list[tuple[str, str]] = []
+    production_calls: list[str] = []
+    frozen_production = module.iterate_fixed_ray
+
+    def production_spy(*args: object, **kwargs: object) -> FixedRayTrajectory:
+        production_calls.append(str(kwargs["scheme"]))
+        return frozen_production(*args, **kwargs)
+
+    def stored_output_supplier(
+        system: object,
+        initial: object,
+        *,
+        scheme: str,
+        steps: int,
+    ) -> FixedRayTrajectory:
+        del initial
+        assert steps == 8
+        job_index = len(supplier_calls) // 2
+        job_id = JOB_IDS[job_index]
+        supplier_calls.append((job_id, scheme))
+        return _stored_output_trajectory(source, job_index, scheme, system)
+
+    monkeypatch.setattr(module, "iterate_fixed_ray", production_spy)
+    try:
+        module.replay_confirmatory_diagnostics(
+            source,
+            iterate_fn=stored_output_supplier,
+        )
+    except ValueError as error:
+        assert "frozen production iterator" in str(error)
+    else:
+        pytest.fail(
+            "stored-output supplier was accepted after "
+            f"{len(supplier_calls)} supplier calls and "
+            f"{len(production_calls)} production calls"
+        )
+
+    assert supplier_calls == []
+    assert production_calls == []
+
+
+def test_call_observer_records_all_80_validated_production_invocations(
+    synthetic_extract: SyntheticExtract,
+) -> None:
+    module = _diagnostic_module()
+    source = module.validate_scientific_extract(
+        synthetic_extract.path,
+        synthetic_extract.binding(),
+    )
+    observed: list[tuple[str, str]] = []
+
+    def observe(job_id: str, scheme: str) -> None:
+        observed.append((job_id, scheme))
+
+    result = module.replay_confirmatory_diagnostics(
+        source,
+        call_observer=observe,
+    )
+
+    assert observed == [(job_id, scheme) for job_id in JOB_IDS for scheme in SCHEMES]
+    assert result.call_count == 80
+
+
+def test_call_observer_cannot_supply_stored_replay_output(
+    synthetic_extract: SyntheticExtract,
+) -> None:
+    module = _diagnostic_module()
+    source = module.validate_scientific_extract(
+        synthetic_extract.path,
+        synthetic_extract.binding(),
+    )
+    system = build_preregistered_system()
+    observed: list[tuple[str, str]] = []
+
+    def stored_output_observer(job_id: str, scheme: str) -> FixedRayTrajectory:
+        observed.append((job_id, scheme))
+        return _stored_output_trajectory(
+            source,
+            JOB_IDS.index(job_id),
+            scheme,
+            system,
+        )
+
+    try:
+        module.replay_confirmatory_diagnostics(
+            source,
+            call_observer=stored_output_observer,
+        )
+    except ValueError as error:
+        assert "call_observer must not produce replay results" in str(error)
+    else:
+        pytest.fail(
+            "stored-output observer return was accepted after "
+            f"{len(observed)} observed production calls"
+        )
+
+    assert observed == [("C001", SCHEMES[0])]
+
+
 def test_synthetic_replay_rejects_a_result_outside_the_frozen_cpu_tolerance(
     synthetic_extract: SyntheticExtract,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     module = _diagnostic_module()
     source = module.validate_scientific_extract(
@@ -716,6 +910,7 @@ def test_synthetic_replay_rejects_a_result_outside_the_frozen_cpu_tolerance(
             matrix_condition=trajectory.matrix_condition,
         )
 
+    monkeypatch.setattr(module, "_FROZEN_PRODUCTION_ITERATOR", corrupting_iterator)
     with pytest.raises(ValueError, match="replay"):
         module.replay_confirmatory_diagnostics(
             source,
@@ -723,8 +918,9 @@ def test_synthetic_replay_rejects_a_result_outside_the_frozen_cpu_tolerance(
         )
 
 
-def test_synthetic_replay_defensively_isolates_each_iterator_initial(
+def test_synthetic_replay_gives_production_an_immutable_regenerated_initial(
     synthetic_extract: SyntheticExtract,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     module = _diagnostic_module()
     source = module.validate_scientific_extract(
@@ -733,7 +929,7 @@ def test_synthetic_replay_defensively_isolates_each_iterator_initial(
     )
     calls: list[tuple[str, str]] = []
 
-    def mutating_iterator(
+    def inspecting_iterator(
         system: object,
         initial: object,
         *,
@@ -748,15 +944,15 @@ def test_synthetic_replay_defensively_isolates_each_iterator_initial(
         )
         received = np.asarray(initial)
         assert np.array_equal(received, expected)
-        snapshot = received.copy()
-        received.setflags(write=True)
-        received[:] = 99.0
+        with pytest.raises(ValueError):
+            received.setflags(write=True)
         calls.append((job_id, scheme))
-        return iterate_fixed_ray(system, snapshot, scheme=scheme, steps=steps)
+        return iterate_fixed_ray(system, received, scheme=scheme, steps=steps)
 
+    monkeypatch.setattr(module, "_FROZEN_PRODUCTION_ITERATOR", inspecting_iterator)
     result = module.replay_confirmatory_diagnostics(
         source,
-        iterate_fn=mutating_iterator,
+        iterate_fn=inspecting_iterator,
     )
 
     assert result.call_count == 80
@@ -795,20 +991,12 @@ def test_tracked_extract_deterministically_replays_all_80_trajectories() -> None
     source = module.validate_scientific_extract(TRACKED_EXTRACT, _tracked_binding())
     calls: list[tuple[str, str]] = []
 
-    def counting_iterator(
-        system: object,
-        initial: object,
-        *,
-        scheme: str,
-        steps: int,
-    ) -> FixedRayTrajectory:
-        job_id = JOB_IDS[len(calls) // 2]
+    def observe(job_id: str, scheme: str) -> None:
         calls.append((job_id, scheme))
-        return iterate_fixed_ray(system, initial, scheme=scheme, steps=steps)
 
     result = module.replay_confirmatory_diagnostics(
         source,
-        iterate_fn=counting_iterator,
+        call_observer=observe,
     )
 
     assert calls == [(job_id, scheme) for job_id in JOB_IDS for scheme in SCHEMES]
