@@ -201,6 +201,27 @@ def _require_fraction(value: object, *, name: str) -> Fraction:
     return value
 
 
+def _require_bool(value: object, *, name: str) -> bool:
+    if type(value) is not bool:
+        raise TypeError(f"{name} must be a Boolean value")
+    return value
+
+
+def _require_endpoint_schemes(
+    value: object,
+    *,
+    name: str,
+    required_schemes: tuple[str, ...],
+) -> tuple[str, ...]:
+    if type(value) is not tuple or any(type(item) is not str for item in value):
+        raise TypeError(f"{name} must be a tuple of frozen scheme names")
+    if len(set(value)) != len(value):
+        raise ValueError(f"{name} must not contain duplicate scheme names")
+    if not set(value).issubset(required_schemes):
+        raise ValueError(f"{name} contains an unknown frozen scheme name")
+    return value
+
+
 def _fraction_square_root(value: Fraction) -> Fraction | None:
     numerator_root = math.isqrt(value.numerator)
     denominator_root = math.isqrt(value.denominator)
@@ -217,8 +238,15 @@ def adjacent_support_certificate(
     basin_lower: object,
     basin_upper: object,
     threshold: object,
+    complete_endpoint_schemes: object = (),
+    censored_endpoint_schemes: object = (),
+    initial_coefficients_admitted_in_basin: object = False,
+    frozen_maps_unchanged: object = False,
+    endpoint_scales_4_through_8_unchanged: object = False,
+    raw_angle_ols_unchanged: object = False,
+    paired_least_favorable_max_unchanged: object = False,
 ) -> Mapping[str, object]:
-    """Certify endpoint infeasibility for the frozen adjacent-map reduction."""
+    """Compute a generic bound and conditionally promote the frozen application."""
 
     lower = _require_fraction(basin_lower, name="basin_lower")
     upper = _require_fraction(basin_upper, name="basin_upper")
@@ -228,8 +256,65 @@ def adjacent_support_certificate(
     if support_threshold >= 0:
         raise ValueError("support threshold must be negative")
 
+    required_endpoint_schemes = (
+        "adjacent_pairs",
+        "balanced_alternating",
+    )
+    complete_schemes = _require_endpoint_schemes(
+        complete_endpoint_schemes,
+        name="complete_endpoint_schemes",
+        required_schemes=required_endpoint_schemes,
+    )
+    censored_schemes = _require_endpoint_schemes(
+        censored_endpoint_schemes,
+        name="censored_endpoint_schemes",
+        required_schemes=required_endpoint_schemes,
+    )
+    admitted_initial_coefficients = _require_bool(
+        initial_coefficients_admitted_in_basin,
+        name="initial_coefficients_admitted_in_basin",
+    )
+    unchanged_maps = _require_bool(
+        frozen_maps_unchanged,
+        name="frozen_maps_unchanged",
+    )
+    unchanged_scales = _require_bool(
+        endpoint_scales_4_through_8_unchanged,
+        name="endpoint_scales_4_through_8_unchanged",
+    )
+    unchanged_raw_angle_ols = _require_bool(
+        raw_angle_ols_unchanged,
+        name="raw_angle_ols_unchanged",
+    )
+    unchanged_paired_max = _require_bool(
+        paired_least_favorable_max_unchanged,
+        name="paired_least_favorable_max_unchanged",
+    )
+
     transverse_factor = Fraction(2, 5)
     ols_weights = tuple(Fraction(value, 10) for value in (-2, -1, 0, 1, 2))
+    complete_endpoints = (
+        set(complete_schemes) == set(required_endpoint_schemes)
+        and not censored_schemes
+    )
+    application_premises_satisfied = all(
+        (
+            complete_endpoints,
+            admitted_initial_coefficients,
+            unchanged_maps,
+            unchanged_scales,
+            unchanged_raw_angle_ols,
+            unchanged_paired_max,
+        )
+    )
+    frozen_input_scope_matches = (
+        lower == Fraction(1, 4)
+        and upper == Fraction(4)
+        and support_threshold == Fraction(-1, 50)
+    )
+    application_scope_matches = (
+        frozen_input_scope_matches and application_premises_satisfied
+    )
     common: dict[str, object] = {
         "basin_lower": lower,
         "basin_upper": upper,
@@ -240,9 +325,25 @@ def adjacent_support_certificate(
         "endpoint_scales": (4, 5, 6, 7, 8),
         "endpoint_angle": "raw_projective_angle",
         "endpoint_estimator": "ordinary_least_squares_slope",
-        "paired_reduction": "maximum",
+        "paired_reduction": (
+            "least_favorable_maximum_across_two_frozen_schemes"
+        ),
         "support_comparison": "upper_percentile_at_or_below_threshold",
-        "theorem_status": "ESTABLISHED",
+        "required_complete_endpoint_schemes": required_endpoint_schemes,
+        "complete_endpoint_schemes": complete_schemes,
+        "censored_endpoint_schemes": censored_schemes,
+        "complete_endpoints_for_both_frozen_schemes": complete_endpoints,
+        "initial_coefficients_admitted_in_basin": admitted_initial_coefficients,
+        "frozen_maps_unchanged": unchanged_maps,
+        "endpoint_scales_4_through_8_unchanged": unchanged_scales,
+        "raw_angle_ols_unchanged": unchanged_raw_angle_ols,
+        "paired_least_favorable_max_unchanged": unchanged_paired_max,
+        "application_premises_satisfied": application_premises_satisfied,
+        "frozen_input_scope_matches": frozen_input_scope_matches,
+        "application_scope_matches": application_scope_matches,
+        "application_conclusion": "not_established",
+        "theorem_status": "OPEN",
+        "mathematical_verification_state": "INCONCLUSIVE",
         "verification_state": "CANDIDATE",
         "claim_origin": "APPLICATION_SPECIFIC",
         "attraction_claim": "not_established",
@@ -259,6 +360,7 @@ def adjacent_support_certificate(
                 "slope_lower_bound": None,
                 "rational_slope_lower_bound": None,
                 "rational_margin_above_threshold": None,
+                "arithmetic_certificate_status": "not_certified",
                 "certificate_status": "not_certified",
                 "paired_support_boundary_reachable": None,
                 "not_certified_reason": (
@@ -272,7 +374,8 @@ def adjacent_support_certificate(
     slope_lower_bound = float(Fraction(-3, 10)) * math.atan(float(tan_theta4_bound))
     rational_slope_lower_bound = Fraction(-3, 10) * tan_theta4_bound
     rational_margin = rational_slope_lower_bound - support_threshold
-    certified = rational_margin >= 0
+    arithmetic_certified = rational_margin >= 0
+    application_established = arithmetic_certified and application_scope_matches
     return MappingProxyType(
         {
             **common,
@@ -281,14 +384,36 @@ def adjacent_support_certificate(
             "slope_lower_bound": slope_lower_bound,
             "rational_slope_lower_bound": rational_slope_lower_bound,
             "rational_margin_above_threshold": rational_margin,
-            "certificate_status": (
-                "certified_unreachable" if certified else "not_certified"
+            "arithmetic_certificate_status": (
+                "bound_excludes_threshold"
+                if arithmetic_certified
+                else "not_certified"
             ),
-            "paired_support_boundary_reachable": False if certified else None,
+            "certificate_status": (
+                "certified_unreachable"
+                if application_established
+                else "not_certified"
+            ),
+            "paired_support_boundary_reachable": (
+                False if application_established else None
+            ),
+            "application_conclusion": (
+                "paired_support_boundary_unreachable"
+                if application_established
+                else "not_established"
+            ),
+            "theorem_status": "ESTABLISHED" if application_established else "OPEN",
+            "mathematical_verification_state": (
+                "CANDIDATE" if application_established else "INCONCLUSIVE"
+            ),
             "not_certified_reason": (
                 None
-                if certified
-                else "rational sufficient bound does not exclude threshold"
+                if application_established
+                else (
+                    "rational sufficient bound does not exclude threshold"
+                    if not arithmetic_certified
+                    else "application premises or frozen input scope do not match"
+                )
             ),
         }
     )

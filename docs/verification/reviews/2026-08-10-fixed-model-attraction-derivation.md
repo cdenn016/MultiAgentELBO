@@ -11,9 +11,11 @@ Protocol: `2026-08-09-gaussian-fixed-ray-v1a`
 The theorem proved here is an application-specific statement about the two
 frozen six-dimensional coefficient maps, the coefficient basin
 `[1/4, 4]^6`, and the preregistered paired raw-angle endpoint. Its
-`theorem_status` is `ESTABLISHED`, its producer `verification_state` remains
-`CANDIDATE`, and its `claim_origin` is `APPLICATION_SPECIFIC` until final
-exact-revision adjudication.
+`theorem_status` is `ESTABLISHED` only when the exact frozen inputs and every
+application premise enumerated below match. Its producer `verification_state`
+remains `CANDIDATE`, and its `claim_origin` is `APPLICATION_SPECIFIC` until
+final exact-revision adjudication. A generic arithmetic result outside that
+scope is not this theorem.
 
 The conclusion is only that the practical-support boundary `-1/50` is
 unreachable under this endpoint definition throughout the admitted basin. It
@@ -21,6 +23,32 @@ does not refute projective attraction, establish attraction on the full
 Gaussian coupling cone, prove an RG fixed point, or support an unrestricted
 universality claim. The completed confirmatory experiment therefore remains
 `inconclusive` about mathematical attraction.
+
+### Application premises required for promotion
+
+The paired application conclusion requires all of the following, jointly:
+
+1. complete, uncensored endpoint records for both frozen schemes,
+   `adjacent_pairs` and `balanced_alternating`;
+2. initial coefficient vectors admitted in the coefficient basin
+   `[1/4, 4]^6`;
+3. unchanged frozen maps, including runtime-float conformance to the exact
+   rational literals below;
+4. unchanged endpoint scales `(4, 5, 6, 7, 8)`, raw projective angles, and the
+   five-point ordinary-least-squares slope estimator; and
+5. the paired least-favorable maximum across the two frozen schemes.
+
+The returned payload records these as
+`complete_endpoint_schemes`, `censored_endpoint_schemes`,
+`complete_endpoints_for_both_frozen_schemes`,
+`initial_coefficients_admitted_in_basin`, `frozen_maps_unchanged`,
+`endpoint_scales_4_through_8_unchanged`, `raw_angle_ols_unchanged`, and
+`paired_least_favorable_max_unchanged`. Missing, censored, or otherwise
+incomplete endpoint records fail the joint premise. Such a call may retain a
+generic `arithmetic_certificate_status`, but its application
+`certificate_status` is `not_certified`, `paired_support_boundary_reachable`
+is null, `theorem_status` is `OPEN`, and `mathematical_verification_state` is
+`INCONCLUSIVE`.
 
 ## Exact source maps
 
@@ -194,7 +222,11 @@ $$
 
 ### 4. Paired maximum implication
 
-For every admissible job,
+Assume the application premises above. In particular, both frozen schemes have
+complete, uncensored endpoints for every admitted in-basin initial coefficient;
+the frozen maps and the scales 4 through 8/raw-angle OLS endpoint are unchanged;
+and the recorded paired endpoint is the least-favorable maximum. Then, for
+every such job,
 
 $$
 s_{\mathrm{paired}}
@@ -202,11 +234,13 @@ s_{\mathrm{paired}}
 \ge s_{\mathrm{adj}}> -\frac1{50}.
 $$
 
-Thus no individual paired endpoint in the basin can meet the support boundary.
-Every bootstrap resample median of values that all exceed the threshold also
+Thus no individual complete paired endpoint in the basin can meet the support
+boundary. Because completeness supplies both endpoints for every admitted job,
+every bootstrap resample median of values that all exceed the threshold also
 exceeds it, and so does every percentile endpoint of those resampled medians.
 The preregistered practical-support rule is therefore structurally unreachable
-throughout the frozen basin.
+throughout the frozen basin under the enumerated premises. A missing, censored,
+or incomplete record breaks this implication instead of inheriting it.
 
 ## Fail-closed control
 
@@ -224,6 +258,13 @@ does not report the boundary as reachable or unreachable. This control
 falsifies an over-eager certificate branch; it is not evidence that a vector in
 the wider basin actually reaches the boundary. In fixed dimension, additional
 inequalities can be tighter than this interval-only Bhatia-Davis bound.
+
+The implementation exposes the interval calculation separately as
+`arithmetic_certificate_status`. Even when generic arithmetic excludes a
+synthetic threshold, application promotion is withheld unless the exact basin,
+threshold, frozen inputs, and all completeness premises match this derivation.
+Wider, synthetic, or arithmetically `not_certified` calls therefore remain
+`OPEN` and mathematically `INCONCLUSIVE`.
 
 When $ab$ has no rational square root, the standard-library exact encoding used
 here cannot represent the Bhatia-Davis coefficient as a `Fraction`. The function
@@ -246,10 +287,13 @@ is a developer oracle only and is not imported by production code or tests.
 
 ## Explicit non-implications
 
-This result depends on the frozen source maps, the scalar coefficient-ray
-construction, the exact basin, raw projective angle, scales 4 through 8, and the
-paired maximum. A changed map, endpoint, scale window, basin, or pairing rule
-requires a new derivation. The result does not establish any of the following:
+This result depends on complete uncensored endpoints for both frozen schemes,
+admitted in-basin initial coefficients, unchanged frozen source maps, the
+scalar coefficient-ray construction, the exact basin, raw projective angle,
+scales 4 through 8, five-point OLS, and the paired least-favorable maximum. A
+missing or censored record, or a changed map, endpoint, scale window, basin, or
+pairing rule, requires a new derivation or remains non-promoted. The result does
+not establish any of the following:
 
 - attraction for `balanced_alternating` or for an arbitrary fixed map;
 - attraction on the unrestricted space of positive-definite matrix couplings;
