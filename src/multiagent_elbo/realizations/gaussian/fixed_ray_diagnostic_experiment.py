@@ -9,7 +9,8 @@ is deliberately not described as an independent reconstruction.
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from fractions import Fraction
 from hashlib import sha256
 import json
 import math
@@ -19,6 +20,9 @@ from types import MappingProxyType
 
 import numpy as np
 
+from ...artifacts import RunStore
+from ...config import ExperimentConfig, config_sha256
+from ...runtime import RngStreams, collect_provenance
 from .confirmatory_analysis import analyze_holdout, analyze_primary
 from .fixed_ray import (
     FixedRayTrajectory,
@@ -29,6 +33,14 @@ from .fixed_ray import (
     job_seed,
     projective_ray_angle,
     scalarized_ray_construction_residual,
+)
+from .fixed_ray_diagnostics import (
+    adjacent_support_certificate,
+    canonical_fraction_maps,
+    diagnose_trajectory,
+    runtime_map_conformance,
+    spectral_diagnostics,
+    summarize_population,
 )
 
 
@@ -80,6 +92,14 @@ _REPLAY_FIELDS = (
     "scalarized_ray_construction_residuals",
     "retained_beta_residuals",
     "coefficient_conditioning",
+)
+_DIAGNOSTIC_ARTIFACTS = (
+    "fixed_model_support_certificate.json",
+    "fixed_model_spectral_diagnostics.json",
+    "fixed_model_trajectory_diagnostics.json",
+    "fixed_model_explanation.json",
+    "fixed_model_diagnostic_arrays.npz",
+    "metrics.json",
 )
 
 
@@ -464,6 +484,16 @@ class ReplayResult:
     trajectories: Mapping[str, Mapping[str, FixedRayTrajectory]]
     max_absolute_errors: Mapping[str, float]
     recorded_execution_metadata: Mapping[str, object]
+
+
+@dataclass(frozen=True)
+class GaussianFixedRayDiagnosticResult:
+    """Published, immutable fixed-model diagnostic bundle."""
+
+    run_dir: Path
+    status: str
+    source_binding_sha256: str
+    artifact_sha256: Mapping[str, str]
 
 
 def _read_json(path: Path, label: str) -> dict[str, object]:
@@ -1244,11 +1274,420 @@ def replay_confirmatory_diagnostics(
     return result
 
 
+def _diagnostic_config(
+    config: ExperimentConfig,
+    source_binding_sha256: str,
+) -> ExperimentConfig:
+    run = replace(
+        config.run,
+        name=f"{config.run.name}-{source_binding_sha256}",
+    )
+    return replace(config, run=run)
+
+
+def _require_clean_diagnostic_provenance(
+    config: ExperimentConfig,
+    binding: ConfirmatorySourceBinding,
+) -> dict[str, object]:
+    repository_root = Path(__file__).resolve().parents[4]
+    resolved_hash = config_sha256(config)
+    provenance = collect_provenance(
+        repository_root,
+        repository_root / "Theory",
+        resolved_hash,
+        RngStreams.from_seed(config.run.seed),
+    )
+    if provenance.get("config_hash") != resolved_hash:
+        raise ValueError("diagnostic provenance config hash drifted")
+    if provenance.get("git_commit") != binding.diagnostic_revision:
+        raise ValueError("diagnostic revision does not match the clean source tree")
+    if provenance.get("git_dirty") is not False:
+        raise ValueError(
+            "fixed-model diagnostic publication requires a clean source tree"
+        )
+    theory_sha256 = provenance.get("theory_sha256")
+    _require_sha256(theory_sha256, "theory SHA-256")
+    return dict(provenance)
+
+
+def _rewrite_incomplete_manifest(
+    store: RunStore,
+    provenance: Mapping[str, object],
+) -> None:
+    manifest_path = store.run_dir / "manifest.json"
+    manifest = _read_json(manifest_path, "diagnostic manifest")
+    if manifest.get("complete") is not False:
+        raise RuntimeError(
+            "diagnostic manifest must remain incomplete before finalization"
+        )
+    manifest["provenance"] = dict(provenance)
+    temporary = manifest_path.with_suffix(".json.tmp")
+    temporary.write_bytes(_canonical_bytes(manifest))
+    temporary.replace(manifest_path)
+
+
+def _canonical_array_sha256(name: str, values: np.ndarray) -> str:
+    array = np.ascontiguousarray(values)
+    digest = sha256()
+    for payload in (
+        b"fixed-model-diagnostic-array-v1",
+        name.encode("utf-8"),
+        array.dtype.str.encode("ascii"),
+    ):
+        digest.update(len(payload).to_bytes(8, "big"))
+        digest.update(payload)
+    digest.update(array.ndim.to_bytes(8, "big"))
+    for dimension in array.shape:
+        digest.update(int(dimension).to_bytes(8, "big", signed=False))
+    content = array.tobytes(order="C")
+    digest.update(len(content).to_bytes(8, "big"))
+    digest.update(content)
+    return digest.hexdigest()
+
+
+def _array_name(path: tuple[str, ...]) -> str:
+    name = "__".join(
+        re.sub(r"[^A-Za-z0-9_-]+", "_", component).strip("_") or "value"
+        for component in path
+    )
+    return name or "array"
+
+
+def _canonicalize_diagnostic_value(
+    value: object,
+    *,
+    path: tuple[str, ...],
+    arrays: dict[str, np.ndarray],
+) -> object:
+    if isinstance(value, np.ndarray):
+        array = np.ascontiguousarray(value)
+        if array.dtype.hasobject or array.dtype.kind in {"O", "S", "U", "V"}:
+            raise ValueError("diagnostic arrays must have plain numeric dtypes")
+        if array.dtype.kind not in {"b", "i", "u", "f", "c"}:
+            raise ValueError("diagnostic arrays must have supported numeric dtypes")
+        if array.dtype.kind in {"f", "c"} and not bool(np.all(np.isfinite(array))):
+            raise ValueError("diagnostic arrays must contain only finite values")
+        name = _array_name(path)
+        if name in arrays:
+            raise ValueError(f"duplicate canonical diagnostic array name: {name}")
+        arrays[name] = np.array(array, copy=True, order="C")
+        return {
+            "array_name": name,
+            "dtype": array.dtype.str,
+            "shape": list(array.shape),
+            "sha256": _canonical_array_sha256(name, array),
+        }
+    if isinstance(value, np.generic):
+        return _canonicalize_diagnostic_value(value.item(), path=path, arrays=arrays)
+    if isinstance(value, Fraction):
+        return {
+            "fraction": {
+                "numerator": value.numerator,
+                "denominator": value.denominator,
+            }
+        }
+    if isinstance(value, Mapping):
+        converted: dict[str, object] = {}
+        for key in sorted(value, key=lambda item: str(item)):
+            if type(key) is str:
+                encoded_key = key
+            elif type(key) is int:
+                encoded_key = str(key)
+            else:
+                raise ValueError("diagnostic mapping keys must be strings or integers")
+            if encoded_key in converted:
+                raise ValueError(
+                    "diagnostic mapping keys collide after canonicalization"
+                )
+            converted[encoded_key] = _canonicalize_diagnostic_value(
+                value[key],
+                path=(*path, encoded_key),
+                arrays=arrays,
+            )
+        return converted
+    if isinstance(value, (tuple, list)):
+        return [
+            _canonicalize_diagnostic_value(
+                nested,
+                path=(*path, str(index)),
+                arrays=arrays,
+            )
+            for index, nested in enumerate(value)
+        ]
+    if isinstance(value, complex):
+        if not math.isfinite(value.real) or not math.isfinite(value.imag):
+            raise ValueError("diagnostic complex values must be finite")
+        return {"complex": {"real": value.real, "imag": value.imag}}
+    if value is None or type(value) in {str, bool, int}:
+        return value
+    if type(value) is float:
+        if not math.isfinite(value):
+            raise ValueError("diagnostic floating values must be finite")
+        return value
+    raise ValueError(f"unsupported diagnostic value type: {type(value).__name__}")
+
+
+def _metric(
+    *,
+    value: int | float,
+    status: str,
+    theorem_status: str,
+    scope: str,
+) -> dict[str, object]:
+    if isinstance(value, bool) or not math.isfinite(float(value)):
+        raise ValueError("diagnostic metric values must be finite numeric scalars")
+    return {
+        "value": value,
+        "status": status,
+        "scope": scope,
+        "theorem_status": theorem_status,
+        "verification_state": "CANDIDATE",
+        "claim_origin": "APPLICATION_SPECIFIC",
+    }
+
+
+def _build_diagnostic_payloads(
+    config: ExperimentConfig,
+    source: ValidatedConfirmatorySource,
+    replay: ReplayResult,
+) -> tuple[dict[str, object], dict[str, np.ndarray], dict[str, str]]:
+    system = build_preregistered_system()
+    exact_maps = canonical_fraction_maps()
+    conformance = runtime_map_conformance(
+        system.spatial_maps,
+        exact_maps,
+        atol=config.numerics.atol,
+    )
+    support = dict(
+        adjacent_support_certificate(
+            basin_lower=Fraction(1, 4),
+            basin_upper=Fraction(4),
+            threshold=Fraction(-1, 50),
+        )
+    )
+    support.update(
+        {
+            "actual_run_premises_validated": True,
+            "application_conclusion": "support_boundary_unreachable_in_frozen_basin",
+            "runtime_map_conformance_max_absolute_error": conformance,
+            "claim_origin": "APPLICATION_SPECIFIC",
+            "verification_state": "CANDIDATE",
+            "mathematical_verification_state": "CANDIDATE",
+        }
+    )
+
+    spectra: dict[str, object] = {}
+    for scheme in _SCHEMES:
+        record = dict(
+            spectral_diagnostics(system.spatial_maps[scheme], system.perron_ray)
+        )
+        record["claim_origin"] = "APPLICATION_SPECIFIC"
+        record["verification_state"] = "CANDIDATE"
+        spectra[scheme] = record
+
+    jobs = {str(record["job_id"]): record for record in source.jobs}
+    trajectory_records: list[dict[str, object]] = []
+    for job_id in source.job_ids:
+        job = jobs[job_id]
+        for scheme in _SCHEMES:
+            replayed = replay.trajectories[job_id][scheme]
+            diagnostic = dict(
+                diagnose_trajectory(
+                    system.spatial_maps[scheme],
+                    replayed.coefficients,
+                    system.perron_ray,
+                    tuple(range(9)),
+                )
+            )
+            diagnostic.update(
+                {
+                    "job_id": job_id,
+                    "master_seed": int(job["master_seed"]),
+                    "scheme": scheme,
+                    "theorem_status": "NUMERICAL",
+                    "verification_state": "CANDIDATE",
+                    "claim_origin": "APPLICATION_SPECIFIC",
+                }
+            )
+            trajectory_records.append(diagnostic)
+    primary = dict(summarize_population(trajectory_records, population="C"))
+    holdout = dict(summarize_population(trajectory_records, population="H"))
+    for summary in (primary, holdout):
+        summary["claim_origin"] = "APPLICATION_SPECIFIC"
+        summary["verification_state"] = "CANDIDATE"
+
+    explanation = {
+        "schema_version": "fixed-model-explanation-v1",
+        "completed_finite_classification": "inconclusive",
+        "support_boundary": {
+            "conclusion": "support_boundary_unreachable_in_frozen_basin",
+            "theorem_status": "ESTABLISHED",
+            "verification_state": "CANDIDATE",
+            "claim_origin": "APPLICATION_SPECIFIC",
+        },
+        "mathematical_attraction": {
+            "conclusion": "INCONCLUSIVE",
+            "theorem_status": "OPEN",
+            "verification_state": "CANDIDATE",
+            "claim_origin": "APPLICATION_SPECIFIC",
+        },
+        "unrestricted_attraction": {
+            "conclusion": "INCONCLUSIVE",
+            "theorem_status": "OPEN",
+            "verification_state": "CANDIDATE",
+            "claim_origin": "APPLICATION_SPECIFIC",
+        },
+        "universality": {
+            "conclusion": "INCONCLUSIVE",
+            "theorem_status": "OPEN",
+            "verification_state": "CANDIDATE",
+            "claim_origin": "APPLICATION_SPECIFIC",
+        },
+        "population_contract": {
+            "primary": "C001-C030",
+            "descriptive_replication_only": "H001-H010",
+        },
+    }
+    metrics = {
+        "source_validation": _metric(
+            value=len(source.binding.tracked_scientific_subset),
+            status="validated",
+            theorem_status="NUMERICAL",
+            scope="tracked_scientific_extract",
+        ),
+        "deterministic_replay": _metric(
+            value=replay.call_count,
+            status="replayed",
+            theorem_status="NUMERICAL",
+            scope="40_jobs_two_schemes_cpu",
+        ),
+        "support_boundary_margin": _metric(
+            value=float(support["rational_margin_above_threshold"]),
+            status="support_boundary_unreachable_in_frozen_basin",
+            theorem_status="ESTABLISHED",
+            scope="frozen_basin_and_endpoint",
+        ),
+        "primary_C_paired_median": _metric(
+            value=float(primary["estimate"]),
+            status="inconclusive",
+            theorem_status="NUMERICAL",
+            scope="confirmatory_primary_C001_C030",
+        ),
+        "descriptive_H_paired_median": _metric(
+            value=float(holdout["estimate"]),
+            status="descriptive_replication_only",
+            theorem_status="NUMERICAL",
+            scope="descriptive_H001_H010",
+        ),
+    }
+    raw_payloads: dict[str, object] = {
+        "fixed_model_support_certificate.json": support,
+        "fixed_model_spectral_diagnostics.json": {
+            "schema_version": "fixed-model-spectral-diagnostics-v1",
+            "maps": spectra,
+        },
+        "fixed_model_trajectory_diagnostics.json": {
+            "schema_version": "fixed-model-trajectory-diagnostics-v1",
+            "replay_call_count": replay.call_count,
+            "records": trajectory_records,
+            "primary_C": primary,
+            "descriptive_H": holdout,
+        },
+        "fixed_model_explanation.json": explanation,
+        "metrics.json": metrics,
+    }
+
+    arrays: dict[str, np.ndarray] = {}
+    payloads: dict[str, object] = {}
+    for name in (
+        "fixed_model_support_certificate.json",
+        "fixed_model_spectral_diagnostics.json",
+        "fixed_model_trajectory_diagnostics.json",
+        "fixed_model_explanation.json",
+        "metrics.json",
+    ):
+        payloads[name] = _canonicalize_diagnostic_value(
+            raw_payloads[name],
+            path=(name.removesuffix(".json"),),
+            arrays=arrays,
+        )
+    array_sha256 = {
+        name: _canonical_array_sha256(name, arrays[name]) for name in sorted(arrays)
+    }
+    trajectory_payload = payloads["fixed_model_trajectory_diagnostics.json"]
+    assert isinstance(trajectory_payload, dict)
+    trajectory_payload["array_sha256"] = array_sha256
+    trajectory_payload["array_hash_algorithm"] = (
+        "fixed-model-diagnostic-array-v1-name-dtype-shape-c-bytes"
+    )
+    return payloads, arrays, array_sha256
+
+
+def run_fixed_model_diagnostic(
+    config: ExperimentConfig,
+    source_binding: ConfirmatorySourceBinding,
+    source_dir: Path,
+) -> GaussianFixedRayDiagnosticResult:
+    """Validate, replay, and publish one deterministic fixed-model diagnosis."""
+
+    if not isinstance(config, ExperimentConfig):
+        raise TypeError("config must be an ExperimentConfig")
+    if not isinstance(source_binding, ConfirmatorySourceBinding):
+        raise TypeError("source_binding must be a ConfirmatorySourceBinding")
+    if not isinstance(source_dir, Path):
+        raise TypeError("source_dir must be a Path")
+    if config.compute.backend != "cpu":
+        raise ValueError("fixed-model diagnostics require the CPU backend")
+    if config.compute.heavy_sweep_enabled:
+        raise ValueError("fixed-model diagnostics prohibit the heavy sweep")
+
+    source = validate_scientific_extract(source_dir, source_binding)
+    replay = replay_confirmatory_diagnostics(source)
+    payloads, arrays, array_sha256 = _build_diagnostic_payloads(
+        config,
+        source,
+        replay,
+    )
+    source_digest = source_binding.canonical_source_binding_sha256
+    run_config = _diagnostic_config(config, source_digest)
+    provenance = _require_clean_diagnostic_provenance(run_config, source_binding)
+    provenance.update(
+        {
+            "artifact_kind": "fixed_model_attraction_diagnostic",
+            "scientific_revision": source_binding.scientific_revision,
+            "source_binding_sha256": source_digest,
+            "source_hashes": _plain_json(source_binding.complete_original_inventory),
+            "array_sha256": array_sha256,
+        }
+    )
+
+    store = RunStore.create(run_config, provenance)
+    for name, payload in payloads.items():
+        store.write_json(name, payload)
+    store.write_npz("fixed_model_diagnostic_arrays.npz", arrays)
+
+    artifact_sha256 = {
+        name: sha256((store.run_dir / name).read_bytes()).hexdigest()
+        for name in sorted({"config.json", *_DIAGNOSTIC_ARTIFACTS})
+    }
+    provenance["artifact_sha256"] = artifact_sha256
+    _rewrite_incomplete_manifest(store, provenance)
+    store.finalize(_DIAGNOSTIC_ARTIFACTS)
+    return GaussianFixedRayDiagnosticResult(
+        run_dir=store.run_dir,
+        status="complete",
+        source_binding_sha256=source_digest,
+        artifact_sha256=MappingProxyType(artifact_sha256),
+    )
+
+
 __all__ = [
     "CPU_REPLAY_ATOL",
     "ConfirmatorySourceBinding",
+    "GaussianFixedRayDiagnosticResult",
     "ReplayResult",
     "ValidatedConfirmatorySource",
     "replay_confirmatory_diagnostics",
+    "run_fixed_model_diagnostic",
     "validate_scientific_extract",
 ]

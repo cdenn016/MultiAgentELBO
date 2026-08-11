@@ -5,12 +5,14 @@ from hashlib import sha256
 import importlib
 import json
 from pathlib import Path
+import shutil
 import subprocess
 from typing import Callable
 
 import numpy as np
 import pytest
 
+from multiagent_elbo.config import ExperimentConfig
 from multiagent_elbo.realizations.gaussian.confirmatory_analysis import (
     analyze_holdout,
     analyze_primary,
@@ -61,12 +63,110 @@ TRACKED_EXTRACT = (
     / "evidence"
     / "2026-08-10-gaussian-confirmatory-fcb2c49"
 )
+DIAGNOSTIC_ARTIFACTS = {
+    "config.json",
+    "manifest.json",
+    "fixed_model_support_certificate.json",
+    "fixed_model_spectral_diagnostics.json",
+    "fixed_model_trajectory_diagnostics.json",
+    "fixed_model_explanation.json",
+    "fixed_model_diagnostic_arrays.npz",
+    "metrics.json",
+}
+SEMANTIC_DIAGNOSTIC_JSON = (
+    "fixed_model_support_certificate.json",
+    "fixed_model_spectral_diagnostics.json",
+    "fixed_model_trajectory_diagnostics.json",
+    "fixed_model_explanation.json",
+    "metrics.json",
+)
 
 
 def _diagnostic_module():
     return importlib.import_module(
         "multiagent_elbo.realizations.gaussian.fixed_ray_diagnostic_experiment"
     )
+
+
+def _diagnostic_config(root: Path) -> ExperimentConfig:
+    return ExperimentConfig.from_dicts(
+        {"name": "fixed-model-attraction-diagnostic", "seed": 20260809},
+        {
+            "experiment": "gaussian_fixed_ray",
+            "fixture": "gaussian_fixed_ray_v1",
+            "preregistration": "2026-08-09-gaussian-fixed-ray-v1",
+            "blocking_schemes": list(SCHEMES),
+            "matrix_dimension": 2,
+        },
+        {
+            "dtype": "float64",
+            "atol": 1.0e-12,
+            "rtol": 1.0e-10,
+            "min_spd_rcond": 1.0e-12,
+            "max_frame_condition": 1.0e6,
+        },
+        {
+            "root": str(root),
+            "collect_diagnostics": True,
+            "render_figures": False,
+        },
+        {
+            "backend": "cpu",
+            "dtype": "float64",
+            "device_index": 0,
+            "batch_size": 4096,
+            "deterministic": True,
+            "allow_tf32": False,
+            "cpu_cuda_parity": False,
+            "cuda_worker_python": r"C:\anaconda\python.exe",
+            "heavy_sweep_enabled": False,
+        },
+    )
+
+
+def _patch_clean_provenance(
+    monkeypatch: pytest.MonkeyPatch,
+    module: object,
+    *,
+    dirty: bool = False,
+) -> None:
+    def provenance(
+        _repo_root: Path,
+        _theory_root: Path,
+        config_hash: str,
+        _streams: object,
+    ) -> dict[str, object]:
+        return {
+            "config_hash": config_hash,
+            "git_commit": DIAGNOSTIC_REVISION,
+            "git_dirty": dirty,
+            "theory_sha256": "e" * 64,
+            "input_hashes": {
+                "resolved_config_sha256": config_hash,
+                "theory_tree_sha256": "e" * 64,
+            },
+        }
+
+    monkeypatch.setattr(module, "collect_provenance", provenance, raising=False)
+
+
+def _independent_array_sha256(name: str, values: np.ndarray) -> str:
+    array = np.ascontiguousarray(values)
+    digest = sha256()
+    for payload in (
+        b"fixed-model-diagnostic-array-v1",
+        name.encode("utf-8"),
+        array.dtype.str.encode("ascii"),
+    ):
+        digest.update(len(payload).to_bytes(8, "big"))
+        digest.update(payload)
+    digest.update(array.ndim.to_bytes(8, "big"))
+    for dimension in array.shape:
+        digest.update(int(dimension).to_bytes(8, "big", signed=False))
+    content = array.tobytes(order="C")
+    digest.update(len(content).to_bytes(8, "big"))
+    digest.update(content)
+    return digest.hexdigest()
 
 
 def _stored_output_trajectory(
@@ -471,6 +571,268 @@ def test_public_api_is_exported_from_the_gaussian_package() -> None:
     assert ReplayResult.__name__ == "ReplayResult"
     assert callable(validate_scientific_extract)
     assert callable(replay_confirmatory_diagnostics)
+
+
+def test_publication_emits_exact_artifact_inventory(
+    synthetic_extract: SyntheticExtract,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _diagnostic_module()
+    binding = synthetic_extract.binding()
+    _patch_clean_provenance(monkeypatch, module)
+    result = module.run_fixed_model_diagnostic(
+        _diagnostic_config(tmp_path / "published"),
+        binding,
+        synthetic_extract.path,
+    )
+
+    assert {path.name for path in result.run_dir.iterdir()} == DIAGNOSTIC_ARTIFACTS
+    manifest = json.loads((result.run_dir / "manifest.json").read_text("utf-8"))
+    provenance = manifest["provenance"]
+    assert provenance["artifact_kind"] == "fixed_model_attraction_diagnostic"
+    assert provenance["git_commit"] == DIAGNOSTIC_REVISION
+    assert provenance["git_dirty"] is False
+    assert provenance["scientific_revision"] == SCIENTIFIC_REVISION
+    assert provenance["source_binding_sha256"] == (
+        binding.canonical_source_binding_sha256
+    )
+    assert provenance["theory_sha256"] == "e" * 64
+    assert set(provenance["source_hashes"]) == set(ORIGINAL_INVENTORY_NAMES)
+    artifact_hashes = provenance["artifact_sha256"]
+    assert set(artifact_hashes) == DIAGNOSTIC_ARTIFACTS - {"manifest.json"}
+    for name, digest in artifact_hashes.items():
+        assert sha256((result.run_dir / name).read_bytes()).hexdigest() == digest
+
+
+def test_source_binding_digest_separates_content_addressed_run_identity(
+    synthetic_extract: SyntheticExtract,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _diagnostic_module()
+    _patch_clean_provenance(monkeypatch, module)
+    second_source = tmp_path / "second-scientific-extract"
+    shutil.copytree(synthetic_extract.path, second_source)
+    second_payload = json.loads(json.dumps(synthetic_extract.binding_payload))
+    second_payload["complete_original_inventory"]["confirmatory_execution.json"][
+        "sha256"
+    ] = "5" * 64
+    _write_json(second_source / "source_binding.json", second_payload)
+    first_binding = synthetic_extract.binding()
+    second_binding = module.ConfirmatorySourceBinding.from_mapping(
+        second_payload,
+        diagnostic_revision=DIAGNOSTIC_REVISION,
+    )
+    config = _diagnostic_config(tmp_path / "published")
+
+    first = module.run_fixed_model_diagnostic(
+        config,
+        first_binding,
+        synthetic_extract.path,
+    )
+    second = module.run_fixed_model_diagnostic(config, second_binding, second_source)
+
+    assert first.run_dir != second.run_dir
+    assert first_binding.canonical_source_binding_sha256 in first.run_dir.parts[-2]
+    assert second_binding.canonical_source_binding_sha256 in second.run_dir.parts[-2]
+
+
+def test_publication_preserves_status_and_separate_population_contracts(
+    synthetic_extract: SyntheticExtract,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _diagnostic_module()
+    _patch_clean_provenance(monkeypatch, module)
+    result = module.run_fixed_model_diagnostic(
+        _diagnostic_config(tmp_path / "published"),
+        synthetic_extract.binding(),
+        synthetic_extract.path,
+    )
+
+    support = json.loads(
+        (result.run_dir / "fixed_model_support_certificate.json").read_text("utf-8")
+    )
+    spectral = json.loads(
+        (result.run_dir / "fixed_model_spectral_diagnostics.json").read_text("utf-8")
+    )
+    trajectory = json.loads(
+        (result.run_dir / "fixed_model_trajectory_diagnostics.json").read_text("utf-8")
+    )
+    explanation = json.loads(
+        (result.run_dir / "fixed_model_explanation.json").read_text("utf-8")
+    )
+    metrics = json.loads((result.run_dir / "metrics.json").read_text("utf-8"))
+
+    assert support["theorem_status"] == "ESTABLISHED"
+    assert support["mathematical_verification_state"] == "CANDIDATE"
+    assert support["verification_state"] == "CANDIDATE"
+    assert support["claim_origin"] == "APPLICATION_SPECIFIC"
+    assert support["actual_run_premises_validated"] is True
+    assert support["paired_support_boundary_reachable"] is False
+    assert set(spectral["maps"]) == set(SCHEMES)
+    assert all(
+        record["theorem_status"] == "NUMERICAL"
+        and record["verification_state"] == "CANDIDATE"
+        and record["claim_origin"] == "APPLICATION_SPECIFIC"
+        for record in spectral["maps"].values()
+    )
+    assert trajectory["primary_C"]["population"] == "C"
+    assert trajectory["primary_C"]["scope"] == "confirmatory_primary"
+    assert trajectory["primary_C"]["job_count"] == 30
+    assert trajectory["descriptive_H"]["population"] == "H"
+    assert trajectory["descriptive_H"]["scope"] == "descriptive_replication_only"
+    assert trajectory["descriptive_H"]["job_count"] == 10
+    assert len(trajectory["records"]) == 80
+    assert {record["job_id"][0] for record in trajectory["records"]} == {"C", "H"}
+    assert "pooled" not in trajectory
+    assert explanation["completed_finite_classification"] == "inconclusive"
+    assert explanation["mathematical_attraction"]["conclusion"] == "INCONCLUSIVE"
+    assert explanation["unrestricted_attraction"]["theorem_status"] == "OPEN"
+    assert explanation["unrestricted_attraction"]["conclusion"] == "INCONCLUSIVE"
+    assert explanation["universality"]["theorem_status"] == "OPEN"
+    assert explanation["universality"]["conclusion"] == "INCONCLUSIVE"
+    assert explanation["population_contract"] == {
+        "primary": "C001-C030",
+        "descriptive_replication_only": "H001-H010",
+    }
+    assert all(
+        metric["verification_state"] == "CANDIDATE"
+        and metric["claim_origin"] == "APPLICATION_SPECIFIC"
+        for metric in metrics.values()
+    )
+    serialized = json.dumps(
+        [support, spectral, trajectory, explanation, metrics],
+        sort_keys=True,
+    )
+    assert "EVIDENCE_VERIFIED" not in serialized
+    assert "REFUTED" not in serialized
+
+
+def test_publication_is_semantically_deterministic_across_output_roots(
+    synthetic_extract: SyntheticExtract,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _diagnostic_module()
+    _patch_clean_provenance(monkeypatch, module)
+    binding = synthetic_extract.binding()
+    first = module.run_fixed_model_diagnostic(
+        _diagnostic_config(tmp_path / "first-root"),
+        binding,
+        synthetic_extract.path,
+    )
+    second = module.run_fixed_model_diagnostic(
+        _diagnostic_config(tmp_path / "second-root"),
+        binding,
+        synthetic_extract.path,
+    )
+
+    for name in SEMANTIC_DIAGNOSTIC_JSON:
+        first_payload = json.loads((first.run_dir / name).read_text("utf-8"))
+        second_payload = json.loads((second.run_dir / name).read_text("utf-8"))
+        assert first_payload == second_payload
+    first_trajectory = json.loads(
+        (first.run_dir / "fixed_model_trajectory_diagnostics.json").read_text("utf-8")
+    )
+    second_trajectory = json.loads(
+        (second.run_dir / "fixed_model_trajectory_diagnostics.json").read_text("utf-8")
+    )
+    assert first_trajectory["array_hash_algorithm"] == (
+        "fixed-model-diagnostic-array-v1-name-dtype-shape-c-bytes"
+    )
+    assert first_trajectory["array_sha256"] == second_trajectory["array_sha256"]
+    expected_hashes = first_trajectory["array_sha256"]
+    for run in (first, second):
+        with np.load(
+            run.run_dir / "fixed_model_diagnostic_arrays.npz",
+            allow_pickle=False,
+        ) as archive:
+            assert set(archive.files) == set(expected_hashes)
+            for name in sorted(archive.files):
+                values = archive[name]
+                assert not values.dtype.hasobject
+                assert values.dtype.kind not in {"O", "S", "U", "V"}
+                assert bool(np.all(np.isfinite(values)))
+                assert _independent_array_sha256(name, values) == expected_hashes[name]
+
+
+@pytest.mark.parametrize(
+    ("bad_array", "expected_message"),
+    [
+        (np.asarray([object()], dtype=object), "plain numeric dtypes"),
+        (np.asarray([np.nan], dtype=np.float64), "only finite values"),
+    ],
+    ids=("object", "nonfinite"),
+)
+def test_publication_rejects_bad_diagnostic_arrays_before_output_creation(
+    synthetic_extract: SyntheticExtract,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    bad_array: np.ndarray,
+    expected_message: str,
+) -> None:
+    module = _diagnostic_module()
+    _patch_clean_provenance(monkeypatch, module)
+    original = module.spectral_diagnostics
+
+    def poisoned_spectral_diagnostics(matrix: object, ray: object) -> dict[str, object]:
+        record = dict(original(matrix, ray))
+        record["invalid_array"] = bad_array
+        return record
+
+    monkeypatch.setattr(module, "spectral_diagnostics", poisoned_spectral_diagnostics)
+    output_root = tmp_path / "must-not-exist"
+    with pytest.raises(ValueError, match=expected_message):
+        module.run_fixed_model_diagnostic(
+            _diagnostic_config(output_root),
+            synthetic_extract.binding(),
+            synthetic_extract.path,
+        )
+    assert not output_root.exists()
+
+
+def test_publication_rejects_dirty_provenance_with_zero_writes(
+    synthetic_extract: SyntheticExtract,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _diagnostic_module()
+    _patch_clean_provenance(monkeypatch, module, dirty=True)
+    output_root = tmp_path / "must-not-exist"
+
+    with pytest.raises(ValueError, match="clean source tree"):
+        module.run_fixed_model_diagnostic(
+            _diagnostic_config(output_root),
+            synthetic_extract.binding(),
+            synthetic_extract.path,
+        )
+    assert not output_root.exists()
+
+
+def test_publication_rejects_invalid_source_with_zero_writes(
+    synthetic_extract: SyntheticExtract,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _diagnostic_module()
+    _patch_clean_provenance(monkeypatch, module)
+    payload = json.loads(json.dumps(synthetic_extract.binding_payload))
+    payload["complete_original_inventory"]["primary_analysis.json"]["sha256"] = "0" * 64
+    invalid_binding = module.ConfirmatorySourceBinding.from_mapping(
+        payload,
+        diagnostic_revision=DIAGNOSTIC_REVISION,
+    )
+    output_root = tmp_path / "must-not-exist"
+
+    with pytest.raises(ValueError, match="primary_analysis.json hash or size drifted"):
+        module.run_fixed_model_diagnostic(
+            _diagnostic_config(output_root),
+            invalid_binding,
+            synthetic_extract.path,
+        )
+    assert not output_root.exists()
 
 
 def test_synthetic_extract_validates_into_immutable_defensive_copies(

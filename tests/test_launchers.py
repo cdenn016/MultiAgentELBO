@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 
@@ -27,6 +28,16 @@ INFORMATION_HISTORY_LAUNCHER = REPO_ROOT / "run_information_history_lab.py"
 GAUGE_HOLONOMY_LAUNCHER = REPO_ROOT / "run_gauge_holonomy_lab.py"
 SCALE_COCYCLE_LAUNCHER = REPO_ROOT / "run_scale_cocycle_lab.py"
 GAUSSIAN_FIXED_RAY_LAUNCHER = REPO_ROOT / "run_gaussian_fixed_ray_lab.py"
+GAUSSIAN_FIXED_RAY_DIAGNOSTIC_LAUNCHER = (
+    REPO_ROOT / "run_gaussian_fixed_ray_diagnostic.py"
+)
+GAUSSIAN_CONFIRMATORY_SOURCE = (
+    REPO_ROOT
+    / "docs"
+    / "verification"
+    / "evidence"
+    / "2026-08-10-gaussian-confirmatory-fcb2c49"
+)
 NEW_LAUNCHERS = (
     ("attention", ATTENTION_LAUNCHER, "pass"),
     ("categorical_dqm", CATEGORICAL_DQM_LAUNCHER, "pass"),
@@ -46,6 +57,102 @@ def load_launcher(module_name: str, path: Path = LAUNCHER):
     module = importlib.util.module_from_spec(specification)
     specification.loader.exec_module(module)
     return module
+
+
+def test_fixed_ray_diagnostic_launcher_import_is_side_effect_free(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [GAUSSIAN_FIXED_RAY_DIAGNOSTIC_LAUNCHER.name, "--invalid-argument"],
+    )
+
+    module = load_launcher(
+        "fixed_ray_diagnostic_launcher_import_only",
+        GAUSSIAN_FIXED_RAY_DIAGNOSTIC_LAUNCHER,
+    )
+
+    assert hasattr(module, "main")
+    assert not hasattr(module, "parser")
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_fixed_ray_diagnostic_launcher_exposes_only_six_editable_dictionaries() -> None:
+    module = load_launcher(
+        "fixed_ray_diagnostic_launcher_dictionary_contract",
+        GAUSSIAN_FIXED_RAY_DIAGNOSTIC_LAUNCHER,
+    )
+
+    editable = {
+        name
+        for name, value in vars(module).items()
+        if name.isupper() and isinstance(value, dict)
+    }
+    assert editable == {"RUN", "THEORY", "NUMERICS", "OUTPUT", "COMPUTE", "SOURCE"}
+    assert module.COMPUTE["backend"] == "cpu"
+    assert module.COMPUTE["heavy_sweep_enabled"] is False
+
+
+def test_fixed_ray_diagnostic_launcher_runs_with_temporary_source_and_output(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = load_launcher(
+        "fixed_ray_diagnostic_launcher_success",
+        GAUSSIAN_FIXED_RAY_DIAGNOSTIC_LAUNCHER,
+    )
+    source_root = tmp_path / "source"
+    output_root = tmp_path / "output"
+    shutil.copytree(GAUSSIAN_CONFIRMATORY_SOURCE, source_root)
+    module.SOURCE = {**module.SOURCE, "root": str(source_root)}
+    module.OUTPUT = {**module.OUTPUT, "root": str(output_root)}
+
+    diagnostic_module = sys.modules[module.run_fixed_model_diagnostic.__module__]
+
+    def clean_provenance(
+        repository_root: Path,
+        theory_root: Path,
+        config_hash: str,
+        rng_streams: object,
+    ) -> dict[str, object]:
+        del repository_root, theory_root, rng_streams
+        return {
+            "config_hash": config_hash,
+            "git_commit": module._current_git_revision(),
+            "git_dirty": False,
+            "theory_sha256": "f" * 64,
+        }
+
+    monkeypatch.setattr(diagnostic_module, "collect_provenance", clean_provenance)
+
+    result = module.main()
+
+    assert result.status == "complete"
+    assert result.run_dir.is_relative_to(output_root)
+    assert (
+        json.loads((result.run_dir / "manifest.json").read_text("utf-8"))["complete"]
+        is True
+    )
+
+
+def test_fixed_ray_diagnostic_launcher_missing_default_source_writes_nothing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = load_launcher(
+        "fixed_ray_diagnostic_launcher_missing_source",
+        GAUSSIAN_FIXED_RAY_DIAGNOSTIC_LAUNCHER,
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+
+    with pytest.raises(FileNotFoundError, match="source directory"):
+        module.main()
+
+    assert list(tmp_path.iterdir()) == []
 
 
 def test_new_stable_primitives_results_and_runs_are_public_package_exports():
