@@ -11,11 +11,12 @@ Protocol: `2026-08-09-gaussian-fixed-ray-v1a`
 The theorem proved here is an application-specific statement about the two
 frozen six-dimensional coefficient maps, the coefficient basin
 `[1/4, 4]^6`, and the preregistered paired raw-angle endpoint. Its
-`theorem_status` is `ESTABLISHED` only when the exact frozen inputs and every
-application premise enumerated below match. Its producer `verification_state`
-remains `CANDIDATE`, and its `claim_origin` is `APPLICATION_SPECIFIC` until
-final exact-revision adjudication. A generic arithmetic result outside that
-scope is not this theorem.
+`theorem_status` is `ESTABLISHED` for the exact frozen three-input call, but the
+conclusion is conditional on every application premise enumerated below. That
+status does not assert that any concrete run satisfied those premises. Its
+producer `verification_state` remains `CANDIDATE`, and its `claim_origin` is
+`APPLICATION_SPECIFIC` until final exact-revision adjudication. A generic
+arithmetic result outside that input scope is not this theorem.
 
 The conclusion is only that the practical-support boundary `-1/50` is
 unreachable under this endpoint definition throughout the admitted basin. It
@@ -24,7 +25,7 @@ Gaussian coupling cone, prove an RG fixed point, or support an unrestricted
 universality claim. The completed confirmatory experiment therefore remains
 `inconclusive` about mathematical attraction.
 
-### Application premises required for promotion
+### Required premises of the conditional application theorem
 
 The paired application conclusion requires all of the following, jointly:
 
@@ -38,17 +39,15 @@ The paired application conclusion requires all of the following, jointly:
    five-point ordinary-least-squares slope estimator; and
 5. the paired least-favorable maximum across the two frozen schemes.
 
-The returned payload records these as
-`complete_endpoint_schemes`, `censored_endpoint_schemes`,
-`complete_endpoints_for_both_frozen_schemes`,
-`initial_coefficients_admitted_in_basin`, `frozen_maps_unchanged`,
-`endpoint_scales_4_through_8_unchanged`, `raw_angle_ols_unchanged`, and
-`paired_least_favorable_max_unchanged`. Missing, censored, or otherwise
-incomplete endpoint records fail the joint premise. Such a call may retain a
-generic `arithmetic_certificate_status`, but its application
-`certificate_status` is `not_certified`, `paired_support_boundary_reachable`
-is null, `theorem_status` is `OPEN`, and `mathematical_verification_state` is
-`INCONCLUSIVE`.
+The pure three-input certificate records the exact strings for these conditions
+in `required_application_premises` and sets
+`conclusion_is_conditional_on_required_premises=true`. It accepts no run-record
+or premise-validation flags and sets `actual_run_premises_validated=false`.
+Thus its exact frozen call emits the established conditional theorem; it does
+not claim that a completed experiment supplied the required evidence. Tasks 4
+and 6 own the run-level completeness and conformance evidence. A missing,
+censored, or otherwise incomplete run must remain inconclusive there and must
+not inherit the conditional theorem as an unconditional application finding.
 
 ## Exact source maps
 
@@ -262,9 +261,10 @@ inequalities can be tighter than this interval-only Bhatia-Davis bound.
 The implementation exposes the interval calculation separately as
 `arithmetic_certificate_status`. Even when generic arithmetic excludes a
 synthetic threshold, application promotion is withheld unless the exact basin,
-threshold, frozen inputs, and all completeness premises match this derivation.
-Wider, synthetic, or arithmetically `not_certified` calls therefore remain
-`OPEN` and mathematically `INCONCLUSIVE`.
+threshold, and frozen numerical inputs match this derivation. Wider, synthetic,
+or arithmetically `not_certified` three-input calls therefore remain `OPEN` and
+mathematically `INCONCLUSIVE`. The required run premises remain explicit
+conditions of the exact theorem rather than extra inputs to this pure function.
 
 When $ab$ has no rational square root, the standard-library exact encoding used
 here cannot represent the Bhatia-Davis coefficient as a `Fraction`. The function
@@ -292,8 +292,9 @@ admitted in-basin initial coefficients, unchanged frozen source maps, the
 scalar coefficient-ray construction, the exact basin, raw projective angle,
 scales 4 through 8, five-point OLS, and the paired least-favorable maximum. A
 missing or censored record, or a changed map, endpoint, scale window, basin, or
-pairing rule, requires a new derivation or remains non-promoted. The result does
-not establish any of the following:
+pairing rule, prevents an unconditional run-level application conclusion even
+though the exact three-input theorem remains conditionally established. The
+result does not establish any of the following:
 
 - attraction for `balanced_alternating` or for an arbitrary fixed map;
 - attraction on the unrestricted space of positive-definite matrix couplings;

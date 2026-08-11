@@ -5,21 +5,6 @@ import numpy as np
 import pytest
 
 
-def _complete_application_premises() -> dict[str, object]:
-    return {
-        "complete_endpoint_schemes": (
-            "adjacent_pairs",
-            "balanced_alternating",
-        ),
-        "censored_endpoint_schemes": (),
-        "initial_coefficients_admitted_in_basin": True,
-        "frozen_maps_unchanged": True,
-        "endpoint_scales_4_through_8_unchanged": True,
-        "raw_angle_ols_unchanged": True,
-        "paired_least_favorable_max_unchanged": True,
-    }
-
-
 def _multiply_polynomials(
     left: tuple[Fraction, ...],
     right: tuple[Fraction, ...],
@@ -234,7 +219,6 @@ def test_certificate_excludes_the_frozen_paired_support_boundary():
         basin_lower=Fraction(1, 4),
         basin_upper=Fraction(4),
         threshold=Fraction(-1, 50),
-        **_complete_application_premises(),
     )
 
     assert certificate["coefficient_of_variation_bound"] == Fraction(15, 8)
@@ -261,29 +245,22 @@ def test_certificate_excludes_the_frozen_paired_support_boundary():
     assert certificate["support_comparison"] == (
         "upper_percentile_at_or_below_threshold"
     )
-    assert certificate["required_complete_endpoint_schemes"] == (
-        "adjacent_pairs",
-        "balanced_alternating",
+    assert certificate["required_application_premises"] == (
+        "complete_uncensored_endpoints_for_adjacent_pairs_and_balanced_alternating",
+        "initial_coefficients_admitted_in_basin",
+        "frozen_maps_unchanged",
+        "endpoint_scales_4_through_8_unchanged",
+        "raw_angle_ols_unchanged",
+        "paired_least_favorable_maximum_unchanged",
     )
-    assert certificate["complete_endpoint_schemes"] == (
-        "adjacent_pairs",
-        "balanced_alternating",
-    )
-    assert certificate["censored_endpoint_schemes"] == ()
-    assert certificate["complete_endpoints_for_both_frozen_schemes"] is True
-    assert certificate["initial_coefficients_admitted_in_basin"] is True
-    assert certificate["frozen_maps_unchanged"] is True
-    assert certificate["endpoint_scales_4_through_8_unchanged"] is True
-    assert certificate["raw_angle_ols_unchanged"] is True
-    assert certificate["paired_least_favorable_max_unchanged"] is True
-    assert certificate["application_premises_satisfied"] is True
+    assert certificate["conclusion_is_conditional_on_required_premises"] is True
+    assert certificate["actual_run_premises_validated"] is False
     assert certificate["frozen_input_scope_matches"] is True
-    assert certificate["application_scope_matches"] is True
     assert certificate["arithmetic_certificate_status"] == (
         "bound_excludes_threshold"
     )
     assert certificate["application_conclusion"] == (
-        "paired_support_boundary_unreachable"
+        "conditionally_paired_support_boundary_unreachable"
     )
     assert certificate["theorem_status"] == "ESTABLISHED"
     assert certificate["mathematical_verification_state"] == "CANDIDATE"
@@ -302,7 +279,6 @@ def test_certificate_fails_closed_for_a_wider_basin():
         basin_lower=Fraction(1, 16),
         basin_upper=Fraction(16),
         threshold=Fraction(-1, 50),
-        **_complete_application_premises(),
     )
 
     assert certificate["coefficient_of_variation_bound"] == Fraction(255, 32)
@@ -314,7 +290,6 @@ def test_certificate_fails_closed_for_a_wider_basin():
     assert certificate["arithmetic_certificate_status"] == "not_certified"
     assert certificate["application_conclusion"] == "not_established"
     assert certificate["frozen_input_scope_matches"] is False
-    assert certificate["application_scope_matches"] is False
     assert certificate["theorem_status"] == "OPEN"
     assert certificate["mathematical_verification_state"] == "INCONCLUSIVE"
     assert certificate["verification_state"] == "CANDIDATE"
@@ -329,7 +304,6 @@ def test_certificate_fails_closed_when_the_exact_bound_is_not_rational():
         basin_lower=Fraction(1, 3),
         basin_upper=Fraction(2),
         threshold=Fraction(-1, 50),
-        **_complete_application_premises(),
     )
 
     assert certificate["coefficient_of_variation_bound"] is None
@@ -341,7 +315,6 @@ def test_certificate_fails_closed_when_the_exact_bound_is_not_rational():
     assert certificate["arithmetic_certificate_status"] == "not_certified"
     assert certificate["application_conclusion"] == "not_established"
     assert certificate["frozen_input_scope_matches"] is False
-    assert certificate["application_scope_matches"] is False
     assert certificate["theorem_status"] == "OPEN"
     assert certificate["mathematical_verification_state"] == "INCONCLUSIVE"
     assert certificate["not_certified_reason"] == (
@@ -358,7 +331,6 @@ def test_generic_arithmetic_does_not_promote_a_synthetic_threshold():
         basin_lower=Fraction(1, 4),
         basin_upper=Fraction(4),
         threshold=Fraction(-1, 10),
-        **_complete_application_premises(),
     )
 
     assert certificate["arithmetic_certificate_status"] == (
@@ -369,76 +341,26 @@ def test_generic_arithmetic_does_not_promote_a_synthetic_threshold():
     assert certificate["paired_support_boundary_reachable"] is None
     assert certificate["application_conclusion"] == "not_established"
     assert certificate["frozen_input_scope_matches"] is False
-    assert certificate["application_scope_matches"] is False
     assert certificate["theorem_status"] == "OPEN"
     assert certificate["mathematical_verification_state"] == "INCONCLUSIVE"
     assert certificate["verification_state"] == "CANDIDATE"
 
 
-@pytest.mark.parametrize(
-    "premise_overrides",
-    (
-        pytest.param({"complete_endpoint_schemes": ()}, id="missing"),
-        pytest.param(
-            {"complete_endpoint_schemes": ("adjacent_pairs",)},
-            id="incomplete",
-        ),
-        pytest.param(
-            {
-                "complete_endpoint_schemes": ("adjacent_pairs",),
-                "censored_endpoint_schemes": ("balanced_alternating",),
-            },
-            id="censored",
-        ),
-        pytest.param(
-            {"initial_coefficients_admitted_in_basin": False},
-            id="out_of_basin",
-        ),
-        pytest.param(
-            {"frozen_maps_unchanged": False},
-            id="changed_maps",
-        ),
-        pytest.param(
-            {"endpoint_scales_4_through_8_unchanged": False},
-            id="changed_scales",
-        ),
-        pytest.param(
-            {"raw_angle_ols_unchanged": False},
-            id="changed_estimator",
-        ),
-        pytest.param(
-            {"paired_least_favorable_max_unchanged": False},
-            id="changed_reduction",
-        ),
-    ),
-)
-def test_incomplete_application_premises_never_inherit_the_theorem_conclusion(
-    premise_overrides: dict[str, object],
-):
+def test_certificate_public_api_does_not_accept_run_evidence_flags():
     from multiagent_elbo.realizations.gaussian.fixed_ray_diagnostics import (
         adjacent_support_certificate,
     )
 
-    premises = _complete_application_premises()
-    premises.update(premise_overrides)
-    certificate = adjacent_support_certificate(
-        basin_lower=Fraction(1, 4),
-        basin_upper=Fraction(4),
-        threshold=Fraction(-1, 50),
-        **premises,
-    )
-
-    assert certificate["arithmetic_certificate_status"] == (
-        "bound_excludes_threshold"
-    )
-    assert certificate["application_premises_satisfied"] is False
-    assert certificate["application_scope_matches"] is False
-    assert certificate["certificate_status"] == "not_certified"
-    assert certificate["paired_support_boundary_reachable"] is None
-    assert certificate["application_conclusion"] == "not_established"
-    assert certificate["theorem_status"] == "OPEN"
-    assert certificate["mathematical_verification_state"] == "INCONCLUSIVE"
-    assert certificate["verification_state"] == "CANDIDATE"
+    with pytest.raises(TypeError, match="unexpected keyword argument"):
+        adjacent_support_certificate(
+            basin_lower=Fraction(1, 4),
+            basin_upper=Fraction(4),
+            threshold=Fraction(-1, 50),
+            complete_endpoint_schemes=(
+                "adjacent_pairs",
+                "balanced_alternating",
+            ),
+        )
 
 
 @pytest.mark.parametrize(
