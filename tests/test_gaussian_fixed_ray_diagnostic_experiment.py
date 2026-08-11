@@ -869,6 +869,53 @@ def test_call_observer_cannot_supply_stored_replay_output(
     assert observed == [("C001", SCHEMES[0])]
 
 
+def test_call_observer_cannot_replace_subsequent_production_invocations(
+    synthetic_extract: SyntheticExtract,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _diagnostic_module()
+    source = module.validate_scientific_extract(
+        synthetic_extract.path,
+        synthetic_extract.binding(),
+    )
+    observed: list[tuple[str, str]] = []
+    replacement_calls: list[tuple[str, str]] = []
+
+    def stored_output_replacement(
+        system: object,
+        initial: object,
+        *,
+        scheme: str,
+        steps: int,
+    ) -> FixedRayTrajectory:
+        del initial
+        assert steps == 8
+        job_index = len(observed) // 2
+        job_id = JOB_IDS[job_index]
+        replacement_calls.append((job_id, scheme))
+        return _stored_output_trajectory(source, job_index, scheme, system)
+
+    def observe(job_id: str, scheme: str) -> None:
+        observed.append((job_id, scheme))
+        if len(observed) == 1:
+            monkeypatch.setattr(
+                module,
+                "_FROZEN_PRODUCTION_ITERATOR",
+                stored_output_replacement,
+            )
+
+    result = module.replay_confirmatory_diagnostics(
+        source,
+        call_observer=observe,
+    )
+
+    assert result.call_count == 80
+    assert observed == [(job_id, scheme) for job_id in JOB_IDS for scheme in SCHEMES]
+    assert replacement_calls == [], (
+        f"observer replaced {len(replacement_calls)} frozen production invocations"
+    )
+
+
 def test_synthetic_replay_rejects_a_result_outside_the_frozen_cpu_tolerance(
     synthetic_extract: SyntheticExtract,
     monkeypatch: pytest.MonkeyPatch,

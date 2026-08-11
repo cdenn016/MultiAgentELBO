@@ -1165,6 +1165,7 @@ def replay_confirmatory_diagnostics(
         raise TypeError("source must be a ValidatedConfirmatorySource")
     if iterate_fn is not _FROZEN_PRODUCTION_ITERATOR:
         raise ValueError("iterate_fn must remain the frozen production iterator")
+    production_iterator = iterate_fn
     if call_observer is not None and not callable(call_observer):
         raise TypeError("call_observer must be callable or None")
     system = build_preregistered_system()
@@ -1187,7 +1188,7 @@ def replay_confirmatory_diagnostics(
         per_scheme: dict[str, FixedRayTrajectory] = {}
         for scheme in source.schemes:
             iterator_initial = _readonly(regenerated, dtype=np.float64)
-            trajectory = _FROZEN_PRODUCTION_ITERATOR(
+            trajectory = production_iterator(
                 system,
                 iterator_initial,
                 scheme=scheme,
