@@ -25,6 +25,12 @@ from .fixed_ray_experiment import (
     run_cuda_sentinel,
     run_gaussian_fixed_ray_experiment,
 )
+from .fixed_ray_diagnostics import (
+    adjacent_support_certificate,
+    canonical_fraction_maps,
+    fraction_characteristic_polynomial,
+    runtime_map_conformance,
+)
 from .gauge import GaussianGaugeResult, apply_frame_change
 from .interactions import (
     GaussianAggregationResult,
@@ -42,6 +48,7 @@ __all__ = [
     "GaussianInteraction",
     "GaussianNumericalError",
     "SECONDARY_ENDPOINT_IDS",
+    "adjacent_support_certificate",
     "analyze_primary",
     "analyze_holdout",
     "apply_frame_change",
@@ -49,8 +56,10 @@ __all__ = [
     "build_confirmatory_gate_record",
     "bootstrap_seed",
     "capture_idle_gpu_gate",
+    "canonical_fraction_maps",
     "exact_binomial_lower_tail",
     "exact_sign_pvalue",
+    "fraction_characteristic_polynomial",
     "galerkin_aggregate_precision",
     "holm_adjust",
     "percentile_interval",
@@ -62,6 +71,7 @@ __all__ = [
     "run_cuda_sentinel",
     "run_gaussian_experiment",
     "run_gaussian_fixed_ray_experiment",
+    "runtime_map_conformance",
     "schur_complement_precision",
     "summarize_paired_job",
 ]
