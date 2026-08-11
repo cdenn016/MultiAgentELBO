@@ -53,5 +53,197 @@
   "secondary_tests": {
     "family": "six Holm-adjusted secondary tests",
     "classification_role": "secondary; not the primary practical-support boundary result"
+  },
+  "fixed_model_diagnostic": {
+    "schema_version": "fixed-model-attraction-current-result-v1",
+    "diagnostic_revision": "039df35daa30a49e90f178edde7bfc999a7ee629",
+    "scientific_revision": "fcb2c49efdca2ad3ee502dc08fbb82fc285e7a05",
+    "source_binding_sha256": "c9b6a73764f51b6269f7ba4296985128ede106fa4853d9a02d83d4bbe24d95c0",
+    "evidence_directory": "docs/verification/evidence/2026-08-10-fixed-model-attraction-diagnostic",
+    "artifact_sha256": {
+      "config.json": "0fed6f65531407e59c52b9d3916164c0f7c0810a6c5421a91fec8a33e53bea71",
+      "fixed_model_diagnostic_arrays.npz": "1597a92acf50811687183f0062f104acb3c5e4649bb6270e0b153841f9e08bff",
+      "fixed_model_explanation.json": "aed3fd6a3620eff3fefe004b7f3ad65884d3d5a73378edd8ed0fb629c65ce20a",
+      "fixed_model_spectral_diagnostics.json": "8f1fbf50ca691c0245c0e59eaaced25af6c02aa5b4f46ac0d7908961e8e8669b",
+      "fixed_model_support_certificate.json": "a65bd15e36d85cf810cdb5f7bb5a7bf0dcfcf56672d6601e3d7237be06b07c8b",
+      "fixed_model_trajectory_diagnostics.json": "e6169a6fad904bf92082f6d1c12203a8d843e01e473804e1dae3161037111f4f",
+      "manifest.json": "1829624d76fe723606b5e20fbd7ad85961610b2513c59271c641f560ac38d907",
+      "metrics.json": "9aed3241befa42686486b7ce7c2d04ce771bf7d17d542dc6ecdb93798ae1f784",
+      "source_to_output_binding.json": "df3130e56bfd1bdd91801a13b6f6ffabe16931813a264ff3e2e2805891b7a355"
+    },
+    "oracle_bindings": {
+      "lane_b1_math_oracle": {
+        "sha256": "0fd58a395ca04c8300548e1137465b4622a843487be07eeafb4cbc5fadd93fb2",
+        "size_bytes": 57466
+      },
+      "lane_b2_trajectory_oracle": {
+        "sha256": "6280fb7e7d69404c02499f4598df749cc20368b0fb635edd4554a91f97df7a1c",
+        "size_bytes": 350002
+      }
+    },
+    "exact_map_spectra": {
+      "adjacent_pairs": {
+        "characteristic_polynomial": "(lambda - 1)(lambda - 2/5)^5",
+        "spectrum": [
+          {
+            "eigenvalue": "1",
+            "multiplicity": 1
+          },
+          {
+            "eigenvalue": "2/5",
+            "multiplicity": 5
+          }
+        ]
+      },
+      "balanced_alternating": {
+        "characteristic_polynomial": "(lambda - 1)(5 lambda - 1)(50 lambda^2 - 15 lambda + 2)(100 lambda^2 - 30 lambda + 3)/25000",
+        "spectrum": [
+          {
+            "eigenvalue": "1",
+            "multiplicity": 1
+          },
+          {
+            "eigenvalue": "1/5",
+            "multiplicity": 1
+          },
+          {
+            "eigenvalue": "(3 + i sqrt(7))/20",
+            "multiplicity": 1
+          },
+          {
+            "eigenvalue": "(3 - i sqrt(7))/20",
+            "multiplicity": 1
+          },
+          {
+            "eigenvalue": "(3 + i sqrt(3))/20",
+            "multiplicity": 1
+          },
+          {
+            "eigenvalue": "(3 - i sqrt(3))/20",
+            "multiplicity": 1
+          }
+        ]
+      }
+    },
+    "endpoint_feasibility": {
+      "conditional_scope": {
+        "initial_coefficients": "[1/4,4]^6",
+        "maps": [
+          "adjacent_pairs",
+          "balanced_alternating"
+        ],
+        "complete_uncensored_endpoints": true,
+        "scales": [
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "endpoint_angle": "raw_projective_angle",
+        "endpoint_estimator": "ordinary_least_squares_slope",
+        "paired_reduction": "least_favorable_maximum_across_two_frozen_schemes"
+      },
+      "coefficient_of_variation_bound": "15/8",
+      "tan_theta4_bound": "6/125",
+      "rational_slope_lower_bound": "-9/625",
+      "threshold": "-1/50",
+      "rational_margin_above_threshold": "7/1250",
+      "paired_support_boundary_reachable": false,
+      "conclusion": "support_boundary_unreachable_in_frozen_basin",
+      "theorem_status": "ESTABLISHED",
+      "producer_verification_state": "CANDIDATE",
+      "claim_origin": "APPLICATION_SPECIFIC"
+    },
+    "application_premises": {
+      "complete_uncensored_endpoints_for_adjacent_pairs_and_balanced_alternating": {
+        "censored_worst_case_count": 0,
+        "completed_eligible_job_count": 40,
+        "passed": true,
+        "rejected_endpoint_count": 0,
+        "scheme_endpoint_count": 80
+      },
+      "endpoint_scales_4_through_8_unchanged": {
+        "diagnostic_record_count": 80,
+        "passed": true,
+        "source_scale_window": [
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "frozen_maps_unchanged": {
+        "passed": true,
+        "runtime_map_conformance_max_absolute_error": {
+          "adjacent_pairs": 0.0,
+          "balanced_alternating": 5.551115123125783e-17
+        }
+      },
+      "initial_coefficients_admitted_in_basin": {
+        "any_state_basin_exit_count": 0,
+        "basin": [
+          0.25,
+          4.0
+        ],
+        "initial_vector_count": 40,
+        "maximum": 3.840230242657913,
+        "minimum": 0.2505016290001245,
+        "outside_basin_scalar_count": 0,
+        "passed": true
+      },
+      "paired_least_favorable_maximum_unchanged": {
+        "passed": true,
+        "per_job_maximum_check_count": 40,
+        "pooled_output_present": false,
+        "populations": {
+          "C": 30,
+          "H_descriptive_only": 10
+        }
+      },
+      "raw_angle_ols_unchanged": {
+        "diagnostic_record_count": 80,
+        "endpoint_angle": "raw_projective_angle",
+        "endpoint_estimator": "ordinary_least_squares_slope",
+        "passed": true
+      }
+    },
+    "continuous_trajectory_summaries": {
+      "primary_C": {
+        "population": "C",
+        "job_count": 30,
+        "scope": "confirmatory_primary",
+        "estimate": -0.0002678651001680694,
+        "theorem_status": "NUMERICAL",
+        "producer_verification_state": "CANDIDATE",
+        "claim_origin": "APPLICATION_SPECIFIC"
+      },
+      "descriptive_H": {
+        "population": "H",
+        "job_count": 10,
+        "scope": "descriptive_replication_only",
+        "estimate": -0.0003031040729630512,
+        "theorem_status": "NUMERICAL",
+        "producer_verification_state": "CANDIDATE",
+        "claim_origin": "APPLICATION_SPECIFIC"
+      }
+    },
+    "confirmatory_classification": {
+      "value": "inconclusive",
+      "unchanged": true
+    },
+    "fixed_model_mathematical_attraction": {
+      "conclusion": "INCONCLUSIVE",
+      "theorem_status": "OPEN",
+      "producer_verification_state": "CANDIDATE",
+      "claim_origin": "APPLICATION_SPECIFIC"
+    },
+    "unrestricted_universality": {
+      "theorem_status": "OPEN",
+      "mathematical_verification_state": "INCONCLUSIVE",
+      "producer_verification_state": "CANDIDATE",
+      "claim_origin": "APPLICATION_SPECIFIC"
+    }
   }
 }

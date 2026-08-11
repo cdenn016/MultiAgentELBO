@@ -62,6 +62,50 @@ records, remain
 `CANDIDATE`; the finite result remains `NUMERICAL`, and mathematical attraction
 remains `INCONCLUSIVE`.
 
+### Fixed-model endpoint-feasibility diagnostic
+
+The deterministic CPU diagnostic is bound to diagnostic source revision
+`039df35daa30a49e90f178edde7bfc999a7ee629`, the unchanged scientific revision
+`fcb2c49efdca2ad3ee502dc08fbb82fc285e7a05`, and source-binding SHA-256
+`c9b6a73764f51b6269f7ba4296985128ede106fa4853d9a02d83d4bbe24d95c0`.
+The nine-file public extract is recorded by its
+[source-to-output binding](../verification/evidence/2026-08-10-fixed-model-attraction-diagnostic/source_to_output_binding.json),
+whose SHA-256 is
+`df3130e56bfd1bdd91801a13b6f6ffabe16931813a264ff3e2e2805891b7a355`.
+The public manifest, exact support certificate, spectral diagnostics,
+continuous trajectory diagnostics, and per-array NPZ have respective SHA-256
+values `1829624d76fe723606b5e20fbd7ad85961610b2513c59271c641f560ac38d907`,
+`a65bd15e36d85cf810cdb5f7bb5a7bf0dcfcf56672d6601e3d7237be06b07c8b`,
+`8f1fbf50ca691c0245c0e59eaaced25af6c02aa5b4f46ac0d7908961e8e8669b`,
+`e6169a6fad904bf92082f6d1c12203a8d843e01e473804e1dae3161037111f4f`,
+and `1597a92acf50811687183f0062f104acb3c5e4649bb6270e0b153841f9e08bff`.
+The raw Run-A manifest is not tracked; the binding records only its SHA-256 and
+size and enumerates the public manifest's sole redaction at
+`/provenance/theory_root`, replaced by `Theory`.
+
+For `adjacent_pairs`, the exact characteristic polynomial is
+`(lambda - 1)(lambda - 2/5)^5`, so the spectrum is `1` once and `2/5` five
+times. For `balanced_alternating`, it is
+`(lambda - 1)(5 lambda - 1)(50 lambda^2 - 15 lambda + 2)(100 lambda^2 - 30 lambda + 3)/25000`,
+with spectrum `1`, `1/5`, `(3 +/- i sqrt(7))/20`, and
+`(3 +/- i sqrt(3))/20`. The adjacent-map certificate gives the exact rational
+OLS lower bound `-9/625`, leaving margin `7/1250` above the frozen threshold
+`-1/50`.
+
+Under initial coefficients in `[1/4,4]^6`, the two frozen maps, complete
+uncensored endpoints, scales 4 through 8 raw-angle OLS, and the per-job
+least-favorable maximum, the `-0.02` practical-support boundary is structurally
+unreachable. This endpoint-feasibility theorem is
+`ESTABLISHED / CANDIDATE / APPLICATION_SPECIFIC`. It does not refute attraction
+and does not prove a mechanism.
+
+The continuous primary-C paired median is `-0.0002678651001680694` across 30
+jobs. The separate descriptive-H paired median is `-0.0003031040729630512`
+across 10 jobs; no C/H pool is present. Both summaries are
+`NUMERICAL / CANDIDATE / APPLICATION_SPECIFIC`. The confirmatory classification
+remains unchanged at `inconclusive`, fixed-model mathematical attraction remains
+`INCONCLUSIVE`, and unrestricted universality remains `OPEN / INCONCLUSIVE`.
+
 ## Historical pilot record
 
 The pilot and failed-sentinel material below is retained as dated history. Any
