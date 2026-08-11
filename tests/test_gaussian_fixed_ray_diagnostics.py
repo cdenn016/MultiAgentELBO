@@ -593,6 +593,48 @@ def test_normalized_map_and_jacobian_reject_invalid_projective_inputs(
         normalized_projective_jacobian(matrix, representative)
 
 
+def test_tiny_nonzero_image_has_a_finite_normalized_jacobian_and_reduced_step():
+    from multiagent_elbo.realizations.gaussian.fixed_ray_diagnostics import (
+        normalized_projective_jacobian,
+        normalized_projective_map,
+        reduced_tangent_step,
+    )
+
+    matrix = np.diag([1.0, 1.0e-200])
+    representative = np.array([0.0, 1.0])
+    next_unit = normalized_projective_map(matrix, representative)
+
+    np.testing.assert_array_equal(next_unit, representative)
+    np.testing.assert_allclose(
+        normalized_projective_jacobian(matrix, representative),
+        np.diag([1.0e200, 0.0]),
+        rtol=2e-15,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        reduced_tangent_step(matrix, representative, next_unit),
+        np.array([[1.0e200]]),
+        rtol=2e-15,
+        atol=0.0,
+    )
+
+
+def test_normalized_jacobian_rejects_only_a_nonrepresentable_tiny_image_gain():
+    from multiagent_elbo.realizations.gaussian.fixed_ray_diagnostics import (
+        normalized_projective_jacobian,
+        normalized_projective_map,
+    )
+
+    matrix = np.diag([1.0, 1.0e-320])
+    representative = np.array([0.0, 1.0])
+
+    np.testing.assert_array_equal(
+        normalized_projective_map(matrix, representative), representative
+    )
+    with pytest.raises(ValueError, match="not representable in float64"):
+        normalized_projective_jacobian(matrix, representative)
+
+
 def test_analytic_normalized_map_derivative_converges_on_a_geodesic_ladder():
     from multiagent_elbo.realizations.gaussian.fixed_ray import (
         build_preregistered_system,

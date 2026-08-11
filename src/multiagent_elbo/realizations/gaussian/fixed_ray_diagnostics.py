@@ -394,7 +394,7 @@ def runtime_map_conformance(
 def _finite_square_matrix_and_unit_representative(
     matrix: object,
     representative: object,
-) -> tuple[np.ndarray, np.ndarray, float]:
+) -> tuple[np.ndarray, np.ndarray, tuple[float, float]]:
     linear_map = np.asarray(matrix, dtype=np.float64)
     vector = np.asarray(representative, dtype=np.float64)
     if linear_map.ndim != 2 or linear_map.shape[0] != linear_map.shape[1]:
@@ -417,11 +417,12 @@ def _finite_square_matrix_and_unit_representative(
     scaled_norm = float(np.linalg.norm(scaled_vector))
     unit = scaled_vector / scaled_norm
     scaled_map = linear_map / matrix_scale
-    inverse_representative_norm = (1.0 / vector_scale) / scaled_norm
-    return scaled_map, unit, inverse_representative_norm
+    return scaled_map, unit, (vector_scale, scaled_norm)
 
 
-def _finite_unit_vector(values: object) -> np.ndarray:
+def _finite_unit_vector_and_norm_factors(
+    values: object,
+) -> tuple[np.ndarray, tuple[float, float]]:
     vector = np.asarray(values, dtype=np.float64)
     if vector.ndim != 1 or not bool(np.all(np.isfinite(vector))):
         raise ValueError("projective representative must be a finite vector")
@@ -429,7 +430,56 @@ def _finite_unit_vector(values: object) -> np.ndarray:
     if scale == 0.0:
         raise ValueError("projective representative must be nonzero")
     scaled = vector / scale
-    return scaled / float(np.linalg.norm(scaled))
+    scaled_norm = float(np.linalg.norm(scaled))
+    return scaled / scaled_norm, (scale, scaled_norm)
+
+
+def _finite_unit_vector(values: object) -> np.ndarray:
+    unit, _ = _finite_unit_vector_and_norm_factors(values)
+    return unit
+
+
+def _divide_by_positive_norm_factors(
+    values: np.ndarray,
+    factors: tuple[float, ...],
+) -> np.ndarray:
+    """Divide by a factored norm without materializing unsafe reciprocals."""
+
+    divisor_mantissa = 1.0
+    divisor_exponent = 0
+    for factor in factors:
+        if not math.isfinite(factor) or factor <= 0.0:
+            raise ValueError("normalized projective Jacobian norm factors are invalid")
+        mantissa, exponent = math.frexp(factor)
+        divisor_mantissa *= mantissa
+        divisor_exponent += exponent
+    divisor_mantissa, adjustment = math.frexp(divisor_mantissa)
+    divisor_exponent += adjustment
+
+    quotient = np.zeros_like(values, dtype=np.float64)
+    nonzero = values != 0.0
+    if not bool(np.any(nonzero)):
+        return quotient
+
+    numerator_mantissa, numerator_exponent = np.frexp(values[nonzero])
+    quotient_mantissa, quotient_adjustment = np.frexp(
+        numerator_mantissa / divisor_mantissa
+    )
+    quotient_exponent = (
+        numerator_exponent.astype(np.int64)
+        - divisor_exponent
+        + quotient_adjustment.astype(np.int64)
+    )
+    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        nonzero_quotient = np.ldexp(quotient_mantissa, quotient_exponent)
+    if not bool(np.all(np.isfinite(nonzero_quotient))) or bool(
+        np.any(nonzero_quotient == 0.0)
+    ):
+        raise ValueError(
+            "normalized projective Jacobian is not representable in float64"
+        )
+    quotient[nonzero] = nonzero_quotient
+    return quotient
 
 
 def normalized_projective_map(
@@ -449,15 +499,16 @@ def normalized_projective_jacobian(
 ) -> np.ndarray:
     """Return the ambient derivative of the unit-normalized projective map."""
 
-    scaled_map, unit, inverse_norm = _finite_square_matrix_and_unit_representative(A, u)
+    scaled_map, unit, representative_norm_factors = (
+        _finite_square_matrix_and_unit_representative(A, u)
+    )
     image = scaled_map @ unit
-    next_unit = _finite_unit_vector(image)
-    image_norm = float(np.linalg.norm(image))
+    next_unit, image_norm_factors = _finite_unit_vector_and_norm_factors(image)
     projector = np.eye(unit.size, dtype=np.float64) - np.outer(next_unit, next_unit)
-    jacobian = (projector @ scaled_map) * (inverse_norm / image_norm)
-    if not bool(np.all(np.isfinite(jacobian))):
-        raise ValueError("normalized projective Jacobian is not finite")
-    return jacobian
+    return _divide_by_positive_norm_factors(
+        projector @ scaled_map,
+        (*representative_norm_factors, *image_norm_factors),
+    )
 
 
 def orthonormal_tangent_basis(u: object) -> np.ndarray:
