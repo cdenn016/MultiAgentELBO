@@ -31,6 +31,13 @@ from .fixed_ray_diagnostics import (
     fraction_characteristic_polynomial,
     runtime_map_conformance,
 )
+from .fixed_ray_diagnostic_experiment import (
+    ConfirmatorySourceBinding,
+    ReplayResult,
+    ValidatedConfirmatorySource,
+    replay_confirmatory_diagnostics,
+    validate_scientific_extract,
+)
 from .gauge import GaussianGaugeResult, apply_frame_change
 from .interactions import (
     GaussianAggregationResult,
@@ -47,7 +54,10 @@ __all__ = [
     "GaussianGaugeResult",
     "GaussianInteraction",
     "GaussianNumericalError",
+    "ConfirmatorySourceBinding",
+    "ReplayResult",
     "SECONDARY_ENDPOINT_IDS",
+    "ValidatedConfirmatorySource",
     "adjacent_support_certificate",
     "analyze_primary",
     "analyze_holdout",
@@ -65,6 +75,7 @@ __all__ = [
     "percentile_interval",
     "publish_cuda_sentinel",
     "publish_confirmatory_experiment",
+    "replay_confirmatory_diagnostics",
     "run_confirmatory_job",
     "run_confirmatory_holdout",
     "run_confirmatory_primary",
@@ -74,4 +85,5 @@ __all__ = [
     "runtime_map_conformance",
     "schur_complement_precision",
     "summarize_paired_job",
+    "validate_scientific_extract",
 ]
