@@ -1,5 +1,8 @@
 * text=auto
 
+# Verification plans contain byte-level cross-plan SHA-256 bindings.
+docs/superpowers/plans/*.md text eol=lf
+
 # The supplied Windows snapshot must retain its checked-out line endings.
 Theory/** text eol=crlf
 references.bib -text whitespace=-cr-at-eol
