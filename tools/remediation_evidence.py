@@ -749,6 +749,35 @@ def _is_final_pytest_parameter_assignment_suffix(
     )
 
 
+def _is_mirrored_pytest_input_expected_boundary(
+    value: str, *, path_start: int, suffix_start: int
+) -> bool:
+    if not value.endswith("]]"):
+        return False
+    inner_opener = value.rfind("[", 0, path_start)
+    if inner_opener < 0:
+        return False
+    outer_opener = value.rfind("[", 0, inner_opener)
+    if outer_opener < 0:
+        return False
+    first_inner_close = value.find("]", suffix_start)
+    if (
+        first_inner_close < 0
+        or value[first_inner_close : first_inner_close + 2] != "]-"
+    ):
+        return False
+    first_prefix = value[outer_opener + 1 : path_start]
+    first_suffix = value[suffix_start:first_inner_close]
+    if not first_prefix.endswith("before=") or first_suffix != "after=safe":
+        return False
+    second_start = first_inner_close + 2
+    second_inner_close = len(value) - 2
+    if second_start >= second_inner_close or value[second_inner_close] != "]":
+        return False
+    expected_second = f"{first_prefix}<ABS_PATH_0001> {first_suffix}"
+    return value[second_start:second_inner_close] == expected_second
+
+
 def _pytest_embedded_testcase_parameter_delimiter(
     value: str, *, start: int
 ) -> int | None:
@@ -765,7 +794,7 @@ def _pytest_embedded_testcase_parameter_delimiter(
     if "\r" in embedded or "\n" in embedded:
         return None
     tail = value[closing + len(closing_tag) :]
-    if re.fullmatch(r"(?:-[A-Za-z0-9_.@%+=~\-]+)?\]", tail) is None:
+    if re.fullmatch(r"(?:-[A-Za-z0-9_.@%+=~\-]+)?\]{1,2}", tail) is None:
         return None
     return delimiter
 
@@ -785,6 +814,7 @@ def _direct_serialized_pytest_path_span(value: str) -> tuple[int, int] | None:
     if not (
         _is_absolute_component(decoded_candidate)
         or re.match(r"(?i)^file:/+(?=[^/\s])", decoded_candidate)
+        or re.match(r"^\\{2,}[^\\/\s]+\\+[^\\/\s]+", candidate)
     ):
         return None
     return start, delimiter
@@ -875,6 +905,10 @@ def _xml_semantic_path_end(
                 separator in candidate_text for separator in ("/", "\\")
             ):
                 if junit_testcase_name and _is_final_pytest_parameter_assignment_suffix(
+                    value, path_start=start, suffix_start=next_start
+                ):
+                    return end
+                if junit_testcase_name and _is_mirrored_pytest_input_expected_boundary(
                     value, path_start=start, suffix_start=next_start
                 ):
                     return end
