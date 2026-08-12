@@ -59,6 +59,7 @@ from tools.remediation_evidence import (
     resolve_tested_input_policy,
     resolve_verification_gate,
     validate_evidence_index,
+    validate_junit_skip_allowlist,
 )
 
 
@@ -553,6 +554,51 @@ def test_parse_junit_uses_testcase_ids_and_skip_reasons(tmp_path: Path) -> None:
     ]
     ids = ["tests.test_a::test_ok", "tests.test_a::test_skip"]
     assert parsed["testcase_id_sha256"] == sha256(canonical_json_bytes(ids)).hexdigest()
+
+
+def test_real_declared_symlink_node_matches_frozen_skip_allowlist(
+    tmp_path: Path,
+) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    junit_path = tmp_path / "declared-symlink.xml"
+    environment = os.environ.copy()
+    for name in (
+        "MULTIAGENTELBO_RUN_CUDA_TESTS",
+        "VFE3_TEST_DEVICE",
+        "CUBLAS_WORKSPACE_CONFIG",
+    ):
+        environment.pop(name, None)
+    environment["CUDA_VISIBLE_DEVICES"] = "-1"
+    environment["PYTHONHASHSEED"] = "0"
+
+    result = subprocess.run(
+        [
+            str(CPU_PYTHON),
+            "-B",
+            "-m",
+            "pytest",
+            "tests/test_artifacts.py::test_finalize_rejects_a_declared_symlink",
+            "-q",
+            "-p",
+            "no:cacheprovider",
+            f"--junitxml={junit_path}",
+        ],
+        cwd=repo_root,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    validate_junit_skip_allowlist(
+        parse_junit(junit_path),
+        allowlist={
+            "tests.test_artifacts::test_finalize_rejects_a_declared_symlink": (
+                "capability unavailable: symbolic_link"
+            )
+        },
+    )
 
 
 @pytest.mark.parametrize(
