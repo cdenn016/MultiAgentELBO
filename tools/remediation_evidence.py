@@ -202,6 +202,13 @@ XML_SEMANTIC_PYTEST_PATH_END_RE = re.compile(
 XML_SEMANTIC_URI_SCHEME_RE = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*:$")
 
 
+PUBLIC_TCID_TOKEN = "PUBLIC_TCID_"
+PUBLIC_TCID_SUFFIX_RE = re.compile(r"(?s)^(.*)\[PUBLIC_TCID_([0-9]{4})\]$")
+
+
+PUBLIC_TCID_MAX_ORDINAL = 9999
+
+
 @dataclass(frozen=True, slots=True)
 class PreparedEvidenceFile:
     path: PurePosixPath
@@ -1192,6 +1199,94 @@ def _canonical_xml_bytes(root: ET.Element) -> bytes:
     return body.rstrip(b"\n") + b"\n"
 
 
+def _junit_testcase_identity(testcase: ET.Element) -> tuple[str, str, str]:
+    classname = testcase.attrib.get("classname")
+    name = testcase.attrib.get("name")
+    if not classname or not name:
+        raise ValueError("JUnit testcase ID requires classname and name")
+    return classname, name, f"{classname}::{name}"
+
+
+def _identified_junit_testcases(root: ET.Element) -> list[ET.Element]:
+    return [
+        testcase
+        for testcase in root.iter("testcase")
+        if testcase.attrib.get("classname") and testcase.attrib.get("name")
+    ]
+
+
+def _require_unique_junit_testcase_ids(root: ET.Element) -> None:
+    identifiers = [
+        _junit_testcase_identity(testcase)[2]
+        for testcase in _identified_junit_testcases(root)
+    ]
+    if len(identifiers) != len(set(identifiers)):
+        raise ValueError("duplicate testcase ID in JUnit privacy transform")
+
+
+def _junit_public_marker(name: str) -> tuple[str, int] | None:
+    occurrence = PUBLIC_TCID_SUFFIX_RE.fullmatch(name)
+    if occurrence is None:
+        if PUBLIC_TCID_TOKEN in name:
+            raise ValueError("malformed public testcase ID marker")
+        return None
+    base = occurrence.group(1)
+    if PUBLIC_TCID_TOKEN in base:
+        raise ValueError("malformed public testcase ID marker")
+    return base, int(occurrence.group(2))
+
+
+def _validate_public_testcase_marker_groups(testcases: Sequence[ET.Element]) -> bool:
+    groups: dict[tuple[str, str], list[int | None]] = {}
+    saw_marker = False
+    for testcase in testcases:
+        classname, name, _identifier = _junit_testcase_identity(testcase)
+        marked = _junit_public_marker(name)
+        if marked is None:
+            base = name
+            ordinal = None
+        else:
+            base, ordinal = marked
+            saw_marker = True
+        groups.setdefault((classname, base), []).append(ordinal)
+    for ordinals in groups.values():
+        marked = [ordinal for ordinal in ordinals if ordinal is not None]
+        if not marked:
+            continue
+        if len(marked) != len(ordinals):
+            raise ValueError("mixed public testcase ID marker group")
+        if len(marked) < 2:
+            raise ValueError("incomplete public testcase ID marker group")
+        if sorted(marked) != list(range(1, len(marked) + 1)):
+            raise ValueError("noncanonical public testcase ID marker group")
+    return saw_marker
+
+
+def _disambiguate_public_testcase_ids(
+    testcases: Sequence[ET.Element],
+    raw_identifiers: Sequence[str],
+) -> None:
+    if len(testcases) != len(raw_identifiers):
+        raise ValueError("JUnit testcase inventory changed during privacy transform")
+    if _validate_public_testcase_marker_groups(testcases):
+        return
+    collisions: dict[str, list[tuple[str, ET.Element]]] = {}
+    for raw_identifier, testcase in zip(raw_identifiers, testcases, strict=True):
+        _classname, _name, public_identifier = _junit_testcase_identity(testcase)
+        collisions.setdefault(public_identifier, []).append((raw_identifier, testcase))
+    if any(len(entries) > PUBLIC_TCID_MAX_ORDINAL for entries in collisions.values()):
+        raise ValueError("collision group exceeds public testcase ID marker capacity")
+    for entries in collisions.values():
+        if len(entries) < 2:
+            continue
+        for ordinal, (_raw_identifier, testcase) in enumerate(
+            sorted(entries, key=lambda item: item[0]),
+            start=1,
+        ):
+            name = testcase.attrib["name"]
+            testcase.attrib["name"] = f"{name}[PUBLIC_TCID_{ordinal:04d}]"
+
+
 def privacy_transform_bytes(
     data: bytes,
     *,
@@ -1204,6 +1299,12 @@ def privacy_transform_bytes(
             root = ET.fromstring(data)
         except ET.ParseError as error:
             raise ValueError(f"invalid XML privacy preimage: {error}") from error
+        testcases = _identified_junit_testcases(root)
+        raw_identifiers = [
+            _junit_testcase_identity(testcase)[2] for testcase in testcases
+        ]
+        _require_unique_junit_testcase_ids(root)
+        raw_has_public_markers = _validate_public_testcase_marker_groups(testcases)
         unknown = _collect_unknown_paths(root, values=values, xml=True)
         for element in root.iter():
             for key, value in tuple(element.attrib.items()):
@@ -1234,7 +1335,18 @@ def privacy_transform_bytes(
                     unknown=unknown,
                     xml_semantic=True,
                 )
+        transformed_identifiers = [
+            _junit_testcase_identity(testcase)[2] for testcase in testcases
+        ]
+        if raw_has_public_markers and transformed_identifiers != raw_identifiers:
+            raise ValueError(
+                "marked JUnit testcase ID changed during privacy transform"
+            )
+        _disambiguate_public_testcase_ids(testcases, raw_identifiers)
         public = _canonical_xml_bytes(root)
+        if raw_has_public_markers and public != data:
+            raise ValueError("marked JUnit XML is not unchanged canonical public form")
+        _require_unique_junit_testcase_ids(ET.fromstring(public))
     else:
         try:
             payload = json.loads(data)
