@@ -130,8 +130,10 @@ ALLOWED_PLACEHOLDER_RE = re.compile(
 UNKNOWN_PLACEHOLDER_RE = re.compile(r"<[A-Z][A-Z0-9_]*>")
 ALLOWED_PLACEHOLDER_PATH_RE = re.compile(
     r"(?:<(?:REPO_ROOT|USER_HOME)>"
-    r"(?:/(?!\.{1,2}(?:/|:|$))[A-Za-z0-9_.@%+=,~-]+)*(?::[0-9]+)?"
+    r"(?:/(?!\.{1,2}(?=/|:|$|[\s\]\[(){};,\x22\x27]))"
+    r"[A-Za-z0-9_.@%+=,~-]+)*(?::[0-9]+)?"
     r"|<(?:CPU_PYTHON|HOSTNAME|PID|ABS_PATH_\d{4})>)"
+    r"(?=$|[\s\]\[(){};,\x22\x27]|:(?=\s|$))"
 )
 WINDOWS_ABSOLUTE_RE = re.compile(
     r"(?i)(?:\\\\\?\\[A-Z]:\\|\\\\[^\\/\s\"'<>;]+\\[^\\/\s\"'<>;]+\\|[A-Z]:[\\/])[^\s\"'<>;]*"
@@ -823,6 +825,12 @@ def _assert_no_literal_absolute_path_in_string(
     if unknown_placeholders:
         raise ValueError(f"unknown public placeholder: {unknown_placeholders[0]}")
     if xml_semantic:
+        for placeholder in ALLOWED_PLACEHOLDER_RE.finditer(value):
+            occurrence = ALLOWED_PLACEHOLDER_PATH_RE.match(value, placeholder.start())
+            if occurrence is None:
+                raise ValueError(
+                    f"invalid public placeholder path: {placeholder.group(0)}"
+                )
         scrubbed = ALLOWED_PLACEHOLDER_PATH_RE.sub("PLACEHOLDER", value)
         scrubbed = EMBEDDED_XML_CLOSING_TAG_RE.sub("XML_CLOSING_TAG", scrubbed)
         posix_pattern = XML_SEMANTIC_POSIX_ABSOLUTE_RE

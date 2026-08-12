@@ -879,6 +879,45 @@ def test_privacy_transform_accepts_escaped_junit_fragments_and_placeholder_suffi
     assert_no_literal_absolute_path(public)
 
 
+def test_xml_placeholder_guard_accepts_canonical_root_and_home_suffixes() -> None:
+    xml = (
+        b'<testsuite source="&lt;REPO_ROOT&gt;/tests/test_xml.py:42">'
+        b"<testcase>&lt;USER_HOME&gt;/cache/item-1.json</testcase>"
+        b"<testcase/> &lt;REPO_ROOT&gt;/safe/nested_file.py"
+        b"</testsuite>"
+    )
+
+    assert_no_literal_absolute_path(xml)
+
+
+@pytest.mark.parametrize(
+    "xml",
+    [
+        b'<testsuite source="&lt;CPU_PYTHON&gt;/secret"/>',
+        b"<testsuite><testcase>&lt;HOSTNAME&gt;/x</testcase></testsuite>",
+        b"<testsuite><testcase/> &lt;PID&gt;/x</testsuite>",
+        b'<testsuite source="&#x3C;ABS_PATH_0001&#x3E;/x"/>',
+        (
+            b"<testsuite><testcase>&#60;REPO_ROOT&#62;/safe/../outside"
+            b"</testcase></testsuite>"
+        ),
+        (
+            b"<testsuite><testcase/> &#x3c;REPO_ROOT&#x3e;"
+            b"&#92;..&#92;outside</testsuite>"
+        ),
+        (
+            b'<testsuite source="&lt;REPO_ROOT&gt;/tests/test_xml.py:'
+            b'/opt/private/report.xml"/>'
+        ),
+    ],
+)
+def test_xml_placeholder_guard_rejects_partial_suffixes_and_traversal(
+    xml: bytes,
+) -> None:
+    with pytest.raises(ValueError, match="placeholder"):
+        assert_no_literal_absolute_path(xml)
+
+
 @pytest.mark.parametrize(
     "xml",
     [
@@ -886,10 +925,6 @@ def test_privacy_transform_accepts_escaped_junit_fragments_and_placeholder_suffi
         rb"<testsuite><testcase>\\server\share\report.xml</testcase></testsuite>",
         rb"<testsuite><testcase/>\\?\C:\device\report.xml</testsuite>",
         b"<testsuite><testcase>/opt/private/report.xml</testcase></testsuite>",
-        (
-            b'<testsuite private="&lt;REPO_ROOT&gt;/tests/test_xml.py:'
-            b'/opt/private/report.xml"/>'
-        ),
     ],
 )
 def test_xml_absolute_path_guard_rejects_decoded_attribute_text_and_tail(
