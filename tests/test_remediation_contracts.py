@@ -43,6 +43,65 @@ HISTORICAL_BUNDLES_PATH = (
 )
 
 README_PATH = ROOT / Path('docs/verification/remediation/README.md')
+REMEDIATION_EVIDENCE_SCHEMA_PATH = (
+    ROOT / 'docs/verification/remediation/remediation-evidence-v1.schema.json'
+)
+EXPECTED_REMEDIATION_WAVES = [
+    'wave-0',
+    'wave-a',
+    'wave-b',
+    'wave-c',
+    'wave-d0',
+    'wave-d1',
+    'wave-e',
+]
+EXPECTED_EVIDENCE_KINDS = [
+    'command',
+    'junit',
+    'environment',
+    'dependency',
+    'plan_binding',
+    'privacy_transform',
+    'reproduced_source',
+    'review',
+    'adjudicator',
+    'domain',
+]
+WAVE0_DEPENDENCY_PATHS = [
+    'pyproject.toml',
+    'environments/cuda-rtx5090-cu128.lock.txt',
+    'docs/verification/remediation/verification-contract-v1.json',
+]
+WAVE0_POLICY_SCHEMA = 'wave-0-source-config-theory-tools-tests-v1'
+WAVE0_SELECTION_RULES = [
+    'prefix:src/',
+    'prefix:tests/',
+    'prefix:Theory/',
+    'prefix:tools/',
+    'top_level_suffix:.py',
+    'exact:pyproject.toml',
+    'exact:.gitignore',
+    'exact:.gitattributes',
+    'exact:environments/cuda-rtx5090-cu128.lock.txt',
+    'exact:docs/audits/2026-08-11-post-fixed-ray-deep-audit.md',
+    (
+        'exact:docs/superpowers/specs/'
+        '2026-08-11-scientific-integrity-remediation-program-design.md'
+    ),
+    (
+        'exact:docs/superpowers/plans/'
+        '2026-08-11-scientific-integrity-remediation-wave-0.md'
+    ),
+    'exact:docs/verification/remediation/verification-contract-v1.json',
+    'prefix:docs/verification/remediation/',
+]
+WAVE0_EXCLUSION_RULES = [
+    'prefix:docs/verification/evidence/',
+    'prefix:verification-evidence/',
+    'prefix:.verification/',
+    'prefix:.pytest_cache/',
+    'prefix:.pytest-',
+]
 
 
 EXPECTED_HISTORICAL_BUNDLES = {
@@ -250,6 +309,104 @@ def _verify_historical_bundle_files(bundle: dict[str, object], *, root: Path) ->
             or hashlib.sha256(data).hexdigest() != record["sha256"]
         ):
             raise ValueError(f"historical bundle hash mismatch: {record['path']}")
+
+
+def test_remediation_evidence_schema_closes_generic_discriminators() -> None:
+    schema = _load_json(REMEDIATION_EVIDENCE_SCHEMA_PATH)
+    assert isinstance(schema, dict)
+    assert schema['additionalProperties'] is False
+    assert schema['properties']['wave'] == {'enum': EXPECTED_REMEDIATION_WAVES}
+    index_file = schema['$defs']['index_file']
+    assert index_file['additionalProperties'] is False
+    assert index_file['properties']['kind'] == {'enum': EXPECTED_EVIDENCE_KINDS}
+
+
+def test_remediation_evidence_schema_has_dynamic_dependencies_and_policy() -> None:
+    schema = _load_json(REMEDIATION_EVIDENCE_SCHEMA_PATH)
+    assert isinstance(schema, dict)
+    properties = schema['properties']
+    assert properties['dependency_inputs'] == {
+        'type': 'array',
+        'minItems': 1,
+        'description': (
+            'Dependency path uniqueness and case-fold aliases are enforced '
+            'by the production evidence-index validator.'
+        ),
+        'items': {'$ref': '#/$defs/file_record'},
+    }
+    policy = properties['tested_input_policy']
+    assert policy['additionalProperties'] is False
+    assert policy['required'] == [
+        'schema_version',
+        'selection_rules',
+        'exclusion_rules',
+        'inputs',
+    ]
+    assert policy['properties'] == {
+        'schema_version': {'type': 'string', 'minLength': 1},
+        'selection_rules': {
+            'type': 'array',
+            'uniqueItems': True,
+            'items': {
+                'type': 'string',
+                'pattern': '^(?:prefix|exact|top_level_suffix):.+$',
+            },
+        },
+        'exclusion_rules': {
+            'type': 'array',
+            'uniqueItems': True,
+            'items': {
+                'type': 'string',
+                'pattern': '^(?:prefix|exact|top_level_suffix):.+$',
+            },
+        },
+        'inputs': {
+            'type': 'array',
+            'minItems': 1,
+            'description': (
+                'Input path uniqueness and case-fold aliases are enforced by '
+                'the production evidence-index validator.'
+            ),
+            'items': {'$ref': '#/$defs/file_record'},
+        },
+    }
+
+
+def test_remediation_evidence_schema_freezes_wave0_adapter_constants() -> None:
+    schema = _load_json(REMEDIATION_EVIDENCE_SCHEMA_PATH)
+    assert isinstance(schema, dict)
+    assert schema['allOf'] == [
+        {
+            'if': {
+                'properties': {'wave': {'const': 'wave-0'}},
+                'required': ['wave'],
+            },
+            'then': {
+                'properties': {
+                    'dependency_inputs': {
+                        'type': 'array',
+                        'minItems': 3,
+                        'maxItems': 3,
+                        'prefixItems': [
+                            {
+                                'properties': {'path': {'const': path}},
+                                'required': ['path'],
+                            }
+                            for path in WAVE0_DEPENDENCY_PATHS
+                        ],
+                        'items': False,
+                    },
+                    'tested_input_policy': {
+                        'properties': {
+                            'schema_version': {'const': WAVE0_POLICY_SCHEMA},
+                            'selection_rules': {'const': WAVE0_SELECTION_RULES},
+                            'exclusion_rules': {'const': WAVE0_EXCLUSION_RULES},
+                        }
+                    },
+                }
+            },
+        }
+    ]
 
 
 def test_audit_disposition_is_complete_closed_and_uniquely_owned():

@@ -73,6 +73,18 @@ JUNIT_FIELDS = {
 INTERPRETER_FIELDS = {"path", "version", "size_bytes", "sha256"}
 FILE_RECORD_FIELDS = {"path", "size_bytes", "sha256"}
 INDEX_FILE_FIELDS = {"path", "kind", "size_bytes", "sha256"}
+INDEX_FILE_KINDS = {
+    "command",
+    "junit",
+    "environment",
+    "dependency",
+    "plan_binding",
+    "privacy_transform",
+    "reproduced_source",
+    "review",
+    "adjudicator",
+    "domain",
+}
 GENERIC_PUBLIC_PATHS = (
     "commands/full.json",
     "commands/subsystem.json",
@@ -130,6 +142,11 @@ PLAN_PATH = PurePosixPath(
 SNAPSHOT_PATH = PurePosixPath(
     "docs/verification/remediation/verification-contract-v1.json"
 )
+WAVE0_DEPENDENCY_INPUT_PATHS = (
+    "pyproject.toml",
+    "environments/cuda-rtx5090-cu128.lock.txt",
+    str(SNAPSHOT_PATH),
+)
 HISTORICAL_INVENTORY_PATH = PurePosixPath(
     "docs/verification/remediation/historical-fixed-ray-bundles-v1.json"
 )
@@ -164,10 +181,21 @@ FULL_SHA_RE = re.compile(r"[0-9a-f]{40}")
 WAVE_RE = re.compile(r"wave-(?:0|[a-z](?:[0-9]+)?)")
 
 
-XML_SEMANTIC_POSIX_ABSOLUTE_RE = re.compile(
-    r"(?<![A-Za-z0-9_./\-])/(?![/\s\x22\x27<>;])[^\s\x22\x27<>;]*"
+XML_SEMANTIC_PATH_START_RE = re.compile(
+    r"(?i)(?:file:/+(?=[^/\s])|(?<![A-Za-z0-9_.\-/])/+(?=[^/\s])"
+    r"|\\\\\?\\[A-Z]:\\|\\\\(?=[^\\/\s]+(?:\\[^\\/\s]+"
+    r"|\\?(?=$|[\]\[(){};,\x22\x27<>])))"
+    r"|(?<![A-Za-z0-9_./\\\-])[A-Z]:[\\/]"
+    r"|(?<![A-Za-z0-9_./\\\-])/(?![\s>]))"
 )
 EMBEDDED_XML_CLOSING_TAG_RE = re.compile(r"</[A-Za-z_:][A-Za-z0-9_.:\-]*\s*>")
+XML_SEMANTIC_PATH_CLOSERS = frozenset("])};,")
+XML_SEMANTIC_PATH_OPENERS = {"[": "]", "(": ")", "{": "}"}
+XML_SEMANTIC_BARE_PATH_END_RE = re.compile(
+    r"(?:[A-Za-z0-9_.@%+=~\-]+(?:[\\/][A-Za-z0-9_.@%+=~\-]+)*"
+    r"|[A-Za-z0-9_.@%+=~\-]+\.[A-Za-z0-9_.@%+=~\-]+)"
+)
+XML_SEMANTIC_URI_SCHEME_RE = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*:$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -455,13 +483,16 @@ def _validate_file_inventory(
         path = _validate_relative_path(item["path"], label=f"{label} path")
         _require_nonnegative_int(item["size_bytes"], label=f"{label} size_bytes")
         _require_sha256(item["sha256"], label=f"{label} sha256")
-        if with_kind and (not isinstance(item["kind"], str) or not item["kind"]):
-            raise ValueError(f"{label} kind must be nonempty")
+        if with_kind and item["kind"] not in INDEX_FILE_KINDS:
+            raise ValueError(f"{label} kind is unsupported: {item['kind']}")
         paths.append(path)
         records.append(item)
     if require_sorted and paths != sorted(paths):
         raise ValueError(f"{label} must be ASCII-path-sorted")
-    if len({path.casefold() for path in paths}) != len(paths):
+    exact_duplicate = len(set(paths)) != len(paths)
+    if require_sorted and exact_duplicate:
+        raise ValueError(f"{label} contains a duplicate path")
+    if not exact_duplicate and len({path.casefold() for path in paths}) != len(paths):
         raise ValueError(f"{label} contains a case-fold path alias")
     return records
 
@@ -687,6 +718,114 @@ def _xml_strings(root: ET.Element) -> Iterable[str]:
             yield element.tail
 
 
+def _mask_equal_length(value: str, spans: Iterable[tuple[int, int]]) -> str:
+    masked = list(value)
+    for start, end in spans:
+        masked[start:end] = [" "] * (end - start)
+    return "".join(masked)
+
+
+def _xml_semantic_path_end(value: str, start: int, prefix_end: int) -> int:
+    quote = ""
+    if start >= 2 and value[start - 2 : start] in {'="', "='"}:
+        quote = value[start - 1]
+    if quote:
+        end = value.find(quote, prefix_end)
+        if end < 0:
+            raise ValueError("ambiguous XML absolute path boundary")
+        return end
+
+    opener = value[start - 1] if start else ""
+    closer = XML_SEMANTIC_PATH_OPENERS.get(opener)
+    if closer:
+        end = value.find(closer, prefix_end)
+        if end < 0:
+            raise ValueError("ambiguous XML absolute path boundary")
+        return end
+
+    whole_string = start == 0 and all(
+        character not in value
+        for character in (*XML_SEMANTIC_PATH_CLOSERS, "[", "(", "{")
+    )
+    end = prefix_end
+    while end < len(value):
+        character = value[end]
+        if character in XML_SEMANTIC_PATH_CLOSERS or character in {'"', "'", "<", ">"}:
+            break
+        if character.isspace():
+            if whole_string:
+                return len(value)
+            next_start = end
+            while next_start < len(value) and value[next_start].isspace():
+                next_start += 1
+            remainder = value[next_start:]
+            candidate = XML_SEMANTIC_BARE_PATH_END_RE.match(remainder)
+            if candidate is None:
+                break
+            candidate_text = candidate.group(0)
+            if "=" in candidate_text and not any(
+                separator in candidate_text for separator in ("/", "\\")
+            ):
+                raise ValueError("ambiguous XML absolute path boundary")
+            if "." not in candidate_text and not any(
+                separator in candidate_text for separator in ("/", "\\")
+            ):
+                if any(separator in value[start:end] for separator in ("/", "\\")):
+                    colon_line_boundary = re.search(
+                        r"\.[A-Za-z0-9]+:[0-9]+:$", value[start:end]
+                    )
+                    if colon_line_boundary is not None:
+                        break
+                    raise ValueError("ambiguous XML absolute path boundary")
+                raise ValueError("ambiguous XML absolute path boundary")
+            end = next_start + len(candidate_text)
+            continue
+        end += 1
+    return end
+
+
+def _xml_semantic_absolute_spans(value: str) -> tuple[tuple[int, int], ...]:
+    closing_tag_spans = tuple(
+        match.span() for match in EMBEDDED_XML_CLOSING_TAG_RE.finditer(value)
+    )
+    masked = _mask_equal_length(value, closing_tag_spans)
+    placeholder_spans = tuple(
+        match.span() for match in ALLOWED_PLACEHOLDER_PATH_RE.finditer(masked)
+    )
+    masked = _mask_equal_length(masked, placeholder_spans)
+    candidates = {
+        (match.start(), _xml_semantic_path_end(value, match.start(), match.end()))
+        for match in XML_SEMANTIC_PATH_START_RE.finditer(masked)
+        if not any(start <= match.start() < end for start, end in closing_tag_spans)
+        and not (
+            match.group(0) == "/"
+            and match.end() < len(value)
+            and value[match.end()] in {'"', "'", ">"}
+        )
+        and not (
+            match.start() > 0
+            and value[match.start() - 1] == ":"
+            and (
+                scheme_match := XML_SEMANTIC_URI_SCHEME_RE.search(
+                    value[: match.start()]
+                )
+            )
+            is not None
+            and scheme_match.group(0)[:-1].casefold() != "file"
+        )
+    }
+    selected: list[tuple[int, int]] = []
+    occupied_until = 0
+    for start, end in sorted(
+        candidates, key=lambda span: (span[0], -(span[1] - span[0]))
+    ):
+        if start < occupied_until:
+            continue
+        selected.append((start, end))
+        occupied_until = end
+    return tuple(selected)
+
+
 def _json_strings(value: object) -> Iterable[str]:
     if isinstance(value, dict):
         for key, child in value.items():
@@ -737,9 +876,7 @@ def _collect_unknown_paths(
         assert isinstance(payload, ET.Element)
         for string in _xml_strings(payload):
             components.extend(
-                _iter_string_components(
-                    string, path_separator=str(values["path_separator"])
-                )
+                string[start:end] for start, end in _xml_semantic_absolute_spans(string)
             )
     else:
         components.extend(
@@ -785,8 +922,24 @@ def _transform_string(
     key: str | None,
     values: Mapping[str, object],
     unknown: Mapping[str, str],
+    xml_semantic: bool = False,
 ) -> str:
     hostname = str(values["hostname"])
+    if xml_semantic:
+        transformed = value
+        for start, end in reversed(_xml_semantic_absolute_spans(value)):
+            replacement = _replace_component(
+                value[start:end], values=values, unknown=unknown
+            )
+            transformed = transformed[:start] + replacement + transformed[end:]
+        if hostname:
+            transformed = re.sub(
+                re.escape(hostname),
+                "<HOSTNAME>",
+                transformed,
+                flags=re.IGNORECASE,
+            )
+        return transformed
     if hostname:
         value = re.sub(re.escape(hostname), "<HOSTNAME>", value, flags=re.IGNORECASE)
     if key == "PYTHONPATH":
@@ -884,15 +1037,27 @@ def privacy_transform_bytes(
                     element.attrib[key] = "<PID>"
                 else:
                     element.attrib[key] = _transform_string(
-                        value, key=key, values=values, unknown=unknown
+                        value,
+                        key=key,
+                        values=values,
+                        unknown=unknown,
+                        xml_semantic=True,
                     )
             if element.text:
                 element.text = _transform_string(
-                    element.text, key=None, values=values, unknown=unknown
+                    element.text,
+                    key=None,
+                    values=values,
+                    unknown=unknown,
+                    xml_semantic=True,
                 )
             if element.tail:
                 element.tail = _transform_string(
-                    element.tail, key=None, values=values, unknown=unknown
+                    element.tail,
+                    key=None,
+                    values=values,
+                    unknown=unknown,
+                    xml_semantic=True,
                 )
         public = _canonical_xml_bytes(root)
     else:
@@ -925,24 +1090,31 @@ def privacy_transform_bytes(
 def _assert_no_literal_absolute_path_in_string(
     value: str, *, xml_semantic: bool
 ) -> None:
+    guarded = value
+    if xml_semantic:
+        guarded = _mask_equal_length(
+            value,
+            (match.span() for match in EMBEDDED_XML_CLOSING_TAG_RE.finditer(value)),
+        )
     unknown_placeholders = [
         item
-        for item in UNKNOWN_PLACEHOLDER_RE.findall(value)
+        for item in UNKNOWN_PLACEHOLDER_RE.findall(guarded)
         if ALLOWED_PLACEHOLDER_RE.fullmatch(item) is None
     ]
     if unknown_placeholders:
         raise ValueError(f"unknown public placeholder: {unknown_placeholders[0]}")
-    for placeholder in ALLOWED_PLACEHOLDER_RE.finditer(value):
-        occurrence = ALLOWED_PLACEHOLDER_PATH_RE.match(value, placeholder.start())
+    for placeholder in ALLOWED_PLACEHOLDER_RE.finditer(guarded):
+        occurrence = ALLOWED_PLACEHOLDER_PATH_RE.match(guarded, placeholder.start())
         if occurrence is None:
             raise ValueError(f"invalid public placeholder path: {placeholder.group(0)}")
-    scrubbed = ALLOWED_PLACEHOLDER_PATH_RE.sub("PLACEHOLDER", value)
     if xml_semantic:
-        scrubbed = EMBEDDED_XML_CLOSING_TAG_RE.sub("XML_CLOSING_TAG", scrubbed)
-        posix_pattern = XML_SEMANTIC_POSIX_ABSOLUTE_RE
+        absolute_path_found = bool(_xml_semantic_absolute_spans(value))
     else:
-        posix_pattern = POSIX_ABSOLUTE_RE
-    if WINDOWS_ABSOLUTE_RE.search(scrubbed) or posix_pattern.search(scrubbed):
+        scrubbed = ALLOWED_PLACEHOLDER_PATH_RE.sub("PLACEHOLDER", value)
+        absolute_path_found = bool(
+            WINDOWS_ABSOLUTE_RE.search(scrubbed) or POSIX_ABSOLUTE_RE.search(scrubbed)
+        )
+    if absolute_path_found:
         raise ValueError("literal absolute path remains in public evidence")
 
 
@@ -1180,6 +1352,39 @@ def _plan_path_for_wave(wave: str) -> PurePosixPath:
     )
 
 
+def _validate_wave_input_contract(
+    *,
+    wave: str,
+    dependency_paths: Sequence[str],
+    policy_template: Mapping[str, object],
+) -> tuple[tuple[str, ...], dict[str, object]]:
+    _plan_path_for_wave(wave)
+    normalized_paths = tuple(
+        _validate_relative_path(path, label="dependency input path")
+        for path in dependency_paths
+    )
+    if not normalized_paths:
+        raise ValueError("dependency inputs must be nonempty")
+    if len(normalized_paths) != len(set(normalized_paths)):
+        raise ValueError("dependency inputs contain a duplicate path")
+    if len({path.casefold() for path in normalized_paths}) != len(normalized_paths):
+        raise ValueError("dependency inputs contain a case-fold path alias")
+    if "uv.lock" in normalized_paths:
+        raise ValueError("uv.lock is not an evidence dependency")
+    normalized_policy = _validate_policy_template(policy_template)
+    if wave == "wave-0":
+        if normalized_paths != WAVE0_DEPENDENCY_INPUT_PATHS:
+            raise ValueError("wave-0 dependency paths differ from frozen contract")
+        expected_policy = {
+            "schema_version": TESTED_INPUT_SCHEMA,
+            "selection_rules": list(TESTED_INPUT_SELECTION_RULES),
+            "exclusion_rules": list(TESTED_INPUT_EXCLUSION_RULES),
+        }
+        if normalized_policy != expected_policy:
+            raise ValueError("wave-0 tested-input policy differs from frozen contract")
+    return normalized_paths, normalized_policy
+
+
 def _validate_binding(record: object, *, label: str, with_commit: bool = False) -> None:
     if not isinstance(record, dict):
         raise ValueError(f"{label} must be an object")
@@ -1263,6 +1468,11 @@ def validate_evidence_index(
     if not isinstance(payload["dependency_versions"], list):
         raise ValueError("dependency_versions must be an array")
     tested_inputs = _validate_tested_input_policy(payload["tested_input_policy"])
+    dependency_paths, policy_template = _validate_wave_input_contract(
+        wave=wave,
+        dependency_paths=dependency_paths,
+        policy_template=_policy_template_from_resolved(payload["tested_input_policy"]),
+    )
     expected_inventory_hash = _sha256(canonical_json_bytes(tested_inputs))
     if payload["tested_input_inventory_sha256"] != expected_inventory_hash:
         raise ValueError("tested-input inventory hash mismatch")
@@ -1317,9 +1527,7 @@ def validate_evidence_index(
         _validate_generic_public_records(payload, public_tree, repo_root=root)
     policy = payload["tested_input_policy"]
     assert isinstance(policy, dict)
-    current_policy = _resolve_tested_input_policy(
-        root, _policy_template_from_resolved(policy)
-    )
+    current_policy = _resolve_tested_input_policy(root, policy_template)
     if current_policy != payload["tested_input_policy"]:
         raise ValueError("current tested-input policy differs from evidence index")
     plan = payload["reviewed_plan_binding"]
@@ -1409,14 +1617,19 @@ def build_evidence_index(
         implementation_parent_git_head=implementation_parent_git_head,
         actual_head=actual_head,
     )
-    resolved_policy = _resolve_tested_input_policy(root, tested_input_policy)
     environment_payload = json.loads(environment_record_bytes)
     if canonical_json_bytes(environment_payload) != environment_record_bytes:
         raise ValueError("environment record must be canonical JSON")
-    dependency_paths = [
+    requested_dependency_paths = [
         _validate_relative_path(path, label="dependency input path")
         for path in dependency_input_paths
     ]
+    dependency_paths, policy_template = _validate_wave_input_contract(
+        wave=wave,
+        dependency_paths=requested_dependency_paths,
+        policy_template=tested_input_policy,
+    )
+    resolved_policy = _resolve_tested_input_policy(root, policy_template)
     if len(dependency_paths) != len(set(dependency_paths)):
         raise ValueError("dependency input paths contain a duplicate")
     if "uv.lock" in dependency_paths:
@@ -2033,8 +2246,11 @@ def _prepare_evidence_bundle(
         implementation_parent_git_head=implementation_parent_git_head,
         actual_head=actual_head,
     )
-    _plan_path_for_wave(wave)
-    policy_template = _validate_policy_template(tested_input_policy)
+    dependency_paths, policy_template = _validate_wave_input_contract(
+        wave=wave,
+        dependency_paths=dependency_input_paths,
+        policy_template=tested_input_policy,
+    )
     _resolve_tested_input_policy(root, policy_template)
 
     output_text = Path(output_dir).as_posix()
@@ -2100,7 +2316,7 @@ def _prepare_evidence_bundle(
         raw_junit_records=raw_junit_records,
     )
     environment_payload = capture_environment_record(
-        root, dependency_input_paths=dependency_input_paths
+        root, dependency_input_paths=dependency_paths
     )
     for suite in sorted(suites):
         command = parsed_commands[suite]
@@ -2214,7 +2430,7 @@ def _prepare_evidence_bundle(
         source_config_paths=source_config_paths,
         tested_input_policy=policy_template,
         environment_record_bytes=public["environment.json"],
-        dependency_input_paths=dependency_input_paths,
+        dependency_input_paths=dependency_paths,
         public_junit_bytes={suite: public[f"{suite}.xml"] for suite in sorted(suites)},
     )
     finalized = _finalize_evidence_index(index, public)
