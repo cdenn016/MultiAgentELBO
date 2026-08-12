@@ -42,6 +42,9 @@ HISTORICAL_BUNDLES_PATH = (
     / "historical-fixed-ray-bundles-v1.json"
 )
 
+README_PATH = ROOT / Path('docs/verification/remediation/README.md')
+
+
 EXPECTED_HISTORICAL_BUNDLES = {
     "gaussian-confirmatory-fcb2c49": {
         "historical_git_revision": "fcb2c49efdca2ad3ee502dc08fbb82fc285e7a05",
@@ -401,6 +404,18 @@ def test_historical_fixed_ray_bundles_are_complete_and_byte_pinned():
             for record in bundle["files"]
         )
         _verify_historical_bundle_files(bundle, root=ROOT)
+
+
+def test_remediation_readme_preserves_status_and_revision_boundaries():
+    text = README_PATH.read_text(encoding='utf-8')
+    for phrase in (
+        'Wave 0 does not remediate an audit defect',
+        'producer verification_state is exactly CANDIDATE',
+        'historical bundles are never upgraded',
+        'candidate evidence',
+        'exact-child closure evidence',
+    ):
+        assert phrase in text
 
 
 def test_historical_fixed_ray_bundle_hash_drift_is_rejected(tmp_path: Path):
