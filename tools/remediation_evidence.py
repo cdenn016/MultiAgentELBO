@@ -126,7 +126,7 @@ UNKNOWN_PLACEHOLDER_RE = re.compile(r"<[A-Z][A-Z0-9_]*>")
 WINDOWS_ABSOLUTE_RE = re.compile(
     r"(?i)(?:\\\\\?\\[A-Z]:\\|\\\\[^\\/\s\"'<>;]+\\[^\\/\s\"'<>;]+\\|[A-Z]:[\\/])[^\s\"'<>;]*"
 )
-POSIX_ABSOLUTE_RE = re.compile(r"(?<![A-Za-z0-9_.>\-])/(?!/)[^\s\"'<>;]*")
+POSIX_ABSOLUTE_RE = re.compile(r"(?<![A-Za-z0-9_.><\-])/(?![/\s\"'<>;])[^\s\"'<>;]*")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 FULL_SHA_RE = re.compile(r"[0-9a-f]{40}")
 
@@ -328,6 +328,7 @@ def _validate_file_inventory(
     *,
     label: str,
     with_kind: bool = False,
+    require_sorted: bool = True,
 ) -> list[dict[str, object]]:
     if not isinstance(value, list):
         raise ValueError(f"{label} must be an array")
@@ -345,7 +346,7 @@ def _validate_file_inventory(
             raise ValueError(f"{label} kind must be nonempty")
         paths.append(path)
         records.append(item)
-    if paths != sorted(paths):
+    if require_sorted and paths != sorted(paths):
         raise ValueError(f"{label} must be ASCII-path-sorted")
     if len({path.casefold() for path in paths}) != len(paths):
         raise ValueError(f"{label} contains a case-fold path alias")
@@ -482,10 +483,31 @@ def _normalize_path_text(value: str) -> str:
     return normalized.rstrip("/")
 
 
+def _split_component_wrapper(value: str) -> tuple[str, str, str, str]:
+    stripped_left = value.lstrip()
+    leading = value[: len(value) - len(stripped_left)]
+    stripped = stripped_left.rstrip()
+    trailing = stripped_left[len(stripped) :]
+    quote = ""
+    core = stripped
+    if len(core) >= 2 and core[0] == core[-1] and core[0] in {"'", '"'}:
+        quote = core[0]
+        core = core[1:-1]
+    return leading, quote, core, trailing
+
+
+def _component_core(value: str) -> str:
+    return _split_component_wrapper(value)[2]
+
+
 def _is_absolute_component(value: str) -> bool:
+    core = _component_core(value)
     return bool(
-        re.match(r"(?i)^(?:\\\\\?\\[A-Z]:\\|\\\\[^\\/]+\\[^\\/]+\\|[A-Z]:[\\/])", value)
-        or value.startswith("/")
+        re.match(
+            r"(?i)^(?:\\\\\?\\[A-Z]:\\|\\\\[^\\/]+\\[^\\/]+\\|[A-Z]:[\\/])",
+            core,
+        )
+        or core.startswith("/")
     )
 
 
@@ -507,24 +529,36 @@ def _privacy_values(privacy_context: Mapping[str, object]) -> dict[str, object]:
     }
 
 
-def _iter_string_components(value: object, *, key: str | None = None) -> Iterable[str]:
+def _iter_string_components(
+    value: object,
+    *,
+    path_separator: str,
+    key: str | None = None,
+) -> Iterable[str]:
     if isinstance(value, dict):
         for child_key, child in value.items():
-            yield from _iter_string_components(child, key=str(child_key))
+            yield from _iter_string_components(
+                child, path_separator=path_separator, key=str(child_key)
+            )
     elif isinstance(value, list):
         for child in value:
-            yield from _iter_string_components(child, key=key)
+            yield from _iter_string_components(
+                child, path_separator=path_separator, key=key
+            )
     elif isinstance(value, str):
         if key == "PYTHONPATH":
-            for component in re.split(r"[;:]", value):
+            for component in value.split(path_separator):
                 if _is_absolute_component(component):
                     yield component
+            return
         if value.startswith("--") and "=" in value:
             _, right = value.split("=", 1)
             if _is_absolute_component(right):
                 yield right
+                return
         if _is_absolute_component(value):
             yield value
+            return
         for match in WINDOWS_ABSOLUTE_RE.finditer(value):
             yield match.group(0)
         for match in POSIX_ABSOLUTE_RE.finditer(value):
@@ -577,14 +611,22 @@ def _collect_unknown_paths(
     if xml:
         assert isinstance(payload, ET.Element)
         for string in _xml_strings(payload):
-            components.extend(_iter_string_components(string))
+            components.extend(
+                _iter_string_components(
+                    string, path_separator=str(values["path_separator"])
+                )
+            )
     else:
-        components.extend(_iter_string_components(payload))
+        components.extend(
+            _iter_string_components(
+                payload, path_separator=str(values["path_separator"])
+            )
+        )
     unknown = {
-        _normalize_path_text(component).casefold(): component
+        _normalize_path_text(_component_core(component)).casefold(): component
         for component in components
-        if _known_placeholder(component, values) is None
-        and ALLOWED_PLACEHOLDER_RE.fullmatch(component) is None
+        if _known_placeholder(_component_core(component), values) is None
+        and ALLOWED_PLACEHOLDER_RE.fullmatch(_component_core(component)) is None
     }
     return {
         original: f"<ABS_PATH_{index:04d}>"
@@ -598,14 +640,17 @@ def _replace_component(
     values: Mapping[str, object],
     unknown: Mapping[str, str],
 ) -> str:
-    if ALLOWED_PLACEHOLDER_RE.fullmatch(component):
+    leading, quote, core, trailing = _split_component_wrapper(component)
+    if ALLOWED_PLACEHOLDER_RE.fullmatch(core):
         return component
-    known = _known_placeholder(component, values)
+    known = _known_placeholder(core, values)
     if known is not None:
-        return known
-    key = _normalize_path_text(component).casefold()
-    if key in unknown:
-        return unknown[key]
+        replacement = known
+    else:
+        key = _normalize_path_text(core).casefold()
+        replacement = unknown.get(key)
+    if replacement is not None:
+        return f"{leading}{quote}{replacement}{quote}{trailing}"
     return component
 
 
@@ -980,7 +1025,11 @@ def validate_evidence_index(
     if not isinstance(payload["platform"], dict):
         raise ValueError("platform must be an object")
     _validate_binding(payload["environment_record"], label="environment record")
-    _validate_file_inventory(payload["dependency_inputs"], label="dependency inputs")
+    _validate_file_inventory(
+        payload["dependency_inputs"],
+        label="dependency inputs",
+        require_sorted=False,
+    )
     if not isinstance(payload["dependency_versions"], list):
         raise ValueError("dependency_versions must be an array")
     tested_inputs = _validate_tested_input_policy(payload["tested_input_policy"])
@@ -1029,62 +1078,53 @@ def validate_evidence_index(
             if len(data) != record["size_bytes"] or _sha256(data) != record["sha256"]:
                 raise ValueError(f"indexed public byte mismatch: {record['path']}")
             assert_no_literal_absolute_path(data)
-        current_policy = resolve_tested_input_policy(root)
-        if current_policy != payload["tested_input_policy"]:
-            raise ValueError("current tested-input policy differs from evidence index")
-        plan = payload["reviewed_plan_binding"]
-        snapshot = payload["verification_contract_binding"]
-        assert isinstance(plan, dict)
-        assert isinstance(snapshot, dict)
-        for label, binding in (
-            ("reviewed_plan_binding", plan),
-            ("verification_contract_binding", snapshot),
-        ):
-            data = _require_regular_unlinked_file(
-                root / str(binding["path"]), label=label
-            )
-            if len(data) != binding["size_bytes"] or _sha256(data) != binding["sha256"]:
-                raise ValueError(f"{label} byte mismatch")
-        plan_commit = str(plan["commit"])
-        for descendant in (tested, parent):
-            if (
-                subprocess.run(
-                    ["git", "merge-base", "--is-ancestor", plan_commit, descendant],
-                    cwd=root,
-                    check=False,
-                    capture_output=True,
-                ).returncode
-                != 0
-            ):
-                raise ValueError(
-                    "reviewed plan commit is not an ancestor of evidence heads"
-                )
-        committed_plan = _git(
-            root, "show", f"{plan_commit}:{plan['path']}", binary=True
-        )
-        if committed_plan != (root / str(plan["path"])).read_bytes():
-            raise ValueError(
-                "reviewed plan blob differs from current tested plan bytes"
-            )
-        snapshot_payload = json.loads((root / str(snapshot["path"])).read_bytes())
-        _validate_snapshot_payload(snapshot_payload)
-        dependency_paths = [str(item["path"]) for item in payload["dependency_inputs"]]
-        expected_dependency_paths = [
-            "pyproject.toml",
-            "environments/cuda-rtx5090-cu128.lock.txt",
-            str(SNAPSHOT_PATH),
-        ]
+    current_policy = resolve_tested_input_policy(root)
+    if current_policy != payload["tested_input_policy"]:
+        raise ValueError("current tested-input policy differs from evidence index")
+    plan = payload["reviewed_plan_binding"]
+    snapshot = payload["verification_contract_binding"]
+    assert isinstance(plan, dict)
+    assert isinstance(snapshot, dict)
+    for label, binding in (
+        ("reviewed_plan_binding", plan),
+        ("verification_contract_binding", snapshot),
+    ):
+        data = _require_regular_unlinked_file(root / str(binding["path"]), label=label)
+        if len(data) != binding["size_bytes"] or _sha256(data) != binding["sha256"]:
+            raise ValueError(f"{label} byte mismatch")
+    plan_commit = str(plan["commit"])
+    for descendant in (tested, parent):
         if (
-            dependency_paths != expected_dependency_paths
-            or "uv.lock" in dependency_paths
+            subprocess.run(
+                ["git", "merge-base", "--is-ancestor", plan_commit, descendant],
+                cwd=root,
+                check=False,
+                capture_output=True,
+            ).returncode
+            != 0
         ):
-            raise ValueError("dependency input path contract mismatch")
-        for record in payload["dependency_inputs"]:
-            data = _require_regular_unlinked_file(
-                root / str(record["path"]), label="dependency input"
+            raise ValueError(
+                "reviewed plan commit is not an ancestor of evidence heads"
             )
-            if len(data) != record["size_bytes"] or _sha256(data) != record["sha256"]:
-                raise ValueError(f"dependency input byte mismatch: {record['path']}")
+    committed_plan = _git(root, "show", f"{plan_commit}:{plan['path']}", binary=True)
+    if committed_plan != (root / str(plan["path"])).read_bytes():
+        raise ValueError("reviewed plan blob differs from current tested plan bytes")
+    snapshot_payload = json.loads((root / str(snapshot["path"])).read_bytes())
+    _validate_snapshot_payload(snapshot_payload)
+    dependency_paths = [str(item["path"]) for item in payload["dependency_inputs"]]
+    expected_dependency_paths = [
+        "pyproject.toml",
+        "environments/cuda-rtx5090-cu128.lock.txt",
+        str(SNAPSHOT_PATH),
+    ]
+    if dependency_paths != expected_dependency_paths or "uv.lock" in dependency_paths:
+        raise ValueError("dependency input path contract mismatch")
+    for record in payload["dependency_inputs"]:
+        data = _require_regular_unlinked_file(
+            root / str(record["path"]), label="dependency input"
+        )
+        if len(data) != record["size_bytes"] or _sha256(data) != record["sha256"]:
+            raise ValueError(f"dependency input byte mismatch: {record['path']}")
 
 
 def build_evidence_index(
