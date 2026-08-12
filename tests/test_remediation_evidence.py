@@ -1257,6 +1257,210 @@ def test_privacy_transform_accepts_preserved_p6_raw_junit(suite: str) -> None:
 
 
 @pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        (
+            "test_xml_semantic_path_tokenizer_fails_closed_on_ambiguous_"
+            "spaced_path[before=/opt/Private Folder/token.txt after=safe]",
+            "test_xml_semantic_path_tokenizer_fails_closed_on_ambiguous_"
+            "spaced_path[before=<ABS_PATH_0001> after=safe]",
+        ),
+        (
+            "test_xml_semantic_path_tokenizer_fails_closed_on_ambiguous_"
+            r"spaced_path[before=D:\\Program Files\\secret\\token.txt after=safe]",
+            "test_xml_semantic_path_tokenizer_fails_closed_on_ambiguous_"
+            "spaced_path[before=<ABS_PATH_0001> after=safe]",
+        ),
+    ],
+)
+def test_junit_testcase_name_context_redacts_exact_p12_parameter_path(
+    tmp_path: Path, name: str, expected: str
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    raw = f'<testsuite><testcase name="{name}"/></testsuite>'.encode()
+
+    with pytest.raises(ValueError, match="literal absolute path"):
+        assert_no_literal_absolute_path(raw)
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    testcase = ET.fromstring(public).find("testcase")
+    assert testcase is not None
+    assert testcase.attrib["name"] == expected
+    assert " after=safe]" in testcase.attrib["name"]
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+
+
+@pytest.mark.parametrize("placement", ["text", "property-name"])
+def test_p12_parameter_path_context_does_not_relax_other_xml_fields(
+    tmp_path: Path, placement: str
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    name = (
+        "test_xml_semantic_path_tokenizer_fails_closed_on_ambiguous_"
+        "spaced_path[before=/opt/Private Folder/token.txt after=safe]"
+    )
+    if placement == "text":
+        raw = f"<testsuite><testcase>{name}</testcase></testsuite>".encode()
+    else:
+        raw = (
+            f'<testsuite><properties><property name="{name}"/></properties>'
+            f"<testcase/></testsuite>"
+        ).encode()
+
+    with pytest.raises(ValueError, match="ambiguous XML absolute path"):
+        assert_no_literal_absolute_path(raw)
+    with pytest.raises(ValueError, match="ambiguous XML absolute path"):
+        privacy_transform_bytes(raw, kind="junit", privacy_context=context)
+
+
+@pytest.mark.parametrize(
+    ("serialized_path", "suffix"),
+    [
+        (
+            "file:///opt/private/report.xml",
+            "-<testcase><ABS_PATH_0001></testcase>]",
+        ),
+        (
+            "//server/share/private/report.xml",
+            "-<testcase><ABS_PATH_0001></testcase>]",
+        ),
+        (
+            r"D:\\Program Files\\secret\\token.txt",
+            "-<testcase><ABS_PATH_0001></testcase>-private_fragments1]",
+        ),
+        (
+            r"\\\\server\\share\\Private Folder\\token.txt",
+            "-<testcase><ABS_PATH_0001></testcase>-private_fragments1]",
+        ),
+    ],
+)
+def test_junit_testcase_name_redacts_direct_serialized_pytest_path_only(
+    tmp_path: Path, serialized_path: str, suffix: str
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    prefix = "test_xml_semantic_path_tokenizer_scrubs_entire_bounded_spaced_path["
+    name = f"{prefix}{serialized_path}{suffix}"
+    root = ET.Element("testsuite")
+    ET.SubElement(root, "testcase", name=name)
+    raw = ET.tostring(root, encoding="utf-8")
+
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    testcase = ET.fromstring(public).find("testcase")
+    assert testcase is not None
+    public_name = testcase.attrib["name"]
+    assert serialized_path not in public_name
+    assert public_name.startswith(f"{prefix}<ABS_PATH_")
+    assert public_name.endswith(suffix)
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+
+
+def test_junit_testcase_name_preserves_known_placeholder_suffix() -> None:
+    repo_root = Path(r"C:\private repository")
+    context = {
+        "repo_root": repo_root,
+        "user_home": Path(r"C:\private home"),
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    suffix = "-<testcase><ABS_PATH_0001></testcase>]"
+    name = f"node[{repo_root / 'safe'}{suffix}"
+    root = ET.Element("testsuite")
+    ET.SubElement(root, "testcase", name=name)
+
+    public, _mapping = privacy_transform_bytes(
+        ET.tostring(root, encoding="utf-8"),
+        kind="junit",
+        privacy_context=context,
+    )
+
+    testcase = ET.fromstring(public).find("testcase")
+    assert testcase is not None
+    assert testcase.attrib["name"] == f"node[<REPO_ROOT>/safe{suffix}"
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+
+
+def test_junit_testcase_name_does_not_allow_placeholder_before_opening_tag() -> None:
+    root = ET.Element("testsuite")
+    ET.SubElement(
+        root,
+        "testcase",
+        name="node[<ABS_PATH_0001><testcase>private</testcase>]",
+    )
+
+    with pytest.raises(ValueError, match="invalid public placeholder path"):
+        assert_no_literal_absolute_path(ET.tostring(root, encoding="utf-8"))
+
+
+@pytest.mark.parametrize("suite", ["targeted", "subsystem", "full"])
+def test_privacy_transform_accepts_fresh_p12_raw_junit(suite: str) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    raw_path = (
+        repo_root
+        / ".verification"
+        / "raw"
+        / "wave-0"
+        / "1d2bcc101066"
+        / "candidate"
+        / f"{suite}.raw.xml"
+    )
+    if not raw_path.is_file():
+        pytest.skip("fresh P12 raw JUnit is local verification evidence")
+    context = {
+        "repo_root": repo_root,
+        "user_home": Path.home(),
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "DESKTOP-RT15E78",
+        "path_separator": ";",
+    }
+
+    public, _mapping = privacy_transform_bytes(
+        raw_path.read_bytes(), kind="junit", privacy_context=context
+    )
+
+    assert_no_literal_absolute_path(public, privacy_context=context)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+
+
+@pytest.mark.parametrize(
     ("semantic", "expected"),
     [
         (

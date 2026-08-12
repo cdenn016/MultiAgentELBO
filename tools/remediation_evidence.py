@@ -195,6 +195,10 @@ XML_SEMANTIC_BARE_PATH_END_RE = re.compile(
     r"(?:[A-Za-z0-9_.@%+=~\-]+(?:[\\/][A-Za-z0-9_.@%+=~\-]+)*"
     r"|[A-Za-z0-9_.@%+=~\-]+\.[A-Za-z0-9_.@%+=~\-]+)"
 )
+XML_SEMANTIC_PYTEST_PATH_END_RE = re.compile(
+    r"(?:[A-Za-z0-9_.@%+=~\-]+(?:[\\/]+[A-Za-z0-9_.@%+=~\-]+)*"
+    r"|[A-Za-z0-9_.@%+=~\-]+\.[A-Za-z0-9_.@%+=~\-]+)"
+)
 XML_SEMANTIC_URI_SCHEME_RE = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*:$")
 
 
@@ -709,13 +713,19 @@ def _iter_string_components(
             yield match.group(0)
 
 
-def _xml_strings(root: ET.Element) -> Iterable[str]:
+def _xml_strings_with_context(root: ET.Element) -> Iterable[tuple[str, bool]]:
     for element in root.iter():
-        yield from element.attrib.values()
+        for key, value in element.attrib.items():
+            yield value, element.tag == "testcase" and key == "name"
         if element.text:
-            yield element.text
+            yield element.text, False
         if element.tail:
-            yield element.tail
+            yield element.tail, False
+
+
+def _xml_strings(root: ET.Element) -> Iterable[str]:
+    for value, _junit_testcase_name in _xml_strings_with_context(root):
+        yield value
 
 
 def _mask_equal_length(value: str, spans: Iterable[tuple[int, int]]) -> str:
@@ -725,7 +735,100 @@ def _mask_equal_length(value: str, spans: Iterable[tuple[int, int]]) -> str:
     return "".join(masked)
 
 
-def _xml_semantic_path_end(value: str, start: int, prefix_end: int) -> int:
+def _is_final_pytest_parameter_assignment_suffix(
+    value: str, *, path_start: int, suffix_start: int
+) -> bool:
+    if not value.endswith("]"):
+        return False
+    opener = value.rfind("[", 0, path_start)
+    if opener < 0 or value.rfind("]", 0, path_start) > opener:
+        return False
+    return (
+        re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=[^\s\[\]]+", value[suffix_start:-1])
+        is not None
+    )
+
+
+def _pytest_embedded_testcase_parameter_delimiter(
+    value: str, *, start: int
+) -> int | None:
+    if not value.endswith("]"):
+        return None
+    delimiter = value.find("-<testcase>", start)
+    if delimiter < 0:
+        return None
+    closing_tag = "</testcase>"
+    closing = value.find(closing_tag, delimiter + len("-<testcase>"))
+    if closing < 0:
+        return None
+    embedded = value[delimiter + 1 : closing + len(closing_tag)]
+    if "\r" in embedded or "\n" in embedded:
+        return None
+    tail = value[closing + len(closing_tag) :]
+    if re.fullmatch(r"(?:-[A-Za-z0-9_.@%+=~\-]+)?\]", tail) is None:
+        return None
+    return delimiter
+
+
+def _direct_serialized_pytest_path_span(value: str) -> tuple[int, int] | None:
+    opener = value.rfind("[")
+    if opener < 0:
+        return None
+    start = opener + 1
+    delimiter = _pytest_embedded_testcase_parameter_delimiter(value, start=start)
+    if delimiter is None:
+        return None
+    candidate = value[start:delimiter]
+    if not candidate or any(character in candidate for character in "<>\"'"):
+        return None
+    decoded_candidate = candidate.replace("\\\\", "\\")
+    if not (
+        _is_absolute_component(decoded_candidate)
+        or re.match(r"(?i)^file:/+(?=[^/\s])", decoded_candidate)
+    ):
+        return None
+    return start, delimiter
+
+
+def _direct_serialized_pytest_public_path_span(
+    value: str,
+) -> tuple[int, int] | None:
+    opener = value.rfind("[")
+    if opener < 0:
+        return None
+    start = opener + 1
+    delimiter = _pytest_embedded_testcase_parameter_delimiter(value, start=start)
+    if delimiter is None:
+        return None
+    candidate = value[start:delimiter]
+    occurrence = ALLOWED_PLACEHOLDER_PATH_RE.match(candidate + " ")
+    if not (
+        occurrence is not None
+        and occurrence.start() == 0
+        and occurrence.end() == len(candidate)
+    ):
+        return None
+    return start, delimiter
+
+
+def _is_direct_serialized_pytest_public_placeholder(
+    value: str, *, start: int, end: int
+) -> bool:
+    public_path_span = _direct_serialized_pytest_public_path_span(value)
+    return (
+        public_path_span is not None
+        and start == public_path_span[0]
+        and start < end <= public_path_span[1]
+    )
+
+
+def _xml_semantic_path_end(
+    value: str,
+    start: int,
+    prefix_end: int,
+    *,
+    junit_testcase_name: bool,
+) -> int:
     quote = ""
     if start >= 2 and value[start - 2 : start] in {'="', "='"}:
         quote = value[start - 1]
@@ -759,13 +862,22 @@ def _xml_semantic_path_end(value: str, start: int, prefix_end: int) -> int:
             while next_start < len(value) and value[next_start].isspace():
                 next_start += 1
             remainder = value[next_start:]
-            candidate = XML_SEMANTIC_BARE_PATH_END_RE.match(remainder)
+            candidate_pattern = (
+                XML_SEMANTIC_PYTEST_PATH_END_RE
+                if junit_testcase_name
+                else XML_SEMANTIC_BARE_PATH_END_RE
+            )
+            candidate = candidate_pattern.match(remainder)
             if candidate is None:
                 break
             candidate_text = candidate.group(0)
             if "=" in candidate_text and not any(
                 separator in candidate_text for separator in ("/", "\\")
             ):
+                if junit_testcase_name and _is_final_pytest_parameter_assignment_suffix(
+                    value, path_start=start, suffix_start=next_start
+                ):
+                    return end
                 raise ValueError("ambiguous XML absolute path boundary")
             if "." not in candidate_text and not any(
                 separator in candidate_text for separator in ("/", "\\")
@@ -784,7 +896,17 @@ def _xml_semantic_path_end(value: str, start: int, prefix_end: int) -> int:
     return end
 
 
-def _xml_semantic_absolute_spans(value: str) -> tuple[tuple[int, int], ...]:
+def _xml_semantic_absolute_spans(
+    value: str, *, junit_testcase_name: bool = False
+) -> tuple[tuple[int, int], ...]:
+    direct_path_span = (
+        _direct_serialized_pytest_path_span(value) if junit_testcase_name else None
+    )
+    direct_public_path_span = (
+        _direct_serialized_pytest_public_path_span(value)
+        if junit_testcase_name
+        else None
+    )
     closing_tag_spans = tuple(
         match.span() for match in EMBEDDED_XML_CLOSING_TAG_RE.finditer(value)
     )
@@ -793,8 +915,20 @@ def _xml_semantic_absolute_spans(value: str) -> tuple[tuple[int, int], ...]:
         match.span() for match in ALLOWED_PLACEHOLDER_PATH_RE.finditer(masked)
     )
     masked = _mask_equal_length(masked, placeholder_spans)
-    candidates = {
-        (match.start(), _xml_semantic_path_end(value, match.start(), match.end()))
+    direct_mask_spans = tuple(
+        span for span in (direct_path_span, direct_public_path_span) if span is not None
+    )
+    masked = _mask_equal_length(masked, direct_mask_spans)
+    candidates = ({direct_path_span} if direct_path_span is not None else set()) | {
+        (
+            match.start(),
+            _xml_semantic_path_end(
+                value,
+                match.start(),
+                match.end(),
+                junit_testcase_name=junit_testcase_name,
+            ),
+        )
         for match in XML_SEMANTIC_PATH_START_RE.finditer(masked)
         if not any(start <= match.start() < end for start, end in closing_tag_spans)
         and not (
@@ -874,9 +1008,12 @@ def _collect_unknown_paths(
     components: list[str] = []
     if xml:
         assert isinstance(payload, ET.Element)
-        for string in _xml_strings(payload):
+        for string, junit_testcase_name in _xml_strings_with_context(payload):
             components.extend(
-                string[start:end] for start, end in _xml_semantic_absolute_spans(string)
+                string[start:end]
+                for start, end in _xml_semantic_absolute_spans(
+                    string, junit_testcase_name=junit_testcase_name
+                )
             )
     else:
         components.extend(
@@ -923,11 +1060,14 @@ def _transform_string(
     values: Mapping[str, object],
     unknown: Mapping[str, str],
     xml_semantic: bool = False,
+    junit_testcase_name: bool = False,
 ) -> str:
     hostname = str(values["hostname"])
     if xml_semantic:
         transformed = value
-        for start, end in reversed(_xml_semantic_absolute_spans(value)):
+        for start, end in reversed(
+            _xml_semantic_absolute_spans(value, junit_testcase_name=junit_testcase_name)
+        ):
             replacement = _replace_component(
                 value[start:end], values=values, unknown=unknown
             )
@@ -1042,6 +1182,7 @@ def privacy_transform_bytes(
                         values=values,
                         unknown=unknown,
                         xml_semantic=True,
+                        junit_testcase_name=element.tag == "testcase" and key == "name",
                     )
             if element.text:
                 element.text = _transform_string(
@@ -1088,7 +1229,7 @@ def privacy_transform_bytes(
 
 
 def _assert_no_literal_absolute_path_in_string(
-    value: str, *, xml_semantic: bool
+    value: str, *, xml_semantic: bool, junit_testcase_name: bool = False
 ) -> None:
     guarded = value
     if xml_semantic:
@@ -1105,10 +1246,17 @@ def _assert_no_literal_absolute_path_in_string(
         raise ValueError(f"unknown public placeholder: {unknown_placeholders[0]}")
     for placeholder in ALLOWED_PLACEHOLDER_RE.finditer(guarded):
         occurrence = ALLOWED_PLACEHOLDER_PATH_RE.match(guarded, placeholder.start())
-        if occurrence is None:
+        if occurrence is None and not (
+            junit_testcase_name
+            and _is_direct_serialized_pytest_public_placeholder(
+                value, start=placeholder.start(), end=placeholder.end()
+            )
+        ):
             raise ValueError(f"invalid public placeholder path: {placeholder.group(0)}")
     if xml_semantic:
-        absolute_path_found = bool(_xml_semantic_absolute_spans(value))
+        absolute_path_found = bool(
+            _xml_semantic_absolute_spans(value, junit_testcase_name=junit_testcase_name)
+        )
     else:
         scrubbed = ALLOWED_PLACEHOLDER_PATH_RE.sub("PLACEHOLDER", value)
         absolute_path_found = bool(
@@ -1138,9 +1286,14 @@ def assert_no_literal_absolute_path(
             raise ValueError("public evidence XML is invalid") from error
         if root.tag not in {"testsuite", "testsuites"}:
             raise ValueError("public evidence XML root is not JUnit")
-        semantic_strings = tuple(_xml_strings(root))
-        for value in semantic_strings:
-            _assert_no_literal_absolute_path_in_string(value, xml_semantic=True)
+        semantic_records = tuple(_xml_strings_with_context(root))
+        semantic_strings = tuple(value for value, _context in semantic_records)
+        for value, junit_testcase_name in semantic_records:
+            _assert_no_literal_absolute_path_in_string(
+                value,
+                xml_semantic=True,
+                junit_testcase_name=junit_testcase_name,
+            )
     else:
         try:
             payload = json.loads(text)
