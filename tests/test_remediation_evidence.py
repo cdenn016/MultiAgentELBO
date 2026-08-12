@@ -467,6 +467,79 @@ def _write_adjudicators(
         destination.write_bytes(canonical_json_bytes(payload))
 
 
+@contextmanager
+def _review_validation_repo(
+    target: int = 2,
+) -> Iterator[tuple[Path, Path, str, str]]:
+    with _short_task_repo() as repo:
+        parent = _run('git', 'rev-parse', 'HEAD', cwd=repo)
+        candidate_dir = publish_evidence_bundle(_candidate_bundle(repo), repo_root=repo)
+        _run('git', 'add', '--', candidate_dir.relative_to(repo).as_posix(), cwd=repo)
+        _run('git', 'commit', '-qm', 'candidate evidence', cwd=repo)
+        tested = _run('git', 'rev-parse', 'HEAD', cwd=repo)
+        raw = _write_raw_suite_inputs(repo, head=tested, stage='closure')
+        context, _context_bytes, digest = build_review_context(
+            repo_root=repo,
+            tested_head=tested,
+            implementation_parent=parent,
+            raw_dir=raw,
+            write=True,
+        )
+        for relative in INITIAL_REVIEW_PATHS:
+            _write_review(
+                raw,
+                relative=relative,
+                context=context,
+                digest=digest,
+                tested=tested,
+                parent=parent,
+                specs=CLAIM_SPECS,
+                triggers=("criterion_disagreement",) if target >= 4 else (),
+            )
+        code_spec = (CLAIM_SPECS[0],)
+        if target >= 4:
+            for index, relative in enumerate(TARGET4_ADDITIONAL_REVIEW_PATHS):
+                _write_review(
+                    raw,
+                    relative=relative,
+                    context=context,
+                    digest=digest,
+                    tested=tested,
+                    parent=parent,
+                    specs=code_spec,
+                    triggers=("criterion_disagreement",),
+                    unresolved=target == 8,
+                    conflict=target == 8 and index == 0,
+                )
+        if target == 8:
+            for relative in TARGET8_ADDITIONAL_REVIEW_PATHS:
+                _write_review(
+                    raw,
+                    relative=relative,
+                    context=context,
+                    digest=digest,
+                    tested=tested,
+                    parent=parent,
+                    specs=code_spec,
+                )
+        _write_adjudicators(
+            raw,
+            digest=digest,
+            tested=tested,
+            parent=parent,
+            code_target=target,
+            code_triggers=("criterion_disagreement",) if target >= 4 else (),
+            code_support=target != 8,
+        )
+        assert validate_reviews(
+            repo_root=repo,
+            tested_head=tested,
+            implementation_parent=parent,
+            raw_dir=raw,
+        ) == target
+        yield repo, raw, tested, parent
+
+
 def _run_gate(gate: Path, repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [str(CPU_PYTHON), "-B", str(gate), *args],
@@ -2975,6 +3048,77 @@ def test_review_context_contract_is_closed() -> None:
         "claim_specs",
         "public_path_contracts",
     )
+
+
+@pytest.mark.parametrize(
+    ("target", "relative", "label"),
+    [
+        (2, INITIAL_REVIEW_PATHS[0], "initial review"),
+        (4, TARGET4_ADDITIONAL_REVIEW_PATHS[0], "target-4 review"),
+        (8, TARGET8_ADDITIONAL_REVIEW_PATHS[0], "target-8 review"),
+        (2, ADJUDICATOR_PATHS[0], "adjudicator"),
+    ],
+)
+def test_validate_reviews_rejects_noncanonical_raw_json_before_closure(
+    target: int, relative: str, label: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    with _review_validation_repo(target) as (repo, raw, tested, parent):
+        path = raw / relative
+        canonical = path.read_bytes()
+        payload = json.loads(canonical)
+        noncanonical = (
+            json.dumps(
+                dict(reversed(tuple(payload.items()))),
+                separators=(",", ":"),
+            )
+            + "\n"
+        ).encode("utf-8")
+        assert json.loads(noncanonical) == payload
+        assert canonical_json_bytes(payload) == canonical
+        assert noncanonical != canonical
+        path.write_bytes(noncanonical)
+
+        closure_dir = repo / f"verification-evidence/wave-0/{tested[:12]}"
+        assert not closure_dir.exists()
+        with pytest.raises(
+            ValueError, match=rf"{re.escape(label)} must be a canonical JSON object"
+        ):
+            validate_reviews(
+                repo_root=repo,
+                tested_head=tested,
+                implementation_parent=parent,
+                raw_dir=raw,
+            )
+        assert path.read_bytes() == noncanonical
+        assert not closure_dir.exists()
+
+        if label == "adjudicator":
+            path.write_bytes(canonical)
+            original_validate_reviews = wave0_evidence.validate_reviews
+
+            def validate_then_mutate(**kwargs: object) -> int:
+                validated_target = original_validate_reviews(**kwargs)
+                path.write_bytes(noncanonical)
+                return validated_target
+
+            monkeypatch.setattr(
+                wave0_evidence, "validate_reviews", validate_then_mutate
+            )
+            with pytest.raises(
+                ValueError,
+                match="raw review/adjudicator must be a canonical JSON object",
+            ):
+                prepare_evidence_bundle(
+                    repo_root=repo,
+                    wave="wave-0",
+                    evidence_stage="closure",
+                    tested_git_head=tested,
+                    implementation_parent_git_head=parent,
+                    raw_dir=raw,
+                    output_dir=closure_dir.relative_to(repo),
+                )
+            assert path.read_bytes() == noncanonical
+            assert not closure_dir.exists()
 
 
 def test_wave0_candidate_review_closure_and_gate_lifecycle() -> None:
