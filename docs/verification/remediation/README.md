@@ -61,6 +61,11 @@ that can disappear before evidence construction. A missing or changed CPU pin
 consumes that revision's attempt: preserve its raw diagnostics, publish nothing,
 and restart from a new clean parent rather than retrying the same destination.
 
+Fresh JUnit XML is the sole authority for test totals; record the observed counts
+from each current-revision report. Use fresh totals only; never compare them with totals from an earlier revision.
+Gate evidence on zero failures and errors and exact approved skip reasons, not on
+a stale expected test count.
+
 Wave 0 may close only the contract-completeness and historical-byte-pin
 checks. The 22 audit findings remain INCONCLUSIVE_PENDING_OWNER_WAVE until
 their assigned implementation waves provide domain-eligible closure evidence.
