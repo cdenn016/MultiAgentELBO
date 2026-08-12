@@ -128,12 +128,23 @@ ALLOWED_PLACEHOLDER_RE = re.compile(
     r"<(?:CPU_PYTHON|REPO_ROOT|USER_HOME|HOSTNAME|PID|ABS_PATH_\d{4})>"
 )
 UNKNOWN_PLACEHOLDER_RE = re.compile(r"<[A-Z][A-Z0-9_]*>")
+ALLOWED_PLACEHOLDER_PATH_RE = re.compile(
+    r"(?:<(?:REPO_ROOT|USER_HOME)>"
+    r"(?:/(?!\.{1,2}(?:/|:|$))[A-Za-z0-9_.@%+=,~-]+)*(?::[0-9]+)?"
+    r"|<(?:CPU_PYTHON|HOSTNAME|PID|ABS_PATH_\d{4})>)"
+)
 WINDOWS_ABSOLUTE_RE = re.compile(
     r"(?i)(?:\\\\\?\\[A-Z]:\\|\\\\[^\\/\s\"'<>;]+\\[^\\/\s\"'<>;]+\\|[A-Z]:[\\/])[^\s\"'<>;]*"
 )
 POSIX_ABSOLUTE_RE = re.compile(r"(?<![A-Za-z0-9_.><\-])/(?![/\s\"'<>;])[^\s\"'<>;]*")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 FULL_SHA_RE = re.compile(r"[0-9a-f]{40}")
+
+
+XML_SEMANTIC_POSIX_ABSOLUTE_RE = re.compile(
+    r"(?<![A-Za-z0-9_./\-])/(?![/\s\x22\x27<>;])[^\s\x22\x27<>;]*"
+)
+EMBEDDED_XML_CLOSING_TAG_RE = re.compile(r"</[A-Za-z_:][A-Za-z0-9_.:\-]*\s*>")
 
 
 @dataclass(frozen=True, slots=True)
@@ -801,6 +812,27 @@ def privacy_transform_bytes(
     }
 
 
+def _assert_no_literal_absolute_path_in_string(
+    value: str, *, xml_semantic: bool
+) -> None:
+    unknown_placeholders = [
+        item
+        for item in UNKNOWN_PLACEHOLDER_RE.findall(value)
+        if ALLOWED_PLACEHOLDER_RE.fullmatch(item) is None
+    ]
+    if unknown_placeholders:
+        raise ValueError(f"unknown public placeholder: {unknown_placeholders[0]}")
+    if xml_semantic:
+        scrubbed = ALLOWED_PLACEHOLDER_PATH_RE.sub("PLACEHOLDER", value)
+        scrubbed = EMBEDDED_XML_CLOSING_TAG_RE.sub("XML_CLOSING_TAG", scrubbed)
+        posix_pattern = XML_SEMANTIC_POSIX_ABSOLUTE_RE
+    else:
+        scrubbed = ALLOWED_PLACEHOLDER_RE.sub("PLACEHOLDER", value)
+        posix_pattern = POSIX_ABSOLUTE_RE
+    if WINDOWS_ABSOLUTE_RE.search(scrubbed) or posix_pattern.search(scrubbed):
+        raise ValueError("literal absolute path remains in public evidence")
+
+
 def assert_no_literal_absolute_path(
     data: bytes,
     *,
@@ -810,25 +842,34 @@ def assert_no_literal_absolute_path(
         text = data.decode("utf-8")
     except UnicodeDecodeError as error:
         raise ValueError("public evidence is not UTF-8") from error
-    unknown_placeholders = [
-        item
-        for item in UNKNOWN_PLACEHOLDER_RE.findall(text)
-        if ALLOWED_PLACEHOLDER_RE.fullmatch(item) is None
-    ]
-    if unknown_placeholders:
-        raise ValueError(f"unknown public placeholder: {unknown_placeholders[0]}")
-    scrubbed = ALLOWED_PLACEHOLDER_RE.sub("PLACEHOLDER", text)
-    if WINDOWS_ABSOLUTE_RE.search(scrubbed) or POSIX_ABSOLUTE_RE.search(scrubbed):
-        raise ValueError("literal absolute path remains in public evidence")
+    semantic_strings: tuple[str, ...] | None = None
+    if text.lstrip().startswith("<"):
+        try:
+            parser = ET.XMLParser(
+                target=ET.TreeBuilder(insert_comments=True, insert_pis=True)
+            )
+            root = ET.fromstring(data, parser=parser)
+        except ET.ParseError as error:
+            raise ValueError("public evidence XML is invalid") from error
+        if root.tag not in {"testsuite", "testsuites"}:
+            raise ValueError("public evidence XML root is not JUnit")
+        semantic_strings = tuple(_xml_strings(root))
+        for value in semantic_strings:
+            _assert_no_literal_absolute_path_in_string(value, xml_semantic=True)
+    else:
+        _assert_no_literal_absolute_path_in_string(text, xml_semantic=False)
     if privacy_context is not None:
         values = _privacy_values(privacy_context)
+        private_text = (
+            "\n".join(semantic_strings) if semantic_strings is not None else text
+        )
         for private in (
             values["repo_root"],
             values["user_home"],
             values["cpu_python"],
             values["hostname"],
         ):
-            if str(private) and str(private).casefold() in text.casefold():
+            if str(private) and str(private).casefold() in private_text.casefold():
                 raise ValueError("private token remains in public evidence")
 
 
