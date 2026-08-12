@@ -1,0 +1,202 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+  "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+  "assumptions": [
+    {
+      "id": "a-fixed-law",
+      "kind": "DECLARED_ASSUMPTION",
+      "statement": "Every exact ELBO uses a normalized law fixed independently of the contemporaneous recognition law."
+    },
+    {
+      "id": "a-fast-slow",
+      "kind": "MODELING_POSTULATE",
+      "statement": "q is fast and s is slow in the intended operating regime."
+    },
+    {
+      "id": "a-positive",
+      "kind": "DECLARED_ASSUMPTION",
+      "statement": "All displayed KL laws share domination and positive support where required."
+    },
+    {
+      "id": "a-continuum",
+      "kind": "DECLARED_ASSUMPTION",
+      "statement": "Every continuum claim fixes a mesh family, topology, base measure, boundary data, and gauge treatment."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-recognition",
+      "kind": "PRIMARY_SOURCE",
+      "supports": true,
+      "scope": "Recognition-density terminology, fast/slow trace, and typed model section.",
+      "side_conditions": ["Terminology and project typing only; no adiabatic theorem."],
+      "artifact_path": "evidence/recognition-timescale-trace.md",
+      "artifact_sha256": "9234ec2ee3211b4998afcf2895fe4e4616201d87e4329ad4838f291aa9e62736"
+    },
+    {
+      "id": "ev-peer",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Transported peer typing and exact lagged source-label KL identity.",
+      "side_conditions": ["Finite nonempty source set, fixed positive source priors, and common domination."],
+      "artifact_path": "evidence/transported-peer-derivations.md",
+      "artifact_sha256": "0475c48244f7ee0703df8831dab015b5f02afe02587ffd38ab8ea8c86946d68f"
+    },
+    {
+      "id": "ev-fast-slow",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Exact profiling identity and finite-temperature distinction.",
+      "side_conditions": ["Normalized model and admitted posterior; dynamical reduction excluded."],
+      "artifact_path": "evidence/fast-slow-effective-action.md",
+      "artifact_sha256": "ad4ab0364af7708e889d7ed29a1017e07882eda3209ea9260b6b88b6eb3e3353"
+    },
+    {
+      "id": "ev-groups",
+      "kind": "APPLICABLE_THEOREM",
+      "supports": true,
+      "scope": "Compact subgroup reduction and full-GL obstruction/repair requirements.",
+      "side_conditions": ["Finite-dimensional real representation and compactness for Haar averaging."],
+      "artifact_path": "evidence/compact-and-gl-group-program.md",
+      "artifact_sha256": "cca54158c8266ca15423b6fcb4bcee384227b7dbde53c0a9a78580b1497dd023"
+    },
+    {
+      "id": "ev-reconstruction",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Independent reconstruction of strongest partial results.",
+      "side_conditions": ["PIFB2 action is not a premise."],
+      "artifact_path": "evidence/independent-reconstruction.md",
+      "artifact_sha256": "80a6607ca69295e0bd73ef7f1d4779e53d393aa8590aa057d30909eb14d9f720"
+    },
+    {
+      "id": "ev-oracle",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Oracle erasure separating derivation from PIFB2 intuition.",
+      "side_conditions": ["MAgent and PIFB2 removed from derivational premises."],
+      "artifact_path": "evidence/oracle-erasure.md",
+      "artifact_sha256": "d661b71896efe7760c813408ac772e8f11ba653c54af68b6ba609b2c500e68ea"
+    },
+    {
+      "id": "ev-source",
+      "kind": "PRIMARY_SOURCE",
+      "supports": true,
+      "scope": "Revision-bound live manuscript status and typing map.",
+      "side_conditions": ["Repository revision 24c02aa29cd76589a52e54c56e4247f0560f7e87."],
+      "artifact_path": "evidence/source-map.md",
+      "artifact_sha256": "d9defefb73f329307d62e35852ceedc3bac52eac9d060b289b59de9364088426"
+    }
+  ],
+  "claims": [
+    {
+      "id": "target",
+      "statement": "For every fixed finite number N of section-valued agents over a finite lattice or a compact contextual base with a refining lattice family, construct an ELBO-founded PIFB2 theory in which fast belief sections q_i are recognition densities, slow model sections s_i are typed parameter-recognition laws or deterministic parameters, and transported peer interactions use KL(q_i||(Omega_ij)_#q_j); distinguish exact time-lagged conditional, configuration-law, and emergent empirical-measure realizations; begin with arbitrary compact closed subgroups of GL(K,R), and state the additional obligations for a full GL(K,R) extension and for deterministic or process-law continuum limits.",
+      "quantifiers": "For every fixed finite N >= 1; lattice refinement h->0 is separate from any later N->infinity limit.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": ["a-fixed-law", "a-fast-slow", "a-positive", "a-continuum"],
+      "evidence_ids": ["ev-recognition", "ev-peer", "ev-fast-slow", "ev-groups", "ev-source"],
+      "bridge_premise_ids": [],
+      "falsifier": "Closure requires the simultaneous-peer emergence, adiabatic, residual, continuum, and full-GL obligations."
+    },
+    {
+      "id": "recognition-typing",
+      "statement": "q is correctly typed as a fast recognition density or approximate posterior; a law-valued s is a slow parameter-recognition or model-belief section rather than the generative kernel itself.",
+      "quantifiers": "The stated PIFB2 operating regime and the cited Friston variational formulations.",
+      "kind": "OPERATIONAL_IDENTIFICATION",
+      "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["a-fast-slow"],
+      "evidence_ids": ["ev-recognition", "ev-source"],
+      "bridge_premise_ids": [],
+      "falsifier": "A primary source or live definition contradicts this terminology or timescale status."
+    },
+    {
+      "id": "lagged-peer-identity",
+      "statement": "The lagged source-label construction yields categorical KL plus weighted transported peer KL exactly.",
+      "quantifiers": "Every finite nonempty source set with positive normalized rows and dominated transported state laws.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["a-fixed-law", "a-positive"],
+      "evidence_ids": ["ev-peer", "ev-reconstruction"],
+      "bridge_premise_ids": [],
+      "falsifier": "An admitted positive finite example violates the direct KL expansion."
+    },
+    {
+      "id": "profiled-slow-action",
+      "statement": "Minimizing the exact state VFE over an unrestricted fast recognition law yields negative log slow-conditional evidence; restricted families retain the posterior-KL gap.",
+      "quantifiers": "Every normalized model with positive finite conditional evidence and admitted posterior.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["a-fixed-law"],
+      "evidence_ids": ["ev-fast-slow", "ev-reconstruction"],
+      "bridge_premise_ids": [],
+      "falsifier": "A normalized model violates the posterior KL identity."
+    },
+    {
+      "id": "compact-subgroups",
+      "statement": "Every compact linear subgroup of GL(K,R) preserves some positive inner product and is conjugate into O(K).",
+      "quantifiers": "Every finite-dimensional real compact linear group.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-groups"],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit a compact linear subgroup for which Haar averaging fails to produce a positive invariant inner product."
+    },
+    {
+      "id": "simultaneous-peer-emergence",
+      "statement": "The same-time reciprocal transported peer interaction is derived noncircularly from an independently specified microscopic law.",
+      "quantifiers": "The intended finite-N reciprocal agent system.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": ["a-fixed-law", "a-positive"],
+      "evidence_ids": ["ev-peer", "ev-oracle"],
+      "bridge_premise_ids": [],
+      "falsifier": "A fixed-law construction or empirical-measure LDP verifies it; contemporaneous Q-dependence or circular Gibbs insertion defeats it."
+    },
+    {
+      "id": "adiabatic-reduction",
+      "statement": "The intended fast q and slow s dynamics admit a valid adiabatic elimination with the stated effective slow action.",
+      "quantifiers": "The intended coupled fast-slow flow over its admitted parameter regime.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": ["a-fast-slow"],
+      "evidence_ids": ["ev-fast-slow"],
+      "bridge_premise_ids": [],
+      "falsifier": "Loss of uniqueness, attraction, normal hyperbolicity, or uniform scale separation defeats it."
+    },
+    {
+      "id": "fixed-n-continuum",
+      "statement": "For fixed finite N, the selected compact-group lattice actions converge to the intended continuum section action.",
+      "quantifiers": "The declared refining lattice family and continuum topology.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": ["a-continuum"],
+      "evidence_ids": ["ev-groups", "ev-source"],
+      "bridge_premise_ids": [],
+      "falsifier": "Failure of equicoercivity, liminf, recovery, residual convergence, or gauge compactness defeats it."
+    },
+    {
+      "id": "full-gl-extension",
+      "statement": "A normalized coercive full-GL(K) theory with physical SPD/nonmetricity modes and gauge-invariant complexity observables exists for the intended model.",
+      "quantifiers": "The intended full noncompact gauge extension.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": ["a-continuum"],
+      "evidence_ids": ["ev-groups"],
+      "bridge_premise_ids": [],
+      "falsifier": "Infinite gauge volume, metric degeneration, or representative-dependent observables defeat it."
+    }
+  ]
+}

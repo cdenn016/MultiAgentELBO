@@ -1,0 +1,307 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+  "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+  "assumptions": [
+    {
+      "id": "a-fixed-joint",
+      "kind": "DECLARED_ASSUMPTION",
+      "statement": "The normalized microscopic law and coarse map are fixed independently of the recognition law."
+    },
+    {
+      "id": "a-disintegration",
+      "kind": "DECLARED_ASSUMPTION",
+      "statement": "The admitted spaces and maps support the regular conditional probabilities used by KL disintegration."
+    },
+    {
+      "id": "a-section-typing",
+      "kind": "MODELING_POSTULATE",
+      "statement": "The retained coarse variables are sampled values of the finite agents' belief, model, support, frame, and link sections."
+    },
+    {
+      "id": "a-continuum",
+      "kind": "DECLARED_ASSUMPTION",
+      "statement": "Any continuum claim uses a declared refining mesh, base measure, interpolation topology, boundary conditions, and gauge treatment."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-exact-contraction",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Exact finite-lattice KL contraction and density-action identity.",
+      "side_conditions": [
+        "Standard-Borel disintegration",
+        "Fixed Q-independent microscopic law and coarse map",
+        "Positive finite evidence"
+      ],
+      "artifact_path": "evidence/exact-contraction-proof.md",
+      "artifact_sha256": "d861cdc7a94bb25c729442926dc202f4c6a7dbaaa4e3737a6982fe40741cf33d"
+    },
+    {
+      "id": "ev-sector-map",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Typed classification of PIFB2 sectors after exact contraction.",
+      "side_conditions": [
+        "Fixed finite N",
+        "Base refinement rather than population limit"
+      ],
+      "artifact_path": "evidence/pifb2-sector-map.md",
+      "artifact_sha256": "4dfe090790ed32be902bce61c593d5e1c8d0ad5a68d1e268e745bc8aa16982ca"
+    },
+    {
+      "id": "ev-asymptotics",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Fisher-gradient and compact Wilson-plaquette scaling calculations.",
+      "side_conditions": [
+        "Regular dominated statistical family",
+        "Uniform mesh and smooth link consistency",
+        "Compact unitary gauge representation for Wilson sector"
+      ],
+      "artifact_path": "evidence/lattice-continuum-asymptotics.md",
+      "artifact_sha256": "d1c09673ae44ccdfa21caed991dc04171742b340c9ffcd2845df43cb41dbfefc"
+    },
+    {
+      "id": "ev-counterexamples",
+      "kind": "COUNTEREXAMPLE",
+      "supports": false,
+      "scope": "Counterexamples to generic locality, live-peer fixed-joint exactness, undressed GL positivity, and action-to-process inference.",
+      "side_conditions": [
+        "Claims are refuted only at their stated universal scope"
+      ],
+      "artifact_path": "evidence/adversarial-counterexamples.md",
+      "artifact_sha256": "94e1ce57fca9af61fa0e196106c103ca4a85121f6898e587c61bd56a5fd0ceda"
+    },
+    {
+      "id": "ev-reconstruction",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Independent reconstruction of the strongest partial theorem and its boundary.",
+      "side_conditions": [
+        "No use of PIFB2 action as a microscopic premise"
+      ],
+      "artifact_path": "evidence/independent-reconstruction.md",
+      "artifact_sha256": "d2c4978950c4a677ecd4096fc043eab0b69c9058822183de38e7d6ed61feee35"
+    },
+    {
+      "id": "ev-oracle-erasure",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Oracle-erasure test separating ELBO derivation from PIFB operator selection.",
+      "side_conditions": [
+        "PIFB2 and MAgent removed from the premise"
+      ],
+      "artifact_path": "evidence/oracle-erasure.md",
+      "artifact_sha256": "b8d153bfae959225d4a58e8b6f07244b837d69ce8685ae36535d907ab1585918"
+    },
+    {
+      "id": "ev-source-map",
+      "kind": "APPLICABLE_THEOREM",
+      "supports": true,
+      "scope": "Revision-bound map to the live exact coarse-action and interaction-projection results.",
+      "side_conditions": [
+        "Repository revision 24c02aa29cd76589a52e54c56e4247f0560f7e87",
+        "Research manuscript paths inspected on 2026-08-12"
+      ],
+      "artifact_path": "evidence/source-theorem-map.md",
+      "artifact_sha256": "97b2100a07c7921aaa924dd572e792971505d12a78673d7c636afe9436a4f8f3"
+    }
+  ],
+  "claims": [
+    {
+      "id": "target",
+      "statement": "For an arbitrary fixed finite number N of section-valued agents over either a finite oriented lattice or a compact contextual base with a refining lattice family, determine sufficient hypotheses under which an independently specified normalized microscopic joint law and its exact ELBO induce, by exact contraction to declared coarse section variables followed by a controlled local truncation, a PIFB2-type effective action; classify every self, peer, observation, base-gradient, connection, curvature, entropy, normalization, and correction sector as exact, conditional, truncated, or open, and determine what is required for a continuum limit.",
+      "quantifiers": "For every fixed finite N >= 1 and every admitted finite lattice, seek an existential construction under explicit hypotheses; for a continuum base, require a declared refining lattice family and state separately whether deterministic action convergence and process-law ELBO convergence hold.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "a-fixed-joint",
+        "a-disintegration",
+        "a-section-typing",
+        "a-continuum"
+      ],
+      "evidence_ids": [
+        "ev-exact-contraction",
+        "ev-sector-map",
+        "ev-asymptotics",
+        "ev-counterexamples",
+        "ev-source-map"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "A complete release would require a specified microscopic family, an exact or controlled PIFB projection, and the requested continuum convergence proof; any failed normalization, residual, or compactness premise defeats it."
+    },
+    {
+      "id": "exact-coarse-action",
+      "statement": "A fixed normalized microscopic posterior and fixed measurable coarse map induce an exact finite-lattice coarse VFE and a coarse Radon-Nikodym density action.",
+      "quantifiers": "Every fixed finite N and admitted finite lattice under the declared disintegration and normalization hypotheses.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [
+        "a-fixed-joint",
+        "a-disintegration"
+      ],
+      "evidence_ids": [
+        "ev-exact-contraction",
+        "ev-source-map"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit recognition dependence, failure of disintegration, or a coarse law for which the KL chain rule identity fails."
+    },
+    {
+      "id": "density-elbo-ledger",
+      "statement": "The exact coarse ELBO equals expected density action plus recognition entropy, partition normalization, evidence normalization, and the conditional-KL correction before minimization.",
+      "quantifiers": "Every admitted coarse law with the displayed Radon-Nikodym derivatives and finite terms.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [
+        "a-fixed-joint",
+        "a-disintegration"
+      ],
+      "evidence_ids": [
+        "ev-exact-contraction"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Produce a normalized dominated example violating the Radon-Nikodym KL expansion."
+    },
+    {
+      "id": "fixed-source-attention",
+      "statement": "An explicit fixed source-label latent variable yields categorical attention KL, row entropy, softmax minimizer, and correlation corrections exactly.",
+      "quantifiers": "Every finite nonempty source set with positive fixed priors and integrable sample-state energies.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [
+        "a-fixed-joint"
+      ],
+      "evidence_ids": [
+        "ev-sector-map",
+        "ev-source-map"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Show an admitted fixed-label model whose categorical KL fails to expand into the stated energy and entropy terms."
+    },
+    {
+      "id": "live-peer-fixed-joint",
+      "statement": "A nonzero live-peer KL between current recognition marginals is generically representable as an ordinary fixed-joint state-level ELBO on an open product-recognition family.",
+      "quantifiers": "Every positive fixed two-agent binary joint and an open set of Bernoulli product recognition laws.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+      "state": "REFUTED",
+      "assumption_ids": [
+        "a-fixed-joint"
+      ],
+      "evidence_ids": [
+        "ev-counterexamples"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "The derivative counterexample is falsified by a Q-independent positive joint reproducing the live-peer KL on an open Bernoulli parameter set."
+    },
+    {
+      "id": "fisher-gradient",
+      "statement": "Same-agent neighboring-base KL terms with the correct link consistency and h scaling converge on smooth sequences to a Fisher-covariant Dirichlet density.",
+      "quantifiers": "Every fixed finite N, regular dominated statistical family on a compact regular stratum, and sufficiently fine uniformly regular mesh.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [
+        "a-section-typing",
+        "a-continuum"
+      ],
+      "evidence_ids": [
+        "ev-asymptotics"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "A regular family or smooth link-consistent sequence violates the second-order Fisher expansion or its h scaling."
+    },
+    {
+      "id": "compact-curvature",
+      "statement": "Compact-group Wilson plaquette terms with h^(d-4) weights converge on smooth sampled connections to the quadratic curvature density.",
+      "quantifiers": "Every smooth compact-group connection in a finite-dimensional unitary representation on a uniformly refining mesh.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [
+        "a-continuum"
+      ],
+      "evidence_ids": [
+        "ev-asymptotics"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "A smooth compact connection and consistent plaquette sampling violate the small-holonomy trace expansion."
+    },
+    {
+      "id": "generic-local-closure",
+      "statement": "Exact contraction generically closes on only the local pairwise PIFB2 operator sectors with zero residual.",
+      "quantifiers": "All normalized finite microscopic laws and all admitted coarse maps.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+      "state": "REFUTED",
+      "assumption_ids": [
+        "a-fixed-joint"
+      ],
+      "evidence_ids": [
+        "ev-counterexamples"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Refute the Gaussian or hidden-spin generated nonlocal/higher-body interaction examples."
+    },
+    {
+      "id": "pifb-controlled-projection",
+      "statement": "For the current intended PIFB2/MAgent microscopic family, the exact coarse action has a PIFB2 retained projection whose residual vanishes uniformly on bounded-energy sublevels as the base lattice is refined.",
+      "quantifiers": "Every fixed finite N and the intended refining lattice family after the microscopic family and projection norm are fixed.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "a-section-typing",
+        "a-continuum"
+      ],
+      "evidence_ids": [
+        "ev-sector-map",
+        "ev-counterexamples",
+        "ev-source-map"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "A nonvanishing generated operator or residual sequence refutes controlled closure; a uniform residual theorem would verify it."
+    },
+    {
+      "id": "deterministic-continuum",
+      "statement": "The retained PIFB2 lattice actions Gamma-converge to a gauge-covariant continuum section action for fixed finite N.",
+      "quantifiers": "The intended refining mesh family, section topology, boundary data, and gauge quotient after all are explicitly fixed.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "a-continuum"
+      ],
+      "evidence_ids": [
+        "ev-asymptotics",
+        "ev-counterexamples"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Failure of equicoercivity, liminf, recovery, topology control, or residual convergence defeats the claim."
+    },
+    {
+      "id": "process-elbo-continuum",
+      "statement": "The exact coarse probability-law ELBOs converge to a continuum process-law ELBO on a section space.",
+      "quantifiers": "The intended refining family with a common Polish embedding and normalized reference/process laws.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "a-continuum"
+      ],
+      "evidence_ids": [
+        "ev-counterexamples",
+        "ev-sector-map"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Failure of tightness, relative-entropy liminf/recovery, projective consistency, or partition convergence defeats the claim."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+  "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+  "checkpoint": "release",
+  "target_claim": "target",
+  "terminal_status": "INCONCLUSIVE",
+  "certificate_claim": null,
+  "strongest_result": "Exact finite-lattice KL contraction yields a coarse probability-law VFE and Radon-Nikodym density action; PIFB2 is an exact retained projection plus residual, not generically a closed action.",
+  "unresolved_obligations": [
+    "Specify the intended normalized microscopic section-variable family independently of the PIFB2 ansatz.",
+    "Prove a controlled local PIFB2 truncation residual for the refining lattice family.",
+    "Prove deterministic Gamma convergence including dynamical gauge sectors.",
+    "Construct and prove convergence of the continuum process-law ELBO including entropy and normalizers."
+  ]
+}

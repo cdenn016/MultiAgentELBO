@@ -1,0 +1,56 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+  "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+  "attacks": [
+    {
+      "id": "attack-replica-normalization-scope",
+      "claim_ids": [
+        "target",
+        "normalized-witness",
+        "exact-elbo-expansion",
+        "mean-field-pifb2",
+        "gauge-invariance",
+        "finite-horizon-lagged-process",
+        "same-time-emergence"
+      ],
+      "attack": "The replica lift could be circular, could hide simultaneous graph normalization, could erase state-model dependence, or could be overextended to deployed temperatures and continuum weights.",
+      "response": "The current joint is a product of normalized history-conditioned factors independent of Q^{n+1}; the recognition restriction is explicit; mutual information is retained; and nonunit, simultaneous, and continuum claims are excluded with concrete mismatch identities.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "e2702c27fe0e1d826d925692ea98e45f1022d0ece788ca2be471f3dd9cc5b937"
+    }
+  ],
+  "independent_reconstruction": {
+    "claim_ids": [
+      "target",
+      "normalized-witness",
+      "exact-elbo-expansion",
+      "mean-field-pifb2",
+      "gauge-invariance",
+      "finite-horizon-lagged-process",
+      "same-time-emergence"
+    ],
+    "method": "Reconstructed normalization, all KL chain rules, mean-field specialization, and pushforward invariance from the frozen contract without consulting the PIFB2 target formula.",
+    "result": "PASS",
+    "conclusion": "The scoped theorem and its boundary were reproduced independently.",
+    "artifact_path": "evidence/independent-reconstruction.md",
+    "artifact_sha256": "810fc27c36f1e5ec5429255da473774afce3e8817f12d1acbf194219794a45da"
+  },
+  "oracle_erasure": {
+    "claim_ids": [
+      "target",
+      "normalized-witness",
+      "exact-elbo-expansion",
+      "mean-field-pifb2",
+      "gauge-invariance",
+      "finite-horizon-lagged-process",
+      "same-time-emergence"
+    ],
+    "method": "Removed the desired PIFB2 match and re-derived the generic replicated-latent probability theorem.",
+    "result": "PASS",
+    "conclusion": "The algebraic theorem survives; PIFB2 supplies representation choice and interpretation only.",
+    "artifact_path": "evidence/oracle-erasure.md",
+    "artifact_sha256": "2bd3f01ead9938f80cf2c6ac791f26c45b50aaa8b31ef5083918c07e9dd849e4"
+  }
+}

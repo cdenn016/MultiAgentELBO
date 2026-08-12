@@ -1,0 +1,56 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+  "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+  "target": {
+    "statement": "For every fixed finite agent-site index set and every admissible standard-Borel two-channel datum with normalized private priors, normalized likelihood kernels, normalized positive source rows, lagged transported source laws, and the stated absolute-continuity and finiteness conditions, prove that the tied-replica construction defines a normalized generative joint independent of the current recognition law and that its unit-temperature negative ELBO equals the finite lagged two-channel PIFB2 scalar plus the state-model mutual-information correction; prove exact equality with that PIFB2 scalar under state-model mean field and prove invariance under the declared simultaneous fiber-coordinate pushforwards.",
+    "kind": "MATHEMATICAL",
+    "quantifier_class": "UNIVERSAL",
+    "quantifiers": "For every nonempty finite agent-site set A, every finite source set in each active relational channel, and every collection of standard-Borel probability data satisfying the declared normalization, measurability, absolute-continuity, and finiteness hypotheses.",
+    "domains": [
+      "A nonempty finite agent-site set A; the number of agents N is fixed and finite.",
+      "Standard-Borel private state spaces K_a, model-parameter spaces M_a, and observation spaces O_a.",
+      "Finite nonempty source-label sets J_a^q and J_a^s for active relational channels; an empty peer set means the channel is omitted.",
+      "Probability laws p_a and r_a, lagged transported source laws u_ab^n and v_ab^n, source rows pi_a^q and pi_a^s, likelihood kernels L_a, and recognition laws zeta_a, beta_a, and gamma_a."
+    ],
+    "codomains": [
+      "A normalized finite product generative law conditional on the stored history H_n.",
+      "An extended-real negative ELBO on the tied-replica recognition family.",
+      "A finite two-channel PIFB2 scalar plus an explicit nonnegative correction."
+    ],
+    "regularity": "All kernels are measurable and normalized. Chosen fixed-observation likelihood-density representatives are positive on the admitted recognition support, and every displayed KL and log-likelihood expectation is finite unless the extended-value convention is invoked.",
+    "measures": [
+      "Declared probability priors p_a on K_a and r_a on M_a.",
+      "Declared observation reference measures nu_a with likelihood densities ell_a(o_a|k,m).",
+      "Counting measure over the finite agent-site set; no continuum cell weights occur in the exact theorem."
+    ],
+    "boundary_conditions": [
+      "No spatial boundary condition is needed for the finite probabilistic identity; any later lattice boundary sector is outside this theorem."
+    ],
+    "symmetries": [
+      "Simultaneous measurable bijective coordinate changes on state and model fibers, with priors, recognition laws, transported sources, transport maps, and likelihood densities pushed forward consistently.",
+      "Relabeling of the finite agent-site and source-label sets."
+    ],
+    "equivalence": "ELBO identities are literal for the chosen fixed-observation density representatives. Gauge statements compare simultaneously pushed-forward laws. The tied-replica lift is not declared ontologically identical to a one-latent-variable model.",
+    "premises": [
+      "The stored history H_n, including q^n, s^n, and the transports, is conditioned on and fixed during the n+1 recognition update.",
+      "The current recognition law does not enter the generative law except through fixed declared model parameters already contained in H_n.",
+      "The relational latent copies are distinct random variables whose recognition marginals are tied to the private marginals as a restriction of the variational family."
+    ],
+    "modeling_postulates": [
+      "The private and relational replicas represent distinct informational roles of the same displayed agent belief and generative-model state."
+    ],
+    "search_priors": [
+      "SEARCH_PRIOR_AFFIRMATIVE"
+    ],
+    "permitted_theorems": [
+      "Finite-product normalization and Tonelli's theorem for nonnegative kernels.",
+      "The KL chain rule for finite mixtures and product references.",
+      "Invariance of relative entropy under measurable bimeasurable bijections.",
+      "Finite-horizon iterated-kernel construction on standard-Borel spaces."
+    ],
+    "negative_certificate_kind": "COUNTEREXAMPLE",
+    "falsification_criterion": "An admissible datum for which the proposed joint is not normalized, the displayed Radon-Nikodym expansion fails, the mean-field correction does not vanish, or a declared simultaneous pushforward changes the scalar refutes the corresponding universal conjunct.",
+    "literature_policy": "Use the live Research PIFB2 manuscript and exact-ELBO crosswalk only for project typing and status. The mathematical certificate is the self-contained derivation in this run; no novelty or priority claim is made."
+  }
+}

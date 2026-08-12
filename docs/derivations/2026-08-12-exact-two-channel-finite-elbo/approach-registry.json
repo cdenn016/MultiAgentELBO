@@ -1,0 +1,95 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+  "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+  "mechanism_families": [
+    {
+      "family_id": "LAGGED-TIED-REPLICA",
+      "core_mechanism": "Distinct private and relational latent copies with tied recognition marginals and lagged transported source mixtures.",
+      "target_obligation_ids": [
+        "normalized-witness",
+        "exact-elbo-expansion",
+        "mean-field-pifb2"
+      ],
+      "representation": "Finite product of private state-model and two label-copy probability blocks.",
+      "invariant_or_obstruction": "Finite-product normalization and KL chain rules.",
+      "obligations": [
+        "normalized-witness",
+        "exact-elbo-expansion",
+        "mean-field-pifb2"
+      ],
+      "bridge": "Tie recognition marginals across distinct informational replicas.",
+      "failure_test": "Identify hidden recognition dependence, a missing entropy, or an unnormalized factor.",
+      "verified_results": [
+        "Exact unit-coefficient lagged PIFB2 lift plus mutual-information correction."
+      ],
+      "open_gaps": [
+        "Replica ontology is a modeling postulate; same-time emergence is not supplied."
+      ],
+      "novelty_fingerprint": "finite replicated inventory + lagged source mixtures + KL chain rules + tied marginal bridge + unit coefficients",
+      "disposition": "accepted"
+    },
+    {
+      "family_id": "SINGLE-LATENT-POE",
+      "core_mechanism": "One shared latent with a normalized product-of-experts prior.",
+      "target_obligation_ids": [
+        "exact-elbo-expansion"
+      ],
+      "representation": "One latent law with powered self and peer source densities.",
+      "invariant_or_obstruction": "An extra receiver entropy and source-dependent log partition remain.",
+      "obligations": [
+        "exact-elbo-expansion"
+      ],
+      "bridge": "Normalize the product of the private prior and peer experts.",
+      "failure_test": "Compare the normalized one-latent KL to the additive PIFB2 self-plus-peer expression.",
+      "verified_results": [
+        "Mismatch identity with entropy and partition corrections."
+      ],
+      "open_gaps": [
+        "Could define a different corrected effective theory, but not the unmodified target scalar."
+      ],
+      "novelty_fingerprint": "single latent + powered product + log-partition obstruction + shared-state bridge",
+      "disposition": "retired-for-exact-target"
+    },
+    {
+      "family_id": "SIMULTANEOUS-CONFIGURATION",
+      "core_mechanism": "Promote q and s fields to random configuration coordinates with a proper prior or transition law.",
+      "target_obligation_ids": [
+        "same-time-emergence"
+      ],
+      "representation": "Probability law on complete law-valued configurations.",
+      "invariant_or_obstruction": "Configuration entropy, partition normalization, and noncircular microscopic derivation.",
+      "obligations": [
+        "same-time-emergence"
+      ],
+      "bridge": "Derive the configuration law independently of the desired PIFB2 action.",
+      "failure_test": "The action is merely exponentiated to define its own prior or the partition function diverges.",
+      "verified_results": [],
+      "open_gaps": [
+        "No independent simultaneous configuration law is constructed here."
+      ],
+      "novelty_fingerprint": "law-valued configuration + Gibbs or transition kernel + entropy-normalizer obstruction + simultaneous bridge",
+      "disposition": "open"
+    },
+    {
+      "family_id": "EMPIRICAL-MEASURE-LDP",
+      "core_mechanism": "Interpret q and s as empirical measures of microscopic state and model messages.",
+      "target_obligation_ids": [
+        "same-time-emergence"
+      ],
+      "representation": "Interacting empirical measures with transported source labels.",
+      "invariant_or_obstruction": "A reciprocal weighted large-deviation rate and finite-sample corrections are required.",
+      "obligations": [
+        "same-time-emergence"
+      ],
+      "bridge": "Obtain transported KL as a rate function rather than inserting it as an energy.",
+      "failure_test": "Dependencies invalidate the proposed Sanov factorization or generate additional rate terms.",
+      "verified_results": [],
+      "open_gaps": [
+        "No scope-matched large-deviation theorem is supplied."
+      ],
+      "novelty_fingerprint": "microscopic samples + empirical measures + large deviations + reciprocal transport bridge",
+      "disposition": "open"
+    }
+  ]
+}

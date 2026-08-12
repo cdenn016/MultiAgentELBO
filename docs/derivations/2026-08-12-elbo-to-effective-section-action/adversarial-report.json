@@ -1,0 +1,68 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+  "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+  "attacks": [
+    {
+      "id": "attack-locality-circularity-continuum",
+      "claim_ids": [
+        "target",
+        "exact-coarse-action",
+        "density-elbo-ledger",
+        "fixed-source-attention",
+        "live-peer-fixed-joint",
+        "fisher-gradient",
+        "compact-curvature",
+        "generic-local-closure",
+        "pifb-controlled-projection",
+        "deterministic-continuum",
+        "process-elbo-continuum"
+      ],
+      "attack": "Exact contraction may be nonlocal and many-body; current belief sections may be recognition parameters rather than Q-independent coarse samples; live-peer KL is not generically a fixed-joint state ELBO; GL gauge volume may be nonnormalizable; and deterministic action convergence does not imply process-law ELBO convergence.",
+      "response": "The exact contraction theorem survives under fixed typed variables. The stronger PIFB2 closure and both continuum targets are withheld. Live-peer terms are reclassified, the full residual is retained, compact and noncompact gauge cases are separated, and entropy/normalization are explicit.",
+      "disposition": "SUSTAINED",
+      "artifact_path": "evidence/adversarial-counterexamples.md",
+      "artifact_sha256": "94e1ce57fca9af61fa0e196106c103ca4a85121f6898e587c61bd56a5fd0ceda"
+    }
+  ],
+  "independent_reconstruction": {
+    "claim_ids": [
+      "target",
+      "exact-coarse-action",
+      "density-elbo-ledger",
+      "fixed-source-attention",
+      "live-peer-fixed-joint",
+      "fisher-gradient",
+      "compact-curvature",
+      "generic-local-closure",
+      "pifb-controlled-projection",
+      "deterministic-continuum",
+      "process-elbo-continuum"
+    ],
+    "method": "Reconstructed from the normalized microscopic posterior, a fixed coarse map, KL disintegration, and interaction projection without assuming the PIFB2 action.",
+    "result": "PASS",
+    "conclusion": "The exact finite-lattice action theorem and the inconclusive boundary were reproduced independently.",
+    "artifact_path": "evidence/independent-reconstruction.md",
+    "artifact_sha256": "d2c4978950c4a677ecd4096fc043eab0b69c9058822183de38e7d6ed61feee35"
+  },
+  "oracle_erasure": {
+    "claim_ids": [
+      "target",
+      "exact-coarse-action",
+      "density-elbo-ledger",
+      "fixed-source-attention",
+      "live-peer-fixed-joint",
+      "fisher-gradient",
+      "compact-curvature",
+      "generic-local-closure",
+      "pifb-controlled-projection",
+      "deterministic-continuum",
+      "process-elbo-continuum"
+    ],
+    "method": "Removed PIFB2 and MAgent from the derivational premises and checked which results remain.",
+    "result": "PASS",
+    "conclusion": "Exact contraction remains; only the choice and interpretation of the retained local operator basis depend on PIFB2 and MAgent intuition.",
+    "artifact_path": "evidence/oracle-erasure.md",
+    "artifact_sha256": "b8d153bfae959225d4a58e8b6f07244b837d69ce8685ae36535d907ab1585918"
+  }
+}

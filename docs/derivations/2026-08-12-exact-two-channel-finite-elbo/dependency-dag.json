@@ -1,0 +1,27 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+  "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+  "edges": [
+    {
+      "from": "target",
+      "to": "normalized-witness"
+    },
+    {
+      "from": "target",
+      "to": "exact-elbo-expansion"
+    },
+    {
+      "from": "target",
+      "to": "mean-field-pifb2"
+    },
+    {
+      "from": "target",
+      "to": "gauge-invariance"
+    },
+    {
+      "from": "target",
+      "to": "finite-horizon-lagged-process"
+    }
+  ]
+}

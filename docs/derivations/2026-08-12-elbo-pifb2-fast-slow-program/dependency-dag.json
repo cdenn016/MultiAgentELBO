@@ -1,0 +1,15 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+  "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+  "edges": [
+    {"from": "target", "to": "recognition-typing"},
+    {"from": "target", "to": "lagged-peer-identity"},
+    {"from": "target", "to": "profiled-slow-action"},
+    {"from": "target", "to": "compact-subgroups"},
+    {"from": "target", "to": "simultaneous-peer-emergence"},
+    {"from": "target", "to": "adiabatic-reduction"},
+    {"from": "target", "to": "fixed-n-continuum"},
+    {"from": "target", "to": "full-gl-extension"}
+  ]
+}

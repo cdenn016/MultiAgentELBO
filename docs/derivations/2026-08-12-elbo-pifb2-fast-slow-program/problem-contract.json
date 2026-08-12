@@ -1,0 +1,51 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+  "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+  "target": {
+    "statement": "For every fixed finite number N of section-valued agents over a finite lattice or a compact contextual base with a refining lattice family, construct an ELBO-founded PIFB2 theory in which fast belief sections q_i are recognition densities, slow model sections s_i are typed parameter-recognition laws or deterministic parameters, and transported peer interactions use KL(q_i||(Omega_ij)_#q_j); distinguish exact time-lagged conditional, configuration-law, and emergent empirical-measure realizations; begin with arbitrary compact closed subgroups of GL(K,R), and state the additional obligations for a full GL(K,R) extension and for deterministic or process-law continuum limits.",
+    "kind": "MATHEMATICAL",
+    "quantifier_class": "MIXED",
+    "quantifiers": "For every fixed finite N >= 1; lattice refinement h->0 is separate from any later N->infinity limit.",
+    "domains": [
+      "Fixed finite agent set I={1,...,N}.",
+      "Finite oriented lattice or compact contextual base with a declared refining lattice family.",
+      "Fast recognition-density sections q_i and slow model/parameter sections s_i.",
+      "Closed compact subgroups G of GL(K,R), with full GL(K,R) treated as an extension."
+    ],
+    "codomains": [
+      "Exact finite-lattice ELBOs, effective actions, and conditional continuum functionals."
+    ],
+    "regularity": "Dominated positive laws for displayed KL terms; smooth or Sobolev sections and regular meshes for continuum statements.",
+    "measures": [
+      "Declared state, parameter, base, link, and configuration reference measures."
+    ],
+    "boundary_conditions": [
+      "Periodic or explicitly retained Dirichlet/Neumann boundary sectors."
+    ],
+    "symmetries": [
+      "Passive gauge covariance under the declared representation and relabeling covariance of finite agents."
+    ],
+    "equivalence": "Actions modulo additive observation-dependent constants and passive gauge equivalence; dynamical and equilibrium constructions are not identified without an invariant-measure theorem.",
+    "premises": [
+      "Microscopic laws used for exact ELBO claims are normalized and independent of the contemporaneous variational law.",
+      "The transported peer law is the pushforward (Omega_ij)_#q_j.",
+      "PIFB2 and MAgent are model-selection intuitions, not derivational premises."
+    ],
+    "modeling_postulates": [
+      "Beliefs q are fast relative to model variables s in the intended regime."
+    ],
+    "search_priors": [
+      "SEARCH_PRIOR_AFFIRMATIVE"
+    ],
+    "permitted_theorems": [
+      "KL chain rule for finite mixtures and standard-Borel disintegration.",
+      "Gibbs variational principle with proper reference and finite partition function.",
+      "Haar averaging for compact linear groups.",
+      "Singular-perturbation and Gamma-convergence results only after their hypotheses are mapped."
+    ],
+    "negative_certificate_kind": "COUNTEREXAMPLE",
+    "falsification_criterion": "A normalization, typing, contemporaneous-recognition dependence, stability, residual, compactness, or gauge-coercivity failure defeats the corresponding claim.",
+    "literature_policy": "Use current live manuscripts for project status and primary sources for external terminology and theorems."
+  }
+}

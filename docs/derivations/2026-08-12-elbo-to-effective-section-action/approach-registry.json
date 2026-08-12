@@ -1,0 +1,194 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+  "target_digest": "4648de08bcb0913989cc11fb30c2da525d83bd93ccfbee6148f85ffff82db69c",
+  "mechanism_families": [
+    {
+      "family_id": "EC-KL",
+      "core_mechanism": "KL disintegration and exact contraction",
+      "target_obligation_ids": [
+        "exact-coarse-action",
+        "density-elbo-ledger"
+      ],
+      "representation": "Fine and coarse probability laws",
+      "invariant_or_obstruction": "Conditional KL is nonnegative",
+      "obligations": [
+        "exact-coarse-action",
+        "density-elbo-ledger"
+      ],
+      "bridge": "Push the normalized posterior through a fixed coarse map",
+      "failure_test": "Failure of disintegration or Q-independent typing",
+      "verified_results": [
+        "Exact finite-lattice coarse VFE",
+        "Exact density action"
+      ],
+      "open_gaps": [
+        "Locality is not automatic"
+      ],
+      "novelty_fingerprint": "law-KL-disintegration-density",
+      "disposition": "accepted"
+    },
+    {
+      "family_id": "ORDER-PARAMETER",
+      "core_mechanism": "Constrained KL and Legendre duality",
+      "target_obligation_ids": [
+        "pifb-controlled-projection"
+      ],
+      "representation": "Finite-dimensional section order parameters",
+      "invariant_or_obstruction": "The rate function is convex in linear moment coordinates",
+      "obligations": [
+        "pifb-controlled-projection"
+      ],
+      "bridge": "Contract the exact coarse law under declared moments",
+      "failure_test": "A nonconvex target in fixed linear coordinates cannot equal the exact rate function",
+      "verified_results": [
+        "Exact deterministic order-parameter functional under constraint qualification"
+      ],
+      "open_gaps": [
+        "Sufficient order parameters may be as large as the full law"
+      ],
+      "novelty_fingerprint": "moment-logMGF-Legendre",
+      "disposition": "conditional"
+    },
+    {
+      "family_id": "FULL-INTERACTION",
+      "core_mechanism": "Hoeffding-Mobius interaction decomposition",
+      "target_obligation_ids": [
+        "generic-local-closure",
+        "pifb-controlled-projection"
+      ],
+      "representation": "Finite coarse action modulo constants",
+      "invariant_or_obstruction": "All generated hyperedges remain explicit",
+      "obligations": [
+        "generic-local-closure",
+        "pifb-controlled-projection"
+      ],
+      "bridge": "Project the exact interaction coordinates onto the PIFB basis",
+      "failure_test": "Hidden-variable elimination generates omitted higher-body terms",
+      "verified_results": [
+        "Exact retained action plus residual identity"
+      ],
+      "open_gaps": [
+        "No uniform residual theorem for intended MAgent family"
+      ],
+      "novelty_fingerprint": "interaction-projection-residual",
+      "disposition": "accepted-with-open-bound"
+    },
+    {
+      "family_id": "FIXED-SOURCE",
+      "core_mechanism": "Explicit categorical source-label variational factor",
+      "target_obligation_ids": [
+        "fixed-source-attention",
+        "live-peer-fixed-joint"
+      ],
+      "representation": "Joint receiver-source event law",
+      "invariant_or_obstruction": "Categorical KL and conditional total correlation",
+      "obligations": [
+        "fixed-source-attention",
+        "live-peer-fixed-joint"
+      ],
+      "bridge": "Derive attention before any live-peer substitution",
+      "failure_test": "Letting the fixed joint read current q_j is circular",
+      "verified_results": [
+        "Fixed-source attention exactness"
+      ],
+      "open_gaps": [
+        "Live recognition-peer interpretation remains conditional"
+      ],
+      "novelty_fingerprint": "label-KL-softmax-TC",
+      "disposition": "accepted"
+    },
+    {
+      "family_id": "FISHER-GRADIENT",
+      "core_mechanism": "Second-order KL expansion on base edges",
+      "target_obligation_ids": [
+        "fisher-gradient",
+        "deterministic-continuum"
+      ],
+      "representation": "Statistical-bundle sections and connection links",
+      "invariant_or_obstruction": "Fisher metric controls the local Hessian",
+      "obligations": [
+        "fisher-gradient",
+        "deterministic-continuum"
+      ],
+      "bridge": "Scale edge KL by h^(d-2)",
+      "failure_test": "Singular Fisher strata or O(1) link mismatch",
+      "verified_results": [
+        "Smooth-sequence covariant-gradient consistency"
+      ],
+      "open_gaps": [
+        "Full liminf and recovery remain open"
+      ],
+      "novelty_fingerprint": "edge-KL-Fisher-covariant-jet",
+      "disposition": "conditional"
+    },
+    {
+      "family_id": "COMPACT-CURVATURE",
+      "core_mechanism": "Wilson plaquette expansion",
+      "target_obligation_ids": [
+        "compact-curvature",
+        "deterministic-continuum"
+      ],
+      "representation": "Compact unitary lattice links",
+      "invariant_or_obstruction": "Conjugation-invariant positive trace action",
+      "obligations": [
+        "compact-curvature",
+        "deterministic-continuum"
+      ],
+      "bridge": "Scale plaquette action by h^(d-4)",
+      "failure_test": "Non-small holonomy or irregular mesh",
+      "verified_results": [
+        "Smooth-sequence curvature consistency"
+      ],
+      "open_gaps": [
+        "Dynamical gauge compactness remains open"
+      ],
+      "novelty_fingerprint": "plaquette-Wilson-curvature",
+      "disposition": "conditional"
+    },
+    {
+      "family_id": "GL-DRESSED",
+      "core_mechanism": "SPD/Fisher dressing of noncompact GL curvature",
+      "target_obligation_ids": [
+        "deterministic-continuum",
+        "process-elbo-continuum"
+      ],
+      "representation": "GL links plus a transforming SPD metric",
+      "invariant_or_obstruction": "Dressed norm is gauge invariant; raw Frobenius norm is not",
+      "obligations": [
+        "deterministic-continuum",
+        "process-elbo-continuum"
+      ],
+      "bridge": "Treat the SPD metric and gauge quotient as genuine variables",
+      "failure_test": "Metric degeneration or infinite gauge volume",
+      "verified_results": [
+        "Algebraic invariance repair"
+      ],
+      "open_gaps": [
+        "Coercivity, normalization, and continuum existence remain open"
+      ],
+      "novelty_fingerprint": "noncompact-GL-SPD-gauge-volume",
+      "disposition": "open"
+    },
+    {
+      "family_id": "PROCESS-LIMIT",
+      "core_mechanism": "Weak-law and relative-entropy variational convergence",
+      "target_obligation_ids": [
+        "process-elbo-continuum"
+      ],
+      "representation": "Probability laws on a common Polish section space",
+      "invariant_or_obstruction": "Tightness and entropy lower semicontinuity",
+      "obligations": [
+        "process-elbo-continuum"
+      ],
+      "bridge": "Reconstruct lattice laws on a common continuum space",
+      "failure_test": "Deterministic Gamma convergence without reference-law convergence",
+      "verified_results": [],
+      "open_gaps": [
+        "No current process-law construction for full PIFB2 system"
+      ],
+      "novelty_fingerprint": "law-tightness-entropy-partition",
+      "disposition": "open"
+    }
+  ]
+}

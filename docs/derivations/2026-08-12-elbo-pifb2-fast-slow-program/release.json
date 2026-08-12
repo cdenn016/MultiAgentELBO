@@ -1,0 +1,16 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+  "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+  "checkpoint": "release",
+  "target_claim": "target",
+  "terminal_status": "INCONCLUSIVE",
+  "certificate_claim": null,
+  "strongest_result": "Exact finite-N lagged transported-peer KL identity, exact fast-state profiling identity, and compact-subgroup reduction.",
+  "unresolved_obligations": [
+    "Same-time reciprocal peer emergence from an independently specified microscopic law.",
+    "Adiabatic fast/slow theorem and finite-temperature corrections.",
+    "Controlled PIFB residual and deterministic/process-law continuum limits.",
+    "Normalized coercive full-GL extension with invariant complexity observables."
+  ]
+}

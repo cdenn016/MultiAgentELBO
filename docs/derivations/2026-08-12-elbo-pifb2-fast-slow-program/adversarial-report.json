@@ -1,0 +1,62 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+  "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
+  "attacks": [
+    {
+      "id": "attack-circularity-equilibrium-gl",
+      "claim_ids": [
+        "target",
+        "recognition-typing",
+        "lagged-peer-identity",
+        "profiled-slow-action",
+        "compact-subgroups",
+        "simultaneous-peer-emergence",
+        "adiabatic-reduction",
+        "fixed-n-continuum",
+        "full-gl-extension"
+      ],
+      "attack": "Same-time live-peer laws can make the generative law depend on Q; a Gibbs lift can insert rather than derive the action; fast/slow labels do not prove adiabatic elimination; and noncompact GL has positivity and gauge-volume failures.",
+      "response": "Use the exact lagged conditional model first, retain the equilibrium/emergence and adiabatic claims as open, prove the compact-group theory first, and require SPD dressing plus quotient/coercivity for GL.",
+      "disposition": "SUSTAINED",
+      "artifact_path": "evidence/transported-peer-derivations.md",
+      "artifact_sha256": "0475c48244f7ee0703df8831dab015b5f02afe02587ffd38ab8ea8c86946d68f"
+    }
+  ],
+  "independent_reconstruction": {
+    "claim_ids": [
+      "target",
+      "recognition-typing",
+      "lagged-peer-identity",
+      "profiled-slow-action",
+      "compact-subgroups",
+      "simultaneous-peer-emergence",
+      "adiabatic-reduction",
+      "fixed-n-continuum",
+      "full-gl-extension"
+    ],
+    "method": "Rebuilt from KL algebra, posterior profiling, and Haar averaging without assuming PIFB2.",
+    "result": "PASS",
+    "conclusion": "The exact partial identities and open boundary were reproduced.",
+    "artifact_path": "evidence/independent-reconstruction.md",
+    "artifact_sha256": "80a6607ca69295e0bd73ef7f1d4779e53d393aa8590aa057d30909eb14d9f720"
+  },
+  "oracle_erasure": {
+    "claim_ids": [
+      "target",
+      "recognition-typing",
+      "lagged-peer-identity",
+      "profiled-slow-action",
+      "compact-subgroups",
+      "simultaneous-peer-emergence",
+      "adiabatic-reduction",
+      "fixed-n-continuum",
+      "full-gl-extension"
+    ],
+    "method": "Removed PIFB2 and MAgent from all derivational premises.",
+    "result": "PASS",
+    "conclusion": "Exact identities remain; only operator selection and interpretation depend on the prototypes.",
+    "artifact_path": "evidence/oracle-erasure.md",
+    "artifact_sha256": "d661b71896efe7760c813408ac772e8f11ba653c54af68b6ba609b2c500e68ea"
+  }
+}
