@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -113,6 +114,20 @@ def _run(*args: str, cwd: Path) -> str:
         capture_output=True,
         text=True,
     ).stdout.strip()
+
+
+def _run_direct_script(script: str, *args: str) -> subprocess.CompletedProcess[str]:
+    repo_root = Path(__file__).resolve().parents[1]
+    environment = os.environ.copy()
+    environment.pop("PYTHONPATH", None)
+    return subprocess.run(
+        [r"C:\Python314\python.exe", "-B", script, *args],
+        cwd=repo_root,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
 
 
 def _init_repo(path: Path) -> tuple[str, str]:
@@ -849,6 +864,76 @@ def test_publish_rejects_stale_current_bindings_before_any_write(
 
         assert not output.exists()
         assert _tree_snapshot(parent) == before
+
+
+@pytest.mark.parametrize(
+    ("script", "expected"),
+    [
+        ("tools/remediation_evidence.py", "resolve-verification-gate"),
+        ("tools/build_wave0_evidence.py", "review-context-sha"),
+    ],
+)
+def test_direct_script_help_starts_without_pythonpath(
+    script: str, expected: str
+) -> None:
+    result = _run_direct_script(script, "--help")
+
+    assert result.returncode == 0, result.stderr
+    assert expected in result.stdout
+    assert result.stderr == ""
+
+
+def test_direct_script_build_parser_starts_without_pythonpath() -> None:
+    result = _run_direct_script("tools/build_wave0_evidence.py", "build", "--help")
+
+    assert result.returncode == 0, result.stderr
+    assert "--stage" in result.stdout
+    assert "--tested-head" in result.stdout
+    assert result.stderr == ""
+
+
+def test_direct_script_validate_reaches_lazy_wrapper_import(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _, tested = _init_repo(repo)
+    payload = _minimal_index(stage="candidate", tested=tested, parent=tested)
+    tested_input_policy = resolve_tested_input_policy(repo)
+    payload["tested_input_policy"] = tested_input_policy
+    payload["tested_input_inventory_sha256"] = sha256(
+        canonical_json_bytes(tested_input_policy["inputs"])
+    ).hexdigest()
+    index_path = tmp_path / "candidate-index.json"
+    index_path.write_bytes(canonical_json_bytes(payload))
+
+    result = _run_direct_script(
+        "tools/remediation_evidence.py",
+        "validate",
+        str(index_path),
+        "--cwd",
+        str(repo),
+    )
+
+    assert result.returncode == 2
+    assert result.stdout == ""
+    assert result.stderr.strip() == "error: candidate public path contract mismatch"
+
+
+def test_direct_script_resolves_installed_verification_gate() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    verification_root = Path.home() / ".codex/skills/verification"
+    expected = (verification_root / "scripts/verification_gate.py").resolve(strict=True)
+
+    result = _run_direct_script(
+        "tools/remediation_evidence.py",
+        "resolve-verification-gate",
+        "--snapshot",
+        str(repo_root / SNAPSHOT_PATH),
+        "--root",
+        str(verification_root),
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == str(expected)
+    assert result.stderr == ""
 
 
 def test_parsers_expose_only_the_frozen_commands() -> None:
