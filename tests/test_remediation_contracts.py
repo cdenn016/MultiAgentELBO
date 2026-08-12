@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -23,6 +24,12 @@ EXPECTED_OWNERS = {
     "AUD-21": "D", "AUD-22": "D",
 }
 
+EXPECTED_PROGRAM_DESIGN_REVISION = "c43a7c50675cf63b60f7b6cbea9664b638cd4c4e"
+EXPECTED_AUDIT_BASELINE_REVISION = "aedc6621a4e4f1c725a54f8b287aac425ef833d8"
+EXPECTED_AUDIT_IDS = tuple(EXPECTED_OWNERS)
+# This catches any literal item-value change, including the non-owner fields.
+EXPECTED_ITEMS_CANONICAL_SHA256 = "b2e2587cb8a656a8338fb6937428f895a1f9f28650eccb47f16b9806cb80884c"
+
 
 def _load_json(path: Path) -> object:
     with path.open(encoding="utf-8") as handle:
@@ -35,6 +42,13 @@ def test_audit_disposition_is_complete_closed_and_uniquely_owned():
         "schema_version", "program_design_revision", "audit_baseline_revision", "items"
     }
     assert payload["schema_version"] == "scientific-remediation-audit-disposition-v1"
+    assert payload["program_design_revision"] == EXPECTED_PROGRAM_DESIGN_REVISION
+    assert payload["audit_baseline_revision"] == EXPECTED_AUDIT_BASELINE_REVISION
+    assert tuple(item["audit_id"] for item in payload["items"]) == EXPECTED_AUDIT_IDS
+    canonical_items = json.dumps(
+        payload["items"], sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode("utf-8")
+    assert hashlib.sha256(canonical_items).hexdigest() == EXPECTED_ITEMS_CANONICAL_SHA256
     records = {item["audit_id"]: item for item in payload["items"]}
     assert set(records) == set(EXPECTED_OWNERS)
     assert len(records) == len(payload["items"]) == 22
