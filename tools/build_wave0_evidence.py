@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import socket
@@ -31,6 +32,7 @@ from tools.remediation_evidence import (
     capture_environment_record,
     parse_junit,
     privacy_transform_bytes,
+    resolve_verification_gate,
     publish_evidence_bundle,
     resolve_tested_input_policy,
     validate_evidence_index,
@@ -987,6 +989,7 @@ def _write_detached_historical(
     *,
     tested_head: str,
     implementation_parent: str,
+    create_if_absent: bool,
 ) -> tuple[bytes, Path]:
     detached = raw_dir / "detached/historical-verification.json"
     expected = _historical_verification_bytes(
@@ -1001,6 +1004,8 @@ def _write_detached_historical(
         if actual != expected:
             raise ValueError("existing detached historical verification bytes drifted")
         return actual, detached
+    if not create_if_absent:
+        raise ValueError("detached historical verification is missing")
     detached.parent.mkdir(parents=True, exist_ok=True)
     detached.write_bytes(expected)
     if detached.read_bytes() != expected:
@@ -1053,6 +1058,7 @@ def build_review_context(
         raw,
         tested_head=tested_head,
         implementation_parent=implementation_parent,
+        create_if_absent=write,
     )
     _validate_historical_verification(
         historical_data,
@@ -1553,6 +1559,22 @@ def _review_state(
                 VIEW_IDS_BY_TARGET[target]
             ):
                 raise ValueError("adjudicator target/view binding mismatch")
+            expected_triggers = sorted(
+                {
+                    trigger
+                    for view_id in VIEW_IDS_BY_TARGET[target]
+                    for score in reviews[view_id]["claim_scores"]
+                    if score["claim_id"] == claim_id
+                    for trigger in score["escalation_triggers"]
+                }
+            )
+            observed_triggers = list(
+                _validate_trigger_list(payload["escalation_triggers"])
+            )
+            if observed_triggers != expected_triggers:
+                raise ValueError(
+                    "adjudicator escalation triggers differ from selected reviews"
+                )
             if (
                 payload["evidence_ids"] != list(spec["evidence_ids"])
                 or "index.json" in payload["evidence_ids"]
@@ -1684,6 +1706,116 @@ def _public_review_records(
     return reviews, adjudicators
 
 
+def _validate_active_gate_binding(
+    *,
+    root: Path,
+    ledger: Path,
+    ledger_payload: Mapping[str, object],
+) -> str:
+    marker_path = root / ".verification/active.json"
+    marker_bytes = _require_regular_unlinked_file(
+        marker_path, label="verification activation marker"
+    )
+    marker = json.loads(marker_bytes)
+    if not isinstance(marker, dict) or set(marker) != {"ledger", "artifact_revision"}:
+        raise ValueError("activation marker fields mismatch")
+    expected_reference = ".verification/wave-0/final-ledger.json"
+    if marker["ledger"] != expected_reference:
+        raise ValueError("activation marker ledger path mismatch")
+    artifact_revision = ledger_payload["artifact_revision"]
+    if marker["artifact_revision"] != artifact_revision:
+        raise ValueError("activation marker artifact revision mismatch")
+    gate = resolve_verification_gate(
+        root / SNAPSHOT_PATH,
+        root=Path.home() / ".codex/skills/verification",
+    )
+    specification = importlib.util.spec_from_file_location(
+        "_wave0_pinned_verification_gate", gate
+    )
+    if (
+        specification is None
+        or specification.loader is None
+        or not hasattr(specification.loader, "exec_module")
+    ):
+        raise ValueError("cannot import pinned verification gate")
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    capture = getattr(module, "capture_artifact_revision", None)
+    if not callable(capture):
+        raise ValueError("pinned verification gate lacks artifact revision capture")
+    try:
+        live_revision = capture(root, excluded_paths=frozenset({ledger}))
+    except RuntimeError as error:
+        raise ValueError(f"cannot capture live artifact revision: {error}") from error
+    if live_revision != artifact_revision:
+        raise ValueError("live artifact changed after verification activation")
+    return str(artifact_revision)
+
+
+def _validate_ledger_projection(
+    ledger_payload: Mapping[str, object],
+    reviews: Mapping[str, Mapping[str, object]],
+) -> None:
+    claims = ledger_payload.get("claims")
+    if not isinstance(claims, list):
+        raise ValueError("projected ledger claims must be an array")
+    by_id = {str(claim.get("id")): claim for claim in claims if isinstance(claim, dict)}
+    if set(by_id) != {str(spec["id"]) for spec in CLAIM_SPECS}:
+        raise ValueError("projected ledger claim set mismatch")
+    for spec in CLAIM_SPECS:
+        claim_id = str(spec["id"])
+        claim = by_id[claim_id]
+        available = [
+            reviews[view_id]
+            for view_id in VIEW_IDS_BY_TARGET[8]
+            if view_id in reviews
+            and any(
+                score["claim_id"] == claim_id
+                for score in reviews[view_id]["claim_scores"]
+            )
+        ]
+        target = len(available)
+        if target not in (2, 4, 8):
+            raise ValueError("projected ledger claim lacks a complete review tier")
+        score_records = [
+            next(
+                score
+                for score in review["claim_scores"]
+                if score["claim_id"] == claim_id
+            )
+            for review in available
+        ]
+        criterion_keys = tuple(
+            key for key, _label in CLAIM_CRITERIA_BY_DOMAIN[str(spec["domain"])]
+        )
+        aggregate = compute_criterion_aggregates(
+            [score["criteria"] for score in score_records],
+            criterion_keys=criterion_keys,
+        )
+        expected_criteria = [
+            {"name": key, "score": aggregate[key]} for key in criterion_keys
+        ]
+        if claim.get("criteria") != expected_criteria:
+            raise ValueError("projected ledger criterion aggregate mismatch")
+        if claim.get("escalation_target") != target:
+            raise ValueError("projected ledger escalation target mismatch")
+        views = claim.get("views")
+        if not isinstance(views, dict):
+            raise ValueError("projected ledger views must be an object")
+        expected_scores = [
+            {
+                "view_id": review["view_id"],
+                "criteria": [
+                    {"name": key, "score": score["criteria"][key]}
+                    for key in criterion_keys
+                ],
+            }
+            for review, score in zip(available, score_records, strict=True)
+        ]
+        if views.get("scores") != expected_scores:
+            raise ValueError("projected ledger view-score projection mismatch")
+
+
 def populate_ledger(
     *,
     repo_root: Path | str,
@@ -1699,8 +1831,6 @@ def populate_ledger(
         raise ValueError(
             "ledger path must be exactly .verification/wave-0/final-ledger.json"
         )
-    if not (root / ".verification/active.json").is_file():
-        raise ValueError("verification gate is not active")
     ledger_bytes = _require_regular_unlinked_file(ledger, label="gate-created ledger")
     ledger_payload = json.loads(ledger_bytes)
     if not isinstance(ledger_payload, dict) or set(ledger_payload) != {
@@ -1725,6 +1855,11 @@ def populate_ledger(
         or "placeholder" in artifact_revision.casefold()
     ):
         raise ValueError("gate artifact revision is not concrete")
+    artifact_revision = _validate_active_gate_binding(
+        root=root,
+        ledger=ledger,
+        ledger_payload=ledger_payload,
+    )
     index_path = Path(closure_index_path)
     if not index_path.is_absolute():
         index_path = root / index_path
@@ -1735,6 +1870,11 @@ def populate_ledger(
     if canonical_json_bytes(index) != index_bytes:
         raise ValueError("closure evidence index is not canonical JSON")
     head = _git_head(root)
+    expected_index_path = (
+        root / f"verification-evidence/wave-0/{head[:12]}/index.json"
+    ).resolve(strict=True)
+    if index_path.resolve(strict=True) != expected_index_path:
+        raise ValueError("closure index path is not the exact evidence root index")
     validate_evidence_index(index, repo_root=root, actual_head=head)
     if index["evidence_stage"] != "closure" or index["tested_git_head"] != head:
         raise ValueError("populate-ledger requires exact-head closure evidence")
@@ -1748,6 +1888,33 @@ def populate_ledger(
     if len(matching_targets) != 1:
         raise ValueError("closure index does not select exactly one review tier")
     target = matching_targets[0]
+    raw_dir = (root / f".verification/raw/wave-0/{head[:12]}/closure").resolve(
+        strict=True
+    )
+    validated_target = validate_reviews(
+        repo_root=root,
+        tested_head=head,
+        implementation_parent=str(index["implementation_parent_git_head"]),
+        raw_dir=raw_dir,
+    )
+    if validated_target != target:
+        raise ValueError("validated review target differs from closure path tier")
+    reconstructed, _mappings, _environment, _plan, _context = _build_public_records(
+        repo_root=root,
+        raw_dir=raw_dir,
+        tested_head=head,
+        implementation_parent=str(index["implementation_parent_git_head"]),
+        stage="closure",
+        review_target=validated_target,
+    )
+    if set(reconstructed) != indexed_paths:
+        raise ValueError("reconstructed public evidence path set differs from index")
+    for relative, expected_bytes in reconstructed.items():
+        observed_bytes = _require_regular_unlinked_file(
+            closure_dir / relative, label="reconstructed public evidence"
+        )
+        if observed_bytes != expected_bytes:
+            raise ValueError(f"reconstructed public evidence byte mismatch: {relative}")
     reviews, adjudicators = _public_review_records(closure_dir, target)
     claims = []
     evidence_short = head[:12]
@@ -1896,6 +2063,7 @@ def populate_ledger(
     ):
         raise ValueError("Wave 0 ledger must not close AUD claims or use REFUTED")
     populated = {**ledger_payload, "claims": claims}
+    _validate_ledger_projection(populated, reviews)
     data = canonical_json_bytes(populated)
     temporary = ledger.with_name(f".{ledger.name}.populate.tmp")
     if temporary.exists():

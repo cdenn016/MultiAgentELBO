@@ -3,8 +3,11 @@ from __future__ import annotations
 import copy
 import json
 import re
+import shutil
 import subprocess
 import tempfile
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import FrozenInstanceError
 from hashlib import sha256
 from pathlib import Path, PurePosixPath
@@ -13,24 +16,41 @@ import pytest
 
 from tools.build_wave0_evidence import (
     ADJUDICATOR_PATHS,
+    CANDIDATE_PUBLIC_PATHS,
     CLOSURE_PUBLIC_PATHS_BY_TARGET,
     CLAIM_CRITERIA_BY_DOMAIN,
+    CLAIM_SPECS,
+    DEPENDENCY_INPUT_PATHS,
+    INITIAL_REVIEW_PATHS,
     REVIEW_CONTEXT_FIELDS,
     REVIEW_PATHS_BY_TARGET,
+    TARGET4_ADDITIONAL_REVIEW_PATHS,
+    TARGET8_ADDITIONAL_REVIEW_PATHS,
     VIEW_IDS_BY_TARGET,
+    _public_review_records,
+    _suite_argv,
+    _validate_ledger_projection,
+    build_review_context,
     compute_criterion_aggregates,
     create_parser as wave0_parser,
+    populate_ledger,
+    prepare_evidence_bundle,
     required_review_target,
+    review_target,
+    validate_reviews,
 )
 from tools.remediation_evidence import (
+    CPU_PYTHON,
     INDEX_ROOT_FIELDS,
     JUNIT_FIELDS,
     EXPECTED_VERIFICATION_ACTIVE_PATHS,
+    SNAPSHOT_PATH,
     PreparedEvidenceBundle,
     PreparedEvidenceFile,
     assert_no_literal_absolute_path,
     assert_public_semantics_equal,
     canonical_json_bytes,
+    capture_environment_record,
     create_parser as remediation_parser,
     parse_junit,
     privacy_transform_bytes,
@@ -38,6 +58,17 @@ from tools.remediation_evidence import (
     resolve_tested_input_policy,
     resolve_verification_gate,
     validate_evidence_index,
+)
+
+
+TASK4_TRACKED_PATHS = (
+    "docs/verification/remediation/verification-contract-v1.json",
+    "docs/verification/remediation/remediation-evidence-v1.schema.json",
+    "tools/remediation_evidence.py",
+    "tools/build_wave0_evidence.py",
+    "tests/test_remediation_evidence.py",
+    "tests/test_artifacts.py",
+    "tests/test_experiment_support.py",
 )
 
 
@@ -140,6 +171,311 @@ def _minimal_index(*, stage: str, tested: str, parent: str) -> dict[str, object]
         "files": [],
     }
     return payload
+
+
+@contextmanager
+def _short_task_repo() -> Iterator[Path]:
+    source = Path(__file__).resolve().parents[1]
+    with tempfile.TemporaryDirectory(prefix="w0t4-", dir=r"C:\tmp") as directory:
+        repo = Path(directory) / "r"
+        _run(
+            "git",
+            "clone",
+            "-q",
+            "--shared",
+            str(source),
+            str(repo),
+            cwd=Path(directory),
+        )
+        _run("git", "config", "user.name", "Evidence Test", cwd=repo)
+        _run("git", "config", "user.email", "evidence@example.invalid", cwd=repo)
+        for relative in TASK4_TRACKED_PATHS:
+            shutil.copy2(source / relative, repo / relative)
+        _run("git", "add", *TASK4_TRACKED_PATHS, cwd=repo)
+        staged = subprocess.run(
+            ["git", "diff", "--cached", "--quiet"],
+            cwd=repo,
+            check=False,
+        ).returncode
+        if staged:
+            _run("git", "commit", "-qm", "task 4 fixture revision", cwd=repo)
+        yield repo
+
+
+def _write_raw_suite_inputs(repo: Path, *, head: str, stage: str) -> Path:
+    raw = repo / f".verification/raw/wave-0/{head[:12]}/{stage}"
+    raw.mkdir(parents=True)
+    environment = capture_environment_record(
+        repo, dependency_input_paths=DEPENDENCY_INPUT_PATHS
+    )
+    for suite in ("targeted", "subsystem", "full"):
+        junit_path = raw / f"{suite}.raw.xml"
+        junit_path.write_text(
+            (
+                f'<testsuite name="{suite}" tests="1" failures="0" errors="0" '
+                f'skipped="0" time="0"><testcase classname="tests.fixture" '
+                f'name="test_{suite}" time="0"/></testsuite>'
+            ),
+            encoding="utf-8",
+        )
+        command = {
+            "schema_version": "remediation-command-record-v1",
+            "id": suite,
+            "argv": _suite_argv(raw.relative_to(repo), suite),
+            "cwd_rel": ".",
+            "interpreter": environment["interpreter"],
+            "env_allowlist": environment["environment_variables"],
+            "started_utc": "2026-08-11T00:00:00Z",
+            "ended_utc": "2026-08-11T00:00:01Z",
+            "exit_code": 0,
+            "junit": parse_junit(junit_path),
+        }
+        (raw / f"{suite}.command.json").write_bytes(canonical_json_bytes(command))
+    return raw
+
+
+def _candidate_bundle(repo: Path) -> PreparedEvidenceBundle:
+    head = _run("git", "rev-parse", "HEAD", cwd=repo)
+    raw = _write_raw_suite_inputs(repo, head=head, stage="candidate")
+    return prepare_evidence_bundle(
+        repo_root=repo,
+        wave="wave-0",
+        evidence_stage="candidate",
+        tested_git_head=head,
+        implementation_parent_git_head=head,
+        raw_dir=raw,
+        output_dir=f"docs/verification/evidence/wave-0/{head[:12]}",
+    )
+
+
+def _mutate_bundle_index(
+    bundle: PreparedEvidenceBundle, mutation: str
+) -> PreparedEvidenceBundle:
+    index_item = next(item for item in bundle.files if item.path.name == "index.json")
+    payload = json.loads(index_item.data)
+    if mutation == "selected_input":
+        payload["tested_input_policy"]["inputs"][0]["sha256"] = "f" * 64
+        payload["tested_input_inventory_sha256"] = sha256(
+            canonical_json_bytes(payload["tested_input_policy"]["inputs"])
+        ).hexdigest()
+    elif mutation == "dependency":
+        payload["dependency_inputs"][0]["sha256"] = "f" * 64
+    elif mutation == "plan":
+        payload["reviewed_plan_binding"]["sha256"] = "f" * 64
+    elif mutation == "snapshot":
+        payload["verification_contract_binding"]["sha256"] = "f" * 64
+    else:
+        raise AssertionError(f"unknown test mutation: {mutation}")
+    replacement = PreparedEvidenceFile(index_item.path, canonical_json_bytes(payload))
+    return PreparedEvidenceBundle(
+        bundle.output_dir,
+        tuple(
+            replacement if item.path == index_item.path else item
+            for item in bundle.files
+        ),
+    )
+
+
+def _tree_snapshot(path: Path) -> tuple[tuple[object, ...], ...] | None:
+    if not path.exists():
+        return None
+    records: list[tuple[object, ...]] = []
+    for child in sorted(path.rglob("*"), key=lambda item: item.as_posix()):
+        relative = child.relative_to(path).as_posix()
+        records.append(
+            ("directory", relative)
+            if child.is_dir()
+            else ("file", relative, sha256(child.read_bytes()).hexdigest())
+        )
+    return tuple(records)
+
+
+def _review_score(
+    spec: Mapping[str, object],
+    *,
+    initial: bool,
+    order: str | None = None,
+    verdict: str = "support",
+    triggers: tuple[str, ...] = (),
+    unresolved: bool = False,
+) -> dict[str, object]:
+    criteria = {
+        key: 20 for key, _label in CLAIM_CRITERIA_BY_DOMAIN[str(spec["domain"])]
+    }
+    obligations = [] if verdict == "support" else ["resolve recorded conflict"]
+    score: dict[str, object] = {
+        "claim_id": spec["id"],
+        "domain": spec["domain"],
+        "severity": spec["severity"],
+        "evidence_ids": list(spec["evidence_ids"]),
+        "criteria": criteria,
+        "verdict": verdict,
+        "escalation_triggers": list(triggers),
+        "unresolved_disagreement": unresolved,
+        "open_obligations": obligations,
+    }
+    if initial:
+        assert order in {"AB", "BA"}
+        score.update(
+            {
+                "candidate_ids": ["claim-statement", "explicit-negation"],
+                "candidate_descriptions": [
+                    {
+                        "id": "claim-statement",
+                        "description": str(spec["statement"]),
+                    },
+                    {
+                        "id": "explicit-negation",
+                        "description": f"It is not the case that: {spec['statement']}",
+                    },
+                ],
+                "comparison_order": order,
+                "comparison_outcome": "left" if order == "AB" else "right",
+                "comparison_criteria": criteria,
+            }
+        )
+    return score
+
+
+def _write_review(
+    raw: Path,
+    *,
+    relative: str,
+    context: Mapping[str, object],
+    digest: str,
+    tested: str,
+    parent: str,
+    specs: tuple[Mapping[str, object], ...],
+    triggers: tuple[str, ...] = (),
+    unresolved: bool = False,
+    conflict: bool = False,
+) -> None:
+    initial = relative in INITIAL_REVIEW_PATHS
+    view_id = Path(relative).stem
+    order = "AB" if view_id == "code-contract-review" else "BA"
+    scores = [
+        _review_score(
+            spec,
+            initial=initial,
+            order=order if initial else None,
+            verdict="conflict" if conflict and index == 0 else "support",
+            triggers=triggers if index == 0 else (),
+            unresolved=unresolved if index == 0 else False,
+        )
+        for index, spec in enumerate(specs)
+    ]
+    verdict = (
+        "conflict"
+        if any(score["verdict"] == "conflict" for score in scores)
+        else "support"
+    )
+    aggregate_triggers = sorted(
+        {trigger for score in scores for trigger in score["escalation_triggers"]}
+    )
+    payload = {
+        "schema_version": "wave-0-review-v1",
+        "view_id": view_id,
+        "calibration_kind": "independent_pairwise_source_reading_v1",
+        "tested_git_head": tested,
+        "implementation_parent_git_head": parent,
+        "reviewed_input_inventory_sha256": digest,
+        "reviewed_paths": [context["historical_reproduced_source"]],
+        "claim_scores": scores,
+        "verdict": verdict,
+        "escalation_triggers": aggregate_triggers,
+        "unresolved_disagreement": any(
+            bool(score["unresolved_disagreement"]) for score in scores
+        ),
+        "open_obligations": [
+            obligation for score in scores for obligation in score["open_obligations"]
+        ],
+        "result_location": relative,
+        "falsification_conditions": ["A bound byte or mechanical check changes."],
+    }
+    destination = raw / relative
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(canonical_json_bytes(payload))
+
+
+def _write_adjudicators(
+    raw: Path,
+    *,
+    digest: str,
+    tested: str,
+    parent: str,
+    code_target: int,
+    code_triggers: tuple[str, ...],
+    code_support: bool,
+) -> None:
+    for relative, spec in zip(ADJUDICATOR_PATHS, CLAIM_SPECS, strict=True):
+        is_code = spec["domain"] == "code"
+        target = code_target if is_code else 2
+        support = code_support if is_code else True
+        payload = {
+            "schema_version": "wave-0-adjudicator-v1",
+            "role": "verifier-adjudicator",
+            "claim_id": spec["id"],
+            "tested_git_head": tested,
+            "implementation_parent_git_head": parent,
+            "reviewed_input_inventory_sha256": digest,
+            "escalation_triggers": list(code_triggers if is_code else ()),
+            "escalation_target": target,
+            "view_ids": list(VIEW_IDS_BY_TARGET[target]),
+            "result": "support" if support else "abstain",
+            "evidence_ids": list(spec["evidence_ids"]),
+            "result_location": relative,
+            "reason": "All selected evidence supports closure."
+            if support
+            else "A conflict remains.",
+            "falsification_condition": "A selected evidence byte or result changes.",
+            "open_obligations": [] if support else ["resolve recorded conflict"],
+        }
+        destination = raw / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(canonical_json_bytes(payload))
+
+
+def _run_gate(gate: Path, repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [str(CPU_PYTHON), "-B", str(gate), *args],
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _review_context_leaf_paths(
+    value: object, prefix: tuple[object, ...] = ()
+) -> Iterator[tuple[object, ...]]:
+    if isinstance(value, dict):
+        for key in sorted(value):
+            yield from _review_context_leaf_paths(value[key], prefix + (key,))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            yield from _review_context_leaf_paths(item, prefix + (index,))
+    else:
+        yield prefix
+
+
+def _mutate_review_context_leaf(payload: object, path: tuple[object, ...]) -> None:
+    cursor = payload
+    for component in path[:-1]:
+        cursor = cursor[component]  # type: ignore[index]
+    leaf = cursor[path[-1]]  # type: ignore[index]
+    if leaf is None:
+        replacement: object = "mutated"
+    elif isinstance(leaf, bool):
+        replacement = not leaf
+    elif isinstance(leaf, int):
+        replacement = leaf + 1
+    elif isinstance(leaf, float):
+        replacement = leaf + 1.0
+    elif isinstance(leaf, str):
+        replacement = leaf + "!"
+    else:
+        raise TypeError(f"unsupported review-context scalar: {type(leaf)!r}")
+    cursor[path[-1]] = replacement  # type: ignore[index]
 
 
 def test_contract_constants_are_exact() -> None:
@@ -351,6 +687,105 @@ def test_privacy_transform_is_total_idempotent_and_semantic(tmp_path: Path) -> N
         )
 
 
+def test_privacy_transform_preserves_spaced_and_quoted_path_components(
+    tmp_path: Path,
+) -> None:
+    context = {
+        "repo_root": tmp_path / "Repository Root",
+        "user_home": tmp_path / "User Home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    raw = {
+        "argv": [
+            r"D:\Program Files\tool.exe",
+            r'"E:\Quoted Folder\tool.exe"',
+            r"--cache=D:\Program Files\cache",
+            r'--quoted="E:\Quoted Folder\cache"',
+            r"\\server\share name\folder\fixture.json",
+            r"\\?\F:\Device Folder\fixture.json",
+            "/opt/Program Files/tool",
+        ],
+        "environment": {
+            "PYTHONPATH": (
+                r'D:\Program Files\pkg;"E:\Quoted Folder\pkg";'
+                r"\\server\share name\lib"
+            ),
+            "CACHE_DIR": r"D:\Cache Root",
+        },
+    }
+    raw_bytes = canonical_json_bytes(raw)
+
+    public, _mapping = privacy_transform_bytes(
+        raw_bytes, kind="environment", privacy_context=context
+    )
+    payload = json.loads(public)
+
+    for private in (
+        "Program Files",
+        "Quoted Folder",
+        "share name",
+        "Device Folder",
+        "Cache Root",
+    ):
+        assert private.encode() not in public
+    assert payload["argv"][0].startswith("<ABS_PATH_")
+    assert payload["argv"][1].startswith('"<ABS_PATH_')
+    assert payload["argv"][1].endswith('>"')
+    assert payload["argv"][2].startswith("--cache=<ABS_PATH_")
+    assert payload["argv"][3].startswith('--quoted="<ABS_PATH_')
+    pythonpath = payload["environment"]["PYTHONPATH"].split(";")
+    assert len(pythonpath) == 3
+    assert pythonpath[0].startswith("<ABS_PATH_")
+    assert pythonpath[1].startswith('"<ABS_PATH_') and pythonpath[1].endswith('>"')
+    assert pythonpath[2].startswith("<ABS_PATH_")
+    assert payload["environment"]["CACHE_DIR"].startswith("<ABS_PATH_")
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="environment", privacy_context=context)[0]
+        == public
+    )
+    assert_public_semantics_equal(
+        "environment", raw_bytes, public, privacy_context=context
+    )
+
+
+def test_privacy_transform_scrubs_spaced_and_quoted_xml_paths(tmp_path: Path) -> None:
+    context = {
+        "repo_root": tmp_path / "Repository Root",
+        "user_home": tmp_path / "User Home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    raw = (
+        b'<?xml version="1.0"?>'
+        b'<testsuite tests="1" failures="0" errors="0" skipped="0" time="0">'
+        b"<properties>"
+        b'<property name="cache" value="D:\\Program Files\\cache"/>'
+        b'<property name="quoted" value="&quot;E:\\Quoted Folder\\cache&quot;"/>'
+        b'<property name="option" value="--root=F:\\Option Folder\\cache"/>'
+        b"</properties>"
+        b'<testcase classname="tests.test_paths" name="test_paths">'
+        b"<system-out>/opt/Program Files/log</system-out>"
+        b"</testcase></testsuite>"
+    )
+
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    for private in ("Program Files", "Quoted Folder", "Option Folder"):
+        assert private.encode() not in public
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+    assert_public_semantics_equal("junit", raw, public, privacy_context=context)
+
+
 def test_index_rejects_unknown_and_missing_fields(tmp_path: Path) -> None:
     del tmp_path
     with tempfile.TemporaryDirectory(prefix="w0-index-") as directory:
@@ -389,6 +824,31 @@ def test_publish_is_absent_only_and_prevalidates_without_write(tmp_path: Path) -
     with pytest.raises(ValueError):
         publish_evidence_bundle(bundle, repo_root=tmp_path)
     assert not output.exists()
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ("selected_input", "current tested-input policy"),
+        ("dependency", "dependency input byte mismatch"),
+        ("plan", "reviewed_plan_binding byte mismatch"),
+        ("snapshot", "verification_contract_binding byte mismatch"),
+    ],
+)
+def test_publish_rejects_stale_current_bindings_before_any_write(
+    mutation: str, message: str
+) -> None:
+    with _short_task_repo() as repo:
+        bundle = _mutate_bundle_index(_candidate_bundle(repo), mutation)
+        output = repo.joinpath(*bundle.output_dir.parts)
+        parent = output.parent
+        before = _tree_snapshot(parent)
+
+        with pytest.raises(ValueError, match=message):
+            publish_evidence_bundle(bundle, repo_root=repo)
+
+        assert not output.exists()
+        assert _tree_snapshot(parent) == before
 
 
 def test_parsers_expose_only_the_frozen_commands() -> None:
@@ -496,6 +956,384 @@ def test_review_context_contract_is_closed() -> None:
         "claim_specs",
         "public_path_contracts",
     )
+
+
+def test_wave0_candidate_review_closure_and_gate_lifecycle() -> None:
+    with _short_task_repo() as repo:
+        parent = _run("git", "rev-parse", "HEAD", cwd=repo)
+        candidate = _candidate_bundle(repo)
+        assert len(candidate.files) == 12
+        assert {str(item.path) for item in candidate.files} == set(
+            CANDIDATE_PUBLIC_PATHS
+        )
+        candidate_dir = publish_evidence_bundle(candidate, repo_root=repo)
+        candidate_index = json.loads((candidate_dir / "index.json").read_bytes())
+        validate_evidence_index(candidate_index, repo_root=repo, actual_head=parent)
+
+        _run(
+            "git",
+            "add",
+            "--",
+            candidate_dir.relative_to(repo).as_posix(),
+            cwd=repo,
+        )
+        _run("git", "commit", "-qm", "candidate evidence", cwd=repo)
+        tested = _run("git", "rev-parse", "HEAD", cwd=repo)
+        assert _run("git", "rev-parse", "HEAD^", cwd=repo) == parent
+        expected_diff = {
+            f"{candidate_dir.relative_to(repo).as_posix()}/{relative}"
+            for relative in CANDIDATE_PUBLIC_PATHS
+        }
+        assert (
+            set(
+                _run(
+                    "git", "diff", "--name-only", f"{parent}..{tested}", cwd=repo
+                ).splitlines()
+            )
+            == expected_diff
+        )
+
+        raw = _write_raw_suite_inputs(repo, head=tested, stage="closure")
+        context, context_bytes, digest = build_review_context(
+            repo_root=repo,
+            tested_head=tested,
+            implementation_parent=parent,
+            raw_dir=raw,
+            write=True,
+        )
+        assert tuple(context) == REVIEW_CONTEXT_FIELDS
+        assert (raw / "review-context.json").read_bytes() == context_bytes
+        assert sha256(context_bytes).hexdigest() == digest
+        leaf_paths = tuple(_review_context_leaf_paths(context))
+        assert {path[0] for path in leaf_paths} == set(REVIEW_CONTEXT_FIELDS)
+        for path in leaf_paths:
+            mutated = copy.deepcopy(context)
+            _mutate_review_context_leaf(mutated, path)
+            assert sha256(canonical_json_bytes(mutated)).hexdigest() != digest
+
+        detached = raw / str(context["historical_reproduced_source"]["path"])
+        detached_bytes = detached.read_bytes()
+        detached.unlink()
+        with pytest.raises(ValueError, match="detached historical"):
+            build_review_context(
+                repo_root=repo,
+                tested_head=tested,
+                implementation_parent=parent,
+                raw_dir=raw,
+                write=False,
+            )
+        assert not detached.exists()
+        detached.parent.mkdir(parents=True, exist_ok=True)
+        detached.write_bytes(detached_bytes)
+
+        closure_output = f"verification-evidence/wave-0/{tested[:12]}"
+        with pytest.raises(ValueError, match="initial review"):
+            prepare_evidence_bundle(
+                repo_root=repo,
+                wave="wave-0",
+                evidence_stage="closure",
+                tested_git_head=tested,
+                implementation_parent_git_head=parent,
+                raw_dir=raw,
+                output_dir=closure_output,
+            )
+        assert not (repo / closure_output).exists()
+
+        for relative in INITIAL_REVIEW_PATHS:
+            _write_review(
+                raw,
+                relative=relative,
+                context=context,
+                digest=digest,
+                tested=tested,
+                parent=parent,
+                specs=CLAIM_SPECS,
+                triggers=("criterion_disagreement",),
+            )
+        assert (
+            review_target(
+                repo_root=repo,
+                tested_head=tested,
+                implementation_parent=parent,
+                raw_dir=raw,
+            )
+            == 4
+        )
+        code_spec = (CLAIM_SPECS[0],)
+        for index, relative in enumerate(TARGET4_ADDITIONAL_REVIEW_PATHS):
+            _write_review(
+                raw,
+                relative=relative,
+                context=context,
+                digest=digest,
+                tested=tested,
+                parent=parent,
+                specs=code_spec,
+                triggers=("criterion_disagreement",),
+                unresolved=True,
+                conflict=index == 0,
+            )
+        assert (
+            review_target(
+                repo_root=repo,
+                tested_head=tested,
+                implementation_parent=parent,
+                raw_dir=raw,
+            )
+            == 8
+        )
+        for relative in TARGET8_ADDITIONAL_REVIEW_PATHS:
+            _write_review(
+                raw,
+                relative=relative,
+                context=context,
+                digest=digest,
+                tested=tested,
+                parent=parent,
+                specs=code_spec,
+            )
+        _write_adjudicators(
+            raw,
+            digest=digest,
+            tested=tested,
+            parent=parent,
+            code_target=8,
+            code_triggers=("criterion_disagreement",),
+            code_support=False,
+        )
+        code_adjudicator_path = raw / ADJUDICATOR_PATHS[0]
+        code_adjudicator_bytes = code_adjudicator_path.read_bytes()
+        mismatched_adjudicator = json.loads(code_adjudicator_bytes)
+        mismatched_adjudicator["escalation_triggers"] = []
+        code_adjudicator_path.write_bytes(canonical_json_bytes(mismatched_adjudicator))
+        with pytest.raises(ValueError, match="adjudicator escalation triggers"):
+            validate_reviews(
+                repo_root=repo,
+                tested_head=tested,
+                implementation_parent=parent,
+                raw_dir=raw,
+            )
+        code_adjudicator_path.write_bytes(code_adjudicator_bytes)
+        assert (
+            validate_reviews(
+                repo_root=repo,
+                tested_head=tested,
+                implementation_parent=parent,
+                raw_dir=raw,
+            )
+            == 8
+        )
+        code_adjudicator = json.loads((raw / ADJUDICATOR_PATHS[0]).read_bytes())
+        evidence_adjudicator = json.loads((raw / ADJUDICATOR_PATHS[1]).read_bytes())
+        assert code_adjudicator["view_ids"] == list(VIEW_IDS_BY_TARGET[8])
+        assert evidence_adjudicator["view_ids"] == list(VIEW_IDS_BY_TARGET[2])
+
+        shutil.rmtree(raw / "reviews")
+        for relative in INITIAL_REVIEW_PATHS:
+            _write_review(
+                raw,
+                relative=relative,
+                context=context,
+                digest=digest,
+                tested=tested,
+                parent=parent,
+                specs=CLAIM_SPECS,
+            )
+        assert (
+            review_target(
+                repo_root=repo,
+                tested_head=tested,
+                implementation_parent=parent,
+                raw_dir=raw,
+            )
+            == 2
+        )
+        with pytest.raises(ValueError, match="adjudicator"):
+            prepare_evidence_bundle(
+                repo_root=repo,
+                wave="wave-0",
+                evidence_stage="closure",
+                tested_git_head=tested,
+                implementation_parent_git_head=parent,
+                raw_dir=raw,
+                output_dir=closure_output,
+            )
+        assert not (repo / closure_output).exists()
+        _write_adjudicators(
+            raw,
+            digest=digest,
+            tested=tested,
+            parent=parent,
+            code_target=2,
+            code_triggers=(),
+            code_support=True,
+        )
+        assert (
+            validate_reviews(
+                repo_root=repo,
+                tested_head=tested,
+                implementation_parent=parent,
+                raw_dir=raw,
+            )
+            == 2
+        )
+
+        closure = prepare_evidence_bundle(
+            repo_root=repo,
+            wave="wave-0",
+            evidence_stage="closure",
+            tested_git_head=tested,
+            implementation_parent_git_head=parent,
+            raw_dir=raw,
+            output_dir=closure_output,
+        )
+        assert len(closure.files) == 16
+        assert {str(item.path) for item in closure.files} == set(
+            CLOSURE_PUBLIC_PATHS_BY_TARGET[2]
+        )
+        closure_dir = publish_evidence_bundle(closure, repo_root=repo)
+        closure_index = json.loads((closure_dir / "index.json").read_bytes())
+        validate_evidence_index(closure_index, repo_root=repo, actual_head=tested)
+
+        snapshot = json.loads((repo / SNAPSHOT_PATH).read_bytes())
+        gate = resolve_verification_gate(
+            snapshot, root=Path.home() / ".codex/skills/verification"
+        )
+        ledger_relative = ".verification/wave-0/final-ledger.json"
+        public_review_path = closure_dir / INITIAL_REVIEW_PATHS[0]
+        original_public_review = public_review_path.read_bytes()
+        index_path = closure_dir / "index.json"
+        original_index = index_path.read_bytes()
+        mutated_public_review = json.loads(original_public_review)
+        first_criterion = next(
+            iter(mutated_public_review["claim_scores"][0]["criteria"])
+        )
+        mutated_public_review["claim_scores"][0]["criteria"][first_criterion] = 19
+        mutated_public_bytes = canonical_json_bytes(mutated_public_review)
+        public_review_path.write_bytes(mutated_public_bytes)
+        mutated_index = json.loads(original_index)
+        review_record = next(
+            item
+            for item in mutated_index["files"]
+            if item["path"] == INITIAL_REVIEW_PATHS[0]
+        )
+        review_record["size_bytes"] = len(mutated_public_bytes)
+        review_record["sha256"] = sha256(mutated_public_bytes).hexdigest()
+        index_path.write_bytes(canonical_json_bytes(mutated_index))
+        validate_evidence_index(mutated_index, repo_root=repo, actual_head=tested)
+
+        started = _run_gate(
+            gate,
+            repo,
+            "start",
+            "--cwd",
+            str(repo),
+            "--ledger",
+            ledger_relative,
+            "--mode",
+            "closure",
+        )
+        assert started.returncode == 0, started.stderr
+        empty = _run_gate(gate, repo, "validate", ledger_relative, "--cwd", str(repo))
+        assert empty.returncode != 0
+        assert "claims must contain at least one claim" in empty.stdout
+        with pytest.raises(ValueError, match="reconstructed public evidence"):
+            populate_ledger(
+                repo_root=repo,
+                ledger_path=ledger_relative,
+                closure_index_path=index_path,
+            )
+        marker = repo / ".verification/active.json"
+        ledger = repo / ledger_relative
+        marker.unlink()
+        ledger.unlink()
+        public_review_path.write_bytes(original_public_review)
+        index_path.write_bytes(original_index)
+        started = _run_gate(
+            gate,
+            repo,
+            "start",
+            "--cwd",
+            str(repo),
+            "--ledger",
+            ledger_relative,
+            "--mode",
+            "closure",
+        )
+        assert started.returncode == 0, started.stderr
+
+        original_ledger = ledger.read_bytes()
+        original_marker = marker.read_bytes()
+        marker_payload = json.loads(original_marker)
+        marker_mutations = []
+        with_extra = copy.deepcopy(marker_payload)
+        with_extra["unexpected"] = True
+        marker_mutations.append(with_extra)
+        wrong_path = copy.deepcopy(marker_payload)
+        wrong_path["ledger"] = ".verification/wave-0/other.json"
+        marker_mutations.append(wrong_path)
+        wrong_revision = copy.deepcopy(marker_payload)
+        wrong_revision["artifact_revision"] = "git:" + "0" * 40 + ":sha256:" + "0" * 64
+        marker_mutations.append(wrong_revision)
+        for mutation in marker_mutations:
+            marker.write_bytes(canonical_json_bytes(mutation))
+            with pytest.raises(ValueError, match="activation marker"):
+                populate_ledger(
+                    repo_root=repo,
+                    ledger_path=ledger_relative,
+                    closure_index_path=closure_dir / "index.json",
+                )
+            assert ledger.read_bytes() == original_ledger
+        marker.write_bytes(original_marker)
+        drift = repo / "gate-drift.txt"
+        drift.write_text("changed after activation\n", encoding="utf-8")
+        with pytest.raises(ValueError, match="live artifact changed"):
+            populate_ledger(
+                repo_root=repo,
+                ledger_path=ledger_relative,
+                closure_index_path=closure_dir / "index.json",
+            )
+        assert ledger.read_bytes() == original_ledger
+        drift.unlink()
+
+        populate_ledger(
+            repo_root=repo,
+            ledger_path=ledger_relative,
+            closure_index_path=closure_dir / "index.json",
+        )
+        populated = _run_gate(
+            gate, repo, "validate", ledger_relative, "--cwd", str(repo)
+        )
+        assert populated.returncode == 0, populated.stdout + populated.stderr
+        ledger_payload = json.loads(ledger.read_bytes())
+        public_reviews, _public_adjudicators = _public_review_records(closure_dir, 2)
+        _validate_ledger_projection(ledger_payload, public_reviews)
+        rounded_projection = copy.deepcopy(ledger_payload)
+        rounded_projection["claims"][0]["criteria"][0]["score"] += 0.1
+        with pytest.raises(ValueError, match="criterion aggregate"):
+            _validate_ledger_projection(rounded_projection, public_reviews)
+        synthesized_view = copy.deepcopy(ledger_payload)
+        synthesized_view["claims"][0]["views"]["scores"].append(
+            copy.deepcopy(synthesized_view["claims"][0]["views"]["scores"][0])
+        )
+        with pytest.raises(ValueError, match="view-score projection"):
+            _validate_ledger_projection(synthesized_view, public_reviews)
+        assert {claim["id"] for claim in ledger_payload["claims"]} == {
+            spec["id"] for spec in CLAIM_SPECS
+        }
+        assert all(
+            claim["state"] == "EVIDENCE_VERIFIED"
+            and not str(claim["id"]).startswith("AUD-")
+            for claim in ledger_payload["claims"]
+        )
+        assert all(
+            claim["artifact_revision"] == ledger_payload["artifact_revision"]
+            and all(
+                evidence["artifact_revision"] == ledger_payload["artifact_revision"]
+                for evidence in claim["evidence"]
+            )
+            for claim in ledger_payload["claims"]
+        )
 
 
 def test_tested_input_resolver_rejects_matching_untracked_file(tmp_path: Path) -> None:
