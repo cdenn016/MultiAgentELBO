@@ -1,0 +1,116 @@
+{
+  "schema_version": "historical-fixed-ray-bundles-v1",
+  "bundles": [
+    {
+      "bundle_id": "gaussian-confirmatory-fcb2c49",
+      "legacy_schema": "observed-v1",
+      "historical_git_revision": "fcb2c49efdca2ad3ee502dc08fbb82fc285e7a05",
+      "limitations": "Observed historical bytes support compatibility and reproduction only; they do not acquire manifest-v2 self-integrity or current scientific promotion.",
+      "files": [
+        {
+          "path": "docs/verification/evidence/2026-08-10-gaussian-confirmatory-fcb2c49/config.json",
+          "size_bytes": 792,
+          "sha256": "66e474db7e46ae0589ca5198712c59aa9f28317d219381ddf96b989e5d40d191"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-gaussian-confirmatory-fcb2c49/confirmatory_arrays.npz",
+          "size_bytes": 71942,
+          "sha256": "7040967043619fd52a0386ff0b9623febdd4c97f0c2356f8abb98fd786dc2b6a"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-gaussian-confirmatory-fcb2c49/confirmatory_endpoints.json",
+          "size_bytes": 214173,
+          "sha256": "7d6b36b5bde80969d8974d5550c0ed8c125896ee03be7ffd196d3915f8261556"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-gaussian-confirmatory-fcb2c49/confirmatory_job_table.json",
+          "size_bytes": 9062,
+          "sha256": "a50dd3893ce1ad9c081a8e2f2cbc5adc676e2b217c9c3ec321e8b0d62b453adf"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-gaussian-confirmatory-fcb2c49/current_result.json",
+          "size_bytes": 8833,
+          "sha256": "35b1d39fb11523613b5d5771e9862fb0d2b09de2373cfbe52c1209ec2c8090ab"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-gaussian-confirmatory-fcb2c49/holdout_analysis.json",
+          "size_bytes": 8152,
+          "sha256": "ff09a656d7638a233d21149132367b95072fae6030187ee997290aa1a0596d1d"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-gaussian-confirmatory-fcb2c49/manifest.json",
+          "size_bytes": 2522,
+          "sha256": "7e0a050850b48b446c70bff3a67010c84d2daa1fada6c48742d3ab152d43a1fb"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-gaussian-confirmatory-fcb2c49/metrics.json",
+          "size_bytes": 394,
+          "sha256": "cd45e55dd39236b556dc200a04ad081affcb19a6c52fb584ad63f3f1992f7f59"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-gaussian-confirmatory-fcb2c49/primary_analysis.json",
+          "size_bytes": 17093,
+          "sha256": "f8b58ae7f8777e18800c37d63b55d37c0052cd47b407a40497405ef5f6375155"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-gaussian-confirmatory-fcb2c49/source_binding.json",
+          "size_bytes": 2557,
+          "sha256": "81ae0487f2b1779076b361f3339275280a1a3a5f1e8c817d52250b5ee61fae75"
+        }
+      ]
+    },
+    {
+      "bundle_id": "fixed-model-attraction-diagnostic",
+      "legacy_schema": "observed-v1",
+      "historical_git_revision": "039df35daa30a49e90f178edde7bfc999a7ee629",
+      "limitations": "Observed historical bytes support compatibility and reproduction only; they do not acquire manifest-v2 self-integrity or current scientific promotion.",
+      "files": [
+        {
+          "path": "docs/verification/evidence/2026-08-10-fixed-model-attraction-diagnostic/config.json",
+          "size_bytes": 917,
+          "sha256": "0fed6f65531407e59c52b9d3916164c0f7c0810a6c5421a91fec8a33e53bea71"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-fixed-model-attraction-diagnostic/fixed_model_diagnostic_arrays.npz",
+          "size_bytes": 278274,
+          "sha256": "1597a92acf50811687183f0062f104acb3c5e4649bb6270e0b153841f9e08bff"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-fixed-model-attraction-diagnostic/fixed_model_explanation.json",
+          "size_bytes": 810,
+          "sha256": "aed3fd6a3620eff3fefe004b7f3ad65884d3d5a73378edd8ed0fb629c65ce20a"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-fixed-model-attraction-diagnostic/fixed_model_spectral_diagnostics.json",
+          "size_bytes": 6233,
+          "sha256": "8f1fbf50ca691c0245c0e59eaaced25af6c02aa5b4f46ac0d7908961e8e8669b"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-fixed-model-attraction-diagnostic/fixed_model_support_certificate.json",
+          "size_bytes": 2101,
+          "sha256": "a65bd15e36d85cf810cdb5f7bb5a7bf0dcfcf56672d6601e3d7237be06b07c8b"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-fixed-model-attraction-diagnostic/fixed_model_trajectory_diagnostics.json",
+          "size_bytes": 192056,
+          "sha256": "e6169a6fad904bf92082f6d1c12203a8d843e01e473804e1dae3161037111f4f"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-fixed-model-attraction-diagnostic/manifest.json",
+          "size_bytes": 28891,
+          "sha256": "1829624d76fe723606b5e20fbd7ad85961610b2513c59271c641f560ac38d907"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-fixed-model-attraction-diagnostic/metrics.json",
+          "size_bytes": 1077,
+          "sha256": "9aed3241befa42686486b7ce7c2d04ce771bf7d17d542dc6ecdb93798ae1f784"
+        },
+        {
+          "path": "docs/verification/evidence/2026-08-10-fixed-model-attraction-diagnostic/source_to_output_binding.json",
+          "size_bytes": 5636,
+          "sha256": "df3130e56bfd1bdd91801a13b6f6ffabe16931813a264ff3e2e2805891b7a355"
+        }
+      ]
+    }
+  ]
+}

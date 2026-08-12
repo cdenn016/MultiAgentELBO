@@ -4,7 +4,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 from pathlib import Path
+
+import pytest
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 AUDIT_DISPOSITION_PATH = (
@@ -27,6 +33,36 @@ STATUS_FAILURE_PATH = (
     / "verification"
     / "remediation"
     / "status-failure-contract-v1.json"
+)
+HISTORICAL_BUNDLES_PATH = (
+    ROOT
+    / "docs"
+    / "verification"
+    / "remediation"
+    / "historical-fixed-ray-bundles-v1.json"
+)
+
+EXPECTED_HISTORICAL_BUNDLES = {
+    "gaussian-confirmatory-fcb2c49": {
+        "historical_git_revision": "fcb2c49efdca2ad3ee502dc08fbb82fc285e7a05",
+        "file_count": 10,
+        "path_prefix": (
+            "docs/verification/evidence/"
+            "2026-08-10-gaussian-confirmatory-fcb2c49/"
+        ),
+    },
+    "fixed-model-attraction-diagnostic": {
+        "historical_git_revision": "039df35daa30a49e90f178edde7bfc999a7ee629",
+        "file_count": 9,
+        "path_prefix": (
+            "docs/verification/evidence/"
+            "2026-08-10-fixed-model-attraction-diagnostic/"
+        ),
+    },
+}
+EXPECTED_HISTORICAL_LIMITATION = (
+    "Observed historical bytes support compatibility and reproduction only; they do not "
+    "acquire manifest-v2 self-integrity or current scientific promotion."
 )
 
 EXPECTED_OWNERS = {
@@ -202,6 +238,17 @@ def _canonical_sha256(value: object) -> str:
     return hashlib.sha256(canonical).hexdigest()
 
 
+def _verify_historical_bundle_files(bundle: dict[str, object], *, root: Path) -> None:
+    for record in bundle["files"]:
+        path = root / record["path"]
+        data = path.read_bytes()
+        if (
+            len(data) != record["size_bytes"]
+            or hashlib.sha256(data).hexdigest() != record["sha256"]
+        ):
+            raise ValueError(f"historical bundle hash mismatch: {record['path']}")
+
+
 def test_audit_disposition_is_complete_closed_and_uniquely_owned():
     payload = _load_json(AUDIT_DISPOSITION_PATH)
     assert set(payload) == {
@@ -319,3 +366,59 @@ def test_effect_order_covers_every_frozen_entry_point_exactly():
                for item in failure_order)
     assert all(item["last_permitted_effect"] for item in failure_order)
     assert _canonical_sha256(failure_order) == EXPECTED_FAILURE_ORDER_CANONICAL_SHA256
+
+
+def test_historical_fixed_ray_bundles_are_complete_and_byte_pinned():
+    payload = _load_json(HISTORICAL_BUNDLES_PATH)
+    assert set(payload) == {"schema_version", "bundles"}
+    assert payload["schema_version"] == "historical-fixed-ray-bundles-v1"
+
+    bundles = {item["bundle_id"]: item for item in payload["bundles"]}
+    assert set(bundles) == set(EXPECTED_HISTORICAL_BUNDLES)
+    assert len(bundles) == len(payload["bundles"]) == 2
+
+    for bundle_id, expected in EXPECTED_HISTORICAL_BUNDLES.items():
+        bundle = bundles[bundle_id]
+        assert set(bundle) == {
+            "bundle_id", "legacy_schema", "historical_git_revision",
+            "limitations", "files",
+        }
+        assert bundle["legacy_schema"] == "observed-v1"
+        assert bundle["historical_git_revision"] == expected["historical_git_revision"]
+        assert bundle["limitations"] == EXPECTED_HISTORICAL_LIMITATION
+        assert len(bundle["files"]) == expected["file_count"]
+        inventory_paths = [record["path"] for record in bundle["files"]]
+        source_dir = ROOT / expected["path_prefix"]
+        source_paths = sorted(
+            path.relative_to(ROOT).as_posix()
+            for path in source_dir.rglob("*")
+            if path.is_file()
+        )
+        assert inventory_paths == source_paths
+        assert all(
+            set(record) == {"path", "size_bytes", "sha256"}
+            and record["path"].startswith(expected["path_prefix"])
+            for record in bundle["files"]
+        )
+        _verify_historical_bundle_files(bundle, root=ROOT)
+
+
+def test_historical_fixed_ray_bundle_hash_drift_is_rejected(tmp_path: Path):
+    payload = _load_json(HISTORICAL_BUNDLES_PATH)
+    bundle = next(
+        item
+        for item in payload["bundles"]
+        if item["bundle_id"] == "gaussian-confirmatory-fcb2c49"
+    )
+    source = ROOT / "docs" / "verification" / "evidence" / (
+        "2026-08-10-gaussian-confirmatory-fcb2c49"
+    )
+    copied = tmp_path / "docs" / "verification" / "evidence" / source.name
+    shutil.copytree(source, copied)
+
+    target = copied / "config.json"
+    data = target.read_bytes()
+    target.write_bytes(bytes([data[0] ^ 1]) + data[1:])
+
+    with pytest.raises(ValueError, match="historical bundle hash mismatch"):
+        _verify_historical_bundle_files(bundle, root=tmp_path)
