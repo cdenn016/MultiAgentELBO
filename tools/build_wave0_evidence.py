@@ -17,11 +17,14 @@ if __package__ in (None, ""):
 from tools.remediation_evidence import (
     CPU_PYTHON,
     HISTORICAL_INVENTORY_PATH,
-    INDEX_ROOT_FIELDS,
     PLAN_PATH,
     SNAPSHOT_PATH,
+    GENERIC_PUBLIC_PATHS as CORE_GENERIC_PUBLIC_PATHS,
     PreparedEvidenceBundle,
     PreparedEvidenceFile,
+    _prepare_evidence_bundle as _prepare_generic_evidence_bundle_internal,
+    _parse_junit_bytes,
+    _finalize_evidence_index,
     _file_record,
     _git,
     _git_head,
@@ -30,12 +33,13 @@ from tools.remediation_evidence import (
     _reviewed_plan_binding,
     _sha256,
     _validate_command_record,
+    _validate_detached_bundle,
     _validate_head_relationship,
     _validate_snapshot_payload,
     assert_no_literal_absolute_path,
     canonical_json_bytes,
     capture_environment_record,
-    parse_junit,
+    prepare_evidence_bundle as _prepare_generic_evidence_bundle,
     privacy_transform_bytes,
     resolve_verification_gate,
     publish_evidence_bundle,
@@ -606,7 +610,7 @@ def _validate_raw_command_and_junit(
     if command["env_allowlist"] != expected_environment:
         raise ValueError(f"{suite} command CPU environment drift")
     junit_bytes = _require_regular_unlinked_file(junit_path, label=f"{suite} raw JUnit")
-    junit = parse_junit(junit_path)
+    junit = _parse_junit_bytes(junit_bytes, public_path=junit_path.as_posix())
     validate_junit_skip_allowlist(junit, allowlist=SKIP_ALLOWLIST_BY_SUITE[suite])
     command_junit = command["junit"]
     assert isinstance(command_junit, dict)
@@ -615,50 +619,70 @@ def _validate_raw_command_and_junit(
     return command_bytes, command, junit_bytes, junit
 
 
-def _build_public_records(
+def _prepare_wave0_virtual_bundle(
     *,
     repo_root: Path,
     raw_dir: Path,
     tested_head: str,
     implementation_parent: str,
     stage: str,
+    expected_output: str,
     review_target: int | None,
-) -> tuple[
-    dict[str, bytes],
-    list[dict[str, object]],
-    dict[str, object],
-    dict[str, object],
-    dict[str, object],
-]:
+    require_output_absent: bool,
+) -> PreparedEvidenceBundle:
+    if tuple(GENERIC_PUBLIC_PATHS) != tuple(CORE_GENERIC_PUBLIC_PATHS):
+        raise ValueError("Wave 0 generic path constants drifted")
+    policy = resolve_tested_input_policy(repo_root)
+    policy_template = {
+        key: policy[key]
+        for key in ("schema_version", "selection_rules", "exclusion_rules")
+    }
+    source_bindings = _source_config_bindings(policy)
+    source_paths = tuple(str(item["path"]) for item in source_bindings)
     raw_commands: dict[str, bytes] = {}
     raw_junits: dict[str, bytes] = {}
-    parsed_junits: dict[str, dict[str, object]] = {}
     for suite in ("targeted", "subsystem", "full"):
-        command_bytes, _command, junit_bytes, junit = _validate_raw_command_and_junit(
+        command_bytes, _command, junit_bytes, _junit = _validate_raw_command_and_junit(
             repo_root, raw_dir, suite
         )
         raw_commands[suite] = command_bytes
         raw_junits[suite] = junit_bytes
-        parsed_junits[suite] = junit
-    base_context = _privacy_context(repo_root)
-    public_junits: dict[str, bytes] = {}
-    mappings: list[dict[str, object]] = []
-    public: dict[str, bytes] = {}
-    for suite in ("targeted", "subsystem", "full"):
-        transformed, mapping = privacy_transform_bytes(
-            raw_junits[suite], kind="junit", privacy_context=base_context
+
+    generic_kwargs = {
+        "repo_root": repo_root,
+        "wave": "wave-0",
+        "evidence_stage": stage,
+        "tested_git_head": tested_head,
+        "implementation_parent_git_head": implementation_parent,
+        "command_records": raw_commands,
+        "source_config_paths": source_paths,
+        "tested_input_policy": policy_template,
+        "dependency_input_paths": DEPENDENCY_INPUT_PATHS,
+        "raw_junit_bytes": raw_junits,
+        "output_dir": expected_output,
+    }
+    if require_output_absent:
+        generic = _prepare_generic_evidence_bundle(**generic_kwargs)
+    else:
+        generic = _prepare_generic_evidence_bundle_internal(
+            **generic_kwargs, require_output_absent=False
         )
-        public_junits[suite] = transformed
-        public[f"{suite}.xml"] = transformed
-        mappings.append(
-            _mapping_record(
-                raw_relative_path=f"{suite}.raw.xml",
-                public_path=f"{suite}.xml",
-                raw=raw_junits[suite],
-                public=transformed,
-                mapping=mapping,
-            )
-        )
+    base = {str(item.path): item.data for item in generic.files}
+    if set(base) != set(GENERIC_PUBLIC_PATHS):
+        raise ValueError("generic preparation returned a noncanonical base")
+    provisional_index_bytes = base.pop("index.json")
+    provisional_index = json.loads(provisional_index_bytes)
+    if canonical_json_bytes(provisional_index) != provisional_index_bytes:
+        raise ValueError("generic provisional index is not canonical JSON")
+    privacy_bytes = base["privacy-transform.json"]
+    privacy = json.loads(privacy_bytes)
+    if canonical_json_bytes(privacy) != privacy_bytes:
+        raise ValueError("generic privacy transform is not canonical JSON")
+    mappings = list(privacy["records"])
+
+    public_junits = {
+        suite: base[f"{suite}.xml"] for suite in ("targeted", "subsystem", "full")
+    }
     context = _privacy_context(repo_root, junit_public=public_junits)
     context["path_aliases"] = {
         str((raw_dir / f"{suite}.raw.xml").resolve()): f"{suite}.xml"
@@ -668,201 +692,102 @@ def _build_public_records(
         _sha256(raw_junits[suite]): _sha256(public_junits[suite])
         for suite in ("targeted", "subsystem", "full")
     }
-    for suite in ("targeted", "subsystem", "full"):
-        transformed, mapping = privacy_transform_bytes(
-            raw_commands[suite], kind="command", privacy_context=context
-        )
-        command = _validate_command_record(json.loads(transformed), suite=suite)
-        expected_public_junit = {
-            **parsed_junits[suite],
-            "path": f"{suite}.xml",
-            "size_bytes": len(public_junits[suite]),
-            "sha256": _sha256(public_junits[suite]),
-        }
-        if command["junit"] != expected_public_junit:
-            raise ValueError(f"{suite} public command JUnit binding mismatch")
-        path = f"commands/{suite}.json"
-        public[path] = transformed
-        mappings.append(
-            _mapping_record(
-                raw_relative_path=f"{suite}.command.json",
-                public_path=path,
-                raw=raw_commands[suite],
-                public=transformed,
-                mapping=mapping,
-            )
-        )
-    environment_payload = capture_environment_record(
-        repo_root, dependency_input_paths=DEPENDENCY_INPUT_PATHS
-    )
-    environment_raw = canonical_json_bytes(environment_payload)
-    environment_public, mapping = privacy_transform_bytes(
-        environment_raw, kind="environment", privacy_context=context
-    )
-    public["environment.json"] = environment_public
-    mappings.append(
-        _mapping_record(
-            raw_relative_path="generated/environment.json",
-            public_path="environment.json",
-            raw=environment_raw,
-            public=environment_public,
-            mapping=mapping,
-        )
-    )
-    dependencies_payload = {
-        "schema_version": "remediation-dependencies-v1",
-        "dependency_versions": environment_payload["dependency_versions"],
-        "dependency_inputs": environment_payload["dependency_inputs"],
-    }
-    dependencies_raw = canonical_json_bytes(dependencies_payload)
-    dependencies_public, mapping = privacy_transform_bytes(
-        dependencies_raw, kind="dependency", privacy_context=context
-    )
-    public["dependencies.json"] = dependencies_public
-    mappings.append(
-        _mapping_record(
-            raw_relative_path="generated/dependencies.json",
-            public_path="dependencies.json",
-            raw=dependencies_raw,
-            public=dependencies_public,
-            mapping=mapping,
-        )
-    )
-    plan_binding = _reviewed_plan_binding(repo_root, tested_head, implementation_parent)
-    plan_raw = canonical_json_bytes(
-        {"schema_version": "wave-0-plan-binding-v1", **plan_binding}
-    )
-    plan_public, mapping = privacy_transform_bytes(
-        plan_raw, kind="plan", privacy_context=context
-    )
-    public["plan-binding.json"] = plan_public
-    mappings.append(
-        _mapping_record(
-            raw_relative_path="generated/plan-binding.json",
-            public_path="plan-binding.json",
-            raw=plan_raw,
-            public=plan_public,
-            mapping=mapping,
-        )
-    )
+    extras: dict[str, bytes] = {}
+    extra_preimages: list[tuple[str, str, bytes, str]] = []
     if stage == "candidate":
-        historical_raw = _historical_verification_bytes(
+        historical = _historical_verification_bytes(
             repo_root,
             tested_head=tested_head,
             implementation_parent=implementation_parent,
         )
-        raw_relative = "generated/historical-verification.json"
+        extra_preimages.append(
+            (
+                "generated/historical-verification.json",
+                "historical-verification.json",
+                historical,
+                "historical",
+            )
+        )
     else:
-        historical_path = raw_dir / "detached/historical-verification.json"
-        historical_raw = _require_regular_unlinked_file(
-            historical_path, label="detached historical verification"
-        )
-        _validate_historical_verification(
-            historical_raw,
-            tested_head=tested_head,
-            implementation_parent=implementation_parent,
-        )
-        raw_relative = "detached/historical-verification.json"
-    historical_public, mapping = privacy_transform_bytes(
-        historical_raw, kind="historical", privacy_context=context
-    )
-    if historical_public != historical_raw:
-        raise ValueError(
-            "historical reproduced source must already be detached public form"
-        )
-    public["historical-verification.json"] = historical_public
-    mappings.append(
-        _mapping_record(
-            raw_relative_path=raw_relative,
-            public_path="historical-verification.json",
-            raw=historical_raw,
-            public=historical_public,
-            mapping=mapping,
-        )
-    )
-    if stage == "closure":
         if review_target not in (2, 4, 8):
             raise ValueError(
                 "closure preparation requires validated review target 2, 4, or 8"
             )
+        historical_path = raw_dir / "detached/historical-verification.json"
+        historical = _require_regular_unlinked_file(
+            historical_path, label="detached historical verification"
+        )
+        _validate_historical_verification(
+            historical,
+            tested_head=tested_head,
+            implementation_parent=implementation_parent,
+        )
+        extra_preimages.append(
+            (
+                "detached/historical-verification.json",
+                "historical-verification.json",
+                historical,
+                "historical",
+            )
+        )
         for relative in REVIEW_PATHS_BY_TARGET[review_target] + ADJUDICATOR_PATHS:
-            raw_path = raw_dir / relative
             raw = _require_regular_unlinked_file(
-                raw_path, label="raw review/adjudicator"
+                raw_dir / relative, label="raw review/adjudicator"
             )
             kind = "adjudicator" if relative in ADJUDICATOR_PATHS else "review"
-            transformed, mapping = privacy_transform_bytes(
-                raw, kind=kind, privacy_context=context
+            extra_preimages.append((relative, relative, raw, kind))
+
+    for raw_relative, public_path, raw, kind in extra_preimages:
+        transformed, mapping = privacy_transform_bytes(
+            raw, kind=kind, privacy_context=context
+        )
+        if kind == "historical" and transformed != raw:
+            raise ValueError(
+                "historical reproduced source must already be detached public form"
             )
-            public[relative] = transformed
-            mappings.append(
-                _mapping_record(
-                    raw_relative_path=relative,
-                    public_path=relative,
-                    raw=raw,
-                    public=transformed,
-                    mapping=mapping,
-                )
+        extras[public_path] = transformed
+        mappings.append(
+            _mapping_record(
+                raw_relative_path=raw_relative,
+                public_path=public_path,
+                raw=raw,
+                public=transformed,
+                mapping=mapping,
             )
+        )
     mappings.sort(key=lambda item: str(item["public_path"]))
-    privacy_payload = {
-        "schema_version": "remediation-privacy-transform-v1",
-        "records": mappings,
-    }
-    privacy_bytes = canonical_json_bytes(privacy_payload)
-    assert_no_literal_absolute_path(privacy_bytes, privacy_context=context)
-    public["privacy-transform.json"] = privacy_bytes
-    return public, mappings, environment_payload, plan_binding, context
-
-
-def _prepare_index(
-    *,
-    repo_root: Path,
-    wave: str,
-    stage: str,
-    tested_head: str,
-    implementation_parent: str,
-    public: Mapping[str, bytes],
-    environment_payload: Mapping[str, object],
-    plan_binding: Mapping[str, object],
-) -> dict[str, object]:
-    policy = resolve_tested_input_policy(repo_root)
-    source_bindings = _source_config_bindings(policy)
-    snapshot_binding, _ = _snapshot_binding(repo_root)
-    dependency_inputs = environment_payload["dependency_inputs"]
-    assert isinstance(dependency_inputs, list)
-    commands = [
-        _file_record(path, public[path])
-        for path in sorted(path for path in public if path.startswith("commands/"))
-    ]
-    files = [
+    if len({str(item["public_path"]) for item in mappings}) != len(mappings):
+        raise ValueError("Wave 0 privacy map contains a duplicate public path")
+    extended_privacy = canonical_json_bytes(
         {
-            **_file_record(path, data),
-            "kind": _kind_for_path(path),
+            "schema_version": "remediation-privacy-transform-v1",
+            "records": mappings,
         }
-        for path, data in sorted(public.items())
-    ]
-    environment_bytes = public["environment.json"]
-    return {
-        "schema_version": "remediation-evidence-index-v1",
-        "wave": wave,
-        "evidence_stage": stage,
-        "tested_git_head": tested_head,
-        "implementation_parent_git_head": implementation_parent,
-        "platform": environment_payload["platform"],
-        "environment_record": _file_record("environment.json", environment_bytes),
-        "dependency_versions": environment_payload["dependency_versions"],
-        "dependency_inputs": dependency_inputs,
-        "tested_input_policy": policy,
-        "tested_input_inventory_sha256": _sha256(
-            canonical_json_bytes(policy["inputs"])
+    )
+    assert_no_literal_absolute_path(extended_privacy, privacy_context=context)
+    base["privacy-transform.json"] = extended_privacy
+    public = {**base, **extras}
+    expected_paths = (
+        set(CANDIDATE_PUBLIC_PATHS) - {"index.json"}
+        if stage == "candidate"
+        else set(CLOSURE_PUBLIC_PATHS_BY_TARGET[review_target]) - {"index.json"}
+    )
+    if set(public) != expected_paths:
+        raise ValueError("prepared public path set differs from exact branch contract")
+    final_index = _finalize_evidence_index(provisional_index, public)
+    index_bytes = canonical_json_bytes(final_index)
+    assert_no_literal_absolute_path(index_bytes)
+    complete = {**public, "index.json": index_bytes}
+    bundle = PreparedEvidenceBundle(
+        PurePosixPath(expected_output),
+        tuple(
+            PreparedEvidenceFile(PurePosixPath(path), data)
+            for path, data in sorted(complete.items())
         ),
-        "commands": commands,
-        "source_config_bindings": source_bindings,
-        "reviewed_plan_binding": dict(plan_binding),
-        "verification_contract_binding": snapshot_binding,
-        "files": files,
-    }
+    )
+    _validate_detached_bundle(bundle, repo_root=repo_root)
+    validate_evidence_index(final_index, repo_root=repo_root, actual_head=tested_head)
+    return bundle
 
 
 def prepare_evidence_bundle(
@@ -927,41 +852,16 @@ def prepare_evidence_bundle(
             implementation_parent=implementation_parent_git_head,
             raw_dir=raw,
         )
-    public, _mappings, environment, plan_binding, _context = _build_public_records(
+    return _prepare_wave0_virtual_bundle(
         repo_root=root,
         raw_dir=raw,
         tested_head=tested_git_head,
         implementation_parent=implementation_parent_git_head,
         stage=evidence_stage,
+        expected_output=expected_output,
         review_target=review_target,
+        require_output_absent=True,
     )
-    expected_paths = (
-        set(CANDIDATE_PUBLIC_PATHS) - {"index.json"}
-        if evidence_stage == "candidate"
-        else set(CLOSURE_PUBLIC_PATHS_BY_TARGET[review_target]) - {"index.json"}
-    )
-    if set(public) != expected_paths:
-        raise ValueError("prepared public path set differs from exact branch contract")
-    index = _prepare_index(
-        repo_root=root,
-        wave=wave,
-        stage=evidence_stage,
-        tested_head=tested_git_head,
-        implementation_parent=implementation_parent_git_head,
-        public=public,
-        environment_payload=environment,
-        plan_binding=plan_binding,
-    )
-    if set(index) != INDEX_ROOT_FIELDS:
-        raise ValueError("constructed evidence index root fields drifted")
-    index_bytes = canonical_json_bytes(index)
-    assert_no_literal_absolute_path(index_bytes)
-    complete = {**public, "index.json": index_bytes}
-    files = tuple(
-        PreparedEvidenceFile(PurePosixPath(path), data)
-        for path, data in sorted(complete.items())
-    )
-    return PreparedEvidenceBundle(PurePosixPath(expected_output), files)
 
 
 def _review_context_path_record(
@@ -1904,15 +1804,18 @@ def populate_ledger(
     )
     if validated_target != target:
         raise ValueError("validated review target differs from closure path tier")
-    reconstructed, _mappings, _environment, _plan, _context = _build_public_records(
+    reconstructed_bundle = _prepare_wave0_virtual_bundle(
         repo_root=root,
         raw_dir=raw_dir,
         tested_head=head,
         implementation_parent=str(index["implementation_parent_git_head"]),
         stage="closure",
+        expected_output=f"verification-evidence/wave-0/{head[:12]}",
         review_target=validated_target,
+        require_output_absent=False,
     )
-    if set(reconstructed) != indexed_paths:
+    reconstructed = {str(item.path): item.data for item in reconstructed_bundle.files}
+    if set(reconstructed) != indexed_paths | {"index.json"}:
         raise ValueError("reconstructed public evidence path set differs from index")
     for relative, expected_bytes in reconstructed.items():
         observed_bytes = _require_regular_unlinked_file(

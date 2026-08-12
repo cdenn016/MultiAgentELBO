@@ -10,6 +10,7 @@ import os
 import platform
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
@@ -72,6 +73,25 @@ JUNIT_FIELDS = {
 INTERPRETER_FIELDS = {"path", "version", "size_bytes", "sha256"}
 FILE_RECORD_FIELDS = {"path", "size_bytes", "sha256"}
 INDEX_FILE_FIELDS = {"path", "kind", "size_bytes", "sha256"}
+GENERIC_PUBLIC_PATHS = (
+    "commands/full.json",
+    "commands/subsystem.json",
+    "commands/targeted.json",
+    "dependencies.json",
+    "environment.json",
+    "full.xml",
+    "index.json",
+    "plan-binding.json",
+    "privacy-transform.json",
+    "subsystem.xml",
+    "targeted.xml",
+)
+GENERIC_NON_INDEX_PUBLIC_PATHS = tuple(
+    path for path in GENERIC_PUBLIC_PATHS if path != "index.json"
+)
+GENERIC_MAPPED_PUBLIC_PATHS = tuple(
+    path for path in GENERIC_NON_INDEX_PUBLIC_PATHS if path != "privacy-transform.json"
+)
 ENVIRONMENT_KEYS = (
     "CUDA_VISIBLE_DEVICES",
     "MULTIAGENTELBO_RUN_CUDA_TESTS",
@@ -141,6 +161,7 @@ WINDOWS_ABSOLUTE_RE = re.compile(
 POSIX_ABSOLUTE_RE = re.compile(r"(?<![A-Za-z0-9_.><\-])/(?![/\s\"'<>;])[^\s\"'<>;]*")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 FULL_SHA_RE = re.compile(r"[0-9a-f]{40}")
+WAVE_RE = re.compile(r"wave-(?:0|[a-z](?:[0-9]+)?)")
 
 
 XML_SEMANTIC_POSIX_ABSOLUTE_RE = re.compile(
@@ -293,10 +314,53 @@ def _matches_rule(path: str, rule: str) -> bool:
     raise ValueError(f"unknown tested-input selection rule: {rule}")
 
 
-def _is_selected_tested_input(path: str) -> bool:
-    if any(_matches_rule(path, rule) for rule in TESTED_INPUT_EXCLUSION_RULES):
+def _validate_policy_template(payload: object) -> dict[str, object]:
+    if not isinstance(payload, Mapping):
+        raise ValueError("tested-input policy template must be an object")
+    _require_closed_fields(
+        payload,
+        {"schema_version", "selection_rules", "exclusion_rules"},
+        label="tested-input policy template",
+    )
+    schema_version = payload["schema_version"]
+    if not isinstance(schema_version, str) or not schema_version:
+        raise ValueError("tested-input policy schema_version must be nonempty")
+    normalized: dict[str, object] = {"schema_version": schema_version}
+    for field in ("selection_rules", "exclusion_rules"):
+        value = payload[field]
+        if not isinstance(value, (list, tuple)) or not all(
+            isinstance(rule, str) and rule for rule in value
+        ):
+            raise ValueError(f"tested-input {field} must be an ordered string array")
+        rules = list(value)
+        if len(rules) != len(set(rules)):
+            raise ValueError(f"tested-input {field} contains a duplicate rule")
+        for rule in rules:
+            kind, separator, argument = rule.partition(":")
+            if (
+                not separator
+                or not argument
+                or kind
+                not in {
+                    "prefix",
+                    "exact",
+                    "top_level_suffix",
+                }
+            ):
+                raise ValueError(f"unknown tested-input selection rule: {rule}")
+        normalized[field] = rules
+    return normalized
+
+
+def _is_selected_tested_input(
+    path: str,
+    *,
+    selection_rules: Sequence[str] = TESTED_INPUT_SELECTION_RULES,
+    exclusion_rules: Sequence[str] = TESTED_INPUT_EXCLUSION_RULES,
+) -> bool:
+    if any(_matches_rule(path, rule) for rule in exclusion_rules):
         return False
-    return any(_matches_rule(path, rule) for rule in TESTED_INPUT_SELECTION_RULES)
+    return any(_matches_rule(path, rule) for rule in selection_rules)
 
 
 def _nul_paths(data: bytes) -> tuple[str, ...]:
@@ -307,18 +371,40 @@ def _nul_paths(data: bytes) -> tuple[str, ...]:
     return tuple(values)
 
 
-def resolve_tested_input_policy(repo_root: Path | str) -> dict[str, object]:
+def _resolve_tested_input_policy(
+    repo_root: Path | str,
+    policy_template: Mapping[str, object],
+) -> dict[str, object]:
     root = Path(repo_root).resolve(strict=True)
+    template = _validate_policy_template(policy_template)
+    selection_rules = template["selection_rules"]
+    exclusion_rules = template["exclusion_rules"]
+    assert isinstance(selection_rules, list)
+    assert isinstance(exclusion_rules, list)
     tracked = _nul_paths(_git(root, "ls-files", "-z", binary=True))
     untracked = _nul_paths(
         _git(root, "ls-files", "--others", "--exclude-standard", "-z", binary=True)
     )
     matching_untracked = sorted(
-        path for path in untracked if _is_selected_tested_input(path)
+        path
+        for path in untracked
+        if _is_selected_tested_input(
+            path,
+            selection_rules=selection_rules,
+            exclusion_rules=exclusion_rules,
+        )
     )
     if matching_untracked:
         raise ValueError(f"untracked tested input: {matching_untracked[0]}")
-    selected = sorted(path for path in tracked if _is_selected_tested_input(path))
+    selected = sorted(
+        path
+        for path in tracked
+        if _is_selected_tested_input(
+            path,
+            selection_rules=selection_rules,
+            exclusion_rules=exclusion_rules,
+        )
+    )
     if len(selected) != len(set(selected)):
         raise ValueError("duplicate tested input")
     folded: dict[str, str] = {}
@@ -334,11 +420,20 @@ def resolve_tested_input_policy(repo_root: Path | str) -> dict[str, object]:
         data = _require_regular_unlinked_file(root / canonical, label="tested input")
         inputs.append(_file_record(canonical, data))
     return {
-        "schema_version": TESTED_INPUT_SCHEMA,
-        "selection_rules": list(TESTED_INPUT_SELECTION_RULES),
-        "exclusion_rules": list(TESTED_INPUT_EXCLUSION_RULES),
+        **template,
         "inputs": inputs,
     }
+
+
+def resolve_tested_input_policy(repo_root: Path | str) -> dict[str, object]:
+    return _resolve_tested_input_policy(
+        repo_root,
+        {
+            "schema_version": TESTED_INPUT_SCHEMA,
+            "selection_rules": TESTED_INPUT_SELECTION_RULES,
+            "exclusion_rules": TESTED_INPUT_EXCLUSION_RULES,
+        },
+    )
 
 
 def _validate_file_inventory(
@@ -592,6 +687,18 @@ def _xml_strings(root: ET.Element) -> Iterable[str]:
             yield element.tail
 
 
+def _json_strings(value: object) -> Iterable[str]:
+    if isinstance(value, dict):
+        for key, child in value.items():
+            yield str(key)
+            yield from _json_strings(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from _json_strings(child)
+    elif isinstance(value, str):
+        yield value
+
+
 def _known_placeholder(path: str, values: Mapping[str, object]) -> str | None:
     aliases = values.get("path_aliases", {})
     if isinstance(aliases, Mapping):
@@ -679,8 +786,9 @@ def _transform_string(
     values: Mapping[str, object],
     unknown: Mapping[str, str],
 ) -> str:
-    if value == values["hostname"]:
-        return "<HOSTNAME>"
+    hostname = str(values["hostname"])
+    if hostname:
+        value = re.sub(re.escape(hostname), "<HOSTNAME>", value, flags=re.IGNORECASE)
     if key == "PYTHONPATH":
         separator = str(values["path_separator"])
         return separator.join(
@@ -805,7 +913,7 @@ def privacy_transform_bytes(
                     raise ValueError("invalid command JUnit privacy replacement")
                 transformed["junit"].update(replacement)
         public = canonical_json_bytes(transformed)
-    assert_no_literal_absolute_path(public)
+    assert_no_literal_absolute_path(public, privacy_context=privacy_context)
     transforms = ["structural_absolute_paths", "hostname", "process_identifiers"]
     return public, {
         "raw_sha256": _sha256(data),
@@ -824,18 +932,15 @@ def _assert_no_literal_absolute_path_in_string(
     ]
     if unknown_placeholders:
         raise ValueError(f"unknown public placeholder: {unknown_placeholders[0]}")
+    for placeholder in ALLOWED_PLACEHOLDER_RE.finditer(value):
+        occurrence = ALLOWED_PLACEHOLDER_PATH_RE.match(value, placeholder.start())
+        if occurrence is None:
+            raise ValueError(f"invalid public placeholder path: {placeholder.group(0)}")
+    scrubbed = ALLOWED_PLACEHOLDER_PATH_RE.sub("PLACEHOLDER", value)
     if xml_semantic:
-        for placeholder in ALLOWED_PLACEHOLDER_RE.finditer(value):
-            occurrence = ALLOWED_PLACEHOLDER_PATH_RE.match(value, placeholder.start())
-            if occurrence is None:
-                raise ValueError(
-                    f"invalid public placeholder path: {placeholder.group(0)}"
-                )
-        scrubbed = ALLOWED_PLACEHOLDER_PATH_RE.sub("PLACEHOLDER", value)
         scrubbed = EMBEDDED_XML_CLOSING_TAG_RE.sub("XML_CLOSING_TAG", scrubbed)
         posix_pattern = XML_SEMANTIC_POSIX_ABSOLUTE_RE
     else:
-        scrubbed = ALLOWED_PLACEHOLDER_RE.sub("PLACEHOLDER", value)
         posix_pattern = POSIX_ABSOLUTE_RE
     if WINDOWS_ABSOLUTE_RE.search(scrubbed) or posix_pattern.search(scrubbed):
         raise ValueError("literal absolute path remains in public evidence")
@@ -865,7 +970,14 @@ def assert_no_literal_absolute_path(
         for value in semantic_strings:
             _assert_no_literal_absolute_path_in_string(value, xml_semantic=True)
     else:
-        _assert_no_literal_absolute_path_in_string(text, xml_semantic=False)
+        try:
+            payload = json.loads(text)
+        except json.JSONDecodeError:
+            _assert_no_literal_absolute_path_in_string(text, xml_semantic=False)
+        else:
+            semantic_strings = tuple(_json_strings(payload))
+            for value in semantic_strings:
+                _assert_no_literal_absolute_path_in_string(value, xml_semantic=False)
     if privacy_context is not None:
         values = _privacy_values(privacy_context)
         private_text = (
@@ -1024,13 +1136,48 @@ def _validate_tested_input_policy(payload: object) -> list[dict[str, object]]:
         {"schema_version", "selection_rules", "exclusion_rules", "inputs"},
         label="tested-input policy",
     )
-    if payload["schema_version"] != TESTED_INPUT_SCHEMA:
-        raise ValueError("tested-input schema mismatch")
-    if payload["selection_rules"] != list(TESTED_INPUT_SELECTION_RULES):
-        raise ValueError("tested-input selection rules mismatch")
-    if payload["exclusion_rules"] != list(TESTED_INPUT_EXCLUSION_RULES):
-        raise ValueError("tested-input exclusion rules mismatch")
+    _validate_policy_template(
+        {
+            "schema_version": payload["schema_version"],
+            "selection_rules": payload["selection_rules"],
+            "exclusion_rules": payload["exclusion_rules"],
+        }
+    )
     return _validate_file_inventory(payload["inputs"], label="tested inputs")
+
+
+def _policy_template_from_resolved(
+    payload: Mapping[str, object],
+) -> dict[str, object]:
+    return _validate_policy_template(
+        {
+            "schema_version": payload["schema_version"],
+            "selection_rules": payload["selection_rules"],
+            "exclusion_rules": payload["exclusion_rules"],
+        }
+    )
+
+
+def _plan_path_for_wave(wave: str) -> PurePosixPath:
+    if WAVE_RE.fullmatch(wave) is None:
+        raise ValueError("invalid evidence wave")
+    labels = {
+        "wave-0": "0",
+        "wave-a": "a",
+        "wave-b": "b",
+        "wave-c": "c",
+        "wave-d0": "d",
+        "wave-d1": "d",
+        "wave-e": "e",
+    }
+    try:
+        label = labels[wave]
+    except KeyError as error:
+        raise ValueError(f"unsupported evidence wave: {wave}") from error
+    return PurePosixPath(
+        "docs/superpowers/plans/"
+        f"2026-08-11-scientific-integrity-remediation-wave-{label}.md"
+    )
 
 
 def _validate_binding(record: object, *, label: str, with_commit: bool = False) -> None:
@@ -1045,6 +1192,30 @@ def _validate_binding(record: object, *, label: str, with_commit: bool = False) 
         _require_full_sha(record["commit"], label=f"{label} commit")
 
 
+def _read_public_evidence_tree(evidence_root: Path) -> dict[str, bytes]:
+    public: dict[str, bytes] = {}
+    for current, directory_names, file_names in os.walk(
+        evidence_root, followlinks=False
+    ):
+        current_path = Path(current)
+        for name in tuple(directory_names):
+            directory = current_path / name
+            if directory.is_symlink() or _path_is_reparse(directory):
+                raise ValueError(
+                    "public evidence inventory contains a reparse directory"
+                )
+        for name in file_names:
+            path = current_path / name
+            relative = path.relative_to(evidence_root).as_posix()
+            _validate_relative_path(relative, label="public evidence path")
+            if relative in public:
+                raise ValueError("public evidence inventory contains a duplicate path")
+            public[relative] = _require_regular_unlinked_file(
+                path, label="public evidence"
+            )
+    return public
+
+
 def validate_evidence_index(
     payload: Mapping[str, object],
     *,
@@ -1057,7 +1228,7 @@ def validate_evidence_index(
     if payload["schema_version"] != "remediation-evidence-index-v1":
         raise ValueError("evidence-index schema_version mismatch")
     wave = payload["wave"]
-    if not isinstance(wave, str) or not re.fullmatch(r"wave-[0-9]+", wave):
+    if not isinstance(wave, str) or WAVE_RE.fullmatch(wave) is None:
         raise ValueError("invalid evidence wave")
     stage = payload["evidence_stage"]
     if not isinstance(stage, str):
@@ -1079,11 +1250,16 @@ def validate_evidence_index(
     if not isinstance(payload["platform"], dict):
         raise ValueError("platform must be an object")
     _validate_binding(payload["environment_record"], label="environment record")
-    _validate_file_inventory(
+    dependency_inputs = _validate_file_inventory(
         payload["dependency_inputs"],
         label="dependency inputs",
         require_sorted=False,
     )
+    dependency_paths = [str(item["path"]) for item in dependency_inputs]
+    if len(dependency_paths) != len(set(dependency_paths)):
+        raise ValueError("dependency inputs contain a duplicate path")
+    if "uv.lock" in dependency_paths:
+        raise ValueError("uv.lock is not an evidence dependency")
     if not isinstance(payload["dependency_versions"], list):
         raise ValueError("dependency_versions must be an array")
     tested_inputs = _validate_tested_input_policy(payload["tested_input_policy"])
@@ -1091,7 +1267,7 @@ def validate_evidence_index(
     if payload["tested_input_inventory_sha256"] != expected_inventory_hash:
         raise ValueError("tested-input inventory hash mismatch")
     _validate_file_inventory(payload["commands"], label="commands")
-    _validate_file_inventory(
+    source_bindings = _validate_file_inventory(
         payload["source_config_bindings"], label="source/config bindings"
     )
     _validate_binding(
@@ -1106,39 +1282,70 @@ def validate_evidence_index(
         payload["files"], label="evidence files", with_kind=True
     )
     paths = {str(item["path"]) for item in files}
-    complete_paths = paths | {"index.json"}
-    from tools.build_wave0_evidence import (
-        CANDIDATE_PUBLIC_PATHS,
-        CLOSURE_PUBLIC_PATHS_BY_TARGET,
-    )
-
+    if not set(GENERIC_NON_INDEX_PUBLIC_PATHS).issubset(paths):
+        raise ValueError("evidence index lacks the complete generic base")
     if stage == "candidate":
-        if complete_paths != set(CANDIDATE_PUBLIC_PATHS):
-            raise ValueError("candidate public path contract mismatch")
         evidence_root = root / f"docs/verification/evidence/{wave}/{tested[:12]}"
-    else:
-        matching_targets = [
-            target
-            for target, expected in CLOSURE_PUBLIC_PATHS_BY_TARGET.items()
-            if complete_paths == set(expected)
-        ]
-        if len(matching_targets) != 1:
-            raise ValueError("closure public path contract mismatch")
+    elif stage == "closure":
         evidence_root = root / f"verification-evidence/{wave}/{tested[:12]}"
+    else:
+        raise ValueError("evidence_stage must be candidate or closure")
     if evidence_root.exists():
-        for record in files:
-            path = evidence_root / str(record["path"])
-            data = _require_regular_unlinked_file(path, label="indexed public evidence")
+        public_tree = _read_public_evidence_tree(evidence_root)
+        index_bytes = public_tree.pop("index.json", None)
+        if index_bytes is None:
+            raise ValueError("public evidence inventory lacks index.json")
+        if index_bytes != canonical_json_bytes(payload):
+            raise ValueError("on-disk index differs from validated index payload")
+        indexed = {str(record["path"]): record for record in files}
+        for path, record in indexed.items():
+            data = public_tree.get(path)
+            if data is None:
+                raise ValueError(
+                    f"public evidence inventory lacks indexed byte: {path}"
+                )
             if len(data) != record["size_bytes"] or _sha256(data) != record["sha256"]:
-                raise ValueError(f"indexed public byte mismatch: {record['path']}")
-            assert_no_literal_absolute_path(data)
-    current_policy = resolve_tested_input_policy(root)
+                raise ValueError(f"indexed public byte mismatch: {path}")
+        _validate_complete_public_inventory(
+            index_bytes=index_bytes,
+            indexed=indexed,
+            actual=public_tree,
+        )
+        privacy_context = _generic_privacy_context(root)
+        for data in public_tree.values():
+            assert_no_literal_absolute_path(data, privacy_context=privacy_context)
+        _validate_generic_public_records(payload, public_tree, repo_root=root)
+    policy = payload["tested_input_policy"]
+    assert isinstance(policy, dict)
+    current_policy = _resolve_tested_input_policy(
+        root, _policy_template_from_resolved(policy)
+    )
     if current_policy != payload["tested_input_policy"]:
         raise ValueError("current tested-input policy differs from evidence index")
     plan = payload["reviewed_plan_binding"]
     snapshot = payload["verification_contract_binding"]
     assert isinstance(plan, dict)
     assert isinstance(snapshot, dict)
+    expected_plan_path = str(_plan_path_for_wave(wave))
+    if plan["path"] != expected_plan_path:
+        raise ValueError("reviewed plan path differs from evidence wave")
+    source_paths = {str(item["path"]) for item in source_bindings}
+    tested_by_path = {str(item["path"]): item for item in tested_inputs}
+    tested_paths = set(tested_by_path)
+    for required in (expected_plan_path, str(SNAPSHOT_PATH)):
+        if required not in source_paths or required not in tested_paths:
+            raise ValueError(f"required generic source binding missing: {required}")
+    if snapshot["path"] != str(SNAPSHOT_PATH):
+        raise ValueError("verification contract binding path mismatch")
+    for binding in source_bindings:
+        path = str(binding["path"])
+        if tested_by_path.get(path) != binding:
+            raise ValueError(f"source/config binding differs from tested input: {path}")
+        data = _require_regular_unlinked_file(
+            root / path, label="source/config binding"
+        )
+        if len(data) != binding["size_bytes"] or _sha256(data) != binding["sha256"]:
+            raise ValueError(f"source/config binding byte mismatch: {path}")
     for label, binding in (
         ("reviewed_plan_binding", plan),
         ("verification_contract_binding", snapshot),
@@ -1165,15 +1372,12 @@ def validate_evidence_index(
         raise ValueError("reviewed plan blob differs from current tested plan bytes")
     snapshot_payload = json.loads((root / str(snapshot["path"])).read_bytes())
     _validate_snapshot_payload(snapshot_payload)
-    dependency_paths = [str(item["path"]) for item in payload["dependency_inputs"]]
-    expected_dependency_paths = [
-        "pyproject.toml",
-        "environments/cuda-rtx5090-cu128.lock.txt",
-        str(SNAPSHOT_PATH),
-    ]
-    if dependency_paths != expected_dependency_paths or "uv.lock" in dependency_paths:
-        raise ValueError("dependency input path contract mismatch")
-    for record in payload["dependency_inputs"]:
+    for record in dependency_inputs:
+        dependency_path = str(record["path"])
+        if tested_by_path.get(dependency_path) != record:
+            raise ValueError(
+                f"dependency input differs from tested input: {dependency_path}"
+            )
         data = _require_regular_unlinked_file(
             root / str(record["path"]), label="dependency input"
         )
@@ -1205,31 +1409,71 @@ def build_evidence_index(
         implementation_parent_git_head=implementation_parent_git_head,
         actual_head=actual_head,
     )
-    resolved_policy = resolve_tested_input_policy(root)
-    if dict(tested_input_policy) != resolved_policy:
-        raise ValueError(
-            "caller-supplied tested-input policy differs from canonical resolution"
-        )
+    resolved_policy = _resolve_tested_input_policy(root, tested_input_policy)
     environment_payload = json.loads(environment_record_bytes)
+    if canonical_json_bytes(environment_payload) != environment_record_bytes:
+        raise ValueError("environment record must be canonical JSON")
+    dependency_paths = [
+        _validate_relative_path(path, label="dependency input path")
+        for path in dependency_input_paths
+    ]
+    if len(dependency_paths) != len(set(dependency_paths)):
+        raise ValueError("dependency input paths contain a duplicate")
+    if "uv.lock" in dependency_paths:
+        raise ValueError("uv.lock is not an evidence dependency")
     dependency_inputs = [
         _file_record(
             path, _require_regular_unlinked_file(root / path, label="dependency input")
         )
-        for path in dependency_input_paths
+        for path in dependency_paths
     ]
+    if environment_payload.get("dependency_inputs") != dependency_inputs:
+        raise ValueError("environment dependency inputs differ from requested order")
     commands = [
         _file_record(f"commands/{suite}.json", data)
         for suite, data in sorted(command_records.items())
     ]
+    source_paths = [
+        _validate_relative_path(path, label="source/config input path")
+        for path in source_config_paths
+    ]
+    if source_paths != sorted(source_paths) or len(source_paths) != len(
+        set(source_paths)
+    ):
+        raise ValueError("source/config paths must be unique and ASCII-sorted")
+    resolved_paths = {
+        str(item["path"])
+        for item in resolved_policy["inputs"]
+        if isinstance(item, dict)
+    }
+    missing_dependencies = set(dependency_paths) - resolved_paths
+    if missing_dependencies:
+        raise ValueError(
+            f"dependency input is absent from tested inputs: "
+            f"{sorted(missing_dependencies)[0]}"
+        )
+    unknown_sources = set(source_paths) - resolved_paths
+    if unknown_sources:
+        raise ValueError(
+            f"source/config input is absent from tested inputs: "
+            f"{sorted(unknown_sources)[0]}"
+        )
+    plan_path = str(_plan_path_for_wave(wave))
+    for required in (plan_path, str(SNAPSHOT_PATH)):
+        if required not in source_paths or required not in resolved_paths:
+            raise ValueError(f"required generic source binding missing: {required}")
     source_bindings = [
         _file_record(
             path,
             _require_regular_unlinked_file(root / path, label="source/config input"),
         )
-        for path in sorted(source_config_paths)
+        for path in source_paths
     ]
     plan_binding = _reviewed_plan_binding(
-        root, tested_git_head, implementation_parent_git_head
+        root,
+        tested_git_head,
+        implementation_parent_git_head,
+        wave=wave,
     )
     snapshot_data = _require_regular_unlinked_file(
         root / SNAPSHOT_PATH, label="verification snapshot"
@@ -1277,8 +1521,10 @@ def _reviewed_plan_binding(
     repo_root: Path,
     tested_git_head: str,
     implementation_parent_git_head: str,
+    *,
+    wave: str = "wave-0",
 ) -> dict[str, object]:
-    path = str(PLAN_PATH)
+    path = str(_plan_path_for_wave(wave))
     data = _require_regular_unlinked_file(
         repo_root / path, label="reviewed Wave 0 plan"
     )
@@ -1404,7 +1650,625 @@ def _validate_command_record(payload: object, *, suite: str) -> dict[str, object
     return payload
 
 
-def _validate_detached_bundle(bundle: PreparedEvidenceBundle) -> dict[str, object]:
+def _generic_privacy_context(
+    repo_root: Path,
+    *,
+    public_junits: Mapping[str, bytes] | None = None,
+    raw_junit_records: Mapping[str, Mapping[str, object]] | None = None,
+) -> dict[str, object]:
+    context: dict[str, object] = {
+        "repo_root": repo_root,
+        "user_home": Path.home(),
+        "cpu_python": CPU_PYTHON,
+        "hostname": socket.gethostname(),
+        "path_separator": os.pathsep,
+        "path_aliases": {},
+        "hash_replacements": {},
+        "junit_public_records": {},
+    }
+    if public_junits is None:
+        return context
+    aliases: dict[str, str] = {}
+    hash_replacements: dict[str, str] = {}
+    public_records: dict[str, dict[str, object]] = {}
+    for suite, data in sorted(public_junits.items()):
+        public_record = _parse_junit_bytes(data, public_path=f"{suite}.xml")
+        public_records[suite] = public_record
+        if raw_junit_records is not None:
+            raw_record = raw_junit_records[suite]
+            aliases[str(raw_record["path"])] = f"{suite}.xml"
+            hash_replacements[str(raw_record["sha256"])] = str(public_record["sha256"])
+    context["path_aliases"] = aliases
+    context["hash_replacements"] = hash_replacements
+    context["junit_public_records"] = public_records
+    return context
+
+
+def _generic_mapping_record(
+    *,
+    raw_relative_path: str,
+    public_path: str,
+    raw: bytes,
+    public: bytes,
+    mapping: Mapping[str, object],
+) -> dict[str, object]:
+    return {
+        "raw_relative_path": raw_relative_path,
+        "raw_sha256": _sha256(raw),
+        "public_path": public_path,
+        "public_sha256": _sha256(public),
+        "transforms": mapping["transforms"],
+    }
+
+
+def _generic_kind_for_path(path: str) -> str:
+    if path.startswith("commands/"):
+        return "command"
+    if path.endswith(".xml"):
+        return "junit"
+    if path == "environment.json":
+        return "environment"
+    if path == "dependencies.json":
+        return "dependency"
+    if path == "plan-binding.json":
+        return "plan_binding"
+    if path == "privacy-transform.json":
+        return "privacy_transform"
+    if path == "historical-verification.json":
+        return "reproduced_source"
+    if path.startswith("reviews/adjudicators/"):
+        return "adjudicator"
+    if path.startswith("reviews/"):
+        return "review"
+    return "domain"
+
+
+def _finalize_evidence_index(
+    index: Mapping[str, object],
+    public_files: Mapping[str, bytes],
+    *,
+    kinds: Mapping[str, str] | None = None,
+) -> dict[str, object]:
+    if "index.json" in public_files:
+        raise ValueError("index finalization accepts only non-index public bytes")
+    if not set(GENERIC_NON_INDEX_PUBLIC_PATHS).issubset(public_files):
+        raise ValueError("index finalization lacks the complete generic base")
+    finalized = copy.deepcopy(dict(index))
+    finalized["files"] = [
+        {
+            **_file_record(path, data),
+            "kind": (
+                str(kinds[path])
+                if kinds is not None and path in kinds
+                else _generic_kind_for_path(path)
+            ),
+        }
+        for path, data in sorted(public_files.items())
+    ]
+    if set(finalized) != INDEX_ROOT_FIELDS:
+        raise ValueError("finalized evidence index root fields drifted")
+    return finalized
+
+
+def _canonical_json_object(data: bytes, *, label: str) -> dict[str, object]:
+    try:
+        payload = json.loads(data)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"invalid {label} JSON: {error}") from error
+    if not isinstance(payload, dict) or canonical_json_bytes(payload) != data:
+        raise ValueError(f"{label} must be a canonical JSON object")
+    return payload
+
+
+def _iter_nested_file_bindings(value: object) -> Iterable[dict[str, object]]:
+    if isinstance(value, dict):
+        path_key = (
+            "path"
+            if FILE_RECORD_FIELDS.issubset(value)
+            else ("name" if {"name", "size_bytes", "sha256"}.issubset(value) else None)
+        )
+        if path_key is not None:
+            path = _validate_relative_path(
+                value[path_key], label="domain artifact path"
+            )
+            size = _require_nonnegative_int(
+                value["size_bytes"], label="domain artifact size_bytes"
+            )
+            digest = _require_sha256(value["sha256"], label="domain artifact sha256")
+            yield {"path": path, "size_bytes": size, "sha256": digest}
+            return
+        for child in value.values():
+            yield from _iter_nested_file_bindings(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from _iter_nested_file_bindings(child)
+
+
+def _validate_complete_public_inventory(
+    *,
+    index_bytes: bytes,
+    indexed: Mapping[str, Mapping[str, object]],
+    actual: Mapping[str, bytes],
+) -> None:
+    indexed_paths = set(indexed)
+    actual_paths = set(actual)
+    if not indexed_paths.issubset(actual_paths):
+        raise ValueError("public evidence inventory lacks an indexed byte")
+    extras = actual_paths - indexed_paths
+    if not extras:
+        return
+
+    index_binding = _file_record("index.json", index_bytes)
+    candidates: list[tuple[str, dict[str, object]]] = []
+    for path in sorted(extras):
+        if not path.endswith(".json"):
+            continue
+        try:
+            payload = _canonical_json_object(actual[path], label="one-way domain index")
+        except ValueError:
+            continue
+        root_binding = payload.get("base_index", payload.get("root_index"))
+        normalized_root = tuple(_iter_nested_file_bindings(root_binding))
+        if normalized_root == (index_binding,):
+            candidates.append((path, payload))
+    if len(candidates) != 1:
+        raise ValueError(
+            "public evidence inventory has unbound or ambiguous domain extras"
+        )
+
+    domain_index_path, domain_index = candidates[0]
+    covered: dict[str, dict[str, object]] = {}
+    for key, value in domain_index.items():
+        if key in {"base_index", "root_index"}:
+            continue
+        for record in _iter_nested_file_bindings(value):
+            path = str(record["path"])
+            existing = covered.get(path)
+            if existing is not None and existing != record:
+                raise ValueError("domain index contains conflicting file bindings")
+            covered[path] = record
+    expected_domain_paths = extras - {domain_index_path}
+    if set(covered) != expected_domain_paths:
+        raise ValueError("public evidence inventory domain coverage mismatch")
+    for path, record in covered.items():
+        data = actual[path]
+        if len(data) != record["size_bytes"] or _sha256(data) != record["sha256"]:
+            raise ValueError(f"domain-indexed public byte mismatch: {path}")
+
+
+def _validate_generic_public_records(
+    index: Mapping[str, object],
+    public_files: Mapping[str, bytes],
+    *,
+    repo_root: Path | None = None,
+) -> None:
+    if not set(GENERIC_NON_INDEX_PUBLIC_PATHS).issubset(public_files):
+        raise ValueError("generic public records are incomplete")
+    for path in GENERIC_NON_INDEX_PUBLIC_PATHS:
+        assert_no_literal_absolute_path(public_files[path])
+
+    environment = _canonical_json_object(
+        public_files["environment.json"], label="environment record"
+    )
+    _require_closed_fields(
+        environment,
+        {
+            "schema_version",
+            "platform",
+            "interpreter",
+            "dependency_versions",
+            "dependency_inputs",
+            "environment_variables",
+        },
+        label="environment record",
+    )
+    if environment["schema_version"] != "remediation-environment-v1":
+        raise ValueError("environment schema mismatch")
+    dependencies = _canonical_json_object(
+        public_files["dependencies.json"], label="dependency record"
+    )
+    _require_closed_fields(
+        dependencies,
+        {"schema_version", "dependency_versions", "dependency_inputs"},
+        label="dependency record",
+    )
+    if dependencies["schema_version"] != "remediation-dependencies-v1":
+        raise ValueError("dependency schema mismatch")
+    if (
+        dependencies["dependency_versions"] != environment["dependency_versions"]
+        or dependencies["dependency_inputs"] != environment["dependency_inputs"]
+        or index["dependency_versions"] != environment["dependency_versions"]
+        or index["dependency_inputs"] != environment["dependency_inputs"]
+    ):
+        raise ValueError("dependency input byte mismatch across public records")
+    if index["platform"] != environment["platform"]:
+        raise ValueError("environment platform differs from index")
+    if index["environment_record"] != _file_record(
+        "environment.json", public_files["environment.json"]
+    ):
+        raise ValueError("environment index binding mismatch")
+    if repo_root is not None:
+        dependency_paths = tuple(
+            str(record["path"])
+            for record in _validate_file_inventory(
+                index["dependency_inputs"],
+                label="dependency inputs",
+                require_sorted=False,
+            )
+        )
+        live_environment = capture_environment_record(
+            repo_root, dependency_input_paths=dependency_paths
+        )
+        expected_environment, _mapping = privacy_transform_bytes(
+            canonical_json_bytes(live_environment),
+            kind="environment",
+            privacy_context=_generic_privacy_context(repo_root),
+        )
+        if public_files["environment.json"] != expected_environment:
+            raise ValueError(
+                "public environment differs from live execution environment"
+            )
+
+    plan = _canonical_json_object(
+        public_files["plan-binding.json"], label="plan binding"
+    )
+    _require_closed_fields(
+        plan,
+        {"schema_version", "path", "size_bytes", "sha256", "commit"},
+        label="plan binding",
+    )
+    if plan["schema_version"] != f"{index['wave']}-plan-binding-v1":
+        raise ValueError("plan-binding schema mismatch")
+    if {key: value for key, value in plan.items() if key != "schema_version"} != index[
+        "reviewed_plan_binding"
+    ]:
+        raise ValueError("reviewed_plan_binding byte mismatch across public records")
+
+    commands = {
+        str(record["path"]): record
+        for record in _validate_file_inventory(index["commands"], label="commands")
+    }
+    for suite in ("full", "subsystem", "targeted"):
+        junit_path = f"{suite}.xml"
+        command_path = f"commands/{suite}.json"
+        junit = _parse_junit_bytes(public_files[junit_path], public_path=junit_path)
+        command = _validate_command_record(
+            _canonical_json_object(
+                public_files[command_path], label=f"{suite} command record"
+            ),
+            suite=suite,
+        )
+        if command["junit"] != junit:
+            raise ValueError(f"{suite} public command JUnit binding mismatch")
+        if (
+            command["interpreter"] != environment["interpreter"]
+            or command["env_allowlist"] != environment["environment_variables"]
+        ):
+            raise ValueError(f"{suite} command execution environment mismatch")
+        if commands.get(command_path) != _file_record(
+            command_path, public_files[command_path]
+        ):
+            raise ValueError(f"{suite} command index binding mismatch")
+
+    privacy = _canonical_json_object(
+        public_files["privacy-transform.json"], label="privacy transform"
+    )
+    _require_closed_fields(
+        privacy, {"schema_version", "records"}, label="privacy transform"
+    )
+    if privacy["schema_version"] != "remediation-privacy-transform-v1":
+        raise ValueError("privacy-transform schema mismatch")
+    records = privacy["records"]
+    if not isinstance(records, list):
+        raise ValueError("privacy-transform records must be an array")
+    public_paths: list[str] = []
+    raw_paths: list[str] = []
+    for record in records:
+        if not isinstance(record, dict):
+            raise ValueError("privacy-transform record must be an object")
+        _require_closed_fields(
+            record,
+            {
+                "raw_relative_path",
+                "raw_sha256",
+                "public_path",
+                "public_sha256",
+                "transforms",
+            },
+            label="privacy-transform record",
+        )
+        raw_path = _validate_relative_path(
+            record["raw_relative_path"], label="privacy raw path"
+        )
+        public_path = _validate_relative_path(
+            record["public_path"], label="privacy public path"
+        )
+        _require_sha256(record["raw_sha256"], label="privacy raw sha256")
+        _require_sha256(record["public_sha256"], label="privacy public sha256")
+        if public_path not in public_files or record["public_sha256"] != _sha256(
+            public_files[public_path]
+        ):
+            raise ValueError(f"privacy public byte mismatch: {public_path}")
+        transforms = record["transforms"]
+        if (
+            not isinstance(transforms, list)
+            or not transforms
+            or not all(isinstance(item, str) and item for item in transforms)
+        ):
+            raise ValueError("privacy transforms must be a nonempty string array")
+        public_paths.append(public_path)
+        raw_paths.append(raw_path)
+    if public_paths != sorted(public_paths):
+        raise ValueError("privacy-transform records must be public-path sorted")
+    if len(set(public_paths)) != len(public_paths) or len(set(raw_paths)) != len(
+        raw_paths
+    ):
+        raise ValueError("privacy-transform records contain duplicate paths")
+    if not set(GENERIC_MAPPED_PUBLIC_PATHS).issubset(public_paths):
+        raise ValueError("privacy-transform generic path coverage mismatch")
+
+
+def _prepare_evidence_bundle(
+    *,
+    repo_root: Path | str,
+    wave: str,
+    evidence_stage: str,
+    tested_git_head: str,
+    implementation_parent_git_head: str,
+    command_records: Mapping[str, bytes],
+    source_config_paths: Sequence[str],
+    tested_input_policy: Mapping[str, object],
+    dependency_input_paths: Sequence[str],
+    raw_junit_bytes: Mapping[str, bytes],
+    output_dir: Path | str,
+    require_output_absent: bool,
+) -> PreparedEvidenceBundle:
+    root = Path(repo_root).resolve(strict=True)
+    actual_head = _git_head(root)
+    _validate_head_relationship(
+        repo_root=root,
+        wave=wave,
+        evidence_stage=evidence_stage,
+        tested_git_head=tested_git_head,
+        implementation_parent_git_head=implementation_parent_git_head,
+        actual_head=actual_head,
+    )
+    _plan_path_for_wave(wave)
+    policy_template = _validate_policy_template(tested_input_policy)
+    _resolve_tested_input_policy(root, policy_template)
+
+    output_text = Path(output_dir).as_posix()
+    _validate_relative_path(output_text, label="prepared output directory")
+    expected_output = (
+        f"docs/verification/evidence/{wave}/{tested_git_head[:12]}"
+        if evidence_stage == "candidate"
+        else f"verification-evidence/{wave}/{tested_git_head[:12]}"
+    )
+    if output_text != expected_output:
+        raise ValueError("output directory differs from evidence stage/head")
+    output = root.joinpath(*PurePosixPath(output_text).parts)
+    if require_output_absent and (output.exists() or output.is_symlink()):
+        raise FileExistsError("public evidence destination already exists")
+
+    suites = {"full", "subsystem", "targeted"}
+    if set(command_records) != suites or set(raw_junit_bytes) != suites:
+        raise ValueError("generic preparation requires exact three-suite inputs")
+    parsed_commands: dict[str, dict[str, object]] = {}
+    raw_junit_records: dict[str, dict[str, object]] = {}
+    for suite in sorted(suites):
+        command_bytes = command_records[suite]
+        junit_bytes = raw_junit_bytes[suite]
+        if not isinstance(command_bytes, bytes) or not isinstance(junit_bytes, bytes):
+            raise ValueError("generic raw command and JUnit inputs must be bytes")
+        command_payload = _canonical_json_object(
+            command_bytes, label=f"{suite} raw command record"
+        )
+        command = _validate_command_record(command_payload, suite=suite)
+        raw_junit = command["junit"]
+        assert isinstance(raw_junit, dict)
+        parsed = _parse_junit_bytes(junit_bytes, public_path=str(raw_junit["path"]))
+        if parsed != raw_junit:
+            raise ValueError(f"{suite} raw command JUnit binding mismatch")
+        parsed_commands[suite] = command
+        raw_junit_records[suite] = parsed
+
+    base_context = _generic_privacy_context(root)
+    public: dict[str, bytes] = {}
+    mappings: list[dict[str, object]] = []
+    public_junits: dict[str, bytes] = {}
+    for suite in sorted(suites):
+        raw = raw_junit_bytes[suite]
+        transformed, mapping = privacy_transform_bytes(
+            raw, kind="junit", privacy_context=base_context
+        )
+        path = f"{suite}.xml"
+        public_junits[suite] = transformed
+        public[path] = transformed
+        mappings.append(
+            _generic_mapping_record(
+                raw_relative_path=f"raw/{suite}.xml",
+                public_path=path,
+                raw=raw,
+                public=transformed,
+                mapping=mapping,
+            )
+        )
+
+    context = _generic_privacy_context(
+        root,
+        public_junits=public_junits,
+        raw_junit_records=raw_junit_records,
+    )
+    environment_payload = capture_environment_record(
+        root, dependency_input_paths=dependency_input_paths
+    )
+    for suite in sorted(suites):
+        command = parsed_commands[suite]
+        if (
+            command["env_allowlist"] != environment_payload["environment_variables"]
+            or command["interpreter"] != environment_payload["interpreter"]
+        ):
+            raise ValueError(f"{suite} command execution environment drift")
+        raw = command_records[suite]
+        transformed, mapping = privacy_transform_bytes(
+            raw, kind="command", privacy_context=context
+        )
+        public_command = _validate_command_record(
+            _canonical_json_object(transformed, label=f"{suite} public command record"),
+            suite=suite,
+        )
+        expected_junit = _parse_junit_bytes(
+            public_junits[suite], public_path=f"{suite}.xml"
+        )
+        if public_command["junit"] != expected_junit:
+            raise ValueError(f"{suite} public command JUnit binding mismatch")
+        path = f"commands/{suite}.json"
+        public[path] = transformed
+        mappings.append(
+            _generic_mapping_record(
+                raw_relative_path=f"raw/{suite}.command.json",
+                public_path=path,
+                raw=raw,
+                public=transformed,
+                mapping=mapping,
+            )
+        )
+
+    environment_raw = canonical_json_bytes(environment_payload)
+    environment_public, mapping = privacy_transform_bytes(
+        environment_raw, kind="environment", privacy_context=context
+    )
+    public["environment.json"] = environment_public
+    mappings.append(
+        _generic_mapping_record(
+            raw_relative_path="generated/environment.json",
+            public_path="environment.json",
+            raw=environment_raw,
+            public=environment_public,
+            mapping=mapping,
+        )
+    )
+    dependencies_raw = canonical_json_bytes(
+        {
+            "schema_version": "remediation-dependencies-v1",
+            "dependency_versions": environment_payload["dependency_versions"],
+            "dependency_inputs": environment_payload["dependency_inputs"],
+        }
+    )
+    dependencies_public, mapping = privacy_transform_bytes(
+        dependencies_raw, kind="dependency", privacy_context=context
+    )
+    public["dependencies.json"] = dependencies_public
+    mappings.append(
+        _generic_mapping_record(
+            raw_relative_path="generated/dependencies.json",
+            public_path="dependencies.json",
+            raw=dependencies_raw,
+            public=dependencies_public,
+            mapping=mapping,
+        )
+    )
+    plan_binding = _reviewed_plan_binding(
+        root,
+        tested_git_head,
+        implementation_parent_git_head,
+        wave=wave,
+    )
+    plan_raw = canonical_json_bytes(
+        {"schema_version": f"{wave}-plan-binding-v1", **plan_binding}
+    )
+    plan_public, mapping = privacy_transform_bytes(
+        plan_raw, kind="plan", privacy_context=context
+    )
+    public["plan-binding.json"] = plan_public
+    mappings.append(
+        _generic_mapping_record(
+            raw_relative_path="generated/plan-binding.json",
+            public_path="plan-binding.json",
+            raw=plan_raw,
+            public=plan_public,
+            mapping=mapping,
+        )
+    )
+    mappings.sort(key=lambda item: str(item["public_path"]))
+    privacy_bytes = canonical_json_bytes(
+        {
+            "schema_version": "remediation-privacy-transform-v1",
+            "records": mappings,
+        }
+    )
+    assert_no_literal_absolute_path(privacy_bytes, privacy_context=context)
+    public["privacy-transform.json"] = privacy_bytes
+    if set(public) != set(GENERIC_NON_INDEX_PUBLIC_PATHS):
+        raise ValueError("generic preparation path contract mismatch")
+
+    index = build_evidence_index(
+        repo_root=root,
+        wave=wave,
+        evidence_stage=evidence_stage,
+        tested_git_head=tested_git_head,
+        implementation_parent_git_head=implementation_parent_git_head,
+        command_records={
+            suite: public[f"commands/{suite}.json"] for suite in sorted(suites)
+        },
+        source_config_paths=source_config_paths,
+        tested_input_policy=policy_template,
+        environment_record_bytes=public["environment.json"],
+        dependency_input_paths=dependency_input_paths,
+        public_junit_bytes={suite: public[f"{suite}.xml"] for suite in sorted(suites)},
+    )
+    finalized = _finalize_evidence_index(index, public)
+    index_bytes = canonical_json_bytes(finalized)
+    assert_no_literal_absolute_path(index_bytes)
+    complete = {**public, "index.json": index_bytes}
+    bundle = PreparedEvidenceBundle(
+        PurePosixPath(output_text),
+        tuple(
+            PreparedEvidenceFile(PurePosixPath(path), data)
+            for path, data in sorted(complete.items())
+        ),
+    )
+    _validate_detached_bundle(bundle, repo_root=root)
+    if require_output_absent:
+        validate_evidence_index(finalized, repo_root=root, actual_head=actual_head)
+    return bundle
+
+
+def prepare_evidence_bundle(
+    *,
+    repo_root: Path | str,
+    wave: str,
+    evidence_stage: str,
+    tested_git_head: str,
+    implementation_parent_git_head: str,
+    command_records: Mapping[str, bytes],
+    source_config_paths: Sequence[str],
+    tested_input_policy: Mapping[str, object],
+    dependency_input_paths: Sequence[str],
+    raw_junit_bytes: Mapping[str, bytes],
+    output_dir: Path | str,
+) -> PreparedEvidenceBundle:
+    return _prepare_evidence_bundle(
+        repo_root=repo_root,
+        wave=wave,
+        evidence_stage=evidence_stage,
+        tested_git_head=tested_git_head,
+        implementation_parent_git_head=implementation_parent_git_head,
+        command_records=command_records,
+        source_config_paths=source_config_paths,
+        tested_input_policy=tested_input_policy,
+        dependency_input_paths=dependency_input_paths,
+        raw_junit_bytes=raw_junit_bytes,
+        output_dir=output_dir,
+        require_output_absent=True,
+    )
+
+
+def _validate_detached_bundle(
+    bundle: PreparedEvidenceBundle,
+    *,
+    repo_root: Path | str | None = None,
+) -> dict[str, object]:
     if not isinstance(bundle.output_dir, PurePosixPath):
         raise ValueError("prepared output_dir must be PurePosixPath")
     _validate_relative_path(str(bundle.output_dir), label="prepared output directory")
@@ -1413,13 +2277,19 @@ def _validate_detached_bundle(bundle: PreparedEvidenceBundle) -> dict[str, objec
         raise ValueError("prepared files must be ASCII-path-sorted")
     if len({path.casefold() for path in paths}) != len(paths):
         raise ValueError("prepared files contain a case-fold alias")
+    resolved_root = (
+        Path(repo_root).resolve(strict=True) if repo_root is not None else None
+    )
+    privacy_context = (
+        _generic_privacy_context(resolved_root) if resolved_root is not None else None
+    )
     for item in bundle.files:
         _validate_relative_path(str(item.path), label="prepared file path")
         if not isinstance(item.data, bytes):
             raise ValueError(
                 "prepared evidence buffers must be detached immutable bytes"
             )
-        assert_no_literal_absolute_path(item.data)
+        assert_no_literal_absolute_path(item.data, privacy_context=privacy_context)
     try:
         index_file = next(
             item for item in bundle.files if str(item.path) == "index.json"
@@ -1442,28 +2312,24 @@ def _validate_detached_bundle(bundle: PreparedEvidenceBundle) -> dict[str, objec
     actual = {
         str(item.path): item for item in bundle.files if str(item.path) != "index.json"
     }
-    if set(indexed) != set(actual):
-        raise ValueError("prepared bundle path set differs from index")
+    if not set(GENERIC_NON_INDEX_PUBLIC_PATHS).issubset(indexed):
+        raise ValueError("prepared index lacks the complete generic base")
     for path, record in indexed.items():
         data = actual[path].data
         if len(data) != record["size_bytes"] or _sha256(data) != record["sha256"]:
             raise ValueError(f"prepared indexed byte mismatch: {path}")
-    from tools.build_wave0_evidence import (
-        CANDIDATE_PUBLIC_PATHS,
-        CLOSURE_PUBLIC_PATHS_BY_TARGET,
+    _validate_complete_public_inventory(
+        index_bytes=index_file.data,
+        indexed=indexed,
+        actual={path: item.data for path, item in actual.items()},
     )
-
-    all_paths = set(actual) | {"index.json"}
-    if payload["evidence_stage"] == "candidate":
-        if all_paths != set(CANDIDATE_PUBLIC_PATHS):
-            raise ValueError("candidate public path contract mismatch")
-    elif payload["evidence_stage"] == "closure":
-        if all_paths not in [
-            set(paths) for paths in CLOSURE_PUBLIC_PATHS_BY_TARGET.values()
-        ]:
-            raise ValueError("closure public path contract mismatch")
-    else:
+    if payload["evidence_stage"] not in {"candidate", "closure"}:
         raise ValueError("invalid prepared evidence stage")
+    _validate_generic_public_records(
+        payload,
+        {path: item.data for path, item in actual.items()},
+        repo_root=resolved_root,
+    )
     return payload
 
 
@@ -1472,8 +2338,8 @@ def publish_evidence_bundle(
     *,
     repo_root: Path | str,
 ) -> Path:
-    payload = _validate_detached_bundle(bundle)
     root = Path(repo_root).resolve(strict=True)
+    payload = _validate_detached_bundle(bundle, repo_root=root)
     validate_evidence_index(payload, repo_root=root, actual_head=_git_head(root))
     stage = payload["evidence_stage"]
     tested = str(payload["tested_git_head"])
