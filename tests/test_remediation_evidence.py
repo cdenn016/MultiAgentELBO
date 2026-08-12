@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import xml.etree.ElementTree as ET
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import FrozenInstanceError
@@ -512,6 +513,7 @@ def _mutate_review_context_leaf(payload: object, path: tuple[object, ...]) -> No
 def test_contract_constants_are_exact() -> None:
     assert INDEX_ROOT_FIELDS == EXPECTED_ROOT_FIELDS
     assert JUNIT_FIELDS == EXPECTED_JUNIT_FIELDS
+    assert remediation_evidence.WAVE0_DEPENDENCY_INPUT_PATHS == DEPENDENCY_INPUT_PATHS
     assert set(VIEW_IDS_BY_TARGET) == {2, 4, 8}
     assert {target: len(paths) for target, paths in VIEW_IDS_BY_TARGET.items()} == {
         2: 2,
@@ -664,6 +666,52 @@ def test_generic_prepare_builds_exact_cross_wave_base_without_writes(
         assert tuple(item["path"] for item in index["files"]) == (
             remediation_evidence.GENERIC_NON_INDEX_PUBLIC_PATHS
         )
+
+
+def test_generic_prepare_rejects_empty_wave0_dependencies_before_transform(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with _short_task_repo() as repo:
+        head = _run("git", "rev-parse", "HEAD", cwd=repo)
+        raw = _write_raw_suite_inputs(repo, head=head, stage="candidate")
+        policy = {
+            "schema_version": remediation_evidence.TESTED_INPUT_SCHEMA,
+            "selection_rules": remediation_evidence.TESTED_INPUT_SELECTION_RULES,
+            "exclusion_rules": remediation_evidence.TESTED_INPUT_EXCLUSION_RULES,
+        }
+        command_records = {
+            suite: (raw / f"{suite}.command.json").read_bytes()
+            for suite in ("targeted", "subsystem", "full")
+        }
+        junit_bytes = {
+            suite: (raw / f"{suite}.raw.xml").read_bytes()
+            for suite in ("targeted", "subsystem", "full")
+        }
+
+        def unexpected_transform(*args: object, **kwargs: object) -> object:
+            del args, kwargs
+            raise AssertionError("privacy transform ran before input contract")
+
+        monkeypatch.setattr(
+            remediation_evidence, "privacy_transform_bytes", unexpected_transform
+        )
+        with pytest.raises(ValueError, match="dependency inputs must be nonempty"):
+            remediation_evidence.prepare_evidence_bundle(
+                repo_root=repo,
+                wave="wave-0",
+                evidence_stage="candidate",
+                tested_git_head=head,
+                implementation_parent_git_head=head,
+                command_records=command_records,
+                source_config_paths=(
+                    str(remediation_evidence.PLAN_PATH),
+                    str(remediation_evidence.SNAPSHOT_PATH),
+                ),
+                tested_input_policy=policy,
+                dependency_input_paths=(),
+                raw_junit_bytes=junit_bytes,
+                output_dir=f"docs/verification/evidence/wave-0/{head[:12]}",
+            )
 
 
 def test_wave0_wrapper_reads_each_raw_junit_once(
@@ -1047,6 +1095,492 @@ def test_privacy_transform_accepts_escaped_junit_fragments_and_placeholder_suffi
     assert_no_literal_absolute_path(public)
 
 
+def test_privacy_transform_accepts_path_before_embedded_closing_tag(
+    tmp_path: Path,
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    quote = chr(34)
+    raw = (
+        f"<testsuite tests={quote}1{quote} failures={quote}0{quote} "
+        f"errors={quote}0{quote} skipped={quote}0{quote} time={quote}0{quote}>"
+        f"<testcase classname={quote}tests.test_xml{quote} "
+        f"name={quote}case[&lt;testcase&gt;C:\\private\\report.xml"
+        f"&lt;/testcase&gt;]{quote}/></testsuite>"
+    ).encode("utf-8")
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    assert b"private" not in public
+    assert b"&lt;ABS_PATH_" in public
+    assert b"&lt;/testcase&gt;" in public
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+
+
+def test_privacy_transform_accepts_nested_hostname_suffix_guard_case(
+    tmp_path: Path,
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    quote = chr(34)
+    raw = (
+        f"<testsuite tests={quote}1{quote} failures={quote}0{quote} "
+        f"errors={quote}0{quote} skipped={quote}0{quote} time={quote}0{quote}>"
+        f"<testcase classname={quote}tests.test_xml{quote} "
+        f"name={quote}guard[&lt;testsuite&gt;&lt;testcase&gt;"
+        f"&amp;lt;HOSTNAME&amp;gt;/x&lt;/testcase&gt;&lt;/testsuite&gt;]"
+        f"{quote}/></testsuite>"
+    ).encode("utf-8")
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    assert b"&amp;lt;HOSTNAME&amp;gt;&lt;ABS_PATH_" in public
+    assert b"&lt;/testcase&gt;" in public
+    assert_no_literal_absolute_path(public)
+
+
+def test_xml_placeholder_guard_rejects_closing_tag_path_smuggling() -> None:
+    xml = (
+        b"<testsuite><testcase>&lt;ABS_PATH_0001&gt;&lt;/testcase&gt;"
+        b"/opt/private</testcase></testsuite>"
+    )
+
+    with pytest.raises(ValueError, match="literal absolute path"):
+        assert_no_literal_absolute_path(xml)
+
+
+def test_privacy_transform_scrubs_paths_inside_escaped_xml_fragments(
+    tmp_path: Path,
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    quote = chr(34)
+    raw = (
+        f"<testsuite><testcase name={quote}case[&lt;testsuite&gt;"
+        f"&lt;testcase&gt;/opt/private/report.xml&lt;/testcase&gt;"
+        f"&lt;/testsuite&gt;]{quote}/></testsuite>"
+    ).encode("utf-8")
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    assert b"/opt/private" not in public
+    assert b"&lt;ABS_PATH_" in public
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+
+
+def test_privacy_transform_does_not_parse_python_suffix_as_windows_drive(
+    tmp_path: Path,
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    quote = chr(34)
+    raw = (
+        f"<testsuite><testcase name={quote}case[&lt;testsuite source="
+        f"&quot;&amp;lt;REPO_ROOT&amp;gt;/tests/test_xml.py:"
+        f"/opt/private/report.xml&quot;/&gt;]{quote}/></testsuite>"
+    ).encode("utf-8")
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    assert b"test_xml.p&lt;ABS_PATH_" not in public
+    assert b"/opt/private" not in public
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+
+
+@pytest.mark.parametrize("suite", ["targeted", "subsystem", "full"])
+def test_privacy_transform_accepts_preserved_p6_raw_junit(suite: str) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    raw_path = (
+        repo_root
+        / ".verification"
+        / "raw"
+        / "wave-0"
+        / "4e2e1d4a87bf"
+        / "candidate"
+        / f"{suite}.raw.xml"
+    )
+    if not raw_path.is_file():
+        pytest.skip("preserved P6 raw JUnit is local verification evidence")
+    context = {
+        "repo_root": repo_root,
+        "user_home": Path.home(),
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "DESKTOP-RT15E78",
+        "path_separator": ";",
+    }
+
+    public, _mapping = privacy_transform_bytes(
+        raw_path.read_bytes(), kind="junit", privacy_context=context
+    )
+
+    assert_no_literal_absolute_path(public, privacy_context=context)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+
+
+@pytest.mark.parametrize(
+    ("semantic", "expected"),
+    [
+        (
+            "file:///opt/private/report.xml",
+            b"<testcase>&lt;ABS_PATH_0001&gt;</testcase>",
+        ),
+        (
+            "//server/share/private/report.xml",
+            b"<testcase>&lt;ABS_PATH_0001&gt;</testcase>",
+        ),
+        (
+            "case[/opt/private]",
+            b"<testcase>case[&lt;ABS_PATH_0001&gt;]</testcase>",
+        ),
+        (
+            "case(/opt/private)",
+            b"<testcase>case(&lt;ABS_PATH_0001&gt;)</testcase>",
+        ),
+        (
+            "before=/opt/private,after",
+            b"<testcase>before=&lt;ABS_PATH_0001&gt;,after</testcase>",
+        ),
+        (
+            r"case[C:\private\report.xml]",
+            b"<testcase>case[&lt;ABS_PATH_0001&gt;]</testcase>",
+        ),
+    ],
+)
+def test_xml_semantic_path_tokenizer_preserves_nonpath_boundaries(
+    tmp_path: Path, semantic: str, expected: bytes
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    raw = f"<testsuite><testcase>{semantic}</testcase></testsuite>".encode()
+
+    with pytest.raises(ValueError, match="literal absolute path"):
+        assert_no_literal_absolute_path(raw)
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    assert semantic.encode() not in public
+    assert b"private" not in public.lower()
+    assert expected in public
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+
+
+@pytest.mark.parametrize(
+    ("semantic", "expected", "private_fragments"),
+    [
+        (
+            r"D:\Program Files\secret\token.txt",
+            b"<testcase>&lt;ABS_PATH_0001&gt;</testcase>",
+            (b"Program Files", b"secret", b"token.txt"),
+        ),
+        (
+            r"\\server\share\Private Folder\token.txt",
+            b"<testcase>&lt;ABS_PATH_0001&gt;</testcase>",
+            (b"server", b"Private Folder", b"token.txt"),
+        ),
+        (
+            "/opt/Private Folder/token.txt",
+            b"<testcase>&lt;ABS_PATH_0001&gt;</testcase>",
+            (b"/opt", b"Private Folder", b"token.txt"),
+        ),
+        (
+            'before="/opt/Private Folder/token.txt",after',
+            b'<testcase>before="&lt;ABS_PATH_0001&gt;",after</testcase>',
+            (b"/opt", b"Private Folder", b"token.txt"),
+        ),
+    ],
+)
+def test_xml_semantic_path_tokenizer_scrubs_entire_bounded_spaced_path(
+    tmp_path: Path,
+    semantic: str,
+    expected: bytes,
+    private_fragments: tuple[bytes, ...],
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    raw = f"<testsuite><testcase>{semantic}</testcase></testsuite>".encode()
+
+    with pytest.raises(ValueError, match="literal absolute path"):
+        assert_no_literal_absolute_path(raw)
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    assert semantic.encode() not in public
+    assert all(fragment not in public for fragment in private_fragments)
+    assert expected in public
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+
+
+@pytest.mark.parametrize(
+    "semantic",
+    [
+        "before=/opt/Private Folder/token.txt after=safe",
+        r"before=D:\Program Files\secret\token.txt after=safe",
+    ],
+)
+def test_xml_semantic_path_tokenizer_fails_closed_on_ambiguous_spaced_path(
+    tmp_path: Path, semantic: str
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    raw = f"<testsuite><testcase>{semantic}</testcase></testsuite>".encode()
+
+    with pytest.raises(ValueError, match="ambiguous XML absolute path"):
+        assert_no_literal_absolute_path(raw)
+    with pytest.raises(ValueError, match="ambiguous XML absolute path"):
+        privacy_transform_bytes(raw, kind="junit", privacy_context=context)
+
+
+@pytest.mark.parametrize(
+    "semantic",
+    [
+        "/opt/Private Folder token.txt",
+        r"D:\Secret Project token.txt",
+        r"\\server\share\Secret Project token.txt",
+        "/home/chris and christine/file.txt",
+    ],
+)
+def test_xml_semantic_path_tokenizer_never_partially_redacts_spaced_path(
+    tmp_path: Path, semantic: str
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    raw = f"<testsuite><testcase>{semantic}</testcase></testsuite>".encode()
+
+    with pytest.raises(ValueError, match="(?:literal|ambiguous).*absolute path"):
+        assert_no_literal_absolute_path(raw)
+    result: bytes | None = None
+    try:
+        result = privacy_transform_bytes(raw, kind="junit", privacy_context=context)[0]
+    except ValueError as error:
+        assert "ambiguous XML absolute path" in str(error)
+    if result is not None:
+        assert semantic.encode() not in result
+        assert b"ABS_PATH_" in result
+        assert_no_literal_absolute_path(result)
+        assert (
+            privacy_transform_bytes(result, kind="junit", privacy_context=context)[0]
+            == result
+        )
+
+
+@pytest.mark.parametrize(
+    "semantic",
+    [
+        "</opt/private/report.xml",
+        "</home/private/token.txt",
+        r"prefix<C:\private\token.txt",
+    ],
+)
+def test_xml_semantic_path_tokenizer_rejects_escaped_angle_smuggling(
+    tmp_path: Path, semantic: str
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    encoded = semantic.replace("<", "&lt;")
+    raw = f"<testsuite><testcase>{encoded}</testcase></testsuite>".encode()
+
+    with pytest.raises(ValueError, match="literal absolute path"):
+        assert_no_literal_absolute_path(raw)
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    assert b"private" not in public.lower()
+    assert b"ABS_PATH_" in public
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+
+
+@pytest.mark.parametrize(
+    "semantic",
+    [
+        "//server",
+        "//etc",
+        "///etc",
+        "///opt/private",
+        "////opt/private",
+        "file:////opt/private",
+    ],
+)
+def test_xml_semantic_path_tokenizer_covers_complete_leading_slash_run(
+    tmp_path: Path, semantic: str
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    raw = f"<testsuite><testcase>{semantic}</testcase></testsuite>".encode()
+
+    with pytest.raises(ValueError, match="literal absolute path"):
+        assert_no_literal_absolute_path(raw)
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    assert semantic.encode() not in public
+    assert b"<testcase>&lt;ABS_PATH_0001&gt;</testcase>" in public
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+
+
+@pytest.mark.parametrize(
+    "semantic",
+    [
+        "https://example.com/path?q=1",
+        "http://localhost:8080/test",
+        "ftp://files.example.com/archive.tar",
+        "urn:test://artifact/id",
+        "pytest://case/id",
+    ],
+)
+def test_xml_semantic_path_tokenizer_preserves_non_file_uri_text(
+    tmp_path: Path, semantic: str
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    raw = f"<testsuite><testcase>{semantic}</testcase></testsuite>".encode()
+
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    testcase = ET.fromstring(public).find("testcase")
+    assert testcase is not None
+    assert testcase.text == semantic
+    assert b"ABS_PATH_" not in public
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+    assert_public_semantics_equal("junit", raw, public, privacy_context=context)
+
+
+@pytest.mark.parametrize("semantic", [r"\\server", "\\\\server\\"])
+@pytest.mark.parametrize("placement", ["text", "attribute"])
+def test_xml_semantic_path_tokenizer_scrubs_bounded_unc_server_root(
+    tmp_path: Path, semantic: str, placement: str
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    if placement == "text":
+        raw = f"<testsuite><testcase>{semantic}</testcase></testsuite>".encode()
+    else:
+        raw = f'<testsuite private="{semantic}"><testcase/></testsuite>'.encode()
+
+    with pytest.raises(ValueError, match="literal absolute path"):
+        assert_no_literal_absolute_path(raw)
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    root = ET.fromstring(public)
+    transformed = (
+        root.find("testcase").text if placement == "text" else root.attrib["private"]
+    )
+    assert transformed == "<ABS_PATH_0001>"
+    assert b"server" not in public.lower()
+    assert semantic.encode() not in public
+    assert_no_literal_absolute_path(public)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+
+
 def test_json_privacy_rejects_placeholder_traversal_and_scrubs_embedded_hostname(
     tmp_path: Path,
 ) -> None:
@@ -1141,6 +1675,209 @@ def test_index_rejects_unknown_and_missing_fields(tmp_path: Path) -> None:
         del missing["tested_input_inventory_sha256"]
         with pytest.raises(ValueError, match="missing evidence-index field"):
             validate_evidence_index(missing, repo_root=repo, actual_head=parent)
+
+
+def test_index_rejects_duplicate_dependency_paths_with_distinct_records(
+    tmp_path: Path,
+) -> None:
+    del tmp_path
+    with tempfile.TemporaryDirectory(prefix="w0-dependency-path-") as directory:
+        repo = Path(directory) / "repo"
+        parent, _child = _init_repo(repo)
+        payload = _minimal_index(stage="candidate", tested=parent, parent=parent)
+        payload["dependency_inputs"] = [
+            {
+                "path": "pyproject.toml",
+                "size_bytes": 1,
+                "sha256": "0" * 64,
+            },
+            {
+                "path": "pyproject.toml",
+                "size_bytes": 2,
+                "sha256": "1" * 64,
+            },
+        ]
+
+        with pytest.raises(
+            ValueError, match="dependency inputs contain a duplicate path"
+        ):
+            validate_evidence_index(payload, repo_root=repo, actual_head=parent)
+
+
+def test_index_rejects_dependency_case_fold_path_aliases(tmp_path: Path) -> None:
+    del tmp_path
+    with tempfile.TemporaryDirectory(prefix="w0-dependency-alias-") as directory:
+        repo = Path(directory) / "repo"
+        parent, _child = _init_repo(repo)
+        payload = _minimal_index(stage="candidate", tested=parent, parent=parent)
+        payload["dependency_inputs"] = [
+            {
+                "path": "PyProject.toml",
+                "size_bytes": 1,
+                "sha256": "0" * 64,
+            },
+            {
+                "path": "pyproject.toml",
+                "size_bytes": 2,
+                "sha256": "1" * 64,
+            },
+        ]
+
+        with pytest.raises(ValueError, match="contains a case-fold path alias"):
+            validate_evidence_index(payload, repo_root=repo, actual_head=parent)
+
+
+def test_index_rejects_duplicate_tested_input_paths_with_distinct_records(
+    tmp_path: Path,
+) -> None:
+    del tmp_path
+    with tempfile.TemporaryDirectory(prefix="w0-tested-input-path-") as directory:
+        repo = Path(directory) / "repo"
+        parent, _child = _init_repo(repo)
+        payload = _minimal_index(stage="candidate", tested=parent, parent=parent)
+        payload["tested_input_policy"]["inputs"] = [
+            {
+                "path": "src/example.py",
+                "size_bytes": 1,
+                "sha256": "0" * 64,
+            },
+            {
+                "path": "src/example.py",
+                "size_bytes": 2,
+                "sha256": "1" * 64,
+            },
+        ]
+
+        with pytest.raises(ValueError, match="tested inputs contains a duplicate path"):
+            validate_evidence_index(payload, repo_root=repo, actual_head=parent)
+
+
+def test_index_rejects_unknown_evidence_file_kind(tmp_path: Path) -> None:
+    del tmp_path
+    with tempfile.TemporaryDirectory(prefix="w0-file-kind-") as directory:
+        repo = Path(directory) / "repo"
+        parent, _child = _init_repo(repo)
+        payload = _minimal_index(stage="candidate", tested=parent, parent=parent)
+        payload["dependency_inputs"] = [
+            {
+                "path": path,
+                "size_bytes": index + 1,
+                "sha256": str(index) * 64,
+            }
+            for index, path in enumerate(DEPENDENCY_INPUT_PATHS)
+        ]
+        policy = payload["tested_input_policy"]
+        policy["selection_rules"] = list(
+            remediation_evidence.TESTED_INPUT_SELECTION_RULES
+        )
+        policy["exclusion_rules"] = list(
+            remediation_evidence.TESTED_INPUT_EXCLUSION_RULES
+        )
+        payload["files"] = [
+            {
+                "path": "commands/full.json",
+                "kind": "unknown",
+                "size_bytes": 1,
+                "sha256": "0" * 64,
+            }
+        ]
+
+        with pytest.raises(ValueError, match="evidence files kind is unsupported"):
+            validate_evidence_index(payload, repo_root=repo, actual_head=parent)
+
+
+@pytest.mark.parametrize(
+    "wave",
+    ["wave-0", "wave-a", "wave-b", "wave-c", "wave-d0", "wave-d1", "wave-e"],
+)
+def test_index_rejects_empty_dependencies_for_every_wave(
+    tmp_path: Path, wave: str
+) -> None:
+    del tmp_path
+    with tempfile.TemporaryDirectory(prefix="w0-empty-dependencies-") as directory:
+        repo = Path(directory) / "repo"
+        parent, _child = _init_repo(repo)
+        payload = _minimal_index(stage="candidate", tested=parent, parent=parent)
+        payload["wave"] = wave
+
+        with pytest.raises(ValueError, match="dependency inputs must be nonempty"):
+            validate_evidence_index(payload, repo_root=repo, actual_head=parent)
+
+
+@pytest.mark.parametrize(
+    ("dependency_paths", "policy_field", "policy_value", "message"),
+    [
+        (
+            tuple(reversed(DEPENDENCY_INPUT_PATHS)),
+            None,
+            None,
+            "wave-0 dependency paths differ from frozen contract",
+        ),
+        (
+            DEPENDENCY_INPUT_PATHS[:-1],
+            None,
+            None,
+            "wave-0 dependency paths differ from frozen contract",
+        ),
+        (
+            ("README.md", *DEPENDENCY_INPUT_PATHS[1:]),
+            None,
+            None,
+            "wave-0 dependency paths differ from frozen contract",
+        ),
+        (
+            DEPENDENCY_INPUT_PATHS,
+            "schema_version",
+            "wave-a-inputs-v1",
+            "wave-0 tested-input policy differs from frozen contract",
+        ),
+        (
+            DEPENDENCY_INPUT_PATHS,
+            "selection_rules",
+            ["prefix:src/"],
+            "wave-0 tested-input policy differs from frozen contract",
+        ),
+        (
+            DEPENDENCY_INPUT_PATHS,
+            "exclusion_rules",
+            [],
+            "wave-0 tested-input policy differs from frozen contract",
+        ),
+    ],
+)
+def test_index_rejects_wave0_dependency_and_policy_contract_drift(
+    tmp_path: Path,
+    dependency_paths: tuple[str, ...],
+    policy_field: str | None,
+    policy_value: object,
+    message: str,
+) -> None:
+    del tmp_path
+    with tempfile.TemporaryDirectory(prefix="w0-input-contract-") as directory:
+        repo = Path(directory) / "repo"
+        parent, _child = _init_repo(repo)
+        payload = _minimal_index(stage="candidate", tested=parent, parent=parent)
+        payload["dependency_inputs"] = [
+            {
+                "path": path,
+                "size_bytes": index + 1,
+                "sha256": str(index) * 64,
+            }
+            for index, path in enumerate(dependency_paths)
+        ]
+        policy = payload["tested_input_policy"]
+        policy["schema_version"] = remediation_evidence.TESTED_INPUT_SCHEMA
+        policy["selection_rules"] = list(
+            remediation_evidence.TESTED_INPUT_SELECTION_RULES
+        )
+        policy["exclusion_rules"] = list(
+            remediation_evidence.TESTED_INPUT_EXCLUSION_RULES
+        )
+        if policy_field is not None:
+            policy[policy_field] = policy_value
+
+        with pytest.raises(ValueError, match=message):
+            validate_evidence_index(payload, repo_root=repo, actual_head=parent)
 
 
 def test_candidate_and_closure_heads_cannot_be_swapped(tmp_path: Path) -> None:
@@ -1434,9 +2171,7 @@ def test_direct_script_validate_reaches_lazy_wrapper_import(tmp_path: Path) -> N
 
     assert result.returncode == 2
     assert result.stdout == ""
-    assert (
-        result.stderr.strip() == "error: evidence index lacks the complete generic base"
-    )
+    assert result.stderr.strip() == "error: dependency inputs must be nonempty"
 
 
 def test_direct_script_resolves_installed_verification_gate() -> None:

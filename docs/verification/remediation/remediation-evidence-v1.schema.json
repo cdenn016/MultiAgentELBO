@@ -62,7 +62,8 @@
             "privacy_transform",
             "reproduced_source",
             "review",
-            "adjudicator"
+            "adjudicator",
+            "domain"
           ]
         },
         "size_bytes": {"type": "integer", "minimum": 0},
@@ -81,7 +82,17 @@
   },
   "properties": {
     "schema_version": {"const": "remediation-evidence-index-v1"},
-    "wave": {"type": "string", "pattern": "^wave-[0-9]+$"},
+    "wave": {
+      "enum": [
+        "wave-0",
+        "wave-a",
+        "wave-b",
+        "wave-c",
+        "wave-d0",
+        "wave-d1",
+        "wave-e"
+      ]
+    },
     "evidence_stage": {"enum": ["candidate", "closure"]},
     "tested_git_head": {"$ref": "#/$defs/git_sha"},
     "implementation_parent_git_head": {"$ref": "#/$defs/git_sha"},
@@ -110,8 +121,8 @@
     },
     "dependency_inputs": {
       "type": "array",
-      "minItems": 3,
-      "maxItems": 3,
+      "minItems": 1,
+      "description": "Dependency path uniqueness and case-fold aliases are enforced by the production evidence-index validator.",
       "items": {"$ref": "#/$defs/file_record"}
     },
     "tested_input_policy": {
@@ -125,19 +136,29 @@
       ],
       "properties": {
         "schema_version": {
-          "const": "wave-0-source-config-theory-tools-tests-v1"
+          "type": "string",
+          "minLength": 1
         },
         "selection_rules": {
           "type": "array",
-          "items": {"type": "string", "minLength": 1}
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(?:prefix|exact|top_level_suffix):.+$"
+          }
         },
         "exclusion_rules": {
           "type": "array",
-          "items": {"type": "string", "minLength": 1}
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(?:prefix|exact|top_level_suffix):.+$"
+          }
         },
         "inputs": {
           "type": "array",
           "minItems": 1,
+          "description": "Input path uniqueness and case-fold aliases are enforced by the production evidence-index validator.",
           "items": {"$ref": "#/$defs/file_record"}
         }
       }
@@ -171,5 +192,79 @@
       "minItems": 1,
       "items": {"$ref": "#/$defs/index_file"}
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"wave": {"const": "wave-0"}},
+        "required": ["wave"]
+      },
+      "then": {
+        "properties": {
+          "dependency_inputs": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "prefixItems": [
+              {
+                "properties": {"path": {"const": "pyproject.toml"}},
+                "required": ["path"]
+              },
+              {
+                "properties": {
+                  "path": {
+                    "const": "environments/cuda-rtx5090-cu128.lock.txt"
+                  }
+                },
+                "required": ["path"]
+              },
+              {
+                "properties": {
+                  "path": {
+                    "const": "docs/verification/remediation/verification-contract-v1.json"
+                  }
+                },
+                "required": ["path"]
+              }
+            ],
+            "items": false
+          },
+          "tested_input_policy": {
+            "properties": {
+              "schema_version": {
+                "const": "wave-0-source-config-theory-tools-tests-v1"
+              },
+              "selection_rules": {
+                "const": [
+                  "prefix:src/",
+                  "prefix:tests/",
+                  "prefix:Theory/",
+                  "prefix:tools/",
+                  "top_level_suffix:.py",
+                  "exact:pyproject.toml",
+                  "exact:.gitignore",
+                  "exact:.gitattributes",
+                  "exact:environments/cuda-rtx5090-cu128.lock.txt",
+                  "exact:docs/audits/2026-08-11-post-fixed-ray-deep-audit.md",
+                  "exact:docs/superpowers/specs/2026-08-11-scientific-integrity-remediation-program-design.md",
+                  "exact:docs/superpowers/plans/2026-08-11-scientific-integrity-remediation-wave-0.md",
+                  "exact:docs/verification/remediation/verification-contract-v1.json",
+                  "prefix:docs/verification/remediation/"
+                ]
+              },
+              "exclusion_rules": {
+                "const": [
+                  "prefix:docs/verification/evidence/",
+                  "prefix:verification-evidence/",
+                  "prefix:.verification/",
+                  "prefix:.pytest_cache/",
+                  "prefix:.pytest-"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }
