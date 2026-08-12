@@ -40,8 +40,8 @@ def make_config(root: Path, *, name: str = "finite exact") -> ExperimentConfig:
 def make_hard_link_or_skip(source: Path, destination: Path) -> None:
     try:
         os.link(source, destination)
-    except (NotImplementedError, OSError) as error:
-        pytest.skip(f"hard links are unavailable: {error}")
+    except (NotImplementedError, OSError):
+        pytest.skip("capability unavailable: hard_link")
 
 
 def test_canonical_hash_is_stable_across_source_dictionary_insertion_order(tmp_path: Path):

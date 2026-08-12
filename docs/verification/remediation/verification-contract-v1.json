@@ -1,0 +1,52 @@
+{
+  "schema_version": "verification-contract-v1",
+  "canonical_relative_root": ".codex/skills/verification",
+  "active_path_policy": "skill_plus_references_schemas_and_scripts_without_caches",
+  "files": [
+    {
+      "path": "SKILL.md",
+      "size_bytes": 4653,
+      "sha256": "dc5dec74ac5c3bae712b2bdc16c71383d67923ef108e6d7f9d278a6a950b17b1"
+    },
+    {
+      "path": "references/contract.md",
+      "size_bytes": 6128,
+      "sha256": "bef6d266c94e2da962b8d1899846ea8fed83ff8f30e7376f87e0cfbe22b8de01"
+    },
+    {
+      "path": "references/criteria-code.md",
+      "size_bytes": 963,
+      "sha256": "4febab87f009dd8ab60a381600f8e18e62322d86151f7aa5ee6a346ae87f5152"
+    },
+    {
+      "path": "references/criteria-evidence.md",
+      "size_bytes": 908,
+      "sha256": "7dc751859c962f3e34a9bfff9ca981684a606dae8d49a2e5e6c3362a1d3d5990"
+    },
+    {
+      "path": "references/criteria-experiment.md",
+      "size_bytes": 893,
+      "sha256": "2a540b9a92e1c01ce6276d89dc603c7e2f48c803b8cf83dca776968bae8bafb1"
+    },
+    {
+      "path": "references/criteria-general.md",
+      "size_bytes": 1082,
+      "sha256": "dfa5236f26259b92a8a3507a4cc928fa836951f92e829526052fa412a4932729"
+    },
+    {
+      "path": "references/criteria-math.md",
+      "size_bytes": 923,
+      "sha256": "b604f4d9ef8ed3fbafc15589620955dba88128b38c5c5c88c3343f059d769979"
+    },
+    {
+      "path": "schemas/claim-ledger.schema.json",
+      "size_bytes": 9897,
+      "sha256": "e96958dc6606be521ec103a439c5a3c0e21f5417c6a1d445ae0401d5fabb6478"
+    },
+    {
+      "path": "scripts/verification_gate.py",
+      "size_bytes": 57702,
+      "sha256": "a8a799496762910c463ecc179a4d63dc40107fcbe81553add189de7ed1ce4c95"
+    }
+  ]
+}
