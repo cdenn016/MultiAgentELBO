@@ -22,6 +22,7 @@ from tools.remediation_evidence import (
     GENERIC_PUBLIC_PATHS as CORE_GENERIC_PUBLIC_PATHS,
     PreparedEvidenceBundle,
     PreparedEvidenceFile,
+    _canonical_json_object,
     _prepare_evidence_bundle as _prepare_generic_evidence_bundle_internal,
     _parse_junit_bytes,
     _finalize_evidence_index,
@@ -731,9 +732,10 @@ def _prepare_wave0_virtual_bundle(
             )
         )
         for relative in REVIEW_PATHS_BY_TARGET[review_target] + ADJUDICATOR_PATHS:
-            raw = _require_regular_unlinked_file(
+            payload = _load_canonical_raw_json(
                 raw_dir / relative, label="raw review/adjudicator"
             )
+            raw = canonical_json_bytes(payload)
             kind = "adjudicator" if relative in ADJUDICATOR_PATHS else "review"
             extra_preimages.append((relative, relative, raw, kind))
 
@@ -1291,6 +1293,12 @@ def _load_context(
     return payload, digest
 
 
+def _load_canonical_raw_json(path: Path, *, label: str) -> dict[str, object]:
+    return _canonical_json_object(
+        _require_regular_unlinked_file(path, label=label), label=label
+    )
+
+
 def _review_state(
     *,
     repo_root: Path,
@@ -1329,11 +1337,8 @@ def _review_state(
         str(spec["id"]): set() for spec in CLAIM_SPECS
     }
     for relative in INITIAL_REVIEW_PATHS:
-        data = _require_regular_unlinked_file(
-            raw_dir / relative, label="initial review"
-        )
         review = _validate_review(
-            json.loads(data),
+            _load_canonical_raw_json(raw_dir / relative, label="initial review"),
             relative_path=relative,
             repo_root=repo_root,
             raw_dir=raw_dir,
@@ -1361,10 +1366,8 @@ def _review_state(
     if claims_requiring_four and additional4_present:
         for relative in TARGET4_ADDITIONAL_REVIEW_PATHS:
             review = _validate_review(
-                json.loads(
-                    _require_regular_unlinked_file(
-                        raw_dir / relative, label="target-4 review"
-                    )
+                _load_canonical_raw_json(
+                    raw_dir / relative, label="target-4 review"
                 ),
                 relative_path=relative,
                 repo_root=repo_root,
@@ -1394,10 +1397,8 @@ def _review_state(
     if claims_requiring_eight and additional8_present:
         for relative in TARGET8_ADDITIONAL_REVIEW_PATHS:
             review = _validate_review(
-                json.loads(
-                    _require_regular_unlinked_file(
-                        raw_dir / relative, label="target-8 review"
-                    )
+                _load_canonical_raw_json(
+                    raw_dir / relative, label="target-8 review"
                 ),
                 relative_path=relative,
                 repo_root=repo_root,
@@ -1439,8 +1440,8 @@ def _review_state(
         if actual_adjudicator_paths != expected_adjudicator_paths:
             raise ValueError("adjudicator path set mismatch")
         for relative in ADJUDICATOR_PATHS:
-            payload = json.loads(
-                _require_regular_unlinked_file(raw_dir / relative, label="adjudicator")
+            payload = _load_canonical_raw_json(
+                raw_dir / relative, label="adjudicator"
             )
             if not isinstance(payload, dict):
                 raise ValueError("adjudicator must be an object")
