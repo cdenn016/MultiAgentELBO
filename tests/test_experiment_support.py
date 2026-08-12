@@ -418,8 +418,8 @@ def test_validated_renderer_status_rejects_a_publication_symlink_escape(
     publication.unlink()
     try:
         publication.symlink_to(outside)
-    except OSError as error:
-        pytest.skip(f"symlinks are unavailable: {error}")
+    except (NotImplementedError, OSError):
+        pytest.skip("capability unavailable: symbolic_link")
     payload = json.loads(manifest.manifest_path.read_text("utf-8"))
     payload["figures"][0]["png_sha256"] = hashlib.sha256(
         outside.read_bytes()
