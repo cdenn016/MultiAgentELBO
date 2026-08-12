@@ -258,8 +258,8 @@ def test_finalize_rejects_a_declared_symlink(tmp_path: Path):
     link = store.run_dir / "linked.json"
     try:
         link.symlink_to(target)
-    except (NotImplementedError, OSError) as error:
-        pytest.skip(f"symlinks are unavailable: {error}")
+    except (NotImplementedError, OSError):
+        pytest.skip("capability unavailable: symbolic_link")
 
     with pytest.raises(
         ValueError,
