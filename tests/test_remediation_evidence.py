@@ -847,6 +847,58 @@ def test_privacy_transform_scrubs_spaced_and_quoted_xml_paths(tmp_path: Path) ->
     assert_public_semantics_equal("junit", raw, public, privacy_context=context)
 
 
+def test_privacy_transform_accepts_escaped_junit_fragments_and_placeholder_suffixes(
+    tmp_path: Path,
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    raw = (
+        b'<?xml version="1.0"?>'
+        b'<testsuite tests="2" failures="0" errors="0" skipped="0" time="0">'
+        b'<testcase classname="tests.test_xml" '
+        b'name="case[&lt;testcase classname=&quot;a&quot; name=&quot;x&quot;/&gt;]" '
+        b'file="&lt;REPO_ROOT&gt;/tests/test_xml.py"/>'
+        b'<testcase classname="tests.test_xml" '
+        b'name="case[&lt;testcase classname=&quot;a&quot; name=&quot;x&quot;&gt;'
+        b'&lt;failure/&gt;&lt;/testcase&gt;]"/>'
+        b"</testsuite>"
+    )
+
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+
+    assert b"/&gt;" in public
+    assert b"/testcase&gt;" in public
+    assert b"&lt;REPO_ROOT&gt;/tests/test_xml.py" in public
+    assert_no_literal_absolute_path(public)
+
+
+@pytest.mark.parametrize(
+    "xml",
+    [
+        rb'<testsuite private="C:\private\report.xml"/>',
+        rb"<testsuite><testcase>\\server\share\report.xml</testcase></testsuite>",
+        rb"<testsuite><testcase/>\\?\C:\device\report.xml</testsuite>",
+        b"<testsuite><testcase>/opt/private/report.xml</testcase></testsuite>",
+        (
+            b'<testsuite private="&lt;REPO_ROOT&gt;/tests/test_xml.py:'
+            b'/opt/private/report.xml"/>'
+        ),
+    ],
+)
+def test_xml_absolute_path_guard_rejects_decoded_attribute_text_and_tail(
+    xml: bytes,
+) -> None:
+    with pytest.raises(ValueError, match="literal absolute path"):
+        assert_no_literal_absolute_path(xml)
+
+
 def test_index_rejects_unknown_and_missing_fields(tmp_path: Path) -> None:
     del tmp_path
     with tempfile.TemporaryDirectory(prefix="w0-index-") as directory:
