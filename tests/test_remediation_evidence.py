@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import inspect
 import json
 import os
 import re
@@ -14,6 +15,9 @@ from hashlib import sha256
 from pathlib import Path, PurePosixPath
 
 import pytest
+
+import tools.remediation_evidence as remediation_evidence
+import tools.build_wave0_evidence as wave0_evidence
 
 from tools.build_wave0_evidence import (
     ADJUDICATOR_PATHS,
@@ -280,6 +284,17 @@ def _mutate_bundle_index(
         payload["reviewed_plan_binding"]["sha256"] = "f" * 64
     elif mutation == "snapshot":
         payload["verification_contract_binding"]["sha256"] = "f" * 64
+    elif mutation == "source_binding":
+        record = next(
+            item
+            for item in payload["source_config_bindings"]
+            if item["path"]
+            not in {
+                str(remediation_evidence.PLAN_PATH),
+                str(remediation_evidence.SNAPSHOT_PATH),
+            }
+        )
+        record["sha256"] = "f" * 64
     else:
         raise AssertionError(f"unknown test mutation: {mutation}")
     replacement = PreparedEvidenceFile(index_item.path, canonical_json_bytes(payload))
@@ -530,6 +545,159 @@ def test_canonical_json_and_prepared_carriers_are_immutable() -> None:
         item.data = b"changed"  # type: ignore[misc]
     with pytest.raises(FrozenInstanceError):
         bundle.files = ()  # type: ignore[misc]
+
+
+def test_generic_prepare_api_is_public_acyclic_and_exact() -> None:
+    prepare = remediation_evidence.prepare_evidence_bundle
+    assert tuple(inspect.signature(prepare).parameters) == (
+        "repo_root",
+        "wave",
+        "evidence_stage",
+        "tested_git_head",
+        "implementation_parent_git_head",
+        "command_records",
+        "source_config_paths",
+        "tested_input_policy",
+        "dependency_input_paths",
+        "raw_junit_bytes",
+        "output_dir",
+    )
+    assert all(
+        parameter.kind is inspect.Parameter.KEYWORD_ONLY
+        for parameter in inspect.signature(prepare).parameters.values()
+    )
+    assert "tools.build_wave0_evidence" not in inspect.getsource(remediation_evidence)
+
+
+def test_generic_wave_mapping_rejects_unapproved_unsuffixed_wave_d() -> None:
+    with pytest.raises(ValueError, match="unsupported evidence wave"):
+        remediation_evidence._plan_path_for_wave("wave-d")
+
+
+@pytest.mark.parametrize(
+    ("wave", "plan_label", "dependency_paths"),
+    [
+        (
+            "wave-a",
+            "a",
+            (
+                "pyproject.toml",
+                "environments/cuda-rtx5090-cu128.lock.txt",
+                "docs/superpowers/plans/2026-08-11-scientific-integrity-remediation-wave-0.md",
+                "docs/verification/remediation/verification-contract-v1.json",
+            ),
+        ),
+        (
+            "wave-d0",
+            "d",
+            (
+                "pyproject.toml",
+                "environments/cuda-rtx5090-cu128.lock.txt",
+            ),
+        ),
+    ],
+)
+def test_generic_prepare_builds_exact_cross_wave_base_without_writes(
+    wave: str,
+    plan_label: str,
+    dependency_paths: tuple[str, ...],
+) -> None:
+    with _short_task_repo() as repo:
+        head = _run("git", "rev-parse", "HEAD", cwd=repo)
+        raw = _write_raw_suite_inputs(repo, head=head, stage="candidate")
+        plan_path = (
+            "docs/superpowers/plans/"
+            f"2026-08-11-scientific-integrity-remediation-wave-{plan_label}.md"
+        )
+        snapshot_path = "docs/verification/remediation/verification-contract-v1.json"
+        selected = {
+            plan_path,
+            snapshot_path,
+            "tools/remediation_evidence.py",
+            *dependency_paths,
+        }
+        policy = {
+            "schema_version": f"{wave}-source-config-tests-v1",
+            "selection_rules": tuple(f"exact:{path}" for path in sorted(selected)),
+            "exclusion_rules": (
+                "prefix:docs/verification/evidence/",
+                "prefix:verification-evidence/",
+                "prefix:.verification/",
+            ),
+        }
+        output = f"docs/verification/evidence/{wave}/{head[:12]}"
+        command_records = {
+            suite: (raw / f"{suite}.command.json").read_bytes()
+            for suite in ("targeted", "subsystem", "full")
+        }
+        junit_bytes = {
+            suite: (raw / f"{suite}.raw.xml").read_bytes()
+            for suite in ("targeted", "subsystem", "full")
+        }
+
+        bundle = remediation_evidence.prepare_evidence_bundle(
+            repo_root=repo,
+            wave=wave,
+            evidence_stage="candidate",
+            tested_git_head=head,
+            implementation_parent_git_head=head,
+            command_records=command_records,
+            source_config_paths=tuple(sorted((plan_path, snapshot_path))),
+            tested_input_policy=policy,
+            dependency_input_paths=dependency_paths,
+            raw_junit_bytes=junit_bytes,
+            output_dir=output,
+        )
+
+        assert tuple(str(item.path) for item in bundle.files) == (
+            remediation_evidence.GENERIC_PUBLIC_PATHS
+        )
+        assert not (repo / output).exists()
+        index = json.loads(
+            next(item.data for item in bundle.files if item.path.name == "index.json")
+        )
+        assert index["wave"] == wave
+        assert index["reviewed_plan_binding"]["path"] == plan_path
+        assert tuple(item["path"] for item in index["dependency_inputs"]) == (
+            dependency_paths
+        )
+        assert tuple(item["path"] for item in index["files"]) == (
+            remediation_evidence.GENERIC_NON_INDEX_PUBLIC_PATHS
+        )
+
+
+def test_wave0_wrapper_reads_each_raw_junit_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with _short_task_repo() as repo:
+        head = _run("git", "rev-parse", "HEAD", cwd=repo)
+        raw = _write_raw_suite_inputs(repo, head=head, stage="candidate")
+        observed: dict[str, int] = {}
+        original = wave0_evidence._require_regular_unlinked_file
+
+        def count_read(path: Path, *, label: str) -> bytes:
+            source = Path(path)
+            if source.parent == raw and source.name.endswith(".raw.xml"):
+                observed[source.name] = observed.get(source.name, 0) + 1
+            return original(source, label=label)
+
+        monkeypatch.setattr(
+            wave0_evidence, "_require_regular_unlinked_file", count_read
+        )
+        prepare_evidence_bundle(
+            repo_root=repo,
+            wave="wave-0",
+            evidence_stage="candidate",
+            tested_git_head=head,
+            implementation_parent_git_head=head,
+            raw_dir=raw,
+            output_dir=f"docs/verification/evidence/wave-0/{head[:12]}",
+        )
+        assert observed == {
+            "full.raw.xml": 1,
+            "subsystem.raw.xml": 1,
+            "targeted.raw.xml": 1,
+        }
 
 
 def test_parse_junit_uses_testcase_ids_and_skip_reasons(tmp_path: Path) -> None:
@@ -879,6 +1047,31 @@ def test_privacy_transform_accepts_escaped_junit_fragments_and_placeholder_suffi
     assert_no_literal_absolute_path(public)
 
 
+def test_json_privacy_rejects_placeholder_traversal_and_scrubs_embedded_hostname(
+    tmp_path: Path,
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    with pytest.raises(ValueError, match="placeholder"):
+        assert_no_literal_absolute_path(
+            canonical_json_bytes({"path": "<REPO_ROOT>/safe/../outside"})
+        )
+
+    public, _mapping = privacy_transform_bytes(
+        canonical_json_bytes({"message": "worker=private-host completed"}),
+        kind="environment",
+        privacy_context=context,
+    )
+    assert b"private-host" not in public
+    assert b"<HOSTNAME>" in public
+    assert_no_literal_absolute_path(public, privacy_context=context)
+
+
 def test_xml_placeholder_guard_accepts_canonical_root_and_home_suffixes() -> None:
     xml = (
         b'<testsuite source="&lt;REPO_ROOT&gt;/tests/test_xml.py:42">'
@@ -981,6 +1174,7 @@ def test_publish_is_absent_only_and_prevalidates_without_write(tmp_path: Path) -
         ("dependency", "dependency input byte mismatch"),
         ("plan", "reviewed_plan_binding byte mismatch"),
         ("snapshot", "verification_contract_binding byte mismatch"),
+        ("source_binding", "source/config binding"),
     ],
 )
 def test_publish_rejects_stale_current_bindings_before_any_write(
@@ -997,6 +1191,199 @@ def test_publish_rejects_stale_current_bindings_before_any_write(
 
         assert not output.exists()
         assert _tree_snapshot(parent) == before
+
+
+def test_disk_validation_rejects_extra_and_rehashed_semantic_drift() -> None:
+    with _short_task_repo() as repo:
+        bundle = _candidate_bundle(repo)
+        output = publish_evidence_bundle(bundle, repo_root=repo)
+        index_path = output / "index.json"
+        original_index = json.loads(index_path.read_bytes())
+
+        extra = output / "unindexed-extra.json"
+        extra.write_bytes(canonical_json_bytes({"unexpected": True}))
+        with pytest.raises(ValueError, match="inventory"):
+            validate_evidence_index(
+                original_index,
+                repo_root=repo,
+                actual_head=str(original_index["tested_git_head"]),
+            )
+        extra.unlink()
+
+        command_path = output / "commands/full.json"
+        command = json.loads(command_path.read_bytes())
+        command["exit_code"] = 1
+        command_bytes = canonical_json_bytes(command)
+        command_path.write_bytes(command_bytes)
+        mutated_index = copy.deepcopy(original_index)
+        command_file = next(
+            record
+            for record in mutated_index["files"]
+            if record["path"] == "commands/full.json"
+        )
+        command_file["size_bytes"] = len(command_bytes)
+        command_file["sha256"] = sha256(command_bytes).hexdigest()
+        command_binding = next(
+            record
+            for record in mutated_index["commands"]
+            if record["path"] == "commands/full.json"
+        )
+        command_binding["size_bytes"] = len(command_bytes)
+        command_binding["sha256"] = sha256(command_bytes).hexdigest()
+        index_path.write_bytes(canonical_json_bytes(mutated_index))
+        with pytest.raises(ValueError, match="exit code"):
+            validate_evidence_index(
+                mutated_index,
+                repo_root=repo,
+                actual_head=str(mutated_index["tested_git_head"]),
+            )
+
+
+def test_disk_validation_rejects_coherently_rehashed_live_environment_drift() -> None:
+    with _short_task_repo() as repo:
+        output = publish_evidence_bundle(_candidate_bundle(repo), repo_root=repo)
+        index_path = output / "index.json"
+        index = json.loads(index_path.read_bytes())
+
+        environment_path = output / "environment.json"
+        environment = json.loads(environment_path.read_bytes())
+        environment["environment_variables"]["PYTHONHASHSEED"] = "not-live"
+        environment_bytes = canonical_json_bytes(environment)
+        environment_path.write_bytes(environment_bytes)
+        environment_record = {
+            "path": "environment.json",
+            "size_bytes": len(environment_bytes),
+            "sha256": sha256(environment_bytes).hexdigest(),
+        }
+        index["environment_record"] = environment_record
+        indexed_environment = next(
+            record for record in index["files"] if record["path"] == "environment.json"
+        )
+        indexed_environment.update(
+            {
+                "size_bytes": len(environment_bytes),
+                "sha256": sha256(environment_bytes).hexdigest(),
+            }
+        )
+
+        for suite in ("full", "subsystem", "targeted"):
+            relative = f"commands/{suite}.json"
+            path = output / relative
+            command = json.loads(path.read_bytes())
+            command["env_allowlist"]["PYTHONHASHSEED"] = "not-live"
+            command_bytes = canonical_json_bytes(command)
+            path.write_bytes(command_bytes)
+            for collection in (index["commands"], index["files"]):
+                record = next(item for item in collection if item["path"] == relative)
+                record["size_bytes"] = len(command_bytes)
+                record["sha256"] = sha256(command_bytes).hexdigest()
+
+        index_path.write_bytes(canonical_json_bytes(index))
+        with pytest.raises(ValueError, match="live execution environment"):
+            validate_evidence_index(
+                index,
+                repo_root=repo,
+                actual_head=str(index["tested_git_head"]),
+            )
+
+
+@pytest.mark.parametrize(
+    ("domain_index_path", "record_key"),
+    [
+        ("domain-evidence.json", "path"),
+        ("performance-evidence-inventory.json", "name"),
+    ],
+)
+def test_detached_domain_extras_require_complete_one_way_inventory(
+    domain_index_path: str,
+    record_key: str,
+) -> None:
+    with _short_task_repo() as repo:
+        head = _run("git", "rev-parse", "HEAD", cwd=repo)
+        raw = _write_raw_suite_inputs(repo, head=head, stage="candidate")
+        resolved_policy = resolve_tested_input_policy(repo)
+        policy = {
+            key: resolved_policy[key]
+            for key in ("schema_version", "selection_rules", "exclusion_rules")
+        }
+        base = remediation_evidence.prepare_evidence_bundle(
+            repo_root=repo,
+            wave="wave-0",
+            evidence_stage="candidate",
+            tested_git_head=head,
+            implementation_parent_git_head=head,
+            command_records={
+                suite: (raw / f"{suite}.command.json").read_bytes()
+                for suite in ("full", "subsystem", "targeted")
+            },
+            source_config_paths=(
+                str(remediation_evidence.PLAN_PATH),
+                str(remediation_evidence.SNAPSHOT_PATH),
+            ),
+            tested_input_policy=policy,
+            dependency_input_paths=DEPENDENCY_INPUT_PATHS,
+            raw_junit_bytes={
+                suite: (raw / f"{suite}.raw.xml").read_bytes()
+                for suite in ("full", "subsystem", "targeted")
+            },
+            output_dir=f"docs/verification/evidence/wave-0/{head[:12]}",
+        )
+        index_item = next(item for item in base.files if str(item.path) == "index.json")
+        domain_bytes = canonical_json_bytes({"domain": "eligible"})
+        domain_record = {
+            record_key: "domain-record.json",
+            "size_bytes": len(domain_bytes),
+            "sha256": sha256(domain_bytes).hexdigest(),
+        }
+        if record_key == "name":
+            domain_record["kind"] = "profile"
+        domain_index_bytes = canonical_json_bytes(
+            {
+                "schema_version": "test-domain-evidence-v1",
+                "base_index": {
+                    record_key: "index.json",
+                    "size_bytes": len(index_item.data),
+                    "sha256": sha256(index_item.data).hexdigest(),
+                },
+                "artifacts": [domain_record],
+            }
+        )
+        valid = PreparedEvidenceBundle(
+            base.output_dir,
+            tuple(
+                sorted(
+                    (
+                        *base.files,
+                        PreparedEvidenceFile(
+                            PurePosixPath(domain_index_path), domain_index_bytes
+                        ),
+                        PreparedEvidenceFile(
+                            PurePosixPath("domain-record.json"), domain_bytes
+                        ),
+                    ),
+                    key=lambda item: str(item.path),
+                )
+            ),
+        )
+        remediation_evidence._validate_detached_bundle(valid)
+
+        smuggled = PreparedEvidenceBundle(
+            base.output_dir,
+            tuple(
+                sorted(
+                    (
+                        *valid.files,
+                        PreparedEvidenceFile(
+                            PurePosixPath("unbound.json"),
+                            canonical_json_bytes({"smuggled": True}),
+                        ),
+                    ),
+                    key=lambda item: str(item.path),
+                )
+            ),
+        )
+        with pytest.raises(ValueError, match="domain coverage"):
+            remediation_evidence._validate_detached_bundle(smuggled)
 
 
 @pytest.mark.parametrize(
@@ -1047,7 +1434,9 @@ def test_direct_script_validate_reaches_lazy_wrapper_import(tmp_path: Path) -> N
 
     assert result.returncode == 2
     assert result.stdout == ""
-    assert result.stderr.strip() == "error: candidate public path contract mismatch"
+    assert (
+        result.stderr.strip() == "error: evidence index lacks the complete generic base"
+    )
 
 
 def test_direct_script_resolves_installed_verification_gate() -> None:
@@ -1278,6 +1667,70 @@ def test_wave0_candidate_review_closure_and_gate_lifecycle() -> None:
             == 4
         )
         code_spec = (CLAIM_SPECS[0],)
+        for relative in TARGET4_ADDITIONAL_REVIEW_PATHS:
+            _write_review(
+                raw,
+                relative=relative,
+                context=context,
+                digest=digest,
+                tested=tested,
+                parent=parent,
+                specs=code_spec,
+                triggers=("criterion_disagreement",),
+            )
+        assert (
+            review_target(
+                repo_root=repo,
+                tested_head=tested,
+                implementation_parent=parent,
+                raw_dir=raw,
+            )
+            == 4
+        )
+        _write_adjudicators(
+            raw,
+            digest=digest,
+            tested=tested,
+            parent=parent,
+            code_target=4,
+            code_triggers=("criterion_disagreement",),
+            code_support=True,
+        )
+        assert (
+            validate_reviews(
+                repo_root=repo,
+                tested_head=tested,
+                implementation_parent=parent,
+                raw_dir=raw,
+            )
+            == 4
+        )
+        closure4 = prepare_evidence_bundle(
+            repo_root=repo,
+            wave="wave-0",
+            evidence_stage="closure",
+            tested_git_head=tested,
+            implementation_parent_git_head=parent,
+            raw_dir=raw,
+            output_dir=closure_output,
+        )
+        assert {str(item.path) for item in closure4.files} == set(
+            CLOSURE_PUBLIC_PATHS_BY_TARGET[4]
+        )
+        privacy4 = json.loads(
+            next(
+                item.data
+                for item in closure4.files
+                if str(item.path) == "privacy-transform.json"
+            )
+        )
+        assert {record["public_path"] for record in privacy4["records"]} == (
+            set(CLOSURE_PUBLIC_PATHS_BY_TARGET[4])
+            - {"index.json", "privacy-transform.json"}
+        )
+        assert not (repo / closure_output).exists()
+
+        shutil.rmtree(raw / "reviews/adjudicators")
         for index, relative in enumerate(TARGET4_ADDITIONAL_REVIEW_PATHS):
             _write_review(
                 raw,
@@ -1345,6 +1798,30 @@ def test_wave0_candidate_review_closure_and_gate_lifecycle() -> None:
         evidence_adjudicator = json.loads((raw / ADJUDICATOR_PATHS[1]).read_bytes())
         assert code_adjudicator["view_ids"] == list(VIEW_IDS_BY_TARGET[8])
         assert evidence_adjudicator["view_ids"] == list(VIEW_IDS_BY_TARGET[2])
+        closure8 = prepare_evidence_bundle(
+            repo_root=repo,
+            wave="wave-0",
+            evidence_stage="closure",
+            tested_git_head=tested,
+            implementation_parent_git_head=parent,
+            raw_dir=raw,
+            output_dir=closure_output,
+        )
+        assert {str(item.path) for item in closure8.files} == set(
+            CLOSURE_PUBLIC_PATHS_BY_TARGET[8]
+        )
+        privacy8 = json.loads(
+            next(
+                item.data
+                for item in closure8.files
+                if str(item.path) == "privacy-transform.json"
+            )
+        )
+        assert {record["public_path"] for record in privacy8["records"]} == (
+            set(CLOSURE_PUBLIC_PATHS_BY_TARGET[8])
+            - {"index.json", "privacy-transform.json"}
+        )
+        assert not (repo / closure_output).exists()
 
         shutil.rmtree(raw / "reviews")
         for relative in INITIAL_REVIEW_PATHS:
@@ -1438,7 +1915,8 @@ def test_wave0_candidate_review_closure_and_gate_lifecycle() -> None:
         review_record["size_bytes"] = len(mutated_public_bytes)
         review_record["sha256"] = sha256(mutated_public_bytes).hexdigest()
         index_path.write_bytes(canonical_json_bytes(mutated_index))
-        validate_evidence_index(mutated_index, repo_root=repo, actual_head=tested)
+        with pytest.raises(ValueError, match="privacy public byte mismatch"):
+            validate_evidence_index(mutated_index, repo_root=repo, actual_head=tested)
 
         started = _run_gate(
             gate,
@@ -1455,7 +1933,7 @@ def test_wave0_candidate_review_closure_and_gate_lifecycle() -> None:
         empty = _run_gate(gate, repo, "validate", ledger_relative, "--cwd", str(repo))
         assert empty.returncode != 0
         assert "claims must contain at least one claim" in empty.stdout
-        with pytest.raises(ValueError, match="reconstructed public evidence"):
+        with pytest.raises(ValueError, match="privacy public byte mismatch"):
             populate_ledger(
                 repo_root=repo,
                 ledger_path=ledger_relative,
