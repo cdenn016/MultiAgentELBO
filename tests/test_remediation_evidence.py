@@ -842,6 +842,319 @@ def test_parse_junit_rejects_semantic_failures(
         parse_junit(xml)
 
 
+def test_junit_privacy_transform_disambiguates_colliding_public_testcase_ids(
+    tmp_path: Path,
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    raw_names = (
+        "case[//server]",
+        "case[//etc]",
+        "case[///etc]",
+        "case[///opt/private]",
+        "case[////opt/private]",
+        "case[file:////opt/private]",
+    )
+
+    def transform(
+        names: tuple[str, ...],
+    ) -> tuple[bytes, dict[str, str], dict[str, object]]:
+        root = ET.Element(
+            "testsuite",
+            tests="6",
+            failures="0",
+            errors="0",
+            skipped="0",
+            time="1.25",
+        )
+        for name in names:
+            ET.SubElement(root, "testcase", classname="tests.test_paths", name=name)
+        public, _mapping = privacy_transform_bytes(
+            ET.tostring(root, encoding="utf-8"),
+            kind="junit",
+            privacy_context=context,
+        )
+        public_root = ET.fromstring(public)
+        public_names = tuple(
+            testcase.attrib["name"] for testcase in public_root.iter("testcase")
+        )
+        pattern = "public-*.xml"
+        output = tmp_path / f"public-{len(list(tmp_path.glob(pattern)))}.xml"
+        output.write_bytes(public)
+        return public, dict(zip(names, public_names, strict=True)), parse_junit(output)
+
+    public, identifiers, parsed = transform(raw_names)
+    reversed_public, reversed_identifiers, reversed_parsed = transform(
+        tuple(reversed(raw_names))
+    )
+    assert identifiers == reversed_identifiers
+    assert identifiers["case[///etc]"] == ("case[<ABS_PATH_0001>][PUBLIC_TCID_0001]")
+    assert identifiers["case[//etc]"] == ("case[<ABS_PATH_0001>][PUBLIC_TCID_0002]")
+    assert identifiers["case[////opt/private]"] == (
+        "case[<ABS_PATH_0002>][PUBLIC_TCID_0001]"
+    )
+    assert identifiers["case[///opt/private]"] == (
+        "case[<ABS_PATH_0002>][PUBLIC_TCID_0002]"
+    )
+    assert identifiers["case[//server]"] == "case[<ABS_PATH_0003>]"
+    assert identifiers["case[file:////opt/private]"] == "case[<ABS_PATH_0004>]"
+    assert len(set(identifiers.values())) == 6
+    assert public.count(b"PUBLIC_TCID_") == 4
+    for literal in raw_names:
+        assert literal.encode() not in public
+    assert_no_literal_absolute_path(public, privacy_context=context)
+    for field, expected in (
+        ("tests", 6),
+        ("failures", 0),
+        ("errors", 0),
+        ("skipped", 0),
+        ("time_seconds", 1.25),
+    ):
+        assert parsed[field] == reversed_parsed[field] == expected
+    assert parsed["testcase_id_sha256"] == reversed_parsed["testcase_id_sha256"]
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+    assert (
+        privacy_transform_bytes(reversed_public, kind="junit", privacy_context=context)[
+            0
+        ]
+        == reversed_public
+    )
+
+
+@pytest.mark.parametrize("suite", ["targeted", "subsystem", "full"])
+def test_junit_privacy_transform_accepts_exact_p15_reports(
+    tmp_path: Path, suite: str
+) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    raw_path = (
+        repo_root
+        / ".verification"
+        / "raw"
+        / "wave-0"
+        / "0ff7ec6436d8"
+        / "candidate"
+        / f"{suite}.raw.xml"
+    )
+    if not raw_path.is_file():
+        pytest.skip("exact P15 raw JUnit is local verification evidence")
+    context = {
+        "repo_root": repo_root,
+        "user_home": Path.home(),
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "DESKTOP-RT15E78",
+        "path_separator": ";",
+    }
+    expected = {
+        "targeted": (152, 0, 0, 0, 57.117),
+        "subsystem": (175, 0, 0, 0, 75.892),
+        "full": (1109, 0, 0, 3, 226.629),
+    }[suite]
+    raw_record = parse_junit(raw_path)
+    raw = raw_path.read_bytes()
+    public, _mapping = privacy_transform_bytes(
+        raw, kind="junit", privacy_context=context
+    )
+    public_path = tmp_path / f"{suite}.xml"
+    public_path.write_bytes(public)
+    public_record = parse_junit(public_path)
+    fields = ("tests", "failures", "errors", "skipped", "time_seconds")
+    assert tuple(raw_record[field] for field in fields) == expected
+    assert tuple(public_record[field] for field in fields) == expected
+    assert public.count(b"PUBLIC_TCID_") == 4
+    assert b"//etc" not in public
+    assert b"///opt/private" not in public
+    assert_no_literal_absolute_path(public, privacy_context=context)
+    assert (
+        privacy_transform_bytes(public, kind="junit", privacy_context=context)[0]
+        == public
+    )
+    assert_public_semantics_equal("junit", raw, public, privacy_context=context)
+
+
+@pytest.mark.parametrize(
+    ("names", "message"),
+    [
+        (
+            ("case[PUBLIC_TCID_0001]",),
+            "incomplete public testcase ID marker group",
+        ),
+        (
+            ("case", "case[PUBLIC_TCID_0001]"),
+            "mixed public testcase ID marker group",
+        ),
+        (
+            ("case[PUBLIC_TCID_0001]", "case[PUBLIC_TCID_0003]"),
+            "noncanonical public testcase ID marker group",
+        ),
+        (("case[PUBLIC_TCID_001]",), "malformed public testcase ID marker"),
+        (("case[PUBLIC_TCID_0001]tail",), "malformed public testcase ID marker"),
+    ],
+)
+def test_junit_privacy_transform_rejects_malformed_reserved_marker_groups(
+    tmp_path: Path, names: tuple[str, ...], message: str
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    root = ET.Element("testsuite")
+    for name in names:
+        ET.SubElement(root, "testcase", classname="tests.test_paths", name=name)
+    with pytest.raises(ValueError, match=message):
+        privacy_transform_bytes(
+            ET.tostring(root, encoding="utf-8"),
+            kind="junit",
+            privacy_context=context,
+        )
+
+
+def test_junit_privacy_transform_rejects_synthesized_id_pre_collision(
+    tmp_path: Path,
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    root = ET.Element("testsuite")
+    for name in (
+        "case[//etc]",
+        "case[///etc]",
+        "case[<ABS_PATH_0001>][PUBLIC_TCID_0001]",
+    ):
+        ET.SubElement(root, "testcase", classname="tests.test_paths", name=name)
+    with pytest.raises(ValueError, match="public testcase ID marker group"):
+        privacy_transform_bytes(
+            ET.tostring(root, encoding="utf-8"),
+            kind="junit",
+            privacy_context=context,
+        )
+
+
+def test_junit_privacy_transform_rejects_reversed_raw_marker_assignment(
+    tmp_path: Path,
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    root = ET.Element("testsuite")
+    for name in (
+        "case[//etc][PUBLIC_TCID_0001]",
+        "case[///etc][PUBLIC_TCID_0002]",
+    ):
+        ET.SubElement(root, "testcase", classname="tests.test_paths", name=name)
+    with pytest.raises(ValueError, match="public testcase ID marker"):
+        privacy_transform_bytes(
+            ET.tostring(root, encoding="utf-8"),
+            kind="junit",
+            privacy_context=context,
+        )
+
+
+def test_junit_privacy_transform_rejects_nested_reserved_marker_token(
+    tmp_path: Path,
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    root = ET.Element("testsuite")
+    for ordinal in (1, 2):
+        ET.SubElement(
+            root,
+            "testcase",
+            classname="tests.test_paths",
+            name=f"case[PUBLIC_TCID_9999][PUBLIC_TCID_{ordinal:04d}]",
+        )
+    with pytest.raises(ValueError, match="malformed public testcase ID marker"):
+        privacy_transform_bytes(
+            ET.tostring(root, encoding="utf-8"),
+            kind="junit",
+            privacy_context=context,
+        )
+
+
+def test_junit_privacy_transform_rejects_marked_identity_that_needs_scrubbing(
+    tmp_path: Path,
+) -> None:
+    private_home = tmp_path / "private-home"
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": private_home,
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    root = ET.Element("testsuite")
+    for ordinal in (1, 2):
+        ET.SubElement(
+            root,
+            "testcase",
+            classname="tests.test_paths",
+            name=f"case[{private_home}][PUBLIC_TCID_{ordinal:04d}]",
+        )
+    with pytest.raises(ValueError, match="marked JUnit testcase ID changed"):
+        privacy_transform_bytes(
+            ET.tostring(root, encoding="utf-8"),
+            kind="junit",
+            privacy_context=context,
+        )
+
+
+def test_junit_privacy_transform_rejects_collision_group_over_marker_capacity() -> None:
+    testcases = [
+        ET.Element("testcase", classname="tests.test_paths", name="case")
+        for _ in range(10_000)
+    ]
+    raw_identifiers = [f"tests.test_paths::raw-{index:04d}" for index in range(10_000)]
+    with pytest.raises(ValueError, match="exceeds public testcase ID marker capacity"):
+        remediation_evidence._disambiguate_public_testcase_ids(
+            testcases, raw_identifiers
+        )
+    assert all(testcase.attrib["name"] == "case" for testcase in testcases)
+
+
+def test_junit_privacy_transform_rejects_raw_duplicate_testcase_ids(
+    tmp_path: Path,
+) -> None:
+    context = {
+        "repo_root": tmp_path / "private-repository",
+        "user_home": tmp_path / "private-home",
+        "cpu_python": Path(r"C:\Python314\python.exe"),
+        "hostname": "private-host",
+        "path_separator": ";",
+    }
+    root = ET.Element("testsuite")
+    for _ in range(2):
+        ET.SubElement(root, "testcase", classname="tests.test_paths", name="case")
+    with pytest.raises(ValueError, match="duplicate testcase ID"):
+        privacy_transform_bytes(
+            ET.tostring(root, encoding="utf-8"),
+            kind="junit",
+            privacy_context=context,
+        )
+
+
 @pytest.mark.parametrize(
     ("completed", "triggers", "unresolved", "expected"),
     [
