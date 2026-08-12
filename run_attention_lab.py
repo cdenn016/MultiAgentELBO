@@ -38,7 +38,7 @@ NUMERICS = {
 OUTPUT = {
     "root": "artifacts",
     "collect_diagnostics": True,
-    "render_figures": False,
+    "render_figures": True,
 }
 
 
