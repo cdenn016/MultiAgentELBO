@@ -9,6 +9,11 @@ import sys
 from pathlib import Path, PurePosixPath
 from typing import Mapping, Sequence
 
+if __package__ in (None, ""):
+    _DIRECT_SCRIPT_REPO_ROOT = str(Path(__file__).resolve(strict=True).parents[1])
+    if _DIRECT_SCRIPT_REPO_ROOT not in sys.path:
+        sys.path.insert(0, _DIRECT_SCRIPT_REPO_ROOT)
+
 from tools.remediation_evidence import (
     CPU_PYTHON,
     HISTORICAL_INVENTORY_PATH,

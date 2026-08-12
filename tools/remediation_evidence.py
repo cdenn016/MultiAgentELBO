@@ -20,6 +20,11 @@ from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 from typing import Iterable, Mapping, Sequence
 
+if __package__ in (None, ""):
+    _DIRECT_SCRIPT_REPO_ROOT = str(Path(__file__).resolve(strict=True).parents[1])
+    if _DIRECT_SCRIPT_REPO_ROOT not in sys.path:
+        sys.path.insert(0, _DIRECT_SCRIPT_REPO_ROOT)
+
 
 CPU_PYTHON = Path(r"C:\Python314\python.exe")
 COMMAND_FIELDS = {
