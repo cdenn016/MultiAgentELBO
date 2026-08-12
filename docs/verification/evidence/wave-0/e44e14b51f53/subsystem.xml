@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites name="pytest tests">
+  <testsuite name="pytest" errors="0" failures="0" skipped="0" tests="190" time="68.389" timestamp="2026-08-12T09:03:18.468668-05:00" hostname="&lt;HOSTNAME&gt;">
+    <testcase classname="tests.test_remediation_contracts" name="test_remediation_evidence_schema_closes_generic_discriminators" time="0.000" />
+    <testcase classname="tests.test_remediation_contracts" name="test_remediation_evidence_schema_has_dynamic_dependencies_and_policy" time="0.000" />
+    <testcase classname="tests.test_remediation_contracts" name="test_remediation_evidence_schema_freezes_wave0_adapter_constants" time="0.000" />
+    <testcase classname="tests.test_remediation_contracts" name="test_audit_disposition_is_complete_closed_and_uniquely_owned" time="0.001" />
+    <testcase classname="tests.test_remediation_contracts" name="test_compatibility_inventory_names_every_frozen_surface" time="0.001" />
+    <testcase classname="tests.test_remediation_contracts" name="test_states_schema_migrations_and_ownership_seams_are_closed" time="0.000" />
+    <testcase classname="tests.test_remediation_contracts" name="test_producer_and_ledger_states_are_disjoint" time="0.000" />
+    <testcase classname="tests.test_remediation_contracts" name="test_effect_order_covers_every_frozen_entry_point_exactly" time="0.000" />
+    <testcase classname="tests.test_remediation_contracts" name="test_historical_fixed_ray_bundles_are_complete_and_byte_pinned" time="0.002" />
+    <testcase classname="tests.test_remediation_contracts" name="test_remediation_readme_preserves_status_and_revision_boundaries" time="0.000" />
+    <testcase classname="tests.test_remediation_contracts" name="test_historical_fixed_ray_bundle_hash_drift_is_rejected" time="0.007" />
+    <testcase classname="tests.test_remediation_evidence" name="test_contract_constants_are_exact" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_canonical_json_and_prepared_carriers_are_immutable" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_generic_prepare_api_is_public_acyclic_and_exact" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_generic_wave_mapping_rejects_unapproved_unsuffixed_wave_d" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_generic_prepare_builds_exact_cross_wave_base_without_writes[wave-a-a-dependency_paths0]" time="1.033" />
+    <testcase classname="tests.test_remediation_evidence" name="test_generic_prepare_builds_exact_cross_wave_base_without_writes[wave-d0-d-dependency_paths1]" time="0.995" />
+    <testcase classname="tests.test_remediation_evidence" name="test_generic_prepare_rejects_empty_wave0_dependencies_before_transform" time="0.429" />
+    <testcase classname="tests.test_remediation_evidence" name="test_wave0_wrapper_reads_each_raw_junit_once" time="2.265" />
+    <testcase classname="tests.test_remediation_evidence" name="test_parse_junit_uses_testcase_ids_and_skip_reasons" time="0.002" />
+    <testcase classname="tests.test_remediation_evidence" name="test_real_declared_symlink_node_matches_frozen_skip_allowlist" time="0.392" />
+    <testcase classname="tests.test_remediation_evidence" name="test_parse_junit_rejects_semantic_failures[&lt;testcase classname=&quot;a&quot; name=&quot;x&quot;/&gt;&lt;testcase classname=&quot;a&quot; name=&quot;x&quot;/&gt;-duplicate testcase ID]" time="0.002" />
+    <testcase classname="tests.test_remediation_evidence" name="test_parse_junit_rejects_semantic_failures[&lt;testcase classname=&quot;a&quot;/&gt;-testcase ID]" time="0.002" />
+    <testcase classname="tests.test_remediation_evidence" name="test_parse_junit_rejects_semantic_failures[&lt;testcase classname=&quot;a&quot; name=&quot;x&quot;&gt;&lt;failure/&gt;&lt;/testcase&gt;-failures]" time="0.002" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_disambiguates_colliding_public_testcase_ids" time="0.009" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_accepts_exact_p15_reports[targeted]" time="0.038" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_accepts_exact_p15_reports[subsystem]" time="0.043" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_accepts_exact_p15_reports[full]" time="0.221" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_rejects_malformed_reserved_marker_groups[names0-incomplete public testcase ID marker group]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_rejects_malformed_reserved_marker_groups[names1-mixed public testcase ID marker group]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_rejects_malformed_reserved_marker_groups[names2-noncanonical public testcase ID marker group]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_rejects_malformed_reserved_marker_groups[names3-malformed public testcase ID marker]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_rejects_malformed_reserved_marker_groups[names4-malformed public testcase ID marker]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_rejects_synthesized_id_pre_collision" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_rejects_reversed_raw_marker_assignment" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_rejects_nested_reserved_marker_token" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_rejects_marked_identity_that_needs_scrubbing" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_rejects_collision_group_over_marker_capacity" time="0.014" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_privacy_transform_rejects_raw_duplicate_testcase_ids" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_review_target_transition_is_exact[2-triggers0-False-2]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_review_target_transition_is_exact[2-triggers1-False-4]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_review_target_transition_is_exact[2-triggers2-False-4]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_review_target_transition_is_exact[2-triggers3-False-4]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_review_target_transition_is_exact[4-triggers4-False-4]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_review_target_transition_is_exact[4-triggers5-True-8]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_review_target_transition_is_exact[8-triggers6-True-8]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_review_target_rejects_invalid_counts_and_triggers" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_criterion_aggregates_are_exact_means[2]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_criterion_aggregates_are_exact_means[4]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_criterion_aggregates_are_exact_means[8]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_is_total_idempotent_and_semantic" time="0.002" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_preserves_spaced_and_quoted_path_components" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_scrubs_spaced_and_quoted_xml_paths" time="0.002" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_accepts_escaped_junit_fragments_and_placeholder_suffixes" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_accepts_path_before_embedded_closing_tag" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_accepts_nested_hostname_suffix_guard_case" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_placeholder_guard_rejects_closing_tag_path_smuggling" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_scrubs_paths_inside_escaped_xml_fragments" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_does_not_parse_python_suffix_as_windows_drive" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_accepts_preserved_p6_raw_junit[targeted]" time="0.010" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_accepts_preserved_p6_raw_junit[subsystem]" time="0.013" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_accepts_preserved_p6_raw_junit[full]" time="0.131" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_testcase_name_context_redacts_exact_p12_parameter_path[test_xml_semantic_path_tokenizer_fails_closed_on_ambiguous_spaced_path[before=&lt;ABS_PATH_0007&gt; after=safe]-test_xml_semantic_path_tokenizer_fails_closed_on_ambiguous_spaced_path[before=&lt;ABS_PATH_0001&gt; after=safe]]" time="0.002" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_testcase_name_context_redacts_exact_p12_parameter_path[test_xml_semantic_path_tokenizer_fails_closed_on_ambiguous_spaced_path[before=&lt;ABS_PATH_0022&gt; after=safe]-test_xml_semantic_path_tokenizer_fails_closed_on_ambiguous_spaced_path[before=&lt;ABS_PATH_0001&gt; after=safe]]" time="0.002" />
+    <testcase classname="tests.test_remediation_evidence" name="test_p12_parameter_path_context_does_not_relax_other_xml_fields[text]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_p12_parameter_path_context_does_not_relax_other_xml_fields[property-name]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_testcase_name_context_redacts_nested_input_expected_pair" time="0.002" />
+    <testcase classname="tests.test_remediation_evidence" name="test_nested_input_expected_context_does_not_relax_other_xml_fields" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_nested_input_expected_context_rejects_mismatched_structure" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_testcase_name_redacts_direct_serialized_pytest_path_only[&lt;ABS_PATH_0027&gt;-&lt;testcase&gt;&lt;ABS_PATH_0001&gt;&lt;/testcase&gt;]]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_testcase_name_redacts_direct_serialized_pytest_path_only[&lt;ABS_PATH_0015&gt;-&lt;testcase&gt;&lt;ABS_PATH_0001&gt;&lt;/testcase&gt;]]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_testcase_name_redacts_direct_serialized_pytest_path_only[&lt;ABS_PATH_0023&gt;-&lt;testcase&gt;&lt;ABS_PATH_0001&gt;&lt;/testcase&gt;-private_fragments1]]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_testcase_name_redacts_direct_serialized_pytest_path_only[&lt;ABS_PATH_0013&gt;-&lt;testcase&gt;&lt;ABS_PATH_0001&gt;&lt;/testcase&gt;-private_fragments1]]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_testcase_name_preserves_known_placeholder_suffix" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_junit_testcase_name_does_not_allow_placeholder_before_opening_tag" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_accepts_fresh_p12_raw_junit[targeted]" time="0.020" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_accepts_fresh_p12_raw_junit[subsystem]" time="0.023" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_accepts_fresh_p12_raw_junit[full]" time="0.141" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_accepts_fresh_p13_raw_junit[targeted]" time="0.022" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_accepts_fresh_p13_raw_junit[subsystem]" time="0.025" />
+    <testcase classname="tests.test_remediation_evidence" name="test_privacy_transform_accepts_fresh_p13_raw_junit[full]" time="0.147" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_preserves_nonpath_boundaries[&lt;ABS_PATH_0026&gt;-&lt;testcase&gt;&amp;lt;ABS_PATH_0001&amp;gt;&lt;/testcase&gt;]" time="0.002" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_preserves_nonpath_boundaries[&lt;ABS_PATH_0014&gt;-&lt;testcase&gt;&amp;lt;ABS_PATH_0001&amp;gt;&lt;/testcase&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_preserves_nonpath_boundaries[case[&lt;ABS_PATH_0005&gt;]-&lt;testcase&gt;case[&amp;lt;ABS_PATH_0001&amp;gt;]&lt;/testcase&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_preserves_nonpath_boundaries[case(&lt;ABS_PATH_0005&gt;)-&lt;testcase&gt;case(&amp;lt;ABS_PATH_0001&amp;gt;)&lt;/testcase&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_preserves_nonpath_boundaries[before=&lt;ABS_PATH_0005&gt;,after-&lt;testcase&gt;before=&amp;lt;ABS_PATH_0001&amp;gt;,after&lt;/testcase&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_preserves_nonpath_boundaries[case[&lt;ABS_PATH_0020&gt;]-&lt;testcase&gt;case[&amp;lt;ABS_PATH_0001&amp;gt;]&lt;/testcase&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_scrubs_entire_bounded_spaced_path[&lt;ABS_PATH_0022&gt;-&lt;testcase&gt;&amp;lt;ABS_PATH_0001&amp;gt;&lt;/testcase&gt;-private_fragments0]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_scrubs_entire_bounded_spaced_path[&lt;ABS_PATH_0012&gt;-&lt;testcase&gt;&amp;lt;ABS_PATH_0001&amp;gt;&lt;/testcase&gt;-private_fragments1]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_scrubs_entire_bounded_spaced_path[&lt;ABS_PATH_0007&gt;-&lt;testcase&gt;&amp;lt;ABS_PATH_0001&amp;gt;&lt;/testcase&gt;-private_fragments2]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_scrubs_entire_bounded_spaced_path[before=&quot;&lt;ABS_PATH_0007&gt;&quot;,after-&lt;testcase&gt;before=&quot;&amp;lt;ABS_PATH_0001&amp;gt;&quot;,after&lt;/testcase&gt;-private_fragments3]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_fails_closed_on_ambiguous_spaced_path[before=&lt;ABS_PATH_0007&gt; after=safe]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_fails_closed_on_ambiguous_spaced_path[before=&lt;ABS_PATH_0022&gt; after=safe]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_never_partially_redacts_spaced_path[&lt;ABS_PATH_0006&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_never_partially_redacts_spaced_path[&lt;ABS_PATH_0024&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_never_partially_redacts_spaced_path[\\\\server\\share\\Secret Project token.txt]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_never_partially_redacts_spaced_path[&lt;ABS_PATH_0003&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_rejects_escaped_angle_smuggling[&lt;&lt;ABS_PATH_0008&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_rejects_escaped_angle_smuggling[&lt;&lt;ABS_PATH_0004&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_rejects_escaped_angle_smuggling[prefix&lt;&lt;ABS_PATH_0021&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_covers_complete_leading_slash_run[&lt;ABS_PATH_0011&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_covers_complete_leading_slash_run[&lt;ABS_PATH_0002&gt;][PUBLIC_TCID_0002]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_covers_complete_leading_slash_run[&lt;ABS_PATH_0002&gt;][PUBLIC_TCID_0001]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_covers_complete_leading_slash_run[&lt;ABS_PATH_0005&gt;][PUBLIC_TCID_0002]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_covers_complete_leading_slash_run[&lt;ABS_PATH_0005&gt;][PUBLIC_TCID_0001]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_covers_complete_leading_slash_run[&lt;ABS_PATH_0025&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_preserves_non_file_uri_text[https://example.com/path?q=1]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_preserves_non_file_uri_text[http://localhost:8080/test]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_preserves_non_file_uri_text[ftp://files.example.com/archive.tar]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_preserves_non_file_uri_text[urn:test://artifact/id]" time="0.002" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_preserves_non_file_uri_text[pytest://case/id]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_scrubs_bounded_unc_server_root[text-\\&lt;ABS_PATH_0011&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_scrubs_bounded_unc_server_root[text-\\\\server&lt;ABS_PATH_0001&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_scrubs_bounded_unc_server_root[attribute-\\&lt;ABS_PATH_0011&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_semantic_path_tokenizer_scrubs_bounded_unc_server_root[attribute-\\\\server&lt;ABS_PATH_0001&gt;]" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_json_privacy_rejects_placeholder_traversal_and_scrubs_embedded_hostname" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_placeholder_guard_accepts_canonical_root_and_home_suffixes" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_placeholder_guard_rejects_partial_suffixes_and_traversal[&lt;testsuite source=&quot;&amp;lt;CPU_PYTHON&amp;gt;&lt;ABS_PATH_0010&gt;&quot;/&gt;]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_placeholder_guard_rejects_partial_suffixes_and_traversal[&lt;testsuite&gt;&lt;testcase&gt;&amp;lt;HOSTNAME&amp;gt;&lt;ABS_PATH_0018&gt;&lt;/testcase&gt;&lt;/testsuite&gt;]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_placeholder_guard_rejects_partial_suffixes_and_traversal[&lt;testsuite&gt;&lt;testcase/&gt; &amp;lt;PID&amp;gt;&lt;ABS_PATH_0018&gt;&lt;/testsuite&gt;]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_placeholder_guard_rejects_partial_suffixes_and_traversal[&lt;testsuite source=&quot;&amp;#x3C;ABS_PATH_0001&amp;#x3E;&lt;ABS_PATH_0018&gt;&quot;/&gt;]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_placeholder_guard_rejects_partial_suffixes_and_traversal[&lt;testsuite&gt;&lt;testcase&gt;&amp;#60;REPO_ROOT&amp;#62;&lt;ABS_PATH_0009&gt;&lt;/testcase&gt;&lt;/testsuite&gt;]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_placeholder_guard_rejects_partial_suffixes_and_traversal[&lt;testsuite&gt;&lt;testcase/&gt; &amp;#x3c;REPO_ROOT&amp;#x3e;&amp;#92;..&amp;#92;outside&lt;/testsuite&gt;]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_placeholder_guard_rejects_partial_suffixes_and_traversal[&lt;testsuite source=&quot;&amp;lt;REPO_ROOT&amp;gt;&lt;ABS_PATH_0017&gt;&quot;/&gt;]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_absolute_path_guard_rejects_decoded_attribute_text_and_tail[&lt;testsuite private=&quot;&lt;ABS_PATH_0020&gt;&quot;/&gt;]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_absolute_path_guard_rejects_decoded_attribute_text_and_tail[&lt;testsuite&gt;&lt;testcase&gt;&lt;ABS_PATH_0016&gt;&lt;/testcase&gt;&lt;/testsuite&gt;]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_absolute_path_guard_rejects_decoded_attribute_text_and_tail[&lt;testsuite&gt;&lt;testcase/&gt;&lt;ABS_PATH_0019&gt;&lt;/testsuite&gt;]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_xml_absolute_path_guard_rejects_decoded_attribute_text_and_tail[&lt;testsuite&gt;&lt;testcase&gt;&lt;ABS_PATH_0008&gt;&lt;/testcase&gt;&lt;/testsuite&gt;]" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_unknown_and_missing_fields" time="0.305" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_duplicate_dependency_paths_with_distinct_records" time="0.308" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_dependency_case_fold_path_aliases" time="0.301" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_duplicate_tested_input_paths_with_distinct_records" time="0.296" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_unknown_evidence_file_kind" time="0.298" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_empty_dependencies_for_every_wave[wave-0]" time="0.294" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_empty_dependencies_for_every_wave[wave-a]" time="0.300" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_empty_dependencies_for_every_wave[wave-b]" time="0.296" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_empty_dependencies_for_every_wave[wave-c]" time="0.294" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_empty_dependencies_for_every_wave[wave-d0]" time="0.303" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_empty_dependencies_for_every_wave[wave-d1]" time="0.294" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_empty_dependencies_for_every_wave[wave-e]" time="0.296" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_wave0_dependency_and_policy_contract_drift[dependency_paths0-None-None-wave-0 dependency paths differ from frozen contract]" time="0.301" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_wave0_dependency_and_policy_contract_drift[dependency_paths1-None-None-wave-0 dependency paths differ from frozen contract]" time="0.305" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_wave0_dependency_and_policy_contract_drift[dependency_paths2-None-None-wave-0 dependency paths differ from frozen contract]" time="0.299" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_wave0_dependency_and_policy_contract_drift[dependency_paths3-schema_version-wave-a-inputs-v1-wave-0 tested-input policy differs from frozen contract]" time="0.295" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_wave0_dependency_and_policy_contract_drift[dependency_paths4-selection_rules-policy_value4-wave-0 tested-input policy differs from frozen contract]" time="0.309" />
+    <testcase classname="tests.test_remediation_evidence" name="test_index_rejects_wave0_dependency_and_policy_contract_drift[dependency_paths5-exclusion_rules-policy_value5-wave-0 tested-input policy differs from frozen contract]" time="0.299" />
+    <testcase classname="tests.test_remediation_evidence" name="test_candidate_and_closure_heads_cannot_be_swapped" time="0.293" />
+    <testcase classname="tests.test_remediation_evidence" name="test_publish_is_absent_only_and_prevalidates_without_write" time="0.002" />
+    <testcase classname="tests.test_remediation_evidence" name="test_publish_rejects_stale_current_bindings_before_any_write[selected_input-current tested-input policy]" time="2.348" />
+    <testcase classname="tests.test_remediation_evidence" name="test_publish_rejects_stale_current_bindings_before_any_write[dependency-dependency input byte mismatch]" time="2.284" />
+    <testcase classname="tests.test_remediation_evidence" name="test_publish_rejects_stale_current_bindings_before_any_write[plan-reviewed_plan_binding byte mismatch]" time="2.293" />
+    <testcase classname="tests.test_remediation_evidence" name="test_publish_rejects_stale_current_bindings_before_any_write[snapshot-verification_contract_binding byte mismatch]" time="2.402" />
+    <testcase classname="tests.test_remediation_evidence" name="test_publish_rejects_stale_current_bindings_before_any_write[source_binding-source/config binding]" time="2.355" />
+    <testcase classname="tests.test_remediation_evidence" name="test_disk_validation_rejects_extra_and_rehashed_semantic_drift" time="2.489" />
+    <testcase classname="tests.test_remediation_evidence" name="test_disk_validation_rejects_coherently_rehashed_live_environment_drift" time="2.484" />
+    <testcase classname="tests.test_remediation_evidence" name="test_detached_domain_extras_require_complete_one_way_inventory[domain-evidence.json-path]" time="1.796" />
+    <testcase classname="tests.test_remediation_evidence" name="test_detached_domain_extras_require_complete_one_way_inventory[performance-evidence-inventory.json-name]" time="1.780" />
+    <testcase classname="tests.test_remediation_evidence" name="test_direct_script_help_starts_without_pythonpath[tools/remediation_evidence.py-resolve-verification-gate]" time="0.096" />
+    <testcase classname="tests.test_remediation_evidence" name="test_direct_script_help_starts_without_pythonpath[tools/build_wave0_evidence.py-review-context-sha]" time="0.095" />
+    <testcase classname="tests.test_remediation_evidence" name="test_direct_script_build_parser_starts_without_pythonpath" time="0.098" />
+    <testcase classname="tests.test_remediation_evidence" name="test_direct_script_validate_reaches_lazy_wrapper_import" time="0.476" />
+    <testcase classname="tests.test_remediation_evidence" name="test_direct_script_resolves_installed_verification_gate" time="0.098" />
+    <testcase classname="tests.test_remediation_evidence" name="test_parsers_expose_only_the_frozen_commands" time="0.001" />
+    <testcase classname="tests.test_remediation_evidence" name="test_review_context_contract_is_closed" time="0.000" />
+    <testcase classname="tests.test_remediation_evidence" name="test_wave0_candidate_review_closure_and_gate_lifecycle" time="19.435" />
+    <testcase classname="tests.test_remediation_evidence" name="test_tested_input_resolver_rejects_matching_untracked_file" time="0.223" />
+    <testcase classname="tests.test_remediation_evidence" name="test_verification_snapshot_resolver_is_exact_and_rejects_extras" time="0.016" />
+    <testcase classname="tests.test_shared_scientific_contracts" name="test_same_three_cycle_agrees_across_exact_and_geometry_producers" time="0.000" />
+    <testcase classname="tests.test_shared_scientific_contracts" name="test_inverse_and_composition_obey_the_literal_group_law" time="0.000" />
+    <testcase classname="tests.test_shared_scientific_contracts" name="test_inverse_convention_mutation_is_detected" time="0.000" />
+    <testcase classname="tests.test_shared_scientific_contracts" name="test_determinant_proxy_mutations_reverse_both_required_spd_cases" time="0.000" />
+    <testcase classname="tests.test_shared_scientific_contracts" name="test_exact_finite_and_gaussian_adapters_share_named_spd_decisions[correlated-false-accept]" time="0.001" />
+    <testcase classname="tests.test_shared_scientific_contracts" name="test_exact_finite_and_gaussian_adapters_share_named_spd_decisions[repeated-small-false-reject]" time="0.001" />
+    <testcase classname="tests.test_shared_scientific_contracts" name="test_tolerance_band_is_inconclusive_with_literal_boundary_metadata" time="0.000" />
+    <testcase classname="tests.test_shared_scientific_contracts" name="test_stress_failure_precedes_an_inconclusive_status" time="0.000" />
+    <testcase classname="tests.test_shared_scientific_contracts" name="test_false_coherence_alone_forces_session3_failure" time="5.115" />
+    <testcase classname="tests.test_shared_scientific_contracts" name="test_nonzero_relabel_residual_alone_forces_session3_failure" time="4.669" />
+    <testcase classname="tests.test_shared_scientific_contracts" name="test_default_session3_is_inconclusive_with_candidate_boundary_outputs" time="4.888" />
+    <testcase classname="tests.test_gaussian_results_document" name="test_source_binding_pins_the_complete_original_inventory" time="0.001" />
+    <testcase classname="tests.test_gaussian_results_document" name="test_current_result_matches_copied_primary_and_holdout_records" time="0.001" />
+    <testcase classname="tests.test_gaussian_results_document" name="test_primary_and_holdout_job_populations_are_exact_and_disjoint" time="0.001" />
+    <testcase classname="tests.test_gaussian_results_document" name="test_source_binding_distinguishes_job_table_file_and_canonical_payload_hashes" time="0.001" />
+    <testcase classname="tests.test_gaussian_results_document" name="test_current_state_section_links_the_binding_and_states_the_current_outcome" time="0.000" />
+    <testcase classname="tests.test_gaussian_results_document" name="test_fixed_model_diagnostic_extract_has_exact_bound_inventory" time="0.001" />
+    <testcase classname="tests.test_gaussian_results_document" name="test_public_manifest_has_one_enumerated_redaction_and_raw_run_a_is_hash_only" time="0.000" />
+    <testcase classname="tests.test_gaussian_results_document" name="test_fixed_model_diagnostic_extract_contains_no_private_or_telemetry_bytes" time="0.018" />
+    <testcase classname="tests.test_gaussian_results_document" name="test_fixed_model_binding_records_all_six_passed_premises_and_both_oracles" time="0.000" />
+    <testcase classname="tests.test_gaussian_results_document" name="test_fixed_model_artifacts_preserve_semantics_array_inventory_and_candidate_state" time="0.004" />
+    <testcase classname="tests.test_gaussian_results_document" name="test_current_result_records_the_bounded_fixed_model_diagnostic" time="0.000" />
+    <testcase classname="tests.test_gaussian_results_document" name="test_current_state_section_links_and_scopes_the_fixed_model_diagnostic" time="0.001" />
+  </testsuite>
+</testsuites>
