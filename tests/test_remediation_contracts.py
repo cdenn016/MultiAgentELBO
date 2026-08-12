@@ -583,6 +583,11 @@ def test_remediation_readme_preserves_status_and_revision_boundaries():
         'new clean parent',
         'rather than retrying the same destination',
         'candidate pipeline, and separately for each closure pipeline',
+        'Fresh JUnit XML is the sole authority for test totals',
+        'record the observed counts',
+        'never compare them with totals from an earlier revision',
+        'zero failures and errors',
+        'exact approved skip reasons',
     ):
         assert phrase in text
 
