@@ -1,0 +1,22 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-a4db58accfdd6c9563a7bd8cb34526351564b0737bd3931a96d3bac7e7674a6c",
+  "target_digest": "a4db58accfdd6c9563a7bd8cb34526351564b0737bd3931a96d3bac7e7674a6c",
+  "assumptions": [],
+  "evidence": [],
+  "claims": [
+    {
+      "id": "target",
+      "statement": "Determine whether a PIFB2-type continuum action on belief, model, and frame sections can be made mathematically rigorous under explicit hypotheses, while its live-peer KL sector remains generically distinct from the ordinary state-level ELBO of one fixed normalized joint; determine the resulting role of the exact ELBO theory.",
+      "quantifiers": "For every finite agent cover and every admissible section configuration satisfying the frozen analytic hypotheses, require a well-defined gauge-covariant action; do not require that every live-peer configuration family be representable by one fixed state-level joint on the original variables.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "a4db58accfdd6c9563a7bd8cb34526351564b0737bd3931a96d3bac7e7674a6c",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [],
+      "evidence_ids": [],
+      "bridge_premise_ids": [],
+      "falsifier": "Either exhibit an admissible failure of the corrected action theorem or construct one fixed state-level joint that reproduces arbitrary moving-peer fields within the frozen no-go scope."
+    }
+  ]
+}
+

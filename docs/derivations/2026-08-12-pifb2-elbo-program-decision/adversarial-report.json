@@ -1,0 +1,64 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-a4db58accfdd6c9563a7bd8cb34526351564b0737bd3931a96d3bac7e7674a6c",
+  "target_digest": "a4db58accfdd6c9563a7bd8cb34526351564b0737bd3931a96d3bac7e7674a6c",
+  "attacks": [
+    {
+      "attack_id": "base-measure-and-domain",
+      "claim_ids": [
+        "target"
+      ],
+      "method": "Type-check every integral against the domains of its sections.",
+      "conclusion": "Bare dc on a general manifold and globally integrated locally defined sections require repair.",
+      "disposition": "OPEN"
+    },
+    {
+      "attack_id": "ultralocality",
+      "claim_ids": [
+        "target"
+      ],
+      "method": "Differentiate the displayed action with respect to base-separated perturbations.",
+      "conclusion": "Without covariant derivative terms or a nonlocal kernel, the higher-dimensional theory is a direct integral of pointwise systems.",
+      "disposition": "OPEN"
+    },
+    {
+      "attack_id": "state-elbo-conflation",
+      "claim_ids": [
+        "target"
+      ],
+      "method": "Compare mixed third variations of a fixed-joint mean-field ELBO and moving-peer KL.",
+      "conclusion": "The ordinary state-level interpretation fails in the theorem's scoped family; restricted and configuration-level lifts remain distinct.",
+      "disposition": "SURVIVES_WITH_SCOPE"
+    },
+    {
+      "attack_id": "gauge-and-noncompactness",
+      "claim_ids": [
+        "target"
+      ],
+      "method": "Audit pure frame coboundaries, holonomy, and GL-plus gauge volume.",
+      "conclusion": "A first theorem should use compact gauge data or explicit gauge fixing; nontrivial curvature needs an independent connection.",
+      "disposition": "OPEN"
+    }
+  ],
+  "independent_reconstruction": {
+    "claim_ids": [
+      "target"
+    ],
+    "method": "Independent restricted direct-method construction sketch on a compact base with compact gauge group and uniformly elliptic Gaussian Sobolev fields.",
+    "result": "PARTIAL",
+    "conclusion": "A credible route exists, but the action and all hypotheses have not been frozen into a complete proof.",
+    "artifact_path": null,
+    "artifact_sha256": null
+  },
+  "oracle_erasure": {
+    "claim_ids": [
+      "target"
+    ],
+    "method": "Re-derive the strategic split without assuming the manuscript's desired affirmative conclusion.",
+    "result": "PARTIAL",
+    "conclusion": "The level separation survives; the full continuum existence theorem remains open.",
+    "artifact_path": null,
+    "artifact_sha256": null
+  }
+}
+

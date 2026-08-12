@@ -1,0 +1,80 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-a4db58accfdd6c9563a7bd8cb34526351564b0737bd3931a96d3bac7e7674a6c",
+  "target_digest": "a4db58accfdd6c9563a7bd8cb34526351564b0737bd3931a96d3bac7e7674a6c",
+  "mechanism_families": [
+    {
+      "family_id": "continuum-effective-action",
+      "core_mechanism": "Treat belief, model, frame, attention, and connection fields as primitive section-configuration variables and postulate a gauge-covariant extended-real action.",
+      "target_obligation_ids": [
+        "target"
+      ],
+      "representation": "Compact measured base; finite agent cover; Sobolev statistical sections; typed overlap transports; local VFE plus peer, spatial, and connection sectors.",
+      "invariant_or_obstruction": "Gauge covariance is available only after one transformation law is fixed; minimizer existence requires coercivity, compactness or gauge fixing, and lower semicontinuity.",
+      "obligations": [
+        "Repair the base measure and overlap typing.",
+        "Define the belief-model joint entering the likelihood.",
+        "Prove well-definedness, invariance, existence, variation, dissipation, and the singleton-base limit."
+      ],
+      "bridge": "Finite designs and a later lattice-to-continuum theorem connect this action to executable and exact finite models.",
+      "failure_test": "An admissible undefined term, gauge-dependent value, nonclosed configuration space, or coercivity escape defeats the proposed theorem.",
+      "verified_results": [
+        "The current manuscript supplies the intended action skeleton and exact row minimization, but not the complete continuum theorem."
+      ],
+      "open_gaps": [
+        "No frozen corrected action or complete direct-method proof is yet present.",
+        "No continuum discretization convergence theorem is yet present."
+      ],
+      "novelty_fingerprint": "Gauge-covariant interacting statistical sections with entropy-regularized transported peer KL on overlap domains.",
+      "disposition": "primary-open"
+    },
+    {
+      "family_id": "ordinary-state-elbo",
+      "core_mechanism": "Seek one fixed normalized generative joint on the original state variables whose negative ELBO equals the live population scalar.",
+      "target_obligation_ids": [
+        "target"
+      ],
+      "representation": "Finite or cylindrical state law with a joint recognition distribution.",
+      "invariant_or_obstruction": "On the scoped open factorized family, a fixed-joint ELBO is separately affine outside factor entropies, whereas moving-peer KL has a nonzero mixed third variation.",
+      "obligations": [
+        "Retain the theorem's exact factorization and fixed-row scope.",
+        "Classify only separately proved exceptions."
+      ],
+      "bridge": "Exact local self-VFE, fixed-source rows, ordered source-label models, and zero-within-scale hierarchies remain valid restricted realizations.",
+      "failure_test": "A single fixed joint reproducing arbitrary live peer fields on the original sample space would defeat the obstruction.",
+      "verified_results": [
+        "A separate revision-bound verification ledger closes the scoped moving-peer no-go."
+      ],
+      "open_gaps": [
+        "The obstruction does not classify every correlated or coarser recognition family."
+      ],
+      "novelty_fingerprint": "Exact normalized-law semantics and a representation obstruction for moving variational targets.",
+      "disposition": "restricted-companion"
+    },
+    {
+      "family_id": "configuration-gibbs-vfe",
+      "core_mechanism": "Promote whole section-valued agent configurations to random variables and use the PIFB2 action as a Gibbs energy.",
+      "target_obligation_ids": [
+        "target"
+      ],
+      "representation": "A proper Borel reference probability rho_0 on configuration space and P_0(dX)=Z^{-1} exp(-S[X]/T) rho_0(dX).",
+      "invariant_or_obstruction": "The Gibbs variational identity is exact if 0<Z<infinity, but it includes configuration entropy and is not the original state-level ELBO.",
+      "obligations": [
+        "Construct a proper reference law on the chosen section space.",
+        "Prove partition-function finiteness and gauge-volume control.",
+        "Keep observation likelihoods and vacuum configuration energy from double counting."
+      ],
+      "bridge": "This is the natural optional probabilistic completion of the deterministic continuum action.",
+      "failure_test": "An improper reference law, infinite gauge volume, or divergent partition function blocks the construction.",
+      "verified_results": [
+        "The finite measure-theoretic identity is exact conditionally on a proper reference law and finite partition function."
+      ],
+      "open_gaps": [
+        "No continuum section-space reference law or normalizability theorem is constructed."
+      ],
+      "novelty_fingerprint": "Meta-level generalized Bayesian VFE over complete interacting-agent fields.",
+      "disposition": "secondary-open"
+    }
+  ]
+}
+

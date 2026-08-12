@@ -587,16 +587,59 @@ connections exists. Obligations, in order:
 Two agent panels were dispatched and had **not returned** when the session ended. Their results are
 not in this document and must be treated as unknown, not as absent.
 
-| Run ID | Panel | Targets |
-|---|---|---|
-| `wf_f576312d-d2a` | continuum action | T-GRAD (covariant Fisher Dirichlet), T-CURV (Fisher-dressed curvature from holonomy KL), T-RESID (feed the tied-replica law into the contraction, compute \(\varepsilon_h\)), T-COEF (\(\tau\neq1\), \(\lambda_s\), \(\alpha_i(c)\) from normalized models), T-SIMUL (same-time vs lagged) |
-| `wf_0bb5bbd2-10a` | induced-volume action | V-BRIDGE (Polyakov→Nambu–Goto), V-TYPE (is \(\gamma\) recognition- or generative-side), V-DIFF (Diff(\(\mathcal C\)) invariance and its costs), V-EXIST (quasiconvexity and coercivity of \(\sqrt{\det h}\)) |
+### Panel A — `wf_f576312d-d2a` (continuum action), 14 agents
 
-Scripts are under `.claude/.../workflows/scripts/`; each has an adversarial skeptic per target and a
-synthesis stage. **Before accepting anything they produce, reconcile against §3b (PA-1…PA-13).**
-The panels ran *without* sight of `rm-01`…`rm-06`, so expect rediscovery and false novelty claims —
-in particular on T-CURV (the Fisher-dressed curvature is already named as the repair in `rm-03` §0)
-and on any coercivity optimism (PA-3: invariance and coercivity are in tension for noncompact \(G\)).
+Targets: **T-GRAD** covariant Fisher Dirichlet limit · **T-CURV** Fisher-dressed curvature from
+holonomy KL · **T-RESID** feed the tied-replica law into the contraction and compute
+\(\varepsilon_h\) · **T-COEF** \(\tau\neq1\), \(\lambda_s\), \(\alpha_i(c)\) from normalized models ·
+**T-SIMUL** same-time vs lagged. Structure: 3 grounding extractors → 5 derivations (effort max) →
+1 adversarial skeptic each (effort max) → synthesis.
+
+```
+script     C:\Users\chris and christine\.claude\projects\
+           C--Users-chris-and-christine-Desktop-MultiAgentELBO\
+           0ad1292e-01a7-43f7-8c22-fc72b0c10f6c\workflows\scripts\
+           elbo-to-pifb2-continuum-action-wf_f576312d-d2a.js
+transcript ...\0ad1292e-01a7-43f7-8c22-fc72b0c10f6c\subagents\workflows\wf_f576312d-d2a\
+```
+
+### Panel B — `wf_0bb5bbd2-10a` (induced-volume action), 9 agents
+
+Targets: **V-BRIDGE** Polyakov→Nambu–Goto reduction in general \(d\), and whether \(\gamma=h\) is a
+minimum or a saddle · **V-TYPE** is \(\gamma\) recognition-side (profiling stays an ELBO) or
+generative-side (profiling is empirical Bayes) · **V-DIFF** \(\mathrm{Diff}(\mathcal C)\) invariance,
+surviving observables, constraints, local d.o.f. in \(d=1,2,3\), and whether O3 dissolves ·
+**V-EXIST** quasiconvexity and coercivity of \(\sqrt{\det h}\).
+
+```
+script     C:\Users\chris and christine\.claude\projects\
+           C--Users-chris-and-christine-Desktop-MultiAgentELBO-Theory\      <- note the -Theory suffix
+           0ad1292e-01a7-43f7-8c22-fc72b0c10f6c\workflows\scripts\
+           itfrombit-induced-volume-action-wf_0bb5bbd2-10a.js
+transcript ...\0ad1292e-01a7-43f7-8c22-fc72b0c10f6c\subagents\workflows\wf_0bb5bbd2-10a\
+```
+
+### How to recover them
+
+**`resumeFromRunId` is same-session only.** After a session boundary the documented resume path is
+not available, so do **not** count on it. The reliable recovery route is:
+
+1. **Read `journal.jsonl`** in each transcript directory. It records every agent's actual return
+   value, so whatever completed before the cutoff is recoverable verbatim. Do this *first* — do not
+   assume the panels produced nothing.
+2. Individual `agent-<id>.jsonl` files in the same directory hold per-agent transcripts if the
+   journal is incomplete.
+3. If little or nothing survived, the scripts are self-contained and re-runnable as-is via
+   `Workflow({scriptPath: ...})`. Both embed the full established-state briefing, so they do not
+   depend on conversation context.
+
+**Before re-running, patch both scripts' `COMMON` block** to point at
+`docs/audits/roadmap-review-2026-08-12/` (now landed in this repo). Both panels ran *without* sight
+of `rm-01`…`rm-06` and will otherwise rediscover known results and claim novelty they do not have —
+specifically on T-CURV (the Fisher-dressed curvature is already named as the repair in `rm-03` §0
+and its invariance verified to ~7e-8) and on any coercivity optimism (PA-3).
+
+**Reconcile every returned finding against §3b (PA-1…PA-13) and §3c–§3d before recording it.**
 
 ### Highest-value next steps, in order
 

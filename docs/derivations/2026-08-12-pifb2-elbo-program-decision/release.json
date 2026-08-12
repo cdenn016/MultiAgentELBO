@@ -1,0 +1,17 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-a4db58accfdd6c9563a7bd8cb34526351564b0737bd3931a96d3bac7e7674a6c",
+  "target_digest": "a4db58accfdd6c9563a7bd8cb34526351564b0737bd3931a96d3bac7e7674a6c",
+  "checkpoint": "bounded strategic checkpoint after source trace, independent construction audit, and adversarial audit",
+  "target_claim": "target",
+  "terminal_status": null,
+  "certificate_claim": null,
+  "strongest_result": "The scoped fixed-joint obstruction and the action-versus-ELBO tier separation are verified in the separate claim ledger; a restricted continuum construction route is credible but not yet a completed theorem.",
+  "unresolved_obligations": [
+    "Freeze the corrected continuum action and admissible function spaces.",
+    "Prove the full theorem package in a restricted compact regime.",
+    "Prove a discretization-to-continuum result.",
+    "Construct a proper configuration-space reference law before claiming an exact continuum Gibbs VFE."
+  ]
+}
+

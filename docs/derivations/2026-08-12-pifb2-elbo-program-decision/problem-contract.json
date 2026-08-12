@@ -1,0 +1,55 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-a4db58accfdd6c9563a7bd8cb34526351564b0737bd3931a96d3bac7e7674a6c",
+  "target_digest": "a4db58accfdd6c9563a7bd8cb34526351564b0737bd3931a96d3bac7e7674a6c",
+  "target": {
+    "statement": "Determine whether a PIFB2-type continuum action on belief, model, and frame sections can be made mathematically rigorous under explicit hypotheses, while its live-peer KL sector remains generically distinct from the ordinary state-level ELBO of one fixed normalized joint; determine the resulting role of the exact ELBO theory.",
+    "kind": "MATHEMATICAL",
+    "quantifier_class": "MIXED",
+    "quantifiers": "For every finite agent cover and every admissible section configuration satisfying the frozen analytic hypotheses, require a well-defined gauge-covariant action; do not require that every live-peer configuration family be representable by one fixed state-level joint on the original variables.",
+    "domains": [
+      "A compact smooth measured base manifold C with a finite agent cover by domains U_i.",
+      "Belief and model statistical bundles with admissible section spaces and overlap transports.",
+      "Finite directed overlap graphs with categorical attention fields on nonempty active neighbor sets."
+    ],
+    "codomains": [
+      "The extended real line for the unreduced action.",
+      "The real line on the finite-action admissible subset."
+    ],
+    "regularity": "Measurable data for definition; smooth finite-dimensional fibers and Sobolev sections for variation; uniform covariance ellipticity or an explicit extended-real boundary convention; coercivity and weak lower semicontinuity for any minimizer theorem.",
+    "measures": [
+      "A declared finite positive Borel measure on C, or a volume measure induced by separately declared geometric data.",
+      "Categorical measures on active neighbor sets with extended-real relative entropy at support boundaries."
+    ],
+    "boundary_conditions": [
+      "Either C has no boundary or variational boundary conditions are declared before integration by parts.",
+      "Every active attention row has nonempty prior support."
+    ],
+    "symmetries": [
+      "Fiber-coordinate changes under which statistical laws and transports transform by the declared pushforward and conjugation laws.",
+      "An independent connection has its own gauge law; pure frame transport alone is not assigned nonzero curvature."
+    ],
+    "equivalence": "An exact state-level ELBO means equality up to a configuration-independent constant for one fixed normalized joint on the same original sample variables. A Gibbs law on whole section configurations is a distinct meta-level construction.",
+    "premises": [
+      "Agents are section-bearing objects with belief, model, and frame data on their base domains.",
+      "Overlap interactions compare transported statistical laws at the same base point.",
+      "The full PIFB2 functional may be postulated as an effective action; exact probabilistic semantics are established sector by sector."
+    ],
+    "modeling_postulates": [
+      "Local self-VFE, transported peer KL, attention entropy, model-channel, and optional spatial or connection terms are constitutive action terms.",
+      "Physical interpretation requires a later operational map from fields and coefficients to observables and units."
+    ],
+    "search_priors": [
+      "The current PIFB2 manuscript labels the complete population functional an action ansatz.",
+      "The exact-ELBO manuscript separates finite law-level VFE from section configurations and requires an additional lift to connect them."
+    ],
+    "permitted_theorems": [
+      "KL invariance under bijective pushforward and standard Gaussian KL formulas.",
+      "The Gibbs variational principle on a separately normalized configuration probability space.",
+      "The direct method only after coercivity, compactness, closedness, and lower-semicontinuity are checked."
+    ],
+    "negative_certificate_kind": "COUNTEREXAMPLE",
+    "falsification_criterion": "Refute the action claim by an admissible configuration for which a declared term is undefined or gauge dependent; refute the scoped non-ELBO claim by a fixed normalized joint reproducing arbitrary moving-peer fields without changing the sample space or adding configuration normalization.",
+    "literature_policy": "Use current manuscript equations as primary evidence for claim scope and record the exact hypotheses of every imported theorem."
+  }
+}

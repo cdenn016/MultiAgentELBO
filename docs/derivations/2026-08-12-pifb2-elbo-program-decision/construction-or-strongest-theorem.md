@@ -1,0 +1,9 @@
+<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-a4db58accfdd6c9563a7bd8cb34526351564b0737bd3931a96d3bac7e7674a6c","schema_version":"rigorous-theory-search/v1","target_digest":"a4db58accfdd6c9563a7bd8cb34526351564b0737bd3931a96d3bac7e7674a6c"} -->
+# Construction or strongest theorem
+
+The strongest closed result used for this decision is the scoped representation obstruction: with row variables fixed on the declared fine site-factorized open family, the live transported peer-KL scalar cannot equal, up to a constant, the negative ELBO of one fixed normalized joint on the original agent-state variables. The current PIFB2 and exact-ELBO crosswalk contain the mixed-third-variation derivation; the separate verification ledger records its evidence closure.
+
+The strongest affirmative construction is not yet a theorem. A concrete target is available: let \(C\) be compact with finite measure and declared base cometric, use a finite Lipschitz agent cover, compact gauge group, bounded Gaussian means, uniformly elliptic covariance fields, \(H^1\) section and frame fields, positive attention priors on nonempty active rows, a bounded-below continuous local likelihood, and positive covariant Dirichlet coefficients. On that restricted admissible space, the intended proof is the direct method: energy bounds give weak \(H^1\) compactness, Rellich compactness gives strong \(L^2\) subsequences, compact target constraints preserve admissibility, the bounded-elliptic Gaussian KL terms are continuous or lower semicontinuous, and the Dirichlet terms are weakly lower semicontinuous.
+
+That outline does not yet verify all closure, gauge, likelihood, and first-variation details. The affirmative target therefore remains inconclusive. The exact ELBO theory remains a restricted realization and normalization companion; it is not a replacement for the section action.
+
