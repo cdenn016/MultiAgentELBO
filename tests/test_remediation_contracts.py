@@ -571,6 +571,18 @@ def test_remediation_readme_preserves_status_and_revision_boundaries():
         'historical bundles are never upgraded',
         'candidate evidence',
         'exact-child closure evidence',
+        'process-scoped CPU environment',
+        'CUDA_VISIBLE_DEVICES=-1',
+        'PYTHONHASHSEED=0',
+        'suites, builder, and validator',
+        'MULTIAGENTELBO_RUN_CUDA_TESTS',
+        'VFE3_TEST_DEVICE',
+        'CUBLAS_WORKSPACE_CONFIG',
+        'preserve its raw diagnostics',
+        'publish nothing',
+        'new clean parent',
+        'rather than retrying the same destination',
+        'candidate pipeline, and separately for each closure pipeline',
     ):
         assert phrase in text
 

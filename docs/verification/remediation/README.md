@@ -51,6 +51,16 @@ is not committed.
 Candidate evidence at another revision, evidence copied from another run, or
 an unreviewed historical bundle cannot close a current claim.
 
+Each candidate pipeline, and separately for each closure pipeline, requires one
+process-scoped CPU environment covering the suites, builder, and validator. Set
+`CUDA_VISIBLE_DEVICES=-1` and `PYTHONHASHSEED=0`; remove
+`MULTIAGENTELBO_RUN_CUDA_TESTS`, `VFE3_TEST_DEVICE`, and
+`CUBLAS_WORKSPACE_CONFIG` before the first suite, and keep that environment for
+every command in that pipeline. Do not rely on per-command or per-shell state
+that can disappear before evidence construction. A missing or changed CPU pin
+consumes that revision's attempt: preserve its raw diagnostics, publish nothing,
+and restart from a new clean parent rather than retrying the same destination.
+
 Wave 0 may close only the contract-completeness and historical-byte-pin
 checks. The 22 audit findings remain INCONCLUSIVE_PENDING_OWNER_WAVE until
 their assigned implementation waves provide domain-eligible closure evidence.
