@@ -1735,22 +1735,41 @@ frame field on the base gives \(A=g^{-1}dg\) with curvature \(2.2\times10^{-11}\
 
 ### 3h.2 Attention triangles as 2-cells [COMPUTED]
 
-A cycle is not automatically a 2-cell; one *declares* which cycles bound. Declaring every attention
-triangle with \(\beta_{ij}\beta_{jk}\beta_{ki}>0\) to be a face gives the clique complex. Computed
-\(\operatorname{rank}H_1\) at \(n=8\):
+A cycle is not automatically a 2-cell; one *declares* which cycles bound, and **the declaration is
+not canonical - its shape follows the interaction structure.** *(Corrected 2026-08-13: the first
+version of this section used transformer-flavoured supports - causal masks, sliding windows - which
+are artifacts of sequence modelling and do not apply here. The interaction multigraph is declared
+independently of \(\mathcal C\) and need not resemble any of them.)*
 
-| attention support | E | T | cycles | rank H1 | holonomy content |
-|---|---|---|---|---|---|
-| dense / causal mask | 28 | 56 | 21 | **0** | curvature only |
-| window \(w=2\) | 13 | 6 | 6 | **0** | curvature only |
-| random sparse \(p=0.35\) | 12 | 6 | 5 | **0** | curvature only |
-| ring (\(S^1\)) | 8 | 0 | 1 | **1** | curvature + one monodromy loop |
+Filling all **triangles** (the clique complex), \(\operatorname{rank}H_1\):
 
-For every realistic attention pattern, filling attention triangles converts **all** holonomy into
-local per-plaquette curvature with no residual topological monodromy - the right structure for a field
-theory. The lone exception is the ring, which is exactly the topology of 3d's \(U(1)\) two-path
-witness; its holonomy is therefore **monodromy, not curvature**, independently confirming why that
-witness cannot test B4's curvature clause.
+| interaction topology | E | T | cycles | rank H1 |
+|---|---|---|---|---|
+| **2D grid 5x5 (MAgent-like)** | 40 | **0** | 16 | **16** |
+| 2D grid 5x5 on torus | 50 | **0** | 26 | **26** |
+| ring \(n=12\) | 12 | 0 | 1 | 1 |
+| Erdos-Renyi \(n=16,p=0.18\) | 14 | 1 | 2 | 1 |
+| ring lattice \(k=4\) (clustered) | 32 | 16 | 17 | 1 |
+| complete \(n=8\) | 28 | 56 | 21 | **0** |
+
+**A grid has no triangles at all** - zero clustering - so triangle-filling fills nothing and every
+cycle stays monodromy. Only the complete graph reaches \(H_1=0\) that way. Triangles are the right
+2-cells only for clique-y interaction structures.
+
+For a lattice the elementary plaquettes are **squares**, which is exactly lattice gauge theory:
+
+| grid | E | faces | cycles | rank H1 |
+|---|---|---|---|---|
+| 5x5 open | 40 | 16 | 16 | **0** (pure curvature) |
+| 5x5 torus | 50 | 25 | 26 | **2** (curvature + two non-contractible loops) |
+
+Two consequences. **`MAgent_Model` on a grid with \(GL(K)\) links and square plaquettes is a lattice
+gauge theory** - Wilson plaquettes and all - a far more direct connection to existing machinery than
+the programme currently claims anywhere. And **the torus retains \(H_1=2\) under any face filling**;
+that irreducible monodromy is precisely the setting in which B4's bundle-topology clause becomes
+testable, using the programme's own prototype topology with periodic boundaries. The \(U(1)\)
+two-path witness sits on the ring, \(H_1=1\), which is why its holonomy is monodromy rather than
+curvature and why it cannot test the curvature clause.
 
 ### 3h.3 Curvature controls the coherence order parameter [COMPUTED] - the main result
 
