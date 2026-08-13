@@ -833,6 +833,719 @@ gauge-valued transports is exactly what needs checking. **A six-lens panel with 
 verification is in flight on all of this** (run `wf_f802b8e6-3c0`; resume with
 `Workflow({scriptPath: …/meta-agent-extent-renormalization-wf_f802b8e6-3c0.js, resumeFromRunId: "wf_f802b8e6-3c0"})`).
 
+## 3f. META-AGENT EXTENT — six-lens panel returns, synthesis (2026-08-13)
+
+*Panel `wf_f802b8e6-3c0`, six lenses (`adiabatic-criterion`, `induced-connection`,
+`sheaf-and-prior-art`, `elbo-consistency`, `repair-07b`, `obstruction-topology`), each followed by an
+adversarial verification pass against its own Proven/Derived claims. This section is the synthesis.*
+
+**Provenance discipline for everything below.** The synthesis author recomputed nothing. Every
+numeric in this section is attributed to the lens that produced it, and every such number is
+**[Computed on an instance]** — a witness with a stated \(N\), \(K\), \(G\) and base dimension — not
+a theorem. Claim tags used throughout: **[Proven]** (a proof is written and its steps are checkable),
+**[Derived]** (follows from a stated proven result plus explicitly named hypotheses, no new proof
+obligation), **[Computed]** (measured on a specific instance, no generality claimed), **[Suggested]**
+(a reading consistent with the evidence that nobody established), **[Conjectured]** (proposed, no
+evidence). The only citations asserted below are those the synthesis author verified this session
+against the primary source; the ones that could not be verified are named as such in §3f.4.
+
+The one-line verdict: **the working hypothesis of §3e.3 is refuted in its stated form, and no lens
+replaced it with a single criterion, because "meta-agent" is currently three different objects with
+three different extents.** The refutation of the adiabatic clause is unanimous across four lenses on
+two independent grounds. Two clauses survive: the coherent block is a spectral object, and the
+induced connection \(P\nabla^\omega P\) is a genuine connection with a nonzero geometric-phase
+curvature. Everything else in §3e.3 must be rewritten.
+
+### 3f.0 Retractions and corrections to §3e — do these before reading further
+
+**(R1) §3e.2(iii) is wrong as literally written. [Computed, four lenses independently]** The operator
+declared there, \(L^\Omega=D\otimes\mathbb 1-W^\Omega\) with \((W^\Omega)_{ij}=\beta_{ij}\Omega_{ij}\)
+and row-simplex \(\beta\), is **not self-adjoint**. Self-adjointness requires
+\(\beta_{ij}\Omega_{ij}=(\beta_{ji}\Omega_{ji})^{\mathsf T}\), which under the cocycle
+\(\Omega_{ji}=\Omega_{ij}^{-1}\) forces both \(\Omega_{ij}\in O(K)\) and \(\beta_{ij}=\beta_{ji}\);
+row-stochastic attention gives neither. Measured relative asymmetry
+\(\|L-L^{\mathsf T}\|/\|L\|\): 0.178–0.830 (`adiabatic-criterion`), 0.347 (`sheaf-and-prior-art`),
+0.45 (`induced-connection`) — three independent constructions, same conclusion. Consequences: 6 to 14
+of 18 eigenvalues complex with \(\max|\mathrm{Im}\,\lambda|=0.5697\), eigenvector condition number up
+to 75.4, and \(\min\mathrm{Re}\,\lambda=-0.1466<0\), i.e. **indefinite**. A non-self-adjoint operator
+has no orthogonal spectral projector, no variational characterisation of "the low-lying subspace", no
+Cheeger inequality, and Hansen–Ghrist Thm 3.1 (\(\ker\Delta^k=H^k\)) does not apply to it. The
+correct operator is the one this repository already writes down: the symmetric sheaf energy form
+`Theory/09_coarsegraining.tex` `eq:cg-connection-laplacian-energy`,
+$$
+z^{\mathsf T}L^\Omega(c)\,z=\sum_{e=(i,j)\in E(c)}w_e(c)\,\big\|z_i-\Omega_{ij}(c)z_j\big\|^2 ,
+\qquad w_e=\tfrac12(\beta_{ij}+\beta_{ji}),
+$$
+which is symmetric PSD for **any** \(\Omega\in GL(K,\mathbb R)\), and which coincides with the §3e.2
+form to \(8.4\times10^{-17}\) if and only if \(\Omega\in O(K)\) and \(\beta\) is symmetrised
+(otherwise the two differ by 19–31%). `docs/verification/meta_agent_coherence_witness.py` must be
+re-run against the energy form and §3e.2(iii) amended. Until that is done, §3e.2(iii) and (iv) are
+**withdrawn** as stated; §3e.2(i), (ii), (v), (vi) are unaffected because they do not use
+self-adjointness.
+
+**(R2) §3e.2(ii)'s novelty claim is downgraded. [Established elsewhere in this manuscript]** The
+tree-free repair for `Theory/07b`'s compressed meta-state is **already proved in this repository** at
+two tiers: `Theory/06_general_coarsegraining.tex:561` (`thm:cg-holonomy-kl-marginal`, a path-, root-
+and gauge-independent forward-KL coarse score over the holonomy-fixed parent family) and
+`Theory/09_coarsegraining.tex:379,447` (\(\ker L_I\cong\mathrm{Fix}(\mathrm{Hol}_r)\) with
+tree-independent range of \(\iota_I\)), with the metric-weighted projector \(\Pi_0^R\) and transverse
+rate \(\lambda_+\) at `:524-549`. The \(2.0\times10^{-16}\) two-tree agreement of §3e.2(ii) is a
+numerical confirmation on an instance, not a new repair. What is genuinely open is only that
+`07b` §`sec:rg-gauge-cross-scale` (`:1618-1724`) cites none of it. See §3f.5.
+
+**(R3) The exact condition in §3e.2(ii) is weaker than alignment. [Computed, `repair-07b`]** The tree
+ambiguity vanishes identically whenever the *state* is a holonomy-fixed parallel section
+\(z\in\ker L_I\), regardless of whether the holonomy is trivial (residual \(1.7\times10^{-15}\)
+against a baseline of 0.500). Flatness is sufficient, not necessary.
+
+**(R4) §3e.4's predicted failure point fired. [Computed/Derived, `elbo-consistency`]** The coarse map
+built from \(\beta\) *is* recognition-dependent, and this breaks hypothesis H2 of `Theory/09`'s exact
+contraction theorem. Within the scope of the closed two-channel theorem \(\beta\) **and** \(\gamma\)
+are recognition rows (they appear in the variational family
+\(Q_a=\zeta_a\,\beta_{aj}q_a(dx)\,\gamma_{a\ell}s_a(dy)\); see `typed-construction.md`), which settles
+`overview.md` §9 open decision 6 *within that theorem's scope* on the recognition side. Building
+\(L^\Omega\) from optimised rows \(\beta^{Q^*}\) rather than generative rows \(\beta^{P}\) moved the
+Fiedler value by 24.7% on that lens's instance. Separately, the literal map "replace
+\(\{q_i\}_{i\in I}\) by a single \(q_M\)" has **infinite** free energy: as a recognition restriction
+its exact cost is \(G_{\rm tie}+(r/2)\log(1/\varepsilon)+O(1)\), reproduced to \(2.8\times10^{-14}\)
+against `Theory/09` `eq:cg-epsilon-divergence`. The finite object is the *mean tie with free
+covariance*, not identification.
+
+**(R5) Ledger drift, reported not repaired.** `.verification/active.json` →
+`overview-agent-ontology-final.json` is pinned to `git:43c1342`; `HEAD` is now `9e08c3f` (the panel
+dispatch saw `cbacfc6`; the pin is now two commits stale). Not re-pinned, per instruction. Three
+lenses reported it independently.
+
+### 3f.1 The criterion, as precisely as the surviving evidence supports
+
+No lens delivered a single criterion, and the reason is structural rather than a failure of effort.
+`obstruction-topology` isolated it and it organises the whole panel: **three distinct objects are
+being carried under the name "meta-agent", and they have three different extents.**
+
+- **(A) the coherent subbundle** — the spectral projector \(P(c)\) and its image, a rank-\(m\)
+  subbundle of \(\bigoplus_i E_i\);
+- **(B) a belief representative** — a section or frame of that subbundle, i.e. an actual \(\mu_M(c)\);
+- **(C) an ELBO agent** — a normalized law with a variational warrant, which is what
+  `overview.md` §2's typing actually demands.
+
+**Criterion for (A). [Derived]** Let \(L^\Omega(c)\) be the symmetric energy form of (R1) on
+\(\bigoplus_{i\in A(c)}\mathbb R^K\), and let \(M(c)=\bigoplus_i\Sigma_i(c)^{-1}\) be the Gaussian
+mean-sector Fisher metric. Fix \(c_0\) and a subset \(\sigma_{\rm lo}(c_0)\) of the generalized
+spectrum of the pencil \((L^\Omega(c_0),M(c_0))\) separated from the rest. Then the coherent
+subbundle extends as an analytic rank-\(m\) subbundle over exactly the connected component of \(c_0\)
+in
+$$
+\mathcal E_A(c_0)\;=\;\Big\{\,c\in\textstyle\bigcap_{i\in I}\mathcal C_i\;:\;\sigma_{\rm lo}(c)
+\ \text{remains separated from the rest of the generalized spectrum}\Big\},
+$$
+with \(P(c)\) the Riesz contour integral \(\frac{1}{2\pi i}\oint(\zeta-L)^{-1}d\zeta\), **and no
+further condition of any kind.** In particular there is no adiabatic clause. This is Kato's contour
+construction plus the pencil covariance of `Theory/08_infogeometry.tex:438`
+(`prop:ig-generalized-spectrum-invariance`); the pencil is needed because a passive frame rechoice
+\(z_i\mapsto a_i^{-1}z_i\) acts on \(L^\Omega\) by **congruence** \(L\mapsto A^{\mathsf T}LA\), not
+similarity, so the ordinary spectrum is not a gauge invariant off \(O(K)\) (`repair-07b`: eigenvalues
+shift by 6.77× the entire spectral spread under a \(GL(K)\) rechoice; ordinary projector fails
+covariance at 127% of \(\|P\|\); generalized spectrum invariant to \(6.4\times10^{-16}\) and
+projector covariant to \(4\times10^{-15}\)). Because \(M\succ0\) and \(L^\Omega\succeq0\), the pencil
+is symmetric-definite, so the generalized spectrum is real and "low-lying" is well defined — the
+pencil repairs the ordering problem of (R1) and the gauge problem simultaneously. That composite
+statement is **[Derived]** from two lenses' separately computed results and was **not itself
+recomputed**; it is the single most load-bearing untested assembly in this section.
+
+**Criterion for (B). [Computed, with a proven codimension count]** A global belief representative
+over a region \(R\subseteq\mathcal E_A\) exists iff the characteristic class of the block bundle over
+\(R\) vanishes, and the degree of that class is \(\mathrm{codim}(\text{crossing locus})-1\): for real
+symmetric \(L^\Omega\) (orthogonal transports, real block) crossings have codimension 2 and the
+obstruction is \(w_1\in H^1(R;\mathbb Z/2)\); for \(SO(2)\)-valued transports \(L^\Omega\) is secretly
+complex Hermitian, crossings have codimension **3** (not 2 — the dispatch's own statement was wrong,
+and the correction matters because it fixes which class and which sphere), and the obstruction is
+\(c_1\in H^2(R;\mathbb Z)\). Both are exhibited: a 3-agent \(O(2)\) family over \(S^1\) whose gap is
+constant at 0.228436 and never closes, yet whose meta-agent belief returns as its own negative,
+\(\langle v(2\pi),v(0)\rangle=-1.000000000000\); and a 3-agent \(U(1)\) family with
+\(c_1=+1.000000000\) exactly, on spheres of four radii around the flux-\(\pi\) frustration point. So
+**a meta-agent can fail to have a globally defined belief on a region where the gap never closes**,
+and that failure is invisible to every gap-based criterion. If in addition one wants the
+representative to be *approximately parallel*, the right quantity is the scale-invariant accumulated
+rotation \(\Theta(\gamma)=\int_\gamma\|D^\omega P\|\,ds\) along a path, with the covariant Kato bound
+\(\|D^\omega P\|\le\|Q(D^\omega L)P\|/\mathrm{gap}\) verified at ratio 0.374–0.856 over 8 base points.
+The threshold on \(\Theta\) — \(\pi/2\), 1, or something derived from free energy — is **not settled
+by anything in this panel**, so the "extent" it defines is currently a free parameter.
+
+**Criterion for (C). [Computed on the Gaussian tier / Derived there]** The spectral construction does
+not deliver an ELBO agent and cannot be patched into one by any step this panel found. What does
+deliver one is a different operation entirely: coarse-graining by **recognition-family restriction**,
+the third of `Theory/06`'s three operations and the only one that keeps the fixed joint and the same
+evidence. For a Gaussian posterior \(\mathcal N(\mu,\Lambda^{-1})\) and the partition-structured
+family \(\mathcal F_P=\{\mathcal N(\nu,\Sigma):\nu\in\mathrm{range}(S_P),\ \Sigma\ \text{block-diagonal
+over }P\}\), the mean and covariance sectors decouple exactly and the excess negative ELBO is
+$$
+G(P)\;=\;G_{\rm tie}(P)+G_{\rm fact}(P),
+$$
+`Theory/09`'s own two quantities **with unit coefficients**, verified to \(4.4\times10^{-15}\) across
+all 203 partitions of six agents. \(G_{\rm tie}\) increases under merging, \(G_{\rm fact}\) decreases
+(Fischer 1908), and their coefficient-free sum is nonmonotone with an interior argmin that recovers
+planted block structure. The extent is then
+\(\mathcal E_C(P)=\{c:P\ \text{remains the argmin of}\ G(\cdot;c)\}\), and the RG events are
+**transversal crossings of two smooth free-energy branches** (slope difference 15.2 at
+\(c^\*=0.8478\)) — a first-order transition in a discrete label. On that instance \(\lambda_1\) of the
+coupling operator was **constant at 0.400 straight through the event**.
+
+**Where the lenses disagree, and why — not averaged.**
+
+1. *Does the support bind?* `adiabatic-criterion` measures the support as the **widest** candidate
+   extent and concludes it never binds: about \(c_0=2.0\) on an 8-agent \(K=3\) \(SO(3)\) witness over
+   a 1-D base the four candidates order strictly as support \([1.10,3.90]\supset\) gap\(>\!0.25\)
+   \([1.60,3.75]\supset\) \(\|D^\omega P\|<1\) \([1.50,3.10]\supset\) two-meta-agent decomposability
+   \([1.50,2.30]\), with the \(\lambda_1\)-sublevel set \([1.10,2.55]\) nested in none of them; the
+   binding constraint is adiabatic/decomposability at \(c\approx3.10\), 30% of the support width
+   before any support boundary. `obstruction-topology` concludes the opposite, that support
+   boundaries dominate: at \(\partial\mathcal C_i\) the departing weights \(\beta_{i\cdot}\to0\), the
+   \(i\)-block decouples and contributes \(K\) eigenvalues descending **linearly** (measured
+   \(\mathrm{gap}=4.000\times10^{-3}\) at \(\varepsilon=10^{-3}\) and \(4.000\times10^{-6}\) at
+   \(\varepsilon=10^{-6}\), exactly \(3\varepsilon\)), and \(\{\beta_{i\cdot}(c)=0\}\) is **one**
+   equation, hence codimension 1, hence it disconnects \(\mathcal C\). These are not in conflict once
+   the questions are separated: only codimension-1 loci can *topologically bound* an extent, and both
+   lenses agree independently that for a strictly positive softmax \(\beta\) the only reachable
+   codimension-1 loci are the support boundaries themselves; but in the measured witness the extent is
+   *metrically* bounded strictly inside the support by a soft condition that disconnects nothing. Both
+   are right about their own quantity. **Resolution: the support boundary is the only wall that can
+   bound the extent topologically, and it does so by acting through the parallelism condition, not
+   through the gap.**
+2. *Is the active-set change a level crossing?* `adiabatic-criterion` says no: softening the support
+   embeds the varying-dimension family in a fixed \(\mathbb R^{NK}\), and the event is an **avoided**
+   crossing with minimum gap \(1.179\times10^{-2}\), stable to within 27% over a 16× sweep of the
+   departing agent's coupling amplitude, with the hard-truncated operator the exact limit of the soft
+   one (spectral difference \(4.4\times10^{-15}\)); the obstruction that actually bites is the
+   adiabatic one (\(\|D^\omega P\|\) spikes to 3.507 while the gap is still 0.311) at
+   \(c^\*=3.5300\), 15.7% of the support width inside the support. `obstruction-topology` says the gap
+   closes exactly linearly. The reason for the disagreement: they measure **different gaps**.
+   `obstruction-topology` measures the bottom-of-spectrum gap of the full operator, which does go to
+   zero because \(0\) always sits at the bottom of a Laplacian's spectrum where the coherent block
+   lives; `adiabatic-criterion` measures the block-edge gap between the coherent block and the
+   descending modes, which has a positive minimum. **[Suggested]** the two agree once one asks whether
+   the coherent block itself has a zero mode at the wall: if the block is frustrated
+   (\(\lambda_1>0\)) the descending modes pass below it and the event is an avoided crossing plus a
+   relabelling of "low-lying"; if the block is flat (\(\lambda_1=0\)) they meet the kernel exactly.
+   Nobody tested that. It is obligation O4.
+3. *Codimension of the gap-closing locus.* Three answers, all correct in their own regime, and the
+   regime is fixed by the structure group and by the mechanism. Generic crossings inside the
+   real-symmetric stratum: codimension 2 (von Neumann–Wigner; `sheaf-and-prior-art` confirms by a GOE
+   gap-cumulative exponent of 2.128 against the predicted 2). Complex Hermitian (\(SO(2)\) links):
+   codimension 3 (`obstruction-topology`, by orbit-dimension count and by exhaustive search — 0.00 of
+   random 2-parameter Hermitian families reach a crossing, 0.97 of 3-parameter families do).
+   Non-generic *coupling-vanishing* loci, where one scalar weight gates a whole \(K\)-dimensional
+   sector: codimension 1 (`adiabatic-criterion`, on a \(105\times40\) grid the curve
+   \(w_{\rm out}(c,b)=0\) has gap \(\equiv0\) to \(5.7\times10^{-16}\) along it and minimum gap
+   \(1.66\times10^{-2}\) off it). Non-normal \(L^\Omega\) for \(G\not\le O(K)\): the repeated-eigenvalue
+   locus is the zero set of one real discriminant, again codimension 1, and there the individual
+   eigenprojector **diverges**, \(\mathrm{gap}\asymp C\,\mathrm{dist}^{1/2}\),
+   \(\|P\|\asymp C'\mathrm{dist}^{-1/2}\) (`induced-connection`, measured \(C=1.087\),
+   \(C'=0.1611\)). **Consequence that no averaging can soften: for \(\dim\mathcal C\ge3\) the
+   codimension-2 and -3 crossing loci have connected complement, so they can never disconnect the base
+   and never bound an extent.** They can only generate \(\pi_1\) and a holonomy. The
+   "gap closings are the RG events" clause of §3e.3 is therefore refuted as the *dominant* mechanism
+   even where it is not refuted outright.
+4. *What the order parameter measures.* `sheaf-and-prior-art` supplies the quantitative criterion the
+   programme was asking for — the Bandeira–Singer–Spielman two-sided bound (below) — while
+   `adiabatic-criterion` and `elbo-consistency` independently show \(\lambda_1\) is the **wrong**
+   order parameter for coherence: it is a functional of \((\beta,\Omega)\) alone and is exactly blind
+   to the belief section. It carries a state-independent quadratic floor
+   \(\lambda_1\approx0.0399\,\|\log\Omega\|_F^2\) (\(K=3\), random \(GL(3,\mathbb R)\) on 8 edges;
+   \(0.029\) for the matched \(SO(3)\) control, so not a \(GL\) artefact), so
+   \(\{\lambda_1<\varepsilon\}\) is a **holonomy-magnitude test**, globally empty once
+   \(\overline{\|\log\Omega\|}_F\gtrsim0.50\) at \(\varepsilon=10^{-2}\), no matter how well the
+   agents agree; and `elbo-consistency` exhibits \(\lambda_1=0\) with the information residual rising
+   without bound (0.1116 → 0.8047 → 2.3076). These are consistent: BSS bounds \(\lambda_1\) against
+   *frustration of the transport system*, which is exactly what it measures, and that is not agent
+   coherence. `Theory/09` already records the same limitation for the holonomy-fixed rank \(f_I\)
+   ("a state-independent structural admissibility criterion … it does not require the constituent
+   belief means to coincide"); this panel extends it from the kernel dimension to the bottom
+   eigenvalue.
+5. *Is \(\varepsilon\) an RG scale?* No, and the failure is not marginal. Structurally, if
+   \(L^\Omega\) is exactly block-diagonal for a partition then every spectral projector is, so the
+   exact decomposition is a property of \(L^\Omega\) alone and carries no \(\varepsilon\)-dependence.
+   Empirically, against a tolerance \(\delta=0.08\), raising \(\varepsilon\) **refines** the induced
+   partition (at \(c=1.6\): \(\{\rm ALL\}\to\{A|B\}\to\{013|B|2\}\to\{01|23|B\}\), three splits, zero
+   merges) — the opposite of coarsening — and monotonicity fails outright at \(c=2.4\), where the
+   sequence is \(\{\rm ALL\}\to\{A|B\}\) at \(\varepsilon=2.300\to\{\rm ALL\}\) at
+   \(\varepsilon=3.982\). **There is no dendrogram.**
+
+**What survives of §3e.3 verbatim, and it is exactly one clause.** The induced meta-agent connection
+is \(\nabla^M=P\nabla^\omega P\) and its curvature carries a geometric-phase term. This is
+**[Proven]** as a connection and **[Derived]** as a Gauss equation, and **[Computed]** as nonzero:
+see §3f.2 step 4.
+
+### 3f.2 The construction, in order, each step with its status
+
+**Step 1 — the \(c\)-varying family. [Derived; the definition is a declaration, the properties are
+proved]** Over a base \(\mathcal C\) with active set \(A(c)=\{i:c\in\mathcal C_i\}\), define
+\(L^\Omega(c)\) by the sheaf energy of (R1), with \(w_e(c)=\tfrac12(\beta_{ij}(c)+\beta_{ji}(c))\)
+and \(\Omega_{ij}(c)=\varphi_i(c)^{-1}\tau_{ij}(c)\varphi_j(c)\). This form is symmetric PSD for any
+\(\Omega\in GL(K,\mathbb R)\). Pair it with \(M(c)=\bigoplus_i\Sigma_i(c)^{-1}\) and work with the
+pencil. **Hypotheses consumed, one of them not granted by the programme:** (i) the fibre is
+\(\mathbb R^K\) carrying the *defining* representation, i.e. this is the \(\mu\)-channel only — the
+\(\Sigma\)-channel needs a different Laplacian on \(\mathbb R^{N\cdot K(K+1)/2}\) built from
+\(\rho_{\mathrm{Sym}^2}(\Omega)\), with a different rank and a different gap locus; (ii) \(L^\Omega\)
+is a Fisher/KL object **only** under the shared-covariance hypothesis of
+`Theory/08_infogeometry.tex:239-256` — outside it \(L^\Omega\) is not the Hessian of any divergence
+and the spectral construction has no information-geometric warrant, which `08:253-255` states in
+terms; (iii) under that same hypothesis the pairwise KL is *symmetric*, so the quadratic form is
+**blind to the coupling contract's slot order** \(E_{ij}=D(q_i\|(\Omega_{ij})_\#q_j)\) — the
+directedness first appears in the log-det/trace terms the hypothesis deletes.
+
+**Step 2 — the coherent subspace. [Derived on the compact tier; open on the \(GL\) tier]** Take the
+low-lying part of the generalized spectrum of \((L^\Omega(c),M(c))\). On the compact tier this is the
+ordinary low-lying spectral subspace and the BSS machinery applies. Off it, only the pencil is
+well-typed, and even then Hansen–Ghrist prove the Cheeger route does not extend to non-invertible
+restriction maps (§3f.4), so the two-sided guarantee is lost precisely where `Theory/09`'s
+coarse-graining category (unequal vertex dimensions, \(GL(V_I)\) automorphisms) wants to live.
+
+**Step 3 — the projector. [Derived]** \(P(c)\) is the Riesz contour integral, analytic on the whole
+gap-open region with no smallness hypothesis. Its derivative obeys the covariant Kato formula
+\(D^\omega P=\frac{1}{2\pi i}\oint R\,(D^\omega L)\,R\,d\zeta\), proved algebraically and verified to
+\(2.0\times10^{-10}\) against central differences (`adiabatic-criterion`). Persistence under a base
+increment is Davis–Kahan, \(\|\sin\Theta(P(c),P(c+\delta))\|\le\|\delta L\|/\mathrm{gap}\), verified
+7/7 with 2–15× slack. **The adiabatic clause of §3e.3 is refuted here, twice over.** It is not
+scale-invariant: rescaling every edge weight by 100 leaves \(P\) and \(\|D^\omega P\|=0.266634\)
+bit-identical while the gap goes \(1.67771\to167.771\), driving the ratio from 15.893 to 0.001589 for
+identical geometry (`adiabatic-criterion`); independently, \(\beta\to s\beta\) leaves \(P\) and the
+second fundamental form exactly invariant while scaling every gap by \(s\) (gap
+\(0.602707\to6.027068\) for \(s=0.5\to5.0\), \(P\) unchanged; `induced-connection`). And it is
+unnecessary: \(\|dP\|\le\|dL\|/\mathrm{gap}\) makes it a *consequence* of the gap plus a bound on
+\(\|dL\|\), verified across gap 1.438 down to 0.123 with \(\|dP/dc\|=2.12\!-\!5.23\) against bounds
+\(8.74\!-\!102.15\) (`sheaf-and-prior-art`); and the ratio was measured at 115.6 while the projector
+was converging with \(\|P(s)-P(s/2)\|=1.5\times10^{-4}\) (`obstruction-topology`). **There is also no
+adiabatic theorem available to invoke.** Kato 1950 and its descendants govern an evolution
+*generated by the gapped operator*; here \(L^\Omega\) supplies the gap and \(\omega\) generates the
+transport, there is no \(T\) and no rate parameter to send to zero. The exact unconditional
+replacement is step 4.
+
+**Step 4 — the induced connection. [Proven, Derived, Computed — in that order]**
+**[Proven]** For any smooth field of idempotents \(P\) of constant rank in a bundle with connection
+\(\nabla=d+A\), \(\nabla^M:=P\nabla P\) is a genuine connection on \(\mathrm{im}\,P\): it is
+\(C^\infty\)-linear in \(X\) and satisfies Leibniz, \(\nabla^M_X(fs)=(Xf)s+f\nabla^M_Xs\) using
+\(Ps=s\). No fibre metric, no orthogonality of \(P\), no self-adjointness of any generating operator
+is consumed — so the construction survives the live oblique Riesz projector of (R1). Leibniz residual
+\(\le1.8\times10^{-12}\).
+**[Derived]** With \(\mathrm{II}:=Q(\nabla P)P\) and \(\mathrm{II}':=P(\nabla P)Q\), one has
+\(P(\nabla P)P=0\) identically and the exact Gauss equation
+$$
+F^M \;=\; P F^\omega P \;+\; \mathrm{II}'\wedge\mathrm{II},
+\qquad\text{with Codazzi}\quad Q(d^\nabla \mathrm{II})P \;=\; Q F^\omega P,
+$$
+verified to \(4.8\times10^{-10}\) relative with an oblique projector, Codazzi residual
+\(4.0\times10^{-10}\) against magnitude 4.04. Two consequences. First, **leakage out of the coherent
+subbundle along \(\gamma\) is exactly \(\int\|\mathrm{II}(\dot\gamma)\|\)** — an identity, needing no
+smallness hypothesis, and this is what replaces the refuted adiabatic condition. Second, an
+obstruction theorem: **if \(QF^\omega P\ne0\) at any \(c\), no coherent subbundle of that rank is
+parallel near \(c\).** Nobody has computed \(QF^\omega P\) on an actual programme configuration.
+**[Computed]** The geometric-phase term is real and nonzero with ambient curvature and ambient
+holonomy exactly zero: on a 5-agent \(SO(3)\) cycle with \(A\equiv0\), \(\|F^M\|=1.78\times10^{-2}\)
+and \(\|\mathrm{Hol}^M-\mathbb 1\|=6.60\times10^{-3}\), orthogonal to \(6.9\times10^{-11}\), with
+\(\mathrm{tr}\,\mathrm{Hol}^M\) invariant to \(7.2\times10^{-12}\) under a **noncompact**
+\(GL(3)^5\) gauge of condition number 20.3. Independently, Kato transport around loops of radius
+0.20/0.10/0.05 in a 2-D base gives \(\|H-\mathbb 1\|/\mathrm{area}=0.012572/0.012247/0.012142\)
+(Richardson limit 0.012107) against the local Wilczek–Zee curvature
+\(\|P[D_cP,D_bP]P\|_F=0.010932\) — area-proportional and matching to 11%.
+**Three fences on this, all load-bearing.** (a) *The user's own guess — that the criterion is
+smoothness of the induced connection from \(c\) to \(c+dc\) — is refuted by direct control:* in the
+exactly-parallel configuration \(\|dP\|=2.6323\), the projector moves at \(O(1)\), while
+\(\|\mathrm{II}\|=1.2\times10^{-10}\); the vanishing is a cancellation between \(dP\) and \([A,P]\).
+Smoothness of \(P\) is generic and carries no information. The criterion is the covariant
+\(\mathrm{II}=0\), which holds exactly iff the pulled-back per-agent forms
+\(\alpha_i:=U_i^{-1}A^{(i)}U_i+U_i^{-1}dU_i\) all coincide (spread \(1.7\times10^{-14}\) with
+\(\|\mathrm{II}\|=1.2\times10^{-10}\), versus spread 2.34 with \(\|\mathrm{II}\|=1.86\) in the
+control). (b) *"An exactly parallel meta-agent has no informational geometry" is false for rank
+\(\ge2\):* subbundle-parallel (\(\mathrm{II}=0\)) is strictly weaker than section-parallel
+(\(D^\omega s=0\)); with a common nonzero \(\alpha\) (\(\|\alpha\|=1.1459\)) one gets \(F^M=F^\alpha\)
+with \(\|F^\alpha\|=0.3267\) and \(h^\omega_{\rm meta}\ne0\). The two coincide only at rank 1. (c)
+*For a real rank-1 block there is no geometric-phase curvature at all:* \(\langle v,v\rangle=1\)
+forces \(\langle v,dv\rangle=0\), so \(P\nabla P\) on a real line subbundle is identically flat and
+its entire content is the \(\mathbb Z/2\) monodromy. "Berry-type" is correct only in the complex or
+rank-\(\ge2\) sector, and there the right name is **Wilczek–Zee**, not Berry.
+
+**Step 5 — the walls. [Computed; codimension counts Derived]** Four wall types, not equivalent, and
+the panel's own numbers place them:
+
+| Wall | Locus | Codim | Disconnects \(\mathcal C\)? | Status |
+|---|---|---|---|---|
+| Support boundary (coupling vanishes) | \(\{\beta_{i\cdot}(c)=0\}=\partial\mathcal C_i\) | 1 | **Yes** | Computed: gap \(=3\varepsilon\) over six decades; block-edge crossing avoided, min \(1.179\times10^{-2}\) |
+| Generic crossing, real symmetric | von Neumann–Wigner seam | 2 | No (for \(\dim\mathcal C\ge3\)) | Derived; GOE exponent 2.128 vs 2 |
+| Generic crossing, complex Hermitian (\(SO(2)\) links) | diabolical point | 3 | No | Derived + exhaustive search |
+| Non-normal discriminant (\(G\not\le O(K)\)) | real discriminant zero set | 1 | **Yes** | Computed: 83.1% of a one-parameter loop had complex spectrum, 10 wall crossings |
+| Structure-group jump \(\mathrm{Stab}(q):O(K\!-\!1)\to O(K)\) | \(\{\mu(c)=0\}=\{r(c)=0\}\) | \(K\) | No for \(\dim\mathcal C<K\) | Derived |
+
+Two riders. Kato's refinement rescues part of the RG-event picture: the **total** projector for a
+group of eigenvalues stays bounded and analytic through a crossing *internal to the group*
+(\(\|P_2\|_2=1.000078\) measured through an exceptional point), so only **boundary-traversing**
+crossings can be RG events; §3e.3 conflates the two. And the merge of two meta-agents, when it
+happens, is not a spectral event at all: it is a continuous crossover of the block-decomposability
+residual \(r(\Pi)=\|P-\sum_{I\in\Pi}\Pi_I P\Pi_I\|_F/\|P\|_F\), rising \(0.0304\to0.2668\) **while the
+gap is at its maximum** (\(0.258\to1.755\to0.582\)).
+
+### 3f.3 Hypotheses consumed, including those the programme has not granted
+
+Granted by the programme and used freely: finite fixed \(N\); agents are sections over supports
+\(\mathcal C_i\subseteq\mathcal C\), so \(A(c)\) is \(c\)-dependent; \(\beta_{ij}(c)\) simplex-valued
+and strictly positive (softmax); \(\Omega_{ij}(c)\) invertible fibre maps at fixed \(c\); the
+Gaussian backend for the \(\mu\)-sector.
+
+**Not granted, and each one is load-bearing.**
+
+1. **\(G\le O(K)\), i.e. compactness.** Every spectral statement in §3f.1–§3f.2 outside the Fisher
+   pencil requires it. The sheaf energy uses the Euclidean fibre norm, invariant under
+   \(z_i\mapsto g_iz_i\) iff every \(g_i\) is orthogonal; under a \(GL(K)\) rechoice the block gap
+   shifts 1.45%/8.0%/16.5%/25.9% and \(\lambda_1\) by 0.88%/1.57%/16.1%/47.5% at
+   \(\|\log g\|_F=0.074/0.149/0.297/0.594/1.188\), while an \(SO(3)\) rechoice leaves the energy
+   exactly invariant. `overview.md`'s standing convention *recommends* compact \(G\) but the declared
+   typing is \(G\le GL(K,\mathbb R)\); this panel's results are compact-\(G\) results unless the
+   Fisher pencil is adopted. This is the finite-dimensional shadow of the settled Yang–Mills row (no
+   positive-definite \(\mathrm{Ad}\)-invariant form on \(\mathfrak{gl}(K,\mathbb R)\)).
+2. **A fibre metric making \(L^\Omega\) self-adjoint** — see (R1). Not declared anywhere.
+3. **Symmetrised attention**, \(w_e=\tfrac12(\beta_{ij}+\beta_{ji})\). The energy form imposes it;
+   the declared typing does not supply it, and `Theory/07b:1748` explicitly declares \(\beta\) a
+   *row-stochastic conditional law*. Symmetrising is a modelling decision with no stated warrant.
+4. **The shared-covariance hypothesis** `Theory/08:239-256`. Without it \(L^\Omega\) is not the
+   Hessian of a divergence. With it, the quadratic form cannot see the directed slot order of the
+   coupling contract.
+5. **A declared representation channel.** The construction is \(\mu\)-only. \(\mu\)-channel and
+   \(\Sigma\)-channel Laplacians on the same graph give \(\dim\ker\) 1 vs 2 at twist 0.45 and
+   reorganise their block boundary at different twists (index 8 vs 9 at twist 1.6). For orthogonal
+   links \(\mathrm{Sym}^2\) contains the trivial representation, so the \(\Sigma\)-channel carries a
+   permanent extra coherent mode (the trace/scale direction) that is an artefact of the representation
+   and not a coherence fact about the agents. The model channel \((\gamma,\widetilde\Omega)\) is a
+   third, independent extent.
+6. **A normalization lift from the eigen-ray to a law.** The low eigenvector is defined up to scale,
+   so the construction yields a section of a *projectivised* bundle, not a point of a fibre of
+   normalized laws. This is not cosmetic: by `wave2-01` Cor A3.5 the entire gauge-invariant content of
+   one belief section is \(r=(\mu^{\mathsf T}\Sigma^{-1}\mu)^{1/2}\), which is exactly homogeneous of
+   degree 1 in the eigenvector's normalisation (measured 0.400768 / 1.482843 / 0.801537 for scalings
+   \(1/3.7/-2\)) — **the one quantity the meta-agent could carry as an invariant is precisely the one
+   the spectrum does not fix.** Any norm-based lift is a gauge fixing to \(O(K)\), and the programme's
+   own coercivity lemma forbids a \(GL(K)\)-invariant one.
+7. **Recognition-independence of the coarse map** (`Theory/09`'s H2). Fails — see (R4).
+8. **Real-analyticity of \(c\mapsto L^\Omega(c)\).** Local finiteness of the multiplicity
+   stratification needs it (Łojasiewicz–Hironaka); for merely smooth dependence the degeneracy locus
+   can be an arbitrary closed set and there is no stratification at all. Nowhere established.
+9. **A cocycle for the induced meta-agent transports.** The natural projected family
+   \(\Omega^{\rm meta}_{\alpha\beta}=P_\alpha\Omega P_\beta\) does **not** compose — median 0.90
+   relative failure even when the ambient family composes exactly — and is undefined across a rank
+   change. So the meta-agent is one type short of an agent: it is a section of a projectivised bundle
+   with a well-defined \(GL(K)^N\)-covariant connection and a gauge-invariant holonomy trace, and that
+   is all.
+10. **A typing contradiction that has to be resolved before any of this is meaningful.**
+    `overview.md` §2 declares \(\Omega_{ij}(c)\) to be fibre maps between frames **at the same base
+    point**. Read literally that makes \(\Omega_{ij}=\varphi_i^{-1}\varphi_j\) a coboundary, which
+    forces trivial agent-graph holonomy — contradicting §3e.2(i)'s \(\|H-\mathbb 1\|_F=0.0895\).
+    Either the agents carry distinct principal bundles over \(\mathcal C\), or the graph transports
+    carry content beyond frame change (as `adiabatic-criterion` writes them,
+    \(\Omega_{ij}=\varphi_i^{-1}\tau_{ij}\varphi_j\) with a genuine \(\tau\)). **Under the first
+    reading the entire agent-graph holonomy and geometric-phase construction is empty.** This is
+    cheap to settle and nothing should be built until it is.
+
+### 3f.4 Prior art — what is standard, and what if anything is new
+
+This repository has been burned by presenting a rediscovery as a contribution. The following is
+stated bluntly. **Almost the entire construction of §3e.2 and §3e.3 is standard mathematics under
+names this programme was not using.** Citations below were checked this session against the primary
+source unless marked otherwise.
+
+*Standard, verified this session:*
+
+- **The object itself.** An agent graph with a \(K\)-dimensional stalk per agent and invertible
+  orthogonal edge transports *is* a cellular sheaf / discrete \(O(K)\)-vector bundle, and \(L^\Omega\)
+  is its degree-0 sheaf Laplacian. Hansen & Ghrist, *Toward a Spectral Theory of Cellular Sheaves*,
+  arXiv:1808.01513, §3.6 ("Comparison with Previous Constructions", p. 17 of the v2 PDF), verbatim:
+  *"The graph connection Laplacian, introduced by Singer and Wu in [SW12], is simply the sheaf
+  Laplacian of an \(O(n)\)-vector bundle over a graph."* Published as J. Appl. Comput. Topology
+  3(4):315–358 (2019). **`Theory/09_coarsegraining.tex:334-336` already cites `HansenGhrist2019`** —
+  the repository already knew this and §3e.2(iii) restated it as a discovery.
+- **The connection Laplacian.** Singer & Wu, *Vector Diffusion Maps and the Connection Laplacian*,
+  Comm. Pure Appl. Math. 65(8):1067–1144 (2012), doi:10.1002/cpa.21395.
+- **"The low eigenvector is the meta-agent belief"** is Singer's spectral relaxation for
+  synchronization.
+- **"\(\lambda_1\) is the order parameter, not the kernel dimension"** is the
+  Bandeira–Singer–Spielman frustration constant, \(\eta(x)=\langle x,Lx\rangle/\langle x,Dx\rangle\),
+  with the **two-sided** guarantee this programme is not yet using:
+  \(\lambda_1(L)\le\min_{\|x_v\|=1\ \text{or}\ 0}\eta(x)\le\sqrt{10\,\lambda_1(L)}\).
+  Bandeira, Singer & Spielman, *A Cheeger Inequality for the Graph Connection Laplacian*, SIAM J.
+  Matrix Anal. Appl. 34(4):1611–1630 (2013), arXiv:1204.3873; reproduced as Hansen–Ghrist eq. (7.1),
+  p. 33 of the v2 PDF, verified verbatim this session. Instance check: \(0.0983\le0.3897\le0.9915\).
+- **§3e.2(i) is \(H^0\) of a local system.** "Belief alignment forces \(H\in\mathrm{Stab}(q_i)\), not
+  \(H=\mathbb 1\)" is precisely \(\dim H^0\ge1\), i.e. \(H^0=\) the monodromy invariants (verified:
+  \(\dim\ker=\dim\) invariant subspace exactly, 3 vs 3, 1 vs 1, 0 vs 0 across flat, common-axis and
+  generic bundles).
+- **Limits of the Cheeger machinery.** Hansen–Ghrist §7.1 prove the rounding approach does **not**
+  extend to restriction maps that are merely partial isometries, with an explicit two-vertex
+  counterexample (\(\mathcal F(v_1)=\mathcal F(v_2)=\mathbb R^2\), \(\mathcal F(e)=\mathbb R\),
+  \(\mathcal F_{v_1\trianglelefteq e}=[1\ 0]\), \(\mathcal F_{v_2\trianglelefteq e}=[\tfrac12\
+  \tfrac{\sqrt3}{2}]\)), verified verbatim in the v2 PDF this session. So the quantitative extent
+  criterion is available **only** while \(\Omega_{ij}\) stays invertible-and-orthogonal; the moment
+  the programme moves to \(G\le GL(K,\mathbb R)\), or to the non-invertible coarse-graining maps of
+  `Theory/09`'s own category, the two-sided guarantee is not merely unproven — the standard proof
+  route is known to fail.
+- **Crossing codimension.** von Neumann & Wigner, *Über das Verhalten von Eigenwerten bei
+  adiabatischen Prozessen*, Physikalische Zeitschrift 30:467–470 (1929).
+- **Projector persistence.** Davis & Kahan, *The Rotation of Eigenvectors by a Perturbation. III*,
+  SIAM J. Numer. Anal. 7(1):1–46 (1970), doi:10.1137/0707001.
+- **The geometric phase.** For a degenerate block it is Wilczek & Zee, *Appearance of Gauge Structure
+  in Simple Dynamical Systems*, Phys. Rev. Lett. 52(24):2111–2114 (1984). Berry (1984) and Simon
+  (1983) are the abelian Hermitian *line*-bundle case and are the **wrong** citation for a rank-\(m\)
+  coherent block.
+- **The adiabatic theorem, and why it does not apply.** Kato, *On the Adiabatic Theorem of Quantum
+  Mechanics*, J. Phys. Soc. Japan 5:435–439 (1950), doi:10.1143/JPSJ.5.435, is a theorem about a
+  unitary evolution \(U_T(s)\) generated by a time-dependent Hamiltonian, concluding
+  \(\lim_{T\to\infty}(1-P(s))U_T(s)P(0)=0\). This programme has no dynamics on \(\mathcal C\).
+  Should a dynamics ever be declared, the applicable theorem is Avron, Fraas, Graf & Grech,
+  *Adiabatic Theorems for Generators of Contracting Evolutions*, Comm. Math. Phys. 314(1):163–191
+  (2012), arXiv:1106.4661 — **not** Kato 1950, not Avron–Seiler–Yaffe, not Nenciu.
+
+*Standard, content confirmed by recomputation but citation NOT verified against the primary text:*
+
+- **Kato's Riesz total projection**, its analyticity on the gap-open region, and the derivative
+  formula: content verified numerically to \(3.4\times10^{-15}\) / \(2.0\times10^{-10}\), but Kato,
+  *Perturbation Theory for Linear Operators* is paywalled and web search returned only chapter titles.
+  Anyone writing this up must open the book. In particular whether **Rellich's theorem** (analytic
+  eigenvalues and eigenprojections for a self-adjoint holomorphic family of *one* real variable, valid
+  *through* crossings) is Ch. II §6 is unverified — and it matters, because in a 1-D base it says the
+  projector families continue analytically through a crossing, weakening "gap closings bound the
+  extent" further still.
+- Herzberg–Longuet-Higgins \(\mathbb Z/2\) sign change on encircling a conical intersection (measured
+  exactly \(-1.0\) on the canonical example); Whitney (b) regularity of orbit-type stratifications for
+  proper Lie group actions; Milnor (1976) on the nonexistence of a bi-invariant metric on
+  \(GL^+(K)\) (cited by one lens as Lemma 7.5 — **lemma number unverified**, paper confirmed as *Adv.
+  Math.* 21(3):293–329); Neal & Hinton (1998) for partial coordinate updates; Bishop ch. 10 / Beal
+  (2003) for structured variational families; Fischer (1908) for the determinant inequality behind
+  \(G_{\rm fact}\)'s monotonicity.
+
+*Candidate new content — and it is thin. None of it is spectral.*
+
+1. **The stalk is a normalized probability law with a transported-KL edge discrepancy**, rather than a
+   vector with a Euclidean one, and the doubling into belief \((\beta,\Omega)\) and model
+   \((\gamma,\widetilde\Omega)\) channels on one graph. **Do not claim this.** Hansen–Ghrist §3.6
+   cites `[Gao16]` as using "a sheaf Laplacian-like construction to study noninvertible
+   correspondences between probability distributions on surfaces"; nobody retrieved it. Obligation
+   O11.
+2. **The Fisher pencil \((L^\Omega,\bigoplus_i\Sigma_i^{-1})\)** as the gauge-invariant replacement
+   for the ordinary spectrum. This is an *application* of `Theory/08:438`
+   `prop:ig-generalized-spectrum-invariance` to the connection Laplacian, not a new theorem. Its
+   value is that it repairs \(GL(K)\) non-invariance and spectral reality at one stroke; it is
+   recombination.
+3. **\(G(P)=G_{\rm tie}(P)+G_{\rm fact}(P)\) with unit coefficients** as the exact excess VFE of the
+   partition-structured Gaussian recognition family, and the observation that the coefficient-free sum
+   is nonmonotone with an interior argmin. This supplies exactly the "different nonmonotone
+   functional" that `Theory/09:1013-1019` records as **OPEN**, and is the one item in this panel that
+   looks like a genuine contribution. It is Gaussian-tier only.
+4. **A fixed sector with nonzero interaction coordinate**: the massless connection-Laplacian Gaussian,
+   whose decimation closes exactly on the family (\(3\times10^{-11}\) relative), preserves holonomy to
+   \(3.3\times10^{-16}\), and flows by \(r'=r^2+4r\) in \(r=m/w\), giving relevance exponent
+   \(y=\log_2 4=2\) at block factor 2, with the transport itself as the pair Hoeffding coordinate
+   \(w\Theta_{ij}\). Fences: it is a fixed **ray**, not a fixed measure pair (`07b`
+   `eq:rg-fixed-action-ray`, and `07b:2660-2662` says the ray tier is strictly weaker); at \(m=0\) the
+   law is improper on \(\ker L\) and needs a declared pin; exhaustiveness needs a declared self-similar
+   graph identification (`07b:2716-2718`); and \(y=2\) is convention-relative in the sense of
+   `07b:2689-2694`. It is a **partial** discharge of the ledger claim `genuine-coupling-before-continuum`
+   — one Gaussian instance, action tier, fixed ray only — and must be recorded as such, not as a
+   closure. It is also invisible to `07b`'s own declared interaction Banach space
+   \(\mathcal G_\ell=\bigoplus_A P_{\ell,A}L^\infty(\nu_\ell)\), because the pair coordinate
+   \(g_{ij}(z)=\Lambda_{ij}z_iz_j\) is unbounded and therefore not an element of it — the same norm
+   separation `07b:812-819` already flags.
+
+Everything else — the families-over-a-base indexing, extent-as-gap-open-region, the projected
+connection, the geometric-phase term, the \(\varepsilon\)-threshold hierarchy, the merge/split
+structure — is recombination of the standard material above. On network renormalization specifically:
+neither Laplacian RG (Villegas et al.) nor geometric RG (García-Pérez et al.) applies as-is, because
+both are defined for scalar-weighted networks and neither has a place for a gauge-valued transport.
+A targeted search for an \(\exp(-\tau L^\Omega)\)-based sheaf/connection-Laplacian RG returned
+nothing, but absence of a hit is weak evidence and the search must be repeated before any novelty
+claim (obligation O11).
+
+One correction to the prior-art guess in §3e.5: **\(H^1\) of the sheaf is not frustration, and if any
+draft says so it is false.** On a graph \(\dim H^0-\dim H^1=\chi\cdot K\) identically (verified,
+residual 0 across flat, partially-aligned and generic bundles, \(=-6\) in each case), so \(H^1\) is
+fixed by \(H^0\) and the Euler characteristic and carries no independent information. Frustration is
+\(\lambda_1>0\); the only cohomological content is the boolean \(H^0=0\iff\lambda_1>0\).
+
+### 3f.5 What this does and does not do for `Theory/07b`'s tree-dependence defect
+
+**What it does.** It locates the defect precisely and it names the repair, which already exists in
+this manuscript. `07b` §`sec:rg-gauge-cross-scale` (`:1618-1724`) is the only place the defect lives.
+Its tree-transported feature \(C_x\) (`:1678-1685`) is a *tree-indexed family* of maps whose stated
+covariance identity (`:1689-1693`) is true for each fixed tree but is not single-valued on gauge
+orbits; `07b` half-admits this itself at `:1698-1707`, where strict nested composition needs an extra
+tree-compatibility hypothesis that `Theory/09`'s kernel construction proves **without any
+hypothesis** (`prop:cg-nested-sections-compose`, `Theory/09:468`). The concrete edits, all of them
+identified and **none of them made** (the `Theory/` write gate at §6.1 applies):
+
+1. `07b:1678-1685` — replace \(C_x\) by the injection \(\iota_I\) with range \(\ker L_I\)
+   (`Theory/09:444-449`), or by the Fisher-pencil low-block injection.
+2. `07b:1698-1704` — delete `eq:rg-linear-nested-compatibility` and cite
+   `prop:cg-nested-sections-compose`.
+3. `07b:2747-2748` — the closure-theorem hypothesis clause naming "component-rooted forests together
+   with their simultaneous raw root-framed holonomy maps, root features, and dressed boundary
+   generators", and `:2766-2768` — the proof sentence "Rooted dressing gives the separate
+   gauge-covariant channel maps" — both name a tree as a hypothesis of a conclusion (`:2756`) that
+   asserts gauge covariance of the whole collection.
+
+It also sharpens what makes the compression well posed: not flatness, and not even alignment, but
+\(z\in\ker L_I\) (R3). And it identifies the exact RG invariant across blocking: **the based holonomy
+conjugacy class**, preserved to \(3.3\times10^{-16}\) under contraction.
+
+**What it does not do.** Four things, and they are the reasons this section is not a repair note.
+
+- **The \(\lambda_1>0\) extension has no divergence-tier warrant.** At \(\lambda_1=0\) the
+  correspondence \(\ker L\cong\mathrm{Fix}(\mathrm{Hol})\) is exact and
+  `thm:cg-holonomy-kl-marginal` supplies a path-, root- and gauge-independent score. At
+  \(\lambda_1>0\) there is no fixed parent law and no exact cancellation mechanism. **This is the
+  single unproved step of the entire proposal**, and everything about approximately-coherent
+  meta-agents rests on it.
+- **\(\lambda_1\) is not level-independent, so "the gap" is not an RG-invariant statement.** Under one
+  Galerkin blocking step at exact block flatness the fine kernel is reproduced to
+  \(6.7\times10^{-15}\) but the transverse gap **rises 61%** (0.0780 → 0.1257), because coarse
+  Rayleigh–Ritz eigenvalues are variational upper bounds. \(\lambda_1=\Theta(\theta^2)\) with
+  \(\theta\) the holonomy defect is a composite of an exactly-marginal quantity and a finite-size
+  scale; a scale-free frustration coordinate should carry the RG statement instead.
+- **Two different "spectral gaps" are being used interchangeably in the corpus and must be
+  reconciled.** `PIFB2.tex` `eq:rg_constrained_gap` defines \(m_I=\lambda_{I,w}\cdot\lambda_{\min}(F(q_I))\)
+  where \(\lambda_{I,w}\) is a weight-constrained Rayleigh quotient of the **ordinary scalar** graph
+  Laplacian of symmetrised \(\beta\) — no transports at all — tensored with the Fisher metric. This
+  session's \(L^\Omega\) is the connection Laplacian. Different operators, different kernels: the
+  scalar one always has the constant vector in its kernel, the connection one has
+  \(\ker=\mathrm{Fix}(\mathrm{Hol})\), which the witnesses show can be 1- or 0-dimensional. No result
+  bounds \(m_I\) and \(\lambda_1(L^\Omega)\) against each other, and `PIFB2:3861` already relies on
+  \(\|H^{-1}\|\le m_I^{-1}\) for the anharmonic remainder.
+- **It does not close `genuine-coupling-before-continuum`.** See §3f.4 item 4.
+
+### 3f.6 Open obligations, ranked cheapest-decisive first
+
+**O1. Retract and re-run §3e.2(iii)–(iv).** *Settled by:* computing \(\|L-L^{\mathsf T}\|/\|L\|\) on
+the committed seed in `docs/verification/meta_agent_coherence_witness.py`; if nonzero (it will be),
+replace the operator with the `Theory/09` energy form and re-assert the four claims. Every spectral
+clause downstream depends on this. Cost: one afternoon.
+
+**O2. Resolve the \(\Omega_{ij}\) typing contradiction** (§3f.3 item 10). *Settled by:* one paragraph
+in `overview.md` §2 declaring either that agents carry distinct principal bundles over
+\(\mathcal C\), or that \(\Omega_{ij}=\varphi_i^{-1}\tau_{ij}\varphi_j\) with \(\tau\) carrying
+content beyond frame change. Under the coboundary reading the agent-graph holonomy of §3e.2(i) and
+the entire geometric-phase construction of §3f.2 step 4 are **empty**. Cost: a declaration. Decisive
+in the strongest sense.
+
+**O3. Move the witnesses into the repository.** All numerics in this section live in session-local
+scratchpads (`family.py`, `fam2.py`, `t1.py`–`t12.py` and their siblings). *Settled by:* moving them
+under `tests/` or `tools/` with seeds. Until then **no number in §3f is citable**. Cost: an hour.
+
+**O4. Settle which gap is meant at a support boundary** (§3f.1 disagreement 2). *Settled by:* running
+the bottom-of-spectrum gap and the block-edge gap on one witness with \(\lambda_1>0\) and one with
+\(\lambda_1=0\), and reporting which closes. Predicted **[Suggested]**: frustrated block → avoided
+crossing plus relabelling; flat block → exact meeting at the kernel. Also test the self-anchoring
+repair (a strictly positive self-weight \(\beta_{ii}>0\) surviving departure, so \(L_{ii}\to\beta_{ii}I\)
+rather than 0), which would potentially unify the two wall types. Cost: a day.
+
+**O5. Declare the operator and the metric.** *Settled by:* one page adopting the `Theory/09` energy
+form plus the Fisher pencil \((L^\Omega,\bigoplus\Sigma_i^{-1})\), with a test verifying that the
+generalized spectrum is real and \(P\mapsto A^{-1}PA\) under congruence. Two lenses measured the
+pieces (\(6.4\times10^{-16}\), \(4\times10^{-15}\)); nobody assembled and tested them together, and
+that assembly is the load-bearing step of §3f.1 criterion (A).
+
+**O6. Declare the representation channel** — \(\mu\), \(\mathrm{Sym}^2\), or the model channel — or
+prove the three coherent blocks coincide. They demonstrably do not for \(SO(3)\) links.
+*Settled by:* computing all three on one configuration and reporting whether the coherent index sets
+agree. Cost: a day. If they do not agree, "the extent of a meta-agent" has no referent until a channel
+is chosen.
+
+**O7. Declare the normalization lift** from the eigen-ray to a normalized law, and name the residual
+gauge group it fixes. *Settled by:* a declaration. Any norm-based lift reduces \(GL(K,\mathbb R)\) to
+\(O(K)\), and no \(GL(K)\)-invariant lift exists by the programme's own coercivity lemma;
+Fréchet/Karcher barycentre repairs are unavailable because \(GL^+(K)\) admits no bi-invariant
+Riemannian metric and the bi-invariant trace form on \(\mathfrak{gl}(K)\) is indefinite. Until this is
+done the spectral meta-agent is **not a section of a bundle of normalized laws**, i.e. not an agent.
+
+**O8. Verify `[Gao16]`** before any novelty claim about probability-law stalks, and repeat the
+sheaf-Laplacian-RG search with the terms "connection Laplacian von Neumann entropy",
+"sheaf Laplacian entropy renormalization", and the higher-order Laplacian RG follow-up. *Settled by:*
+retrieving and reading the paper. Cost: an hour. Blocks §3f.4 candidate item 1.
+
+**O9. Decide \(\beta^{P}\) versus \(\beta^{Q^*}\) at the programme level.** *Settled by:* reading
+whether `Theory/09`'s contraction theorem permits \(C_h\) to depend on recognition parameters. If the
+coarse map is built from \(L^\Omega\) at all it must use \(\beta^{P}\), and then the extent is a
+random variable measurable w.r.t. the fine sample rather than a fact about \(c\). If extent must be
+deterministic given the record, it comes from \(G(P)\) and \(L^\Omega\) drops out of coarse-graining
+entirely, retaining only its role in `prop:cg-kernel-holonomy` as the rank indicator.
+
+**O10. Compute \(QF^\omega P\) on an actual programme configuration.** *Settled by:* one computation.
+If nonzero anywhere, no coherent subbundle is parallel there and exact parallelism must be **dropped**
+from the design goals rather than approximated.
+
+**O11. Get the Kato citation right, at page level**, and settle whether Rellich's theorem is Ch. II
+§6. *Settled by:* opening the book. Rellich matters: in a 1-D base it permits analytic continuation
+of the projector *through* a crossing, which weakens the RG-event reading further.
+
+**O12. Prove or refute the divergence-tier warrant at \(\lambda_1>0\)** — is the low-lying block of
+the Fisher pencil the second-order expansion of a constrained forward-KL score over an approximately
+holonomy-fixed parent family? Exact at \(\lambda_1=0\); unproved at \(\lambda_1>0\). This is **the**
+unproved step. Expensive, and nothing about approximately-coherent meta-agents is legitimate without
+it. A necessary sub-step: supply the Davis–Kahan constant properly — one lens *fitted*
+\(\sin\theta\approx15.5\,\lambda_1\) on one instance; the bound should read
+\(\sin\theta\le C\lambda_1/\mathrm{gap}\) with \(C\) and the correct denominator **derived**.
+
+**O13. Extend \(G(P)\) beyond the Gaussian tier, and settle whether \(\arg\min_P G\) is generically
+unique with connected level sets over \(c\).** The mean/covariance decoupling is a Gaussian fact; the
+partition-restricted infimum exists in general but has no closed form. One lens's sweep gives 168/300
+interior on unstructured instances and a single clean crossing on a planted one; nothing rules out a
+partition whose optimal region is **disconnected** in \(c\), which would make "the extent of a
+meta-agent" not a region at all. Also required if extents are to be compared across different agent
+*inventories* rather than partitions of a fixed one: a partition prior / description cost, which
+reintroduces the \(\log J_P\) convention problem of `Theory/09:901-903`.
+
+**O14. Give the meta-agent transports either a derivation respecting the cocycle, or a declaration as
+fresh primitives.** The projected family \(P_\alpha\Omega P_\beta\) fails composition at median 0.90
+relative even when the ambient family composes exactly, and is undefined across a rank change. Without
+this the meta-agent has no edges and cannot itself be coarse-grained — the RG has one level only.
+
+**O15. Settle whether the geometric phase is record-observable.** Session-established item 4 says the
+graph transports **are** kernel arguments, so B4's hypothesis fails for them; but \(c_1\), the
+Wilczek–Zee curvature and \(\mathrm{tr}\,\mathrm{Hol}^M\) are computed from eigenvectors, which are
+derived objects, not records. The verdict is split and must be recorded that way: the
+\(\mathrm{II}\)-quadratic half of \(F^M\) is a deterministic functional of the \(\Omega_{ij}(c)\)
+family alone and escapes B4's load-bearing hypothesis, while the \(PF^\omega P\) half remains hidden
+by B4 untouched — and the geometric-phase half **inherits §8's exact confound unchanged** (a flat
+re-declaration of the transports as free kernel parameters reproducing the record exactly).
+*Settled by:* running the \(S^2\) witness (built by `obstruction-topology`, never run against B4)
+under a design with both halves nonzero and the \(\ge3\)-base-point cocycle constraint that
+`overview.md` §7's B4 row already identifies as the way to break the confound.
+
+**O16. Repair the \(GL(K,\mathbb R)\) gauge non-invariance of the *energy* if the pencil is not
+adopted** — construct a transported edge metric \(W_e(c)\) making the energy invariant under
+\(z_i\mapsto g_iz_i\) for \(g_i\in GL(K,\mathbb R)\), and check whether the resulting operator is
+still PSD with the kernel–holonomy isomorphism intact. `Theory/09` `thm:cg-rectangular-endpoint-closure`
+already carries the right category (cellular sheaf Laplacian with edge metrics \(W_e\succ0\) and
+rectangular endpoint maps). Until this or O5 is done, **every result in §3f about the gap,
+\(\lambda_1\) and the extent is a compact-\(G\) result.**
+
+**O17. Establish the fast/slow reduction or drop the timescale language.** The profiling identity
+\(\inf_Q\mathcal F_{\rm state}=-\log p(o|S)\) is exact only when the exact posterior is admitted; a
+meta-agent is by construction a *restricted* family, so profiling acquires exactly the gap \(G(P)\).
+The uniformly attracting normally hyperbolic fast branch (CE-3) remains unproven and the aggregate
+attack `attack-circularity-equilibrium-gl` is recorded SUSTAINED; \(\beta\) and \(\gamma\) sit in the
+same functional at the same step at unit temperature with no separating small parameter; and
+\(\gamma\) is recognition-side by (R4), so "the model channel is generative and therefore RG-stable"
+is not available as a justification. What is supported is only the weak reading: belief and model
+alignment are two coordinate blocks of one free energy whose relative rates are a **declared
+mobility**, not a theorem.
+
+**O18. Report/repair the ledger drift** (R5), and log §3f.4 item 4 against
+`genuine-coupling-before-continuum` as a *partial* discharge.
+
+**Scope fence on every number in this section.** \(K=3\), \(G=SO(3)\) or \(O(2)\)/\(U(1)\),
+\(N=3\)–\(8\), 1-D and 2-D bases, float64, CPU-only, on the repository's `.venv` interpreter
+(numpy 2.4.4, scipy 1.17.1). Nothing is claimed for large \(K\), for the \(GL(K,\mathbb R)\) fibre,
+or for the model channel. The floor constant \(C\approx0.04\) in \(\lambda_1\approx C\|\log\Omega\|_F^2\)
+was measured for \(K=3\) on 8 edges; its \(K\)- and edge-count dependence are unmeasured, and the
+crossover \(\|\log\Omega\|_F\approx0.50\) will move with both. No lens audited `src/multiagent_elbo`
+to check whether the shipped code actually constructs \(L^\Omega\), or in which form — if it uses
+row-stochastic asymmetric \(\beta\) without symmetrisation, (R1) applies to the shipped operator
+immediately and not merely on the \(GL\) tier.
+
 ---
 
 ## 4. RESULTS — PENDING / RESUME HERE
