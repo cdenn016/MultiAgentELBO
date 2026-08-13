@@ -280,11 +280,101 @@ def regime_table():
     print("         where claims 1-4 live, so their numbers stand under those hypotheses.")
 
 
+def fisher_pencil():
+    """CLAIM 6 (added 2026-08-13, discharging obligation O5 and repairing O16).
+
+    The panel concluded the extent criterion is well posed only for G <= O(K),
+    because the spectrum of the energy form is gauge-dependent under GL(K,R).
+    That is true for a SCALAR edge weight. It is false once W_e is the Fisher
+    metric at the endpoint the residual lives in.
+
+    Take W_e = w_e * Sigma_i^{-1} for e = (i,j), and the pencil (L, M) with
+    M = direct-sum Sigma_i^{-1}. Under a per-agent gauge z_i -> A_i z_i, with
+    Theta_e -> A_i Theta_e A_j^{-1} and Sigma_i -> A_i Sigma_i A_i^T, BOTH L and M
+    transform by the same congruence X -> A^{-T} X A^{-1}. Congruence preserves the
+    generalized spectrum exactly, so the generalized eigenvalues are GL(K,R)
+    invariants and the eigenvectors transform as v -> A v.
+    """
+    import scipy.linalg as sla
+    print()
+    print("=" * 74)
+    print("CLAIM 6 -- the Fisher pencil is exactly GL(K,R) gauge invariant")
+    print("=" * 74)
+    K, n = 3, 4
+    edges = [(1, 0), (2, 1), (3, 2), (0, 2), (0, 3)]
+    rng = np.random.default_rng(SEED)
+
+    def gl(s=0.5):
+        return expm(rng.normal(size=(K, K)) * s)
+
+    def spd(s=0.4):
+        A = gl(s)
+        return A @ A.T
+
+    Th = {e: gl(0.6) for e in edges}
+    Sig = {i: spd() for i in range(n)}
+    w = {e: rng.uniform(0.4, 1.4) for e in edges}
+
+    def assemble(Th, Sig, fisher=True):
+        L = np.zeros((n * K, n * K))
+        M = np.zeros((n * K, n * K))
+        for (i, j) in edges:
+            T = Th[(i, j)]
+            We = w[(i, j)] * (np.linalg.inv(Sig[i]) if fisher else np.eye(K))
+            L[i * K:(i + 1) * K, i * K:(i + 1) * K] += We
+            L[j * K:(j + 1) * K, j * K:(j + 1) * K] += T.T @ We @ T
+            L[i * K:(i + 1) * K, j * K:(j + 1) * K] -= We @ T
+            L[j * K:(j + 1) * K, i * K:(i + 1) * K] -= T.T @ We
+        for i in range(n):
+            M[i * K:(i + 1) * K, i * K:(i + 1) * K] = np.linalg.inv(Sig[i])
+        return L, M
+
+    A = {i: gl(0.5) for i in range(n)}
+    Th2 = {(i, j): A[i] @ Th[(i, j)] @ np.linalg.inv(A[j]) for (i, j) in edges}
+    Sig2 = {i: A[i] @ Sig[i] @ A[i].T for i in range(n)}
+
+    for fisher, name in [(True, "Fisher W_e = Sigma_i^-1"), (False, "scalar W_e = w I")]:
+        L, M = assemble(Th, Sig, fisher)
+        L2, M2 = assemble(Th2, Sig2, fisher)
+        ev = sla.eigh(L, M, eigvals_only=True)
+        ev2 = sla.eigh(L2, M2, eigvals_only=True)
+        drift = np.max(np.abs(ev - ev2)) / max(1.0, np.max(np.abs(ev)))
+        print(f"  {name:26s} min eig {ev[0]:+.4e}   GL(3) spectral drift {drift:.3e}")
+        if fisher:
+            assert drift < 1e-10, drift
+        else:
+            assert drift > 1e-2, drift
+
+    Ab = np.zeros((n * K, n * K))
+    for i in range(n):
+        Ab[i * K:(i + 1) * K, i * K:(i + 1) * K] = A[i]
+    Abi = np.linalg.inv(Ab)
+    L, M = assemble(Th, Sig, True)
+    L2, M2 = assemble(Th2, Sig2, True)
+    rL = np.linalg.norm(L2 - Abi.T @ L @ Abi) / np.linalg.norm(L2)
+    rM = np.linalg.norm(M2 - Abi.T @ M @ Abi) / np.linalg.norm(M2)
+    print(f"\n  MECHANISM -- gauge acts by CONGRUENCE on both halves of the pencil:")
+    print(f"    ||L' - A^-T L A^-1|| / ||L'|| = {rL:.3e}")
+    print(f"    ||M' - A^-T M A^-1|| / ||M'|| = {rM:.3e}")
+    assert rL < 1e-10 and rM < 1e-10
+    ev, V = sla.eigh(L, M)
+    ev2, V2 = sla.eigh(L2, M2)
+    pred = Ab @ V[:, 0]
+    pred /= np.linalg.norm(pred)
+    cos = abs(pred @ (V2[:, 0] / np.linalg.norm(V2[:, 0])))
+    print(f"    eigenvector transforms as v -> A v:  |cos| = {cos:.12f}")
+    assert cos > 1 - 1e-8, cos
+    print("\n  PASS -- congruence preserves the generalized spectrum exactly, so the")
+    print("         criterion is well posed for FULL GL(K,R), not only for O(K), once")
+    print("         the edge weight is the Fisher metric rather than a scalar.")
+
+
 def main():
     claim_1_and_2()
     claim_3()
     claim_4()
     regime_table()
+    fisher_pencil()
     print()
     print("=" * 74)
     print("SCOPE -- what this does NOT establish")

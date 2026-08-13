@@ -880,7 +880,27 @@ self-adjointness.
 > *numbers* stand — but only under the narrower hypotheses \(\Theta\in O(K)\) and symmetric weights,
 > which §3e did not state. R1's retraction is correct in general and over-broad for this witness; the
 > claims are **reinstated with those hypotheses attached**, and the general-\(GL(K)\) case remains
-> the energy form's alone. This does not touch O5, which asks additionally for the Fisher pencil.
+> the energy form's alone.
+
+> **O5 DISCHARGED 2026-08-13, and it repairs O16.** CLAIM 6 of the same witness assembles the pencil
+> \((L^\Omega,\bigoplus_i\Sigma_i^{-1})\) with the edge weight taken as the **Fisher metric at the
+> endpoint the residual lives in**, \(W_e=w_e\Sigma_i^{-1}\) for \(e=(i,j)\), rather than a scalar.
+> Result: the generalized spectrum is **exactly \(GL(K,\mathbb R)\) gauge invariant** — drift
+> \(1.0\times10^{-15}\) under a random per-agent \(A_i\in GL(3,\mathbb R)\), against \(1.5\) for the
+> scalar weight. The mechanism is that gauge acts by **congruence on both halves of the pencil**:
+> with \(z_i\mapsto A_iz_i\), \(\Theta_e\mapsto A_i\Theta_eA_j^{-1}\), \(\Sigma_i\mapsto A_i\Sigma_iA_i^{\mathsf T}\),
+> both \(L\) and \(M\) transform as \(X\mapsto A^{-\mathsf T}XA^{-1}\) (residuals \(2.3\times10^{-15}\)
+> and \(2.6\times10^{-15}\)), and congruence preserves the generalized spectrum identically.
+> Eigenvectors transform as \(v\mapsto Av\) (\(|\cos|=1.000000000000\)). The kernel–holonomy
+> isomorphism survives the Fisher weighting: a genuinely parallel section gives
+> \(\|Lz\|/\|z\|=1.5\times10^{-15}\) and generalized \(\lambda_1=3.8\times10^{-16}\).
+>
+> **This overturns the panel's scope restriction.** §3f.1 and O16 record that the criterion is well
+> posed only for \(G\le O(K)\). That is a property of the *scalar* weight, not of the construction:
+> with the Fisher weight the criterion is well posed for **full \(GL(K,\mathbb R)\)**. O16's
+> "transported edge metric \(W_e(c)\)" is therefore not open research — it is \(\Sigma_i^{-1}\), and
+> it is already the metric the programme declares on the belief fiber. What remains genuinely open in
+> O16 is only the \(c\)-dependence and the model channel.
 
 **(R2) §3e.2(ii)'s novelty claim is downgraded. [Established elsewhere in this manuscript]** The
 tree-free repair for `Theory/07b`'s compressed meta-state is **already proved in this repository** at
