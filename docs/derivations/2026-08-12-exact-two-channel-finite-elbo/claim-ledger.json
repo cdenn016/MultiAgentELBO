@@ -44,7 +44,7 @@
         "Only the hypotheses and scope stated in the referenced artifact are certified."
       ],
       "artifact_path": "evidence/typed-construction.md",
-      "artifact_sha256": "72ceebb4a645bb4bd2df1f93b5221ab6fae140e5e8ad1a6d1a0f75604c72df17"
+      "artifact_sha256": "544d39c80a2c14fdc8bc44743e63048643b9d7d5a738ce7b804fd18a65206679"
     },
     {
       "id": "ev-elbo",
@@ -66,7 +66,7 @@
         "Only the hypotheses and scope stated in the referenced artifact are certified."
       ],
       "artifact_path": "evidence/gauge-invariance-proof.md",
-      "artifact_sha256": "9d19b21fa8466603cf5eee30364dc2badacec70dad1bb9c66f70ec8f4219a041"
+      "artifact_sha256": "2c35884a19e3d41f22460214b7d6d31c0408021089bb9f76807d64ca8f576210"
     },
     {
       "id": "ev-process",
@@ -77,7 +77,7 @@
         "Only the hypotheses and scope stated in the referenced artifact are certified."
       ],
       "artifact_path": "evidence/finite-horizon-process.md",
-      "artifact_sha256": "fa939740a3f5e9900994f6b5e7d12a4d440e520c2d8c07a41ab4b02e629ca90b"
+      "artifact_sha256": "d188da4f63b9925cbdd25868ffd05bb169eabee830d0c7293be2ca21d0c72b74"
     },
     {
       "id": "ev-boundary",
