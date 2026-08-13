@@ -865,6 +865,23 @@ re-run against the energy form and §3e.2(iii) amended. Until that is done, §3e
 **withdrawn** as stated; §3e.2(i), (ii), (v), (vi) are unaffected because they do not use
 self-adjointness.
 
+> **O1 DISCHARGED 2026-08-13.** The witness now assembles the `Theory/09` energy form
+> \(z^\top Lz=\sum_e(z_i-\Theta_ez_j)^\top W_e(z_i-\Theta_ez_j)\) — note the \(j\)-diagonal block is
+> \(\Theta^\top W\Theta\), not \(W\), which is what makes it PSD off \(O(K)\) — and adds CLAIM 5, a
+> four-regime table locating the failure exactly. **The two failure modes are independent**:
+> asymmetry is caused by row-stochastic \(\beta\), indefiniteness by \(\Theta\) leaving \(O(K)\).
+> Measured: \(SO(3)\) with symmetric weights gives asymmetry \(0.0\) and the two operators are
+> **bit-identical** (both \(+5.351372\times10^{-2}\)); \(SO(3)\) with row-simplex \(\beta\) gives
+> asymmetry \(0.342\) but stays positive (\(+0.0737\)); \(GL(3,\mathbb R)\) with symmetric weights is
+> symmetric but **indefinite** (\(-0.6293\)); both together give \(0.460\) and \(-0.3907\). The energy
+> form is PSD in all four (\(\min\) eig \(+3.0\times10^{-2}\) to \(+4.4\times10^{-1}\)).
+> **Consequence for the retraction:** §3e.2's claims (iii) and (iv) were computed with \(SO(3)\)
+> transports and uniform weights, i.e. in the single cell where the two operators coincide, so their
+> *numbers* stand — but only under the narrower hypotheses \(\Theta\in O(K)\) and symmetric weights,
+> which §3e did not state. R1's retraction is correct in general and over-broad for this witness; the
+> claims are **reinstated with those hypotheses attached**, and the general-\(GL(K)\) case remains
+> the energy form's alone. This does not touch O5, which asks additionally for the Fisher pencil.
+
 **(R2) §3e.2(ii)'s novelty claim is downgraded. [Established elsewhere in this manuscript]** The
 tree-free repair for `Theory/07b`'s compressed meta-state is **already proved in this repository** at
 two tiers: `Theory/06_general_coarsegraining.tex:561` (`thm:cg-holonomy-kl-marginal`, a path-, root-

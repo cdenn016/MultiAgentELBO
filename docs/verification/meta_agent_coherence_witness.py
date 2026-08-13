@@ -55,14 +55,40 @@ def rot_carrying(a, b):
 
 
 def connection_laplacian(O, edges, beta, n, K=3):
-    """L^Omega = D (x) I - W^Omega, symmetric because Omega_ji = Omega_ij^T."""
+    """Cluster connection Laplacian, `Theory/09` eq:cg-connection-laplacian-energy:
+
+        z^T L z = sum_{e=(i,j) in E} (z_i - Theta_e z_j)^T W_e (z_i - Theta_e z_j),
+
+    assembled with W_e = w_e * I. Symmetric and PSD for ANY Theta_e in GL(K,R),
+    because the j-diagonal block is Theta^T W Theta and not W. Its kernel is the
+    space of parallel sections, isomorphic to Fix(Hol) by eq:cg-fixed-rank
+    (ESTABLISHED).
+
+    Supersedes the operator originally asserted in worklog 3e.2(iii),
+    L = D (x) I - W^Omega, which is RETRACTED by 3f.0 R1. See regime_table() for
+    exactly when the two differ: they are bit-identical for Theta in O(K) with
+    symmetric weights, which is the regime every claim below is computed in.
+    """
     L = np.zeros((n * K, n * K))
     for (i, j), w in zip(edges, beta):
-        for a in (i, j):
-            L[a * K:(a + 1) * K, a * K:(a + 1) * K] += w * np.eye(K)
-        L[i * K:(i + 1) * K, j * K:(j + 1) * K] -= w * O[(i, j)]
-        L[j * K:(j + 1) * K, i * K:(i + 1) * K] -= w * O[(j, i)]
-    return 0.5 * (L + L.T)
+        Th = O[(i, j)]
+        We = w * np.eye(K)
+        L[i * K:(i + 1) * K, i * K:(i + 1) * K] += We
+        L[j * K:(j + 1) * K, j * K:(j + 1) * K] += Th.T @ We @ Th
+        L[i * K:(i + 1) * K, j * K:(j + 1) * K] -= We @ Th
+        L[j * K:(j + 1) * K, i * K:(i + 1) * K] -= Th.T @ We
+    return L
+
+
+def _retracted_laplacian(O, edges, bij, bji, n, K=3):
+    """The RETRACTED 3e.2(iii) operator, kept only to exhibit its failure."""
+    L = np.zeros((n * K, n * K))
+    for (i, j), a, b in zip(edges, bij, bji):
+        L[i * K:(i + 1) * K, i * K:(i + 1) * K] += a * np.eye(K)
+        L[j * K:(j + 1) * K, j * K:(j + 1) * K] += b * np.eye(K)
+        L[i * K:(i + 1) * K, j * K:(j + 1) * K] -= a * O[(i, j)]
+        L[j * K:(j + 1) * K, i * K:(i + 1) * K] -= b * O[(i, j)].T
+    return L
 
 
 def build_aligned_block(rng, chord_aligned=True):
@@ -195,10 +221,70 @@ def claim_4():
     print("         lambda_1 does, by roughly two orders of magnitude.")
 
 
+def regime_table():
+    """CLAIM 5 (added 2026-08-13, discharging obligation O1).
+
+    Locates exactly where the retracted 3e.2(iii) operator fails, and shows that the
+    two failure modes are INDEPENDENT: asymmetry is caused by row-stochastic beta,
+    indefiniteness by Theta leaving O(K). Claims 1-4 are computed with Theta in SO(3)
+    and symmetric weights, the one cell where neither bites and the two operators
+    coincide -- so those numbers stand, under the narrower hypotheses stated here.
+    """
+    print()
+    print("=" * 74)
+    print("CLAIM 5 -- where the retracted operator fails, and why claims 1-4 survive")
+    print("=" * 74)
+    edges = [(1, 0), (2, 1), (3, 2), (0, 2), (0, 3)]
+    hdr = f"  {'regime':<32s}{'asym(retr)':>12s}{'minRe(retr)':>13s}{'minEig(energy)':>16s}"
+    print(hdr)
+    print("  " + "-" * (len(hdr) - 2))
+    results = {}
+    for label, gl, rowsimplex in [
+        ("SO(3), symmetric weights", False, False),
+        ("SO(3), row-simplex beta", False, True),
+        ("GL(3,R), symmetric weights", True, False),
+        ("GL(3,R), row-simplex beta", True, True),
+    ]:
+        rr = np.random.default_rng(SEED + 1)
+        O = {}
+        for e in edges:
+            g = so3(rr.normal(size=3) * 0.9)
+            if gl:
+                g = g @ np.diag(np.exp(rr.normal(size=3) * 0.4))
+            O[e] = g
+            O[(e[1], e[0])] = np.linalg.inv(g)
+        if rowsimplex:
+            bij = rr.uniform(0.1, 1.0, len(edges))
+            bji = rr.uniform(0.1, 1.0, len(edges))
+        else:
+            bij = np.ones(len(edges))
+            bji = bij.copy()
+        w = 0.5 * (bij + bji)
+        Le = connection_laplacian(O, edges, w, 4)
+        Lo = _retracted_laplacian(O, edges, bij, bji, 4)
+        asym = np.linalg.norm(Lo - Lo.T) / np.linalg.norm(Lo)
+        min_retr = np.linalg.eigvals(Lo).real.min()
+        min_en = np.linalg.eigvalsh(Le)[0]
+        results[label] = (asym, min_retr, min_en)
+        print(f"  {label:<32s}{asym:12.3e}{min_retr:+13.5f}{min_en:+16.6e}")
+        assert min_en > -1e-10, (label, min_en)          # energy form PSD everywhere
+    print()
+    a0, r0, e0 = results["SO(3), symmetric weights"]
+    assert a0 < 1e-12 and abs(r0 - e0) < 1e-10, (a0, r0, e0)
+    assert results["SO(3), row-simplex beta"][0] > 0.1          # beta breaks symmetry
+    assert results["GL(3,R), symmetric weights"][1] < 0         # GL breaks definiteness
+    print("  PASS -- the energy form is PSD in all four regimes. The retracted form is")
+    print("         asymmetric as soon as beta is row-stochastic, and indefinite as soon")
+    print("         as Theta leaves O(K); the two causes are independent. In the SO(3) +")
+    print("         symmetric-weight cell the two operators are bit-identical, which is")
+    print("         where claims 1-4 live, so their numbers stand under those hypotheses.")
+
+
 def main():
     claim_1_and_2()
     claim_3()
     claim_4()
+    regime_table()
     print()
     print("=" * 74)
     print("SCOPE -- what this does NOT establish")
