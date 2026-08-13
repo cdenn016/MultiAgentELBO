@@ -907,7 +907,8 @@ self-adjointness.
 > support boundary is a genuinely distinct wall: as the departing agent's couplings vanish its
 > diagonal block tends to \(0\), injecting \(K\) spurious zero modes that descend into the kernel, so
 > the bottom-of-spectrum gap closes in **both** regimes (measured: 6 modes below \(10^{-8}\) at
-> \(w_{m out}=0\) in the flat case, 4 in the frustrated case, against 3 and 1 before departure).
+> \(w_{
+m out}=0\) in the flat case, 4 in the frustrated case, against 3 and 1 before departure).
 > O4's predicted split — frustrated giving an avoided crossing, flat an exact meeting at the kernel —
 > is **not** what happens; both collapse to the kernel.
 >
@@ -916,11 +917,13 @@ self-adjointness.
 > and leaves the degeneracy exactly where it was.
 >
 > **What removes the wall is the prior sector the free energy already carries.** The term
-> \(\chi_iD_{m KL}(q_i\|p_i)\) contributes \(lpha_i\Lambda_{p,i}\) on the diagonal, and because
+> \(\chi_iD_{
+m KL}(q_i\|p_i)\) contributes \(lpha_i\Lambda_{p,i}\) on the diagonal, and because
 > prior precisions are agent-specific and generically distinct, the departing agent's block tends to
 > **its own prior** rather than to zero. Nothing reaches the kernel and the departure becomes a smooth
 > limit: \(\lambda_0\) runs \(0.134	o0.100	o0.090\) (flat) and \(0.355	o0.100	o0.090\)
-> (frustrated) as \(w_{m out}	o0\), bounded away from \(0\) throughout.
+> (frustrated) as \(w_{
+m out}	o0\), bounded away from \(0\) throughout.
 >
 > **Consequence, and it is a correction to this whole section.** The right operator for the extent
 > question is the Hessian of the **full** free energy — coupling **plus** prior — not the bare
@@ -1592,6 +1595,82 @@ crossover \(\|\log\Omega\|_F\approx0.50\) will move with both. No lens audited `
 to check whether the shipped code actually constructs \(L^\Omega\), or in which form — if it uses
 row-stochastic asymmetric \(\beta\) without symmetrisation, (R1) applies to the shipped operator
 immediately and not merely on the \(GL\) tier.
+
+---
+
+## 3g. GENUINE CROSS-AGENT COUPLING — a shared latent, and the rank obstruction
+
+*Opened 2026-08-13. Witness: `docs/verification/shared_latent_coupling_witness.py`, seed 20260813,
+four claims asserted in-script. Addresses validated-ledger claim `genuine-coupling-before-continuum`
+(HIGH, INCONCLUSIVE).*
+
+### 3g.1 The gap
+
+The tied-replica law is blockwise-product by construction, \(P_h^n=\bigotimes_aP_a^n\), so its total
+correlation is identically zero and it cannot carry a multi-body operator. That is why
+\(\varepsilon_h=0\) only at \(C_h=\mathrm{id}\) and why the effective-action question cannot be posed
+on it. The minimal repair named in the roadmap is a shared latent.
+
+### 3g.2 What a shared latent buys [COMPUTED]
+
+Take \(z\sim N(0,T)\), \(k_a\mid z\sim N((\Lambda z)_a,\sigma_a^2)\), so
+\(\Sigma=D+\Lambda T\Lambda^{\mathsf T}\) with \(D=\mathrm{diag}(\sigma_a^2)\).
+
+**(i) Genuine dependence.** \(\mathrm{TC}=0\) exactly for the product law; \(\mathrm{TC}=0.740\) for
+the shared-latent law. The structural obstruction is removed.
+
+**(ii) With one latent the induced interaction is *exactly* PIFB2's form.** Integrating out \(z\)
+gives \(-\log p(k)=\tfrac12k^{\mathsf T}\Sigma^{-1}k\), and the unique Laplacian-plus-diagonal split
+of \(\Sigma^{-1}\) is
+\[
+\tfrac12k^{\mathsf T}\Sigma^{-1}k
+=\sum_{a<b}\tfrac12\beta_{ab}(k_a-k_b)^2+\sum_a\tfrac12\pi_ak_a^2,
+\qquad \beta_{ab}=c\,v_av_b,\quad v=D^{-1}\lambda,
+\]
+with \(c=\tau^2/(1+\tau^2\lambda^{\mathsf T}D^{-1}\lambda)\). Verified: Sherman–Morrison to
+\(1.2\times10^{-15}\), \(\beta_{ab}=cv_av_b\) to \(2.2\times10^{-16}\), split exact to \(0\), energy
+residual \(-2.8\times10^{-16}\), all \(\beta_{ab}>0\). **So a genuinely coupled law does generate the
+transported-KL coupling the programme declares** — in the flat case, where the transport is the
+identity.
+
+### 3g.3 The rank obstruction [COMPUTED] — this is the finding
+
+The number of shared latents equals the rank of the induced coupling, but positivity fails as soon as
+there is more than one:
+
+| \(R\) latents | rank\((D^{-1}-\Sigma^{-1})\) | all \(\beta_{ab}>0\) | \(\min\beta_{ab}\) |
+|---|---|---|---|
+| 1 | 1 | yes | \(+0.0211\) |
+| 2 | 2 | no | \(-0.1990\) |
+| 3 | 3 | no | \(-0.0494\) |
+| 5 | 5 | no | \(-0.2841\) |
+
+A sum of KLs is nonnegative term by term, so a negative weight cannot be represented by one. Hence a
+shared-latent law delivers **either** the transported-KL form (\(R=1\), and then the attention matrix
+is rank one) **or** higher-rank attention (and then the coupling is not a sum of KLs) — not both.
+PIFB2 deploys a general row-stochastic \(\beta\), whose rank runs up to \(N-1\).
+
+That is a sharper statement of `genuine-coupling-before-continuum` than the ledger currently carries.
+The obstruction is not that coupling cannot be generated; it is that **the declared functional form
+and the declared attention rank cannot be had simultaneously from this mechanism.**
+
+### 3g.4 Two side conditions [COMPUTED]
+
+Same-sign loadings are necessary: flipping one sign gives \(\beta_{01}=-0.512\), repulsive. And the
+residual diagonal need not be a valid prior precision — one entry came out at \(-0.129\), an improper
+induced prior. Both must be declared rather than assumed.
+
+### 3g.5 What is open
+
+The witness is scalar (\(K=1\)), centred Gaussian, one base point, so the transport is the identity
+and \(\beta_{ab}(k_a-k_b)^2\) is the **flat** case of the transported KL. Whether a shared latent can
+generate \(\beta_{ab}\|k_a-\Omega_{ab}k_b\|^2\) with nontrivial \(\Omega\) is the obvious next
+witness and is not addressed. Adding \(z\) also modifies `Theory/04`'s declared generative class,
+exactly as the label-copy block \((J_a,X_a)\) did, and costs a declaration. The recognition side is
+untouched: a factorized \(Q=q(z)\otimes\bigotimes_aQ_a\) carries a mean-field gap that has not been
+priced. Finally, §3g.3's negative is generic, not universal — it shows positivity fails for random
+same-sign loadings at \(R\ge2\), not that no \(R\ge2\) loading matrix yields an all-positive
+\(\beta\); whether that set is nonempty is open and is the cheapest way to overturn this section.
 
 ---
 
