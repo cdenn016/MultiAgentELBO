@@ -150,7 +150,8 @@ explicit two-agent / two-site counterexample attempt.
 
 ## 3b. PRIOR ART DISCOVERED MID-SESSION — read before accepting any §4 result
 
-**Location:** `C:/Users/chris and christine/Documents/ChatGPT/MultiAgentELBO/docs/audits/roadmap-review-2026-08-12/`
+**Location:** `docs/audits/roadmap-review-2026-08-12/` (tracked in **this** repo since `caa4a15`; the
+former absolute `Documents/ChatGPT` path was stale and contradicted `:650-651` below)
 (six referee reports `rm-01` … `rm-06`), plus a fourth derivation run
 `docs/derivations/2026-08-12-pifb2-elbo-program-decision/` (terminal_status `null`, bounded checkpoint).
 
@@ -186,12 +187,17 @@ against `rm-01`…`rm-06` is mandatory before anything from §4 is written into 
 
 `rm-01` §0 already flagged this and it has since got worse. Four locations, none complete:
 
+**REBUILT 2026-08-13 (E12(iv)) from `git ls-files` at HEAD. The pre-consolidation table below was
+stale and contradicted `:650-651` in this same file; it is superseded.**
+
 | Location | Has | Missing |
 |---|---|---|
-| `Desktop/MultiAgentELBO` | `Theory/`, PIFB2 copy, ultradeep audit waves 1–2 (untracked), continuum roadmap + review | the four derivation runs; `rm-01`…`rm-06` |
-| `Documents/ChatGPT/MultiAgentELBO` (`main` @ `e1f8795`) | four derivation runs, `rm-01`…`rm-06` | ultradeep audit waves 1–2 |
-| `C:/tmp/MultiAgentELBO-elbo-action-019ff75d` (`codex/elbo-effective-action-derivation`) | three derivation runs, this worklog | `rm-01`…`rm-06`, ultradeep waves, program-decision run |
-| `Desktop/Research` | live `PIFB2.tex`, wiki, `magent_elbo_whitepaper` | everything above |
+| `Desktop/MultiAgentELBO` (**this repo, `main`**) | `Theory/`, PIFB2 copy, ultradeep audit waves 1–2, continuum roadmap + review, **all four derivation runs**, **`rm-01`…`rm-06`**, the 16 recovered panel returns, this worklog, both verification scripts, the interim review and its adjudication cluster | — |
+| `Documents/ChatGPT/MultiAgentELBO` (`main` @ `e1f8795`, 11 behind) | a stale checkout; five untracked interim-review reproduction artifacts not present in the Desktop checkout | everything landed after `e1f8795` |
+| `Desktop/Research` | live `PIFB2.tex` (byte-identical to the repo copy), wiki, `magent_elbo_whitepaper` | the derivation and audit material |
+
+The `C:/tmp/MultiAgentELBO-elbo-action-019ff75d` worktree was **removed on 2026-08-13** (it held no
+unmerged commits; `HEAD = e1f8795` was already an ancestor of `main`). The branch ref survives.
 
 `rm-01` also records that the continuum roadmap was authored in a copy where **neither audit wave
 existed on disk**, and that `build_pifb2_roadmap_ledger.py:13-17` hard-codes absolute paths to
@@ -258,12 +264,18 @@ the thing the gradient sector needs.
 
 ### 3c.3 The resulting statement, and where A4.4 does bite
 
-> **Proposition (session result, DERIVATION + APPLICABLE_THEOREM A4.4).**
+> **Proposition (session result, DERIVATION + APPLICABLE_THEOREM A4.4). CORRECTED IN PLACE
+> 2026-08-13 (E3(2)); see §3c.9 for the witness.**
 > At every fixed finite lattice \(\Lambda_h\) (itself a finite design), the base-neighbour
 > transported-KL sector is an **exact** negative-ELBO component of a normalized generative law that
-> couples neighbouring design points; such a law exists iff `hyp:gen-design-product` is relaxed.
+> is a strict **product** over design points conditional on \(H_n\). What it costs is **not** a
+> relaxation of `hyp:gen-design-product` but the addition of an \(H_n\)-measurable transported
+> label-copy channel \((J_a,X_a)\) to the declared generative class of `Theory/04`, plus the
+> replication multiplicity \(m_h\).
 > Its \(h\to0\) limit, when it exists, is a **jet** functional and therefore — by Theorem A4.4(a),
 > whose hypotheses now hold — is **not** the ELBO of any finite design.
+>
+> ~~such a law exists iff `hyp:gen-design-product` is relaxed~~ — **WITHDRAWN**, §3c.9.
 
 So the layered picture is not merely defensible, it is **forced**:
 
@@ -362,9 +374,20 @@ idle in exactly the sense that chapter uses to license removal.**
 
 Combining with §3c.2:
 
-> **The base-derivative sector is precisely what saves \(\mathcal C\) from being an idle wheel, and
+> **CORRECTED 2026-08-13 (E3(5); the withdrawn form is preserved below for the record).**
+> **\(\mathcal C\) earns its manifold structure iff the action contains a term coupling distinct
+> contexts. Such a term is available from an exact finite ELBO with `hyp:gen-design-product`
+> **intact**, via a lagged, history-measurable transported label-copy channel.** The idle-wheel half
+> is untouched: without a base-derivative sector the action factorizes over \(c\) entirely.
+>
+> ~~The base-derivative sector is precisely what saves \(\mathcal C\) from being an idle wheel, and
 > that sector exists iff `hyp:gen-design-product` is relaxed. Hence \(\mathcal C\) earns its
-> manifold structure iff the generative model admits cross-context dependence.**
+> manifold structure iff the generative model admits cross-context dependence.~~
+> **WITHDRAWN** — refuted in both directions by §3c.9. "⇐" fails against an explicit exact-ELBO
+> instance on a strictly design-product law (total correlation \(7.4\times10^{-17}\)) that still
+> carries a strictly positive base-neighbour sector; "⇒" is unsupported, since relaxing the hypothesis
+> yields an interaction energy \(-\mathbb E\log\psi(k_a,k_b)\), a different functional with a
+> different value, not a transported KL.
 
 This also names the propagation mechanism correctly. Information does move from \((i,c)\) to
 \((j,c')\), but by a chain — \((i,c)\xrightarrow{\text{contextual coherence}}(i,c')

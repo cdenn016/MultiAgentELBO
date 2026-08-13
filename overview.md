@@ -32,7 +32,7 @@ than being inserted as physical primitives.
 | \(\mathcal C\) | smooth manifold | fixed, initially nonphysical **context** or noumenal index space. Explicitly **not yet** space, time, the agent index set, or the interaction graph. |
 | \(P\to\mathcal C\) | principal \(G\)-bundle | frame bundle; \(G\le GL(K,\mathbb R)\), \(K\) = **fiber** dimension (so the simple rotation group is \(SO(K)\), not \(SO(N)\)) |
 | \(\mathcal B_b,\mathcal B_m\) | normalized-law fibers | declared subsets of \(\mathcal P(\mathsf K)\) and \(\mathcal P(\mathsf M)\). Smooth statistical/Fisher geometry is an additional regular-tier hypothesis. |
-| \(\mathcal E_b,\mathcal E_m\) | associated law bundles | \(P\times_{\widehat\rho_b}\mathcal B_b\) and \(P\times_{\widehat\rho_m}\mathcal B_m\), carrying belief and model laws |
+| \(\mathcal E_b,\mathcal E_m\) | associated law bundles | \(P\times_{\widehat\rho_b}\mathcal B_b\) and \(P\times_{\widehat\rho_m}\mathcal B_m\), carrying belief and model laws. The action **must** be by pushforward, \(\widehat\rho_x(g)=(\rho_x(g))_\#\) for bimeasurable parameter-independent \(\rho_x:G\to\operatorname{Aut}(\mathsf K)\) (`Theory/02` `eq:geo-pushforward-actions`); this is what makes \(g^F\) invariant and it is what every invariance claim in §2.2 consumes. A merely smooth \(G\le GL(K,\mathbb R)\) action on \(\mathcal B\subseteq\mathcal P(\mathsf K)\) need not be Fisher-isometric — projective tilting on the simplex drifts \(g^F\) by tens of percent. |
 | \(\mathcal E_A=\mathcal E_b\times_{\mathcal C}\mathcal E_m\) | paired agent bundle | the kinematic bundle for one agent's belief–model pair |
 | \(z_i=(q_i,s_i)\) | section of \(\mathcal E_A|_{\mathcal C_i}\) | the primitive state-bearing content of agent \(i\) on its support \(\mathcal C_i\) |
 | \(q_i(c)\) | section of \(\mathcal E_b\) | recognition/belief law over hidden state |
@@ -68,6 +68,17 @@ the agents is an open target. Likewise, the exact observation–interaction equi
 operational environment-node presentation, but does not by itself prove autonomy or agency for every
 boundary node.
 
+"State-bearing" needs an operational criterion or the thesis is unfalsifiable, since any candidate
+counterexample can be reclassified as scaffolding. Take the checkable one: an object is state-bearing
+if the declared record-law map \(\theta\mapsto P_\theta(dy,do\mid X)\) is non-constant in it. Under
+that criterion the claim is currently **false for the connection** in two declared regimes — §8's
+curve-mediated construction moves the record law to gauge-orbit distance \(0.319>0\) at fixed agent
+sections, and PIFB2's Regime II promotes \(A^{(i)}_\mu\) to an independent dynamical field with its
+own curvature term and its own coercivity problem (`Theory/PIFB2.tex:142`; §7's Yang–Mills row and §9
+item 7 both presuppose it). So the agent-only reading is exact only in the Regime-I,
+frame-derived-connection tier and for finite designs where B4's clauses stand; reclassifying
+\(\omega\) elsewhere is an open obligation of §9 item 1, not a settled partition.
+
 At the established finite tier, endogenous interaction records are generated once by one normalized
 joint,
 
@@ -81,6 +92,15 @@ The recognition law \(Q_o\) is a full, potentially correlated law on the latent 
 displayed marginal section pairs \((q_i,s_i)\) do not determine that dependence. Consequently, a
 functional of paired sections is an exact VFE only after a declared lift into the joint recognition
 family reproduces those sections; without such a lift it remains an **effective section action**.
+The lift is a declaration, not a discovery: one always exists (the Fréchet class of joint laws with
+prescribed marginals contains the product law, `05_elbo.tex:37`) and it is never unique, and by
+`05_elbo.tex` `eq:elbo-total-correlation-signs` the section functional falls short of the exact VFE by
+exactly \(\mathrm{TC}(Q)\) — so under a product reference "exact" means *exact at the product lift*,
+which minimizes over the class, and under a non-product reference the section functional bounds the
+exact VFE from neither side. Note that the closed theorem of §6 takes the strongest such declaration:
+its recognition law is \(\bigotimes_a Q_a\) with \(\zeta_a=q_a\otimes s_a\), so its total correlation
+vanishes identically across agents and across channels. That is the theorem's declared family, not
+this section's ontological target.
 The ultimate continuum target would place a proper probability law on a standard-Borel or Polish
 space of admissible paired sections, but that section-space measure, its tightness, and its
 finite-to-continuum derivation remain open.
@@ -94,8 +114,10 @@ symplectic structure, and boundary data. VFE descent and action extremization ar
 
 ### 2.2 Informational physicalization
 
-On a regular smooth tier, each channel already induces a gauge-invariant, connection-relative
-informational tensor on the base:
+On the regular tier of `Theory/05c` `hyp:pb-regular-models` — differentiability in quadratic mean,
+square-integrable scores, and a **positive-definite** fiber Fisher form, which is §2.1's *third*
+successive choice and not its first — each channel induces a passively frame-covariant,
+connection-relative informational tensor on the base:
 
 \[
 h_{i,b}^{\omega_b}=(D^{\omega_b}q_i)^*g_b^F,
@@ -103,49 +125,107 @@ h_{i,b}^{\omega_b}=(D^{\omega_b}q_i)^*g_b^F,
 h_{i,m}^{\omega_m}=(D^{\omega_m}s_i)^*g_m^F.
 \]
 
-These are positive-semidefinite semimetrics, with
-\(\operatorname{rad}h_{i,x}^{\omega_x}=\ker D^{\omega_x}z_{i,x}\). They become nondegenerate metrics
-only under an injectivity hypothesis or after a justified constant-rank quotient. They are invariant
-under passive frame changes but depend on the selected connection. The common principal bundle does
-not canonically combine the belief and model tensors or different agents' tensors. Channel weights,
-cross terms, connection selection, and an inter-agent agreement or aggregation theorem are additional
-obligations.
+These are positive-semidefinite semimetrics — degenerate metric tensors in the stipulated sense of
+`05c` `def:pb-informational-pullbacks`, not "semimetric" in the drop-the-triangle-inequality sense —
+with \(\operatorname{rad}h_{i,x}^{\omega_x}=\ker D^{\omega_x}z_{i,x}\) **per channel**, writing
+\(z_{i,b}:=q_i\) and \(z_{i,m}:=s_i\). For the *pair* the correct statement is `05c`
+`prop:pb-product-radical`,
+\(\operatorname{rad}h^{\rm prod}=\ker D^{\omega_b}q_i\cap\ker D^{\omega_m}s_i\), which additionally
+consumes declared positive channel weights. The inclusion \(\supseteq\) is free; the reverse consumes
+positive-definiteness of \(g^F\) and fails on an overparameterized fiber (for
+\(\{N(\theta_1+\theta_2,1)\}\), \(D^\omega s\ne0\) yet \(h=0\)).
+
+They become nondegenerate metrics only under an injectivity hypothesis or after a justified
+constant-rank quotient, and both routes are narrower than they sound. A *generic* section is
+everywhere nondegenerate only when \(\dim\mathcal B\ge 2d\); otherwise the rank drops on a stratum of
+dimension \(2d-\dim\mathcal B-1\), so no neighbourhood of it has constant rank. The constant-rank
+route yields a metric on a quotient **vector bundle**; a metric on a quotient **base** needs
+involutivity and basicness besides, and then lives on \(\bar{\mathcal U}\), not on \(\mathcal C\).
+
+They are invariant under **passive** frame changes. They are *not* fixed by the active gauge group at
+a fixed connection — `05c:146-154` carries the counterexample transporting \(h=0\) to \(dx^2\) — and
+they depend on the selected connection. Indeed the connection-independent floor
+\(\min_\omega h\) is the Gram matrix of the fiber invariants, which for the declared Gaussian fiber
+under \(G\le GL(K,\mathbb R)\) is a **single** scalar for every \(K\):
+\(\min_\omega h=d(r^2)\otimes d(r^2)/(4r^2+2r^4)\) with \(r^2=\mu^\top\Sigma^{-1}\mu\), of rank \(\le1\).
+So in base dimension \(\ge2\) some connection makes \(\det h\equiv0\) for *every* section, and a
+nondegeneracy hypothesis is a hypothesis on \(\omega\), not on the belief.
+
+The common principal bundle supplies no cross tensor between the **marginals**. The declared paired
+bundle \(\mathcal E_A\) does: the Fisher metric of \(q\otimes s\) is exactly \(g_b^F\oplus g_m^F\),
+which *forces* \(w_b=w_m=1\), and a correlated joint supplies a canonical cross block — the same
+\(I_\zeta(K;M)\) sector §6 already calls mandatory. What is not canonical is a weighting chosen
+without declaring the joint. Connection selection and an inter-agent agreement or aggregation theorem
+remain additional obligations.
 
 The physicalization program is therefore broader and more carefully typed than “everything is a
-pullback.” Its general target is a natural, gauge-invariant, coarse-graining-compatible assignment
+pullback.” Its general target is a natural, \(\mathcal G\)-equivariant assignment, coarse-graining
+compatible **under `05c` `eq:pb-isotropy-criterion`** (without that criterion the fine and coarse
+tensors differ by a sign-indefinite term, and even with it coarse-graining creates new null
+directions and does not preserve rank),
 
 \[
 \operatorname{Phys}_\alpha:
-J_\omega^r(\mathfrak S)/\mathcal G
+J^1\!\left(\mathfrak S\times_{\mathcal C}\mathcal A\right)\!/\mathcal G
 \longrightarrow
 \Gamma\!\left(T^p_q\mathcal C\otimes L_\alpha\right),
 \]
 
-from relational section jets modulo gauge to candidate observable quantities. Fiber scalars may be
-composed with sections and vertical covariant tensors may be pulled back through \(D^\omega\).
-Connections, causal cones, representation labels, operators, action coefficients, and physical
-constants require other typed constructions. A promising shared-geometry candidate is the Fisher
-pullback of a collective **joint-law** section, because it retains dependence discarded by marginal
-section pairs. This remains a hypothesis, not an established identification with physical geometry.
+from relational section jets modulo gauge to candidate observable quantities. Two typing points are
+load-bearing. The connection space \(\mathcal A\) must sit **inside** the quotient: \(\mathcal G\)
+moves \(\omega\), so it does not act on a jet space with \(\omega\) frozen, and \(h^\omega_\sigma\) is
+not a function on such a quotient. And the order is \(r=1\): a principal connection canonically splits
+the *first* jet bundle and no higher one, so \(r\ge2\) would additionally consume a linear connection
+on \(T\mathcal C\) — which `02_geometry.tex:22-24` and `appendix_claim_ledger.tex:270` both say is
+never selected — plus a choice of \(\alpha\) on the vertical bundle. The quotient is in general a
+**stratified set**, not a manifold: the isotropy algebra jumps (\(\mathfrak{so}(K-1)\) at
+\(\mu\ne0\), \(\mathfrak{so}(K)\) at \(\mu=0\)), and it jumps along a single section, so
+\(\operatorname{Phys}_\alpha\) is smooth at best on the principal stratum. \(L_\alpha\) must be
+declared as a flat oriented real line bundle with \(L_\alpha\otimes L_\beta\cong L_{\alpha+\beta}\)
+and \(L_0=\mathbb R_{\mathcal C}\); a global unit requires triviality, and a non-flat scale connection
+would make unit comparison path-dependent.
+
+Fiber scalars may be composed with sections and vertical covariant tensors may be pulled back through
+\(D^\omega\). Connections, causal cones, representation labels, operators, action coefficients, and
+physical constants require other typed constructions. A promising shared-geometry candidate is the
+Fisher pullback of a collective **joint-law** section, because it retains dependence discarded by
+marginal section pairs — the Schur term of `Theory/08` `prop:ig-pullback-vs-pushforward`, and, when
+the dependence itself varies along the base, a sector on which the marginal-pair pullback vanishes
+identically. The *retention* is established; it is a block-congruence invariant requiring
+`08_infogeometry:433`'s agentwise-block reframing hypothesis, and it is **not** a Loewner
+enrichment (the difference is indefinite). What remains a hypothesis is the identification with
+physical geometry.
 
 The present pullback results do **not** derive the topology, dimension, or differentiable structure
 of \(\mathcal C\); Lorentzian signature; causal structure; physical time; field equations; or an
-intersubjective choice of rods and clocks. They provide the first rigorous example of an informational
-semigeometry from which such structures might later be constructed.
+intersubjective choice of rods and clocks. Building on the associated-bundle formulation of agents in
+Dennis (2025) and the informal proposal of Sengupta et al. (2016), they give a rigorous account of the
+**connection-split** informational geometry that a section of an associated bundle with
+statistical-manifold fibers induces on its base, with an exact defect cocycle. The Fisher metric and
+Amari–Chentsov tensor are pullbacks by definition (Ay–Jost–Lê–Schwachhöfer 2017); the increment here
+is the connection-split vertical jet, not pullback geometry as such.
 
 ### 2.3 Units and physical constants
 
-The working interpretation is that a physical dimension is a **type**, represented abstractly by a
-one-dimensional dimension line \(L_\alpha\), while a unit is an agent- or community-relative choice
-of nonzero basis in that line. Numerical values change when the basis changes; the typed quantity and
-dimensionless predictions do not. On this reading, familiar unit names are perspectival calibrations
-of quantities produced by a physicalization map, rather than additional ingredients of noumenal
-reality. This is a programmatic hypothesis, but it gives unit changes the form of a scale gauge rather
-than a division between mathematics and physics.
+We adopt the standard typed treatment of physical quantity: a physical dimension is a **type**,
+represented by a one-dimensional dimension line \(L_\alpha\), and a unit is a choice of nonzero basis
+in that line, so numerical values change with the basis while the typed quantity does not. This is not
+new here — it is Whitney (1968), developed in Hart (1995) and in Janyška–Modugno–Vitolo (2010), whose
+"scaled spaces" are exactly the \(T^p_q\mathcal C\otimes L_\alpha\) of §2.2 — and reading unit change
+as a **scale gauge** is Weyl's original *Eichinvarianz* (1918). The program's own increment is only
+that the basis choice is **agent- or community-relative**: familiar unit names become perspectival
+calibrations of quantities produced by a physicalization map rather than additional ingredients of
+noumenal reality. That increment is the programmatic hypothesis; the typed formalism itself is
+standard.
 
-Information measured in nats or bits is dimensionless and log-base dependent. A pullback cannot by
-itself manufacture a dimensionful quantity. An information-to-action proposal must therefore include
-or derive a conversion morphism, for example
+Information carries its own dimension line \(L_I\), whose bases are the log bases (nat, bit, ban); it
+is a dimensionless *number* only once a base is fixed, and calling it "dimensionless" while its value
+changes with that choice contradicts the reading just given. Note also that §2.2 has already spent
+this freedom: \(g^F\) is canonically normalized only in nats, the base at which
+\(g^F=-\partial\partial'\mathrm{KL}\) and \(g^F=\mathbb E[\ell\ell]\) coincide (their ratio is
+\(\ln b\)), so \(h^\omega\) is a nats-normalized tensor and the log-base gauge is available to
+information scalars only. A pullback cannot by itself manufacture a dimensionful quantity. An
+information-to-action proposal must therefore include or derive a conversion morphism, for example
 
 \[
 S_{\rm phys}=\kappa_A I_{\rm nat},
@@ -153,13 +233,32 @@ S_{\rm phys}=\kappa_A I_{\rm nat},
 \]
 
 Since one bit is \(\ln 2\) nats, declaring that one bit corresponds to \(\hbar\) would set
-\(\kappa_A=\hbar/\ln 2\). That is a calibration condition, not a derivation of \(\hbar\), and neither
-Bayesian updating nor the current action theory supplies a smallest nonzero update. The stronger open
-goal is to derive a universal, log-base-invariant dimensionless relation such as
-\(S_{\rm phys}/\hbar=f(I_{\rm nat})\), or to derive \(\kappa_A\) from quantization, topology, an RG
-fixed point, symmetry breaking, or another independent consistency condition. Until then, the theory
-should target gauge-, coordinate-, log-base-, and unit-invariant dimensionless predictions before
-claiming an absolute physical constant.
+\(\kappa_A=\hbar/\ln 2\). That is a calibration condition, not a derivation of \(\hbar\) — and on the
+dimension-line reading it cannot be otherwise: \(\kappa_A\) is the component of a fixed linear
+morphism \(L_I\to L_{\rm action}\) in a chosen basis, a linear map between one-dimensional lines has
+exactly one basis-independent datum, and a calibration is precisely what fixes it. **No calibration
+of a linear conversion is ever a derivation.**
+
+Nor is a smallest nonzero update available to supply a scale. That is a no-go, not a gap: on any DQM
+tier \(\mathrm{KL}(q_\theta\|q_{\theta+h})=\tfrac12g^Fh^2+O(h^3)\), so \(\inf\{\mathrm{KL}(q\|q'):q\ne q'\}=0\);
+and on the finite-record tier any positive floor is defeated by garbling the record through a channel
+close enough to the constant one, since the update KL cannot increase under post-processing. Only a
+recognition family discretized by fiat has a positive minimum, and that minimum is family-dependent,
+hence useless for fixing \(\kappa_A\).
+
+The stronger open goal must therefore be stated against a declared reference scale,
+\(S_{\rm phys}/\hbar=f(I/I_0)\). Written as \(f(I_{\rm nat})\) it is not merely open but unsatisfiable:
+a base change rescales \(I\) by a constant, so demanding log-base invariance of a fixed \(f\) forces
+\(f(cI)=f(I)\) on a group already dense in \((0,\infty)\), hence \(f\) constant — no information
+dependence at all. And \(I_0\) is the same missing object as the smallest nonzero update just shown not
+to exist, so the two are one problem, not two. Deriving \(\kappa_A\) means exhibiting a canonical
+nonzero element of \(L_{\rm action}\), equivalently breaking the scale gauge; conditions invariant
+under change of basis in \(L_{\rm action}\) fix it only up to \(\mathbb R_{>0}\) and are calibrations
+by construction. Of the routes usually named — quantization, topology, an RG fixed point, symmetry
+breaking — topological and RG conditions return integers and dimensionless exponents, and
+"quantization" imports \(\hbar\) rather than deriving it. Until such a mechanism is exhibited, the
+theory should target gauge-, coordinate-, log-base-, and unit-invariant dimensionless predictions
+before claiming an absolute physical constant.
 
 ---
 
@@ -219,9 +318,9 @@ Status of each arrow:
 |---|---|
 | microscopic joint → finite-site ELBO | **EXACT** — the closed theorem, §6 |
 | finite-site ELBO → effective action | **PROVEN, CONDITIONAL** — exact given a normalized posterior, a recognition-independent measurable \(C_h\), a common pushforward path, and a declared **product** reference measure |
-| tied-replica/PIFB2 instantiation | **OPEN** — three explicit \(C_h\) supplied (worklog §4.3) and \(\varepsilon_h,c_h\) now in closed form, but \(\varepsilon_h=0\) only at \(C_h=\mathrm{id}\), and the law is blockwise-product, so it cannot pose the effective-action question |
+| tied-replica/PIFB2 instantiation | **OPEN** — three explicit \(C_h\) supplied (`panelA-T-RESID-derivation.md:122-190`; worklog §4.3 carries two of them) and \(\varepsilon_h,c_h\) now in closed form, but \(\varepsilon_h=0\) only at \(C_h=\mathrm{id}\), and the law is blockwise-product, so it cannot pose the effective-action question |
 | effective action → PIFB2 basis | **OPEN**. \(S_h^{\rm exact}=S_h^{\rm PIFB}+\varepsilon_h+c_h\) is no longer a tautology (worklog §4.3 gives closed forms), but the residual is computed against a *stipulated* projection on a law with no cross-agent content |
-| finite lattice → continuum | **OPEN**. Needs equicoercivity + \(\Gamma\)-convergence; the gauge sector is Millennium-adjacent |
+| finite lattice → continuum | **OPEN**. Needs equicoercivity + \(\Gamma\)-convergence for manifold-valued graph Dirichlet energies carrying a gauge connection — `rm-06-prior-art.md:277` prices this as *"real new work — T8 is the most expensive item in the roadmap"*, with García Trillos–Slepčev (scalar / \(\mathbb R^n\)-valued only) as the nearest prior art. Expensive analysis, not a Clay problem |
 
 ---
 
@@ -244,7 +343,12 @@ Reading of the terms:
 - Both transported KL channels are **exact finite-mixture KL components**, not guessed penalties.
 - Row entropies \(D_{\rm KL}(\beta\|\pi)\) are exact **at \(\tau=1\)**.
 - \(I_{\zeta}(K;M)\) is **mandatory** whenever state and model recognition are correlated; PIFB2
-  currently omits it.
+  currently omits it. Off the mean field the resulting scalar is not merely short one term: it is the
+  substituted free energy of `Theory/05_elbo.tex` `prop:elbo-total-correlation-signs`
+  (`\status{ESTABLISHED}`), a **pseudo-ELBO that is not an evidence bound at all** and can fall below
+  \(-\log p(o\mid H_n)\) — by \(\log 2\) nats on this programme's own diagonal instance
+  (`boundary-counterexamples.md:3-14`). Exactness is confined to the product family, where the
+  violation is identically zero.
 - It is exact on an **enlarged tied-replica inventory**, and it is **lagged** — the generative law
   reads \(q^n\), never the same-step \(q^{n+1}\).
 - **The observation term is not matched to literal PIFB2.** The theorem's term is
@@ -253,54 +357,92 @@ Reading of the terms:
   with \(m_i\) **unbound and not among the functional's declared arguments** (`:684`); its pointwise
   display (`:669`) drops \(m_i\) entirely. **Equality to the literal PIFB2 observation term is not
   proved and is not currently well-posed.** The joint typing is the one the ELBO forces —
-  \(D_{\rm KL}(\zeta\|p\otimes r)=D_{\rm KL}(q\|p)+D_{\rm KL}(s\|r)+I_\zeta(K;M)\), verified to
-  \(1.1\times10^{-16}\). If `:669` is read as the predictive marginal
+  \(D_{\rm KL}(\zeta\|p\otimes r)=D_{\rm KL}(q\|p)+D_{\rm KL}(s\|r)+I_\zeta(K;M)\), verified over
+  \(2\times10^5\) random instances at **median** residual \(1.1\times10^{-16}\) (one ulp) and
+  **maximum** \(2.7\times10^{-15}\) — the quoted \(1.1\times10^{-16}\) is a typical value, not a
+  bound, and reaches \(5.7\times10^{-14}\) on concentrated laws. If `:669` is read as the predictive marginal
   \(-\mathbb E_q\log\int L(o\mid k,m)s(dm)\), the two differ by
   \(\mathbb E_q[D_{\rm KL}(s\|s^{(o,k)})]\ge0\), so the theorem's scalar is an **upper bound**, and the
   gap is **unbounded** in the model uncertainty (Gaussian instance:
   \(d^2v/(2(v+1))+(v-\log(1+v))/2\)). Registered internally since
-  `docs/research-plans/2026-08-12-pifb2-continuum-roadmap.md:104` and `rm-03-action-class.md:363-365`.
+  `docs/research-plans/2026-08-12-pifb2-continuum-roadmap.md:104` and `rm-03-action-class.md:364-366`.
 
 **Other established results:** exact fast-state profiling identity; compact-subgroup reduction by
-Haar averaging; exact finite-site KL contraction; gauge-covariant informational pullback geometry
-with an exact defect cocycle (`Theory/05c`); exact agent-network RG (`Theory/07b`).
+Haar averaging; exact finite-site KL contraction (**conditional** — under §5's four hypotheses, not
+unconditionally); gauge-covariant informational pullback geometry with an exact defect cocycle
+(`Theory/05c`); exact agent-network RG (`Theory/07b`) — where "exact" governs the *equations*
+(`thm:rg-fixed-point-equations`), not the existence of a fixed point: every fixed sector exhibited
+there is trivial (identity channel, one-point coarse space, or constant likelihood, which forces the
+interaction coordinate to vanish), and the chapter's only computed exponent lives in an \(O(d)\)-reduced
+sector that a general \(GL(d)\) action destroys (`07b:992-997`).
+
+The measure-theoretic backbone for all of the above is `Theory/05_elbo.tex` — in particular
+`thm:elbo-total-correlation-chain` and `prop:elbo-total-correlation-signs`, which supply the
+Fréchet-class structure, the lift-to-value identity \(\widetilde{\mathcal F}=\mathcal F-\mathrm{TC}\),
+and the pseudo-ELBO warning. Cite it: two independent reviewers have now mistaken those settled
+results for gaps because §2.1 and §6 never pointed at them.
 
 ---
 
 ## 7. The obstructions — what the theory may *not* say
 
-These are the program's teeth. Every one is a proved negative.
+These are the program's teeth. Each row is a negative result, but they are not uniform: **two are
+partially refuted by later work in this same document** (B4's holonomy clause, §8; the Yang–Mills
+indefiniteness wording), and one (Apex closure) is a standard fact about finite DAGs recorded for
+architecture rather than as a contribution.
+
+**Provenance.** `wave2-*`, `rm-0*` and `panel*` are this program's **own multi-agent audit returns**,
+not external peer review, and they are not integrated into `Theory/`. Panel B returns carry no
+adversarial pass at all (the skeptic tier was lost). Results stated only in those files are
+unrefereed. Where a row's authority is such a file, treat "proved" as "proved in an internal audit
+return and not yet reproduced in `Theory/`."
 
 | Name | Statement | Where |
 |---|---|---|
-| **State-level ELBO no-go** | On an open mean-field product family with fixed rows, live pairwise KL against other variational factors is **not** the negative ELBO of one fixed state-level joint | `PIFB2.tex:3280` |
-| **A-NOGO (O1)** | For a \(G\)-torsor fiber, \(\mathrm{Aut}_G(P)\) acts simply transitively on sections, so **every** gauge-invariant functional of a section is constant | wave2-01 |
+| **State-level ELBO no-go** | On an open mean-field product family with fixed rows, live pairwise KL against other variational factors is **not** the negative ELBO of one fixed state-level joint | `PIFB2.tex:3281` (`thm:state_level_elbo_nogo`) |
+| **A-NOGO (O1)** | For a \(G\)-torsor fiber, \(\mathrm{Aut}_G(P)\) acts simply transitively on sections, so **every** gauge-invariant functional of a section is constant. Torsor is *sufficient, not necessary*: \(G\)-homogeneity already suffices, so the conclusion also bites on the Gaussian fiber (\(\mathcal B\cong\mathrm{Aff}(K)/O(K)\), homogeneous but not a torsor). For the declared \(G\le GL(K,\mathbb R)\) the operative form is wave2-01 **Cor A3.5**: \(\mathcal B_b/G\cong[0,\infty)\) via \(r=(\mu^\top\Sigma^{-1}\mu)^{1/2}\), so the invariant content of *one* belief section is a single scalar per point. The escape is \(N\ge2\) relative invariants (`rm-04` §2.2) — which §2.2 currently declines when it defers inter-agent aggregation | wave2-01, Cor A3.5 at `:280-294` |
 | **O2 / Thm A4.4** | If a section functional is *required* to equal the finite-design ELBO, its integrand must be **jet-free** — the connection is expelled | wave2-01:385, :488 |
 | **Thm A4.5** | A genuine integral over \(\mathcal C\) can at best be a non-unique **extension** of a finite-design ELBO | wave2-01:406 |
-| **B4 finite-design holonomy** | No observation-record statistic detects holonomy, curvature, or bundle topology **for any finite design** — because the connection is not an argument of any generative kernel. **Its HOLONOMY clause is defeated for curve-mediated transport** (§8), for **flat monodromy only**: its own defeat condition at wave2-01:709 is "change either and the theorem is unavailable", and putting the connection into the source law \((\mathrm P_\gamma)_\#q_j\) does exactly that. **The curvature and bundle-topology clauses are untouched** — \(F=dA\equiv0\) on any 1-dimensional base and every principal \(U(1)\) bundle over \(S^1\) is trivial (\(H^2(S^1;\mathbb Z)=0\)), so the witness cannot test them. Testing those needs \(\mathcal C=T^2\) (curvature, nontrivial \(H^2\)) or \(S^2\) (Chern classes, matching B4's own F4 counterexample at wave2-01:674-680) | wave2-01:695 |
+| **B4 finite-design holonomy** | No observation-record statistic detects holonomy, curvature, or bundle topology **for any finite design** — because the connection is not an argument of any generative kernel. **Its HOLONOMY clause is made *unavailable* for curve-mediated transport** (§8), for **flat monodromy only**: its own defeat condition at wave2-01:710-711 is "change either and the theorem is unavailable", and putting the connection into the source law \((\mathrm P_\gamma)_\#q_j\) does exactly that. "Unavailable", not "defeated" — the witness's record law is reproduced **exactly** (total variation \(0\)) by a model with a *flat, zero* connection that declares the two rotations as ordinary kernel parameters, on which the separating statistic still returns \(\Theta\) while the holonomy is \(0\). What the record identifies is a declared group-valued kernel parameter; its identification with a bundle holonomy is imposed by the modeller, not read off the record. Breaking that confound needs \(\ge3\) base points with a cocycle constraint, so the admissible transports are a proper subvariety of the free-kernel parameters. **The curvature and bundle-topology clauses are untouched** — \(F=dA\equiv0\) on any 1-dimensional base and every principal \(U(1)\) bundle over \(S^1\) is trivial (\(H^2(S^1;\mathbb Z)=0\)), so the witness cannot test them. Testing those needs \(\mathcal C=T^2\) (curvature, nontrivial \(H^2\)) or \(S^2\) (Chern classes, matching B4's own F4 counterexample at wave2-01:674-680) | wave2-01:695 |
 | **Coercivity lemma** | If a fiber gauge orbit is noncompact, **no** gauge-invariant function has compact sublevel sets. Invariance and coercivity are in tension | `rm-02` §3.3 |
-| **Yang–Mills non-definiteness** | \(\mathfrak{gl}(K,\mathbb R)\) admits **no positive-definite** Ad-invariant inner product, hence no fixed-inner-product \(\kappa\|F_A\|^2\) that is both gauge-invariant and coercive. The Ad-invariant symmetric forms are exactly the 2-dim space \(\{a\,\mathrm{tr}(XY)+b\,\mathrm{tr}X\,\mathrm{tr}Y\}\); every form with \(a\ne0\) is indefinite (signature \((3,1)\) for \(K=2\), \((6,3)\) for \(K=3\)), but the line \(a=0,b>0\) gives \(b\,(\mathrm{tr}X)(\mathrm{tr}Y)\), which **is** Ad-invariant and nonnegative — degenerate, with radical \(\mathfrak{sl}(K,\mathbb R)\), vanishing identically on \(\mathfrak{sl}(K)\)-valued connections. So "every Ad-invariant form is indefinite" is **false**; the correct no-go is positive-definiteness. Compact type is necessary *and* sufficient for a **fixed** definite form, but is **not** required for invariance or nonnegativity as such — see worklog §4.2 | `rm-04` §1.5 (erratum: rm-04 overstates at :43-46, :295-299 and :879; only :285-288 and :984 are correctly scoped) |
-| **Categorical rigidity** | The Fisher–Rao isometry group of the simplex is \(S_{n+1}\), **finite** — no positive-dimensional \(G\) acts on a categorical fiber by isometries | `rm-04` §1.1a |
+| **Yang–Mills non-definiteness** | \(\mathfrak{gl}(K,\mathbb R)\) admits **no positive-definite** Ad-invariant inner product, hence no fixed-inner-product \(\kappa\|F_A\|^2\) that is both gauge-invariant and coercive. The Ad-invariant symmetric forms are exactly the 2-dim space \(\{a\,\mathrm{tr}(XY)+b\,\mathrm{tr}X\,\mathrm{tr}Y\}\); every form with \(a\ne0\) is indefinite — with signature \((3,1)\) for \(K=2\) and \((6,3)\) for \(K=3\) **only on the region \(a>0\) and \(a+bK>0\)**; the trace direction contributes \(K(a+bK)c^2\) and flips sign across \(a+bK=0\), giving \((2,2)\) or \((1,3)\) off that region, and the Killing form \((a,b)=(2K,-2)\) sits exactly on the degenerate locus with signature \((2,1,1)\) at \(K=2\) and \((5,3,1)\) at \(K=3\), so it has no \((p,n)\) signature at all. The line \(a=0,b>0\) gives \(b\,(\mathrm{tr}X)(\mathrm{tr}Y)\), which **is** Ad-invariant and nonnegative — degenerate, with radical \(\mathfrak{sl}(K,\mathbb R)\), vanishing identically on \(\mathfrak{sl}(K)\)-valued connections. So "every Ad-invariant form is indefinite" is **false**; the correct no-go is positive-definiteness. Compact type is necessary *and* sufficient for a **fixed** definite form, but is **not** required for invariance or nonnegativity as such — see worklog §4.2. **Scope:** this is a statement about the *unreduced* \(\mathfrak{gl}(K,\mathbb R)\). A belief section is exactly a reduction of the structure group to the isotropy \(O(K-1)\) (on the stratum \(r>0\)), which *is* compact and does carry \(-\operatorname{tr}(XY)\). The catch, and why this is no free rescue: \(\omega\) restricts to the reduced subbundle iff \(D^\omega s=0\), i.e. iff \(h^\omega_s\equiv0\). So a coercive fixed-inner-product curvature sector and a nonzero base semimetric are **mutually exclusive by construction**, and \(h^\omega_s\) is properly the Fisher-normed intrinsic torsion of that reduction rather than an information metric | `rm-04` §1.5 (erratum: rm-04 overstates at :43-46, :295-299 and :879; only :285-288 and :984 are correctly scoped) |
+| **Categorical rigidity** | The Fisher–Rao isometry group of the simplex is \(S_{n+1}\), **finite** — no positive-dimensional \(G\) acts on a categorical fiber by isometries. Consequence (stronger, and the operative half): a **connected** \(G\) therefore acts *trivially* there, so \(\mathcal E_b=\mathcal C\times\mathcal B_b\) is canonically trivial, \(F_A\equiv0\) for every base dimension, and \(D^\omega q=dq\) for **every** connection. On a categorical belief channel §2.2's "connection-relative" tensor is connection-**in**dependent and reduces to the ordinary pullback | `rm-04` §1.1a, consequence at `rm-04:244-250` |
 | **Apex closure** | The tower cannot self-close; the apex prior cannot be derived | `Theory/11:239` |
 
 ---
 
 ## 8. Live front (this session)
 
-- **Gradient sector.** The Fisher metric *is* the Hessian of KL, so base-neighbor transported KL is
-  already a discrete Dirichlet energy. Verified: \(\tfrac12g^Fh^2+\tfrac13T_{\rm skew}h^3\) (or
-  \(\tfrac16\) in the other argument order), with the \(h^3\) term cancelling on a symmetric stencil
-  — so the weight \(h^{d-2}\) is forced **as the unique deterministic Riemann-sum weight**. Two
-  caveats: the exact ELBO is a counting-measure sum with unit coefficients and supplies \(h^{d-2}\)
-  only via the declared integer replication \(m_h=\lceil dh^{-2}\rceil\); and the forcing is by **edge
-  counting alone**, not by the \(h^3\) cancellation, which improves the *rate* from \(O(h)\) to
-  \(O(h^2)\) but is not needed for the limit to exist (`panelB-V-BRIDGE-derivation.md:63`).
+- **Gradient sector.** The Fisher metric is the **negative mixed second jet** of KL at the diagonal
+  (`Theory/05c` `prop:pb-kl-divergence-jets`) — not "the Hessian", which names three different objects
+  of two different signs — so base-neighbor transported KL is a discrete Dirichlet energy **to second
+  order**, with a per-bond \(O(h^3)\) remainder. Verified:
+  \(\tfrac12g^Fh^2+\tfrac16T_{\rm AC}h^3\) **in the fiber's natural chart, with the transported
+  neighbour in slot 2** — which is what the declared coupling contract
+  \(\beta_{ij}D_{\rm KL}(q_i\|(\Omega_{ij})_\#q_j)\) requires. (Perturbing slot 1 instead gives
+  \(\tfrac13\); the earlier display led with that one, which is *not* the deployed orientation.
+  `worklog:831` already carries \(\tfrac16\).) Neither cubic coefficient is a tensor: across natural,
+  mean and sqrt charts the slot-1 \(h^3\) coefficient takes the values \(\{+\tfrac13,-\tfrac16,+\tfrac1{12}\}\),
+  while \(\tfrac12\) is chart-invariant and only the **difference** of the two argument orders,
+  \(\tfrac16T_{\rm AC}\), is invariant (`Theory/05c:583-587`). The \(h^3\) term cancels on a symmetric
+  stencil, and the weight \(h^{d-2}\) is forced **as the unique deterministic Riemann-sum weight**.
+  Three caveats: the exact ELBO is a counting-measure sum with unit coefficients and supplies
+  \(h^{d-2}\) only via the declared integer replication \(m_h=\lceil dh^{-2}\rceil\); the forcing is by
+  **edge counting alone**, not by the \(h^3\) cancellation, which improves the *rate* from \(O(h)\) to
+  \(O(h^2)\) but is not needed for the limit to exist (`panelB-V-BRIDGE-derivation.md:63`); and the
+  Dirichlet reading holds only at a self-consistent stationary configuration \(q^{n+1}=q^n\) —
+  postulate (P2), an unproven \(\lim_{h\to0}\lim_{n\to\infty}\) exchange. **Absent (P2) the exact
+  lagged ELBO delivers a positive-definite Fisher *mass* term plus a section-dependent constant, not a
+  Dirichlet functional of the free field** (`panelA-T-GRAD-derivation.md` §5.8, whose own verdict line
+  reads "the gradient sector is NOT genuinely ELBO-derived").
   **The covariant case is now CLOSED** — see worklog §4.1(i).
 - **Escape from O2.** The finite-site base-neighbor term is a **two-point functional of values**,
-  not a jet functional, so A4.4 does not apply to it. It costs exactly one hypothesis —
-  `hyp:gen-design-product` ("excludes residual cross-design dependence", tagged `HYPOTHESIS`). A4.4
-  then correctly says the \(h\to0\) *limit* is not a finite-design ELBO, which is precisely what
-  licenses the effective-action framing.
+  not a jet functional, so A4.4 does not apply to it. What it costs is **not** a relaxation of
+  `hyp:gen-design-product` (that hypothesis stays intact — see the idle-wheel bullet below and its
+  witness) but the addition of an \(H_n\)-measurable transported label-copy channel \((J_a,X_a)\) to
+  `Theory/04`'s declared generative class, plus the replication multiplicity \(m_h\). A4.4 then
+  correctly says the \(h\to0\) *limit* is not a finite-design ELBO, which is precisely what licenses
+  the effective-action framing.
 - **Idle-wheel result (NARROWED 2026-08-13).** Without a base-derivative sector the action
   factorizes over \(c\) entirely and \(\mathcal C\)'s manifold structure is idle by
   `12_philosophy.tex:77`'s own criterion. That half stands. So **\(\mathcal C\) earns its manifold
@@ -318,12 +460,26 @@ These are the program's teeth. Every one is a proved negative.
 - **Base geometry program — CANDIDATE, NOT CLOSED.** Keep N1's aim of deriving physical geometry from
   information, but use the rigorous connection-relative tensor
   \(h_\sigma^\omega=(D^\omega\sigma)^*g^F\), not an ordinary section pullback. The volume
-  \(\int\sqrt{\det h_\sigma^\omega}\) exists only after a nondegenerate-rank hypothesis or a justified
-  quotient; otherwise rank drop makes the determinant vanish and permits crumpling. The induced-volume
-  and Polyakov constructions are engineered, diffeomorphism-invariant action candidates. The worklog
-  establishes a genuine ELBO variational bridge only in \(d=2\), not in general dimension. It remains
-  open whose individual or collective joint-law section induces the candidate geometry and how
-  agent-relative tensors become one shared physical structure.
+  \(\int\sqrt{\det h_\sigma^\omega}\) **exists unconditionally** — \(\sqrt{\det{}}\) is continuous on
+  the closed psd cone, so rank drop makes the integrand vanish, not the integral undefined. The real
+  obstructions are three, and none is non-existence. (i) The infimum is \(0\) and **is attained**, on
+  the whole \(\operatorname{rank}<d\) cone, which contains sequences of unbounded Dirichlet energy — so
+  the pathology is a degenerate minimizing *set*, not a failure of attainment. (ii) \(S_{\rm vol}\) is
+  exactly \(\operatorname{Diff}(\mathcal C,\partial\mathcal C)\)-invariant, and diffeomorphism orbits
+  are noncompact in every Sobolev norm, so no sublevel set is bounded; the only coercivity repair
+  reintroduces the exogenous base cometric and density that \(S_{\rm vol}\) was introduced to avoid.
+  (iii) In \(d\ge2\) the value is contributed **entirely by the declared connection**: the
+  connection-independent floor has rank \(\le1\), so some \(\omega\) makes \(\det h\equiv0\) for every
+  section, and the base geometry is not derived from information alone. The induced-volume and
+  Polyakov constructions are engineered, diffeomorphism-invariant action candidates; note that at
+  \(d\ge3\) the Polyakov objective is **unbounded below** along the conformal mode
+  (\(f(\Omega)=\tfrac12[d\,\Omega^{d-2}-(d-2)\Omega^d]\to-\infty\), so \(\inf_\gamma S_P=-\infty\)),
+  making it a stationarity constraint rather than a minimization problem and admitting no
+  variational-inference reading at all; at \(d=2\), \(f\equiv1\) and the constraint degenerates into
+  Weyl invariance. The worklog establishes a genuine ELBO variational bridge only in \(d=2\), and that
+  selection is a homogeneity/Weyl fact about \(h\) as an abstract psd tensor, not an Amari–Chentsov
+  fact. It remains open whose individual or collective joint-law section induces the candidate
+  geometry and how agent-relative tensors become one shared physical structure.
 - **Curve-mediated transport — WITNESS COMPUTED.** Coupling agents along a *curve* in \(\mathcal C\)
   via parallel transport puts the connection **inside a generative kernel**, defeating the hypothesis
   B4 names as load-bearing. The \(U(1)\) two-path witness now runs
@@ -332,10 +488,27 @@ These are the program's teeth. Every one is a proved negative.
   \(\mathrm{Aut}_G(P)\)-invariant to \(10^{-15}\) and **separates the holonomy up to \(\Theta\leftrightarrow-\Theta\)**
   (the implemented statistic is \(\arccos(\cos\Theta)\); the \(\Theta\) and \(2\pi-\Theta\) *record laws*
   are exactly gauge-equivalent under \(g^*=\pi/2+\Theta/2\) plus a label swap, so the equal-weight
-  design cannot orient it), the flat coboundary gives
-  *exactly* zero dependence (reproducing B4 under PIFB2's declared transport), and the tied-replica
-  ELBO identity survives \(\Omega\to\mathrm P_\gamma\) to \(5\times10^{-13}\).
+  design cannot orient it), and the tied-replica
+  ELBO identity survives \(\Omega\to\mathrm P_\gamma\) to \(1.3\times10^{-15}\).
   **Existence witness, not a theorem** — one bundle, one fiber, one statistic, abelian \(G\).
+
+  The flat-coboundary control (CHECK 3) was **vacuous until 2026-08-13** — it evaluated one
+  \(\Theta\)-free expression twice, so its assertion could not fail for any input. It now integrates a
+  declared 1-form along the two routes by quadrature and asserts three computed invariants (loop
+  holonomy \(1\times10^{-9}\), coincident mixture components, single gauge orbit) **against the
+  contrast** that the same quadrature on the non-exact connection returns exactly \(\Theta\).
+  Substituting the non-exact form makes it fail (\(0.397\)), which is what makes it a control.
+  Two things it exposed: the raw record law is *not* the invariant here (under a coboundary the two
+  routes agree but their common angle still moves with \(\Theta\), rotating the whole law — a gauge
+  motion), and the ELBO residual is \(1.3\times10^{-15}\), not \(5\times10^{-13}\); the older figure
+  measured the quadrature box, not the identity.
+
+  The positive result still carries an exact **confound**: a flat, zero-connection model that declares
+  two fixed rotations as ordinary kernel parameters reproduces the witness's record law to total
+  variation \(0\), so no record statistic here separates "\(\omega\) has holonomy \(\Theta\)" from
+  "\(\omega\) flat plus a declared twist". The design also freezes the source law \(q_j\) as exogenous,
+  which is what keeps \((\mathrm P_\gamma)_\#q_j\) from violating the recognition-independence typing
+  of §2's \(K_a\) row.
 
 ---
 
@@ -383,12 +556,22 @@ Say this, and not more:
 > are computational realizations. Connection-relative Fisher pullbacks supply gauge-invariant
 > positive-semidefinite informational semigeometries. Their identification with shared physical
 > geometry, units, constants, causal structure, or physical time requires additional bridge theorems.
+> \(P\), \(G\), \(\omega\), the interaction incidence, and the record kernels are presently **declared
+> inputs**, not derived from the agents; §1's emergence is an aspiration with no result behind it, and
+> the connection is state-bearing wherever §8's curve construction or PIFB2's Regime II is in force.
 
 Do **not** say: that the complete PIFB2/MAgent action has been derived from the exact ELBO; that
 \(\mathcal C\) is space; that every physical property is literally a pullback; that a Fisher pullback
 is automatically nondegenerate or Lorentzian; that VFE alone supplies an orbit, speed, or physical
-time; that one bit has been derived to equal \(\hbar\); that holonomy is observable (unless §8's curve
-construction closes); or that minimizers exist for noncompact \(G\).
+time; that one bit has been derived to equal \(\hbar\); that any construction here is **first** or
+**novel** without a literature check and a citation to Dennis (2025) and Sengupta et al. (2016); that
+an internal audit return (`wave2-*`, `rm-0*`, `panel*`) is external refereeing; or that minimizers
+exist for noncompact \(G\).
+
+On holonomy specifically, say only: **record-detectable in the curve-mediated construction, for flat
+monodromy on a 1-dimensional base, as a one-example existence witness, and not yet distinguished from
+a flat connection with a declared twist.** The earlier conditional ("unless §8's curve construction
+closes") named no closure criterion and licensed nothing.
 
 ---
 
@@ -398,16 +581,16 @@ construction closes); or that minimizers exist for noncompact \(G\).
 
 | Location | Holds |
 |---|---|
-| `Desktop/MultiAgentELBO` (**this repo, `main`**) | `Theory/*.tex`, PIFB2 copy, ultradeep audit waves 1–2, roadmap + coordinator review, the six `rm-01`…`rm-06` referee reports, the program-decision run, the 16 recovered panel returns (`docs/audits/panels-2026-08-12/`), this overview, the live worklog, both verification scripts, and the interim referee review |
-| `Documents/ChatGPT/MultiAgentELBO` | a second checkout of the same history; owns several `.superpowers` worktrees |
-| `Desktop/Research` | live `PIFB2.tex`, the Obsidian wiki, `magent_elbo_whitepaper` |
+| `Desktop/MultiAgentELBO` (**this repo, `main`**) | `Theory/*.tex`, PIFB2 copy, ultradeep audit waves 1–2, roadmap + coordinator review, the six `rm-01`…`rm-06` **internal agent audit returns**, all four derivation runs, the 16 recovered panel returns (`docs/audits/panels-2026-08-12/`), this overview, the live worklog, both verification scripts, the interim referee review, **its adjudication — `docs/reviews/2026-08-13-response-to-interim-theory-review.md`, which prescribes edits E1–E12, and the 13-file evidence cluster `docs/reviews/adjudication-2026-08-13/`** |
+| `Documents/ChatGPT/MultiAgentELBO` | a checkout pinned at `e1f8795`, **11 commits behind `main`**, carrying five untracked interim-review reproduction artifacts absent here (`build_interim_review_ledger.py`, `interim-review-reproduction.json`, `investigate_vfe_sections_and_base_integrals.py`, `reproduce_interim_review.py`, `vfe-sections-base-integrals-evidence.json`). It owns **three** worktrees; the `.superpowers/worktrees/*` directories physically under it are registered to **this** repo (38 entries) |
+| `Desktop/Research` | live `PIFB2.tex` (byte-identical to the repo copy, 3956 lines), the Obsidian wiki, `magent_elbo_whitepaper` |
 
 The `C:/tmp/MultiAgentELBO-elbo-action-019ff75d` worktree was **removed on 2026-08-13**. It was
 registered to the `Documents/ChatGPT` checkout, held no unmerged commits (`HEAD = e1f8795`, already an
 ancestor of `main`), and its four uncommitted files were strictly behind `main`. The branch ref
 survives.
 
-**The Desktop checkout now holds all of the derivation and audit material** — the earlier claim that
+**The Desktop checkout now holds all of the *tracked* derivation and audit material** — the earlier claim that
 `rm-01`…`rm-06` "exist in only one copy" was falsified by commit `caa4a15` itself. What remains true
 is the historical point: the continuum roadmap was authored where neither audit wave was on disk,
 which is why the referees found "non-collision through non-contact" rather than genuine agreement.

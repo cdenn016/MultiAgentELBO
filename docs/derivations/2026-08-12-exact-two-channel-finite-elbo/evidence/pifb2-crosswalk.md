@@ -10,6 +10,7 @@ recognition marginal (\zeta_i(dk,dm)), with (q_i,s_i) as its marginals.
 | (D_{\rm KL}(q_a\Vert p_a)) | Exact private marginal term at unit coefficient |
 | (D_{\rm KL}(s_a\Vert r_a)) | Exact private model term at unit coefficient |
 | Expected observation log likelihood | Exact once under the joint private law (\zeta_a) |
+| PIFB2 observation display (`PIFB2.tex:669` / `:689`) | **Typing mismatch; not matched by this theorem.** `:689` writes (\mathbb E_{q_i(c)}[\log p(o(c)\mid k_i,m_i)]) with (m_i) unbound and not among the functional's declared arguments at `:684`; `:669` drops (m_i) entirely. Equality to the literal PIFB2 term is not proved and is not currently well-posed. Read as the predictive marginal, the two differ by (\mathbb E_q[D_{\rm KL}(s\Vert s^{(o,k)})]\ge0), so this theorem's scalar is an **upper bound** with a gap unbounded in model uncertainty. Registered since `2026-08-12-pifb2-continuum-roadmap.md:104` and `rm-03-action-class.md:364-366` |
 | (I_{\zeta_a}(K_a;M_a)) | Mandatory exact correction; zero only under state-model mean field |
 | Weighted transported belief KL | Exact for lagged sources and a separate label-copy block |
 | Belief categorical row KL | Exact at unit temperature |

@@ -11,7 +11,7 @@ This is a bounded checkpoint. `terminal_status` remains null because the correct
 
 ## Certificate
 
-The scoped state-level no-go is closed by `thm:state_level_elbo_nogo` (`Theory/PIFB2.tex:3280`) and,
+The scoped state-level no-go is closed by `thm:state_level_elbo_nogo` (`Theory/PIFB2.tex:3281`) and,
 in ledger form, by claim `live-peer-fixed-joint` in
 `docs/derivations/2026-08-12-elbo-to-effective-section-action/claim-ledger.json` — state **REFUTED**,
 `evidence_ids: ["ev-counterexamples"]`, artifact `evidence/adversarial-counterexamples.md`. This

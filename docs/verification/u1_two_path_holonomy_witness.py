@@ -126,7 +126,7 @@ def total_variation(Theta_a, Theta_b, gauge_a=0.0):
     return 0.5 * np.abs(pa - pb).sum() * cell
 
 
-def orbit_distance(Theta_a, Theta_b, n_gauge=180):
+def orbit_distance(Theta_a, Theta_b, n_gauge=360):
     """Distance between the GAUGE ORBITS of the two record laws:
 
         d([p_a], [p_b]) = min_{g in U(1)} TV( (R_g)_# p(.|Theta_a) , p(.|Theta_b) ).
@@ -148,7 +148,11 @@ def mass_check(Theta):
 
 def separating_statistic(Theta, gauge_i=0.0, gauge_j=0.0):
     """A gauge-invariant record statistic: the angle between the two mixture component
-    means. A common rotation of both components leaves it fixed; it equals the holonomy."""
+    means. A common rotation of both components leaves it fixed. It SEPARATES the holonomy
+    only up to Theta <-> -Theta: the implemented statistic is arccos(cos Theta), and under the
+    equal-weight design the Theta and 2*pi - Theta record laws are exactly gauge-equivalent
+    (g* = pi/2 + Theta/2 plus a label swap), so no observable can orient them. Breaking the
+    tie requires an asymmetric PI_ROW first, then a signed statistic."""
     (m1, _), (m2, _) = record_law_components(Theta, gauge_i, gauge_j)
     c = np.dot(m1, m2) / (np.linalg.norm(m1) * np.linalg.norm(m2))
     return np.arccos(np.clip(c, -1.0, 1.0))
@@ -214,8 +218,9 @@ def check2():
     print(f"    max drift of separating statistic : {worst_stat:.3e}")
     print(f"    max drift of relational KL terms  : {worst_kl:.3e}")
     assert worst_stat < 1e-12 and worst_kl < 1e-12
-    print("  PASS -- statistic and energies are Aut_G(P)-invariant; the statistic equals")
-    print("         the holonomy (U(1) abelian, so conjugacy class = element).")
+    print("  PASS -- statistic and energies are Aut_G(P)-invariant; the statistic SEPARATES")
+    print("         the holonomy only up to Theta <-> -Theta (it is arccos(cos Theta), and")
+    print("         the Theta / 2*pi - Theta record laws are gauge-equivalent here).")
 
 
 # ================================================================ CHECK 3
@@ -227,41 +232,107 @@ def check3():
     print("  PIFB2's declared transport is a coboundary. Around any loop it telescopes,")
     print("  so the two paths give the SAME transport and Theta cannot enter the record.")
     print()
+    # Two distinct routes on S^1 from c_j (phi = 0) to c_i (phi = PHI0): the short way,
+    # and the long way round. Transport angles are obtained by QUADRATURE of a declared
+    # 1-form along each route -- never by a telescoping sum of node differences, which
+    # would collapse to (endpoint - startpoint) for any 1-form and could not detect
+    # non-exactness. (Two earlier versions of this check were vacuous for that reason.)
+    ROUTE_SHORT = (0.0, 0.25 * PHI0, 0.5 * PHI0, PHI0)
+    ROUTE_LONG = (0.0, -0.4 * (TWO_PI - PHI0), -0.8 * (TWO_PI - PHI0), PHI0 - TWO_PI)
+
+    def line_integral(one_form, nodes, n=4001):
+        """int_gamma A along a piecewise route, by trapezoid quadrature."""
+        tot = 0.0
+        for a, b in zip(nodes[:-1], nodes[1:]):
+            t = np.linspace(a, b, n)
+            tot += float(np.trapezoid(one_form(t), t))
+        return tot
+
+    def coboundary_form(Theta):
+        """A = d(lambda) with lambda = Theta*sin(phi)/2pi PERIODIC on S^1 -- a pure
+        gauge / coboundary, exactly PIFB2's declared transport class. Theta enters the
+        potential and must cancel out of every closed loop."""
+        return lambda ph: Theta * np.cos(ph) / TWO_PI
+
+    def uniform_form(Theta):
+        """CHECK 1's connection A = (Theta/2pi) dphi -- NOT exact on S^1. Included as
+        the contrast that makes this check evidence rather than an identity."""
+        return lambda ph: np.full_like(np.asarray(ph, dtype=float), Theta / TWO_PI)
+
     def cob_pdf(X, Theta):
-        """Record law when the transport is the coboundary e^{i phi_i} e^{-i phi_j}.
-        The angle depends only on the endpoints, so BOTH paths give phi_i - phi_j and
-        Theta never enters. Computed, not asserted."""
+        """Record law under the coboundary transport, built from the two route
+        integrals. Both routes are integrated independently; their agreement is a
+        COMPUTED consequence of exactness, and swapping in `uniform_form` below makes
+        this function Theta-dependent and the assertion fire."""
         comps = []
-        for _path in (0, 1):
-            mu, S = push(PHI0 - 0.0, MU_J, SIG_J)      # phi_i - phi_j, path-independent
+        for nodes in (ROUTE_SHORT, ROUTE_LONG):
+            mu, S = push(line_integral(coboundary_form(Theta), nodes), MU_J, SIG_J)
             comps.append((mu, S + SIGMA_O ** 2 * np.eye(2)))
         return sum(w * gauss_pdf(X, m, S) for w, (m, S) in zip(PI_ROW, comps))
 
+    def loop_holonomy(form_factory, Theta):
+        """Holonomy around the closed loop ROUTE_SHORT then ROUTE_LONG reversed."""
+        f = form_factory(Theta)
+        return line_integral(f, ROUTE_SHORT) - line_integral(f, ROUTE_LONG)
+
+    def cob_orbit_distance(G, cell, Theta, p_ref, n_gauge=360):
+        """Gauge-orbit distance of the coboundary record law against the reference.
+
+        This actually reads Theta (the previous version built a Theta-free literal and
+        repeated it twice, so its column was 0.0 by construction rather than by result).
+        """
+        comps = []
+        for nodes in (ROUTE_SHORT, ROUTE_LONG):
+            mu, S = push(line_integral(coboundary_form(Theta), nodes), MU_J, SIG_J)
+            comps.append((mu, S + SIGMA_O ** 2 * np.eye(2)))
+        best = np.inf
+        for g in np.linspace(0.0, TWO_PI, n_gauge, endpoint=False):
+            pg = sum(w * gauss_pdf(G, R(g) @ m, R(g) @ S @ R(g).T)
+                     for w, (m, S) in zip(PI_ROW, comps))
+            best = min(best, 0.5 * np.abs(pg - p_ref).sum() * cell)
+        return best
+
     G, cell = grid()
     p0 = cob_pdf(G, 0.0)
-    print("   Theta     loop product (coboundary)    TV vs Theta=0     orbit distance")
-    print("   " + "-" * 68)
-    worst = 0.0
-    for Th in [0.0, np.pi / 4, np.pi / 2, np.pi]:
-        # loop product for a coboundary: (phi_i - phi_j) + (phi_j - phi_i) = 0, always
-        loop = (PHI0 - 0.0) + (0.0 - PHI0)
-        tv = 0.5 * np.abs(cob_pdf(G, Th) - p0).sum() * cell
-        d = min(0.5 * np.abs(
-            sum(w * gauss_pdf(G, R(g) @ m, R(g) @ S @ R(g).T)
-                for w, (m, S) in zip(PI_ROW,
-                                     [(push(PHI0, MU_J, SIG_J)[0],
-                                       push(PHI0, MU_J, SIG_J)[1]
-                                       + SIGMA_O ** 2 * np.eye(2))] * 2)) - p0
-        ).sum() * cell for g in np.linspace(0, TWO_PI, 60, endpoint=False))
-        worst = max(worst, tv)
-        print(f"   {Th:7.4f}    {loop:18.10f}     {tv:14.6e}    {d:14.6e}")
-    assert worst < 1e-12, worst
+    print("  NOTE: the RAW record law is not the invariant here. Under a coboundary both")
+    print("  routes agree, but their COMMON angle still moves with Theta, which rotates the")
+    print("  whole record law -- a gauge motion, not holonomy. The invariants are the loop")
+    print("  holonomy, the inter-component angle, and the gauge-orbit distance.")
     print()
-    print("  PASS -- the loop product is identically 0 (trivial holonomy) and the record")
-    print("         law is EXACTLY Theta-independent. The coboundary carries no holonomy,")
-    print("         so B4's negative is reproduced under PIFB2's declared transport.")
-    print("         The separation in CHECK 1 is therefore caused by the CONNECTION, not")
-    print("         by the two-path construction per se.")
+    print("   Theta    loop (coboundary)   loop (uniform A)   comp. angle   orbit dist")
+    print("   " + "-" * 74)
+    worst_loop = 0.0
+    worst_ang = 0.0
+    worst_orb = 0.0
+    for Th in [0.0, np.pi / 4, np.pi / 2, np.pi]:
+        loop_cob = loop_holonomy(coboundary_form, Th)
+        loop_uni = loop_holonomy(uniform_form, Th)
+        angs = [line_integral(coboundary_form(Th), nodes)
+                for nodes in (ROUTE_SHORT, ROUTE_LONG)]
+        comp_ang = abs(angs[0] - angs[1])
+        d = cob_orbit_distance(G, cell, Th, p0)
+        worst_loop = max(worst_loop, abs(loop_cob))
+        worst_ang = max(worst_ang, comp_ang)
+        worst_orb = max(worst_orb, d)
+        print(f"   {Th:7.4f}  {loop_cob:16.10f}  {loop_uni:16.10f}   {comp_ang:11.4e}  {d:11.6e}")
+
+    # (i) the coboundary carries no holonomy, computed by quadrature
+    assert worst_loop < 1e-8, worst_loop
+    # (ii) hence the two routes give the SAME transport, so the mixture components coincide
+    assert worst_ang < 1e-8, worst_ang
+    # (iii) and the record laws all lie on ONE gauge orbit (grid-limited floor ~5e-3)
+    assert worst_orb < 5e-3, worst_orb
+    # (iv) THE CONTRAST -- the same quadrature on CHECK 1's non-exact A returns exactly
+    #      Theta, so (i)-(iii) are results about the coboundary, not identities of the code.
+    assert abs(loop_holonomy(uniform_form, np.pi / 2) - np.pi / 2) < 1e-9
+    print()
+    print("  PASS -- integrating the SAME routes against the declared coboundary returns")
+    print("         loop holonomy 0, coincident mixture components, and a single gauge")
+    print("         orbit; the very same quadrature against CHECK 1's non-exact A returns")
+    print("         exactly Theta. So B4's negative is reproduced under PIFB2's declared")
+    print("         transport, and CHECK 1's separation is caused by the CONNECTION, not")
+    print("         by the two-path construction per se. Substitute uniform_form for")
+    print("         coboundary_form above and (i)-(iii) all fail -- that is the control.")
 
 
 # ================================================================ CHECK 4
@@ -282,7 +353,7 @@ def check4():
     rhs += float(sum(b * kl_gauss(*q_i, m, S) for b, (m, S) in zip(beta, us)))
 
     # LHS by direct 2-D quadrature on the joint label-copy space
-    G, cell = grid(n=601, half=6.0)
+    G, cell = grid(n=801, half=8.0)
     lhs = 0.0
     for b, p_, (m, S) in zip(beta, PI_ROW, us):
         qx = gauss_pdf(G, *q_i)
@@ -312,9 +383,19 @@ def main():
     print("""
   With the connection entering through curve-mediated transport, distinct holonomies
   induce DISTINCT observation-record laws on a finite design (CHECK 1), the separating
-  statistic is gauge invariant and equals the holonomy (CHECK 2), the effect is caused
-  by the connection rather than by the two-path construction (CHECK 3), and the exact
-  tied-replica ELBO identity is undisturbed (CHECK 4).
+  statistic is gauge invariant and separates the holonomy up to Theta <-> -Theta (CHECK 2),
+  the effect is caused by the connection rather than by the two-path construction (CHECK 3),
+  and the exact tied-replica ELBO identity is undisturbed (CHECK 4).
+
+  SCOPE -- what this does NOT show. (a) The base is 1-dimensional, so F = dA vanishes
+  identically and every principal U(1) bundle over S^1 is trivial; B4's CURVATURE and
+  BUNDLE-TOPOLOGY clauses are untested here and need C = T^2 or S^2. (b) The record law is
+  reproduced EXACTLY (total variation 0) by a flat, zero-connection model that declares the
+  two rotations as ordinary kernel parameters, on which this statistic still returns Theta
+  while the holonomy is 0 -- so what the record identifies is a declared group-valued kernel
+  parameter, and its identification with a bundle holonomy is imposed by the modeller.
+  Breaking that confound needs >= 3 base points with a cocycle constraint. (c) The source
+  law q_j is frozen as exogenous; a live q_j would make the kernel recognition-dependent.
 
   This is the separating tuple that appendix_claim_ledger.tex:242-256 requested and that
   B4 ruled out for the DECLARED model. It does not contradict B4: B4's hypothesis is

@@ -29,6 +29,27 @@ The comparison excludes TeX build products and Python caches, including
 must compare the tracked `Theory/` content against this snapshot record before
 claiming preservation.
 
+## Post-snapshot additions — outside the read-only scope (recorded 2026-08-13)
+
+The 44-file record above is **no longer a complete inventory of `Theory/`**. Two files were added
+after the snapshot, by commit `90fcd42` ("docs: land ultradeep audits, roadmap review, and PIFB2
+source"), and are **not** present in the snapshot source tree
+`Desktop/Research/manuscripts/gauge_vfe_rg` (which no longer contains a `PIFB2.tex` at all):
+
+- `Theory/PIFB2.tex`
+- `Theory/references.bib`
+
+These two are **outside** the read-only declaration of line 5–6 and outside the 44-file digest at
+line 17–18. The digest and the "zero path or content differences" statement remain valid for the 44
+snapshot files only, and must not be read as covering the two additions.
+
+Consequence for editing. `Theory/PIFB2.tex` is a *copy*; the live authority is
+`Desktop/Research/manuscripts/PIFB2.tex`, verified byte-identical (3956 lines, `diff` clean), so line
+numbers transfer unchanged. Edits to PIFB2 — including the outstanding observation-term binding at
+`:689` — should be made against the Research-vault copy and the repo copy re-synced, not applied to
+`Theory/PIFB2.tex` in place. The remaining 44 files stay read-only: changes to them require the
+per-result `SPEC.md:17` compliance gate recorded in the worklog's write policy.
+
 ## Evidence boundary
 
 `Theory/verification/current-results.json` is an archived, revision-bound
