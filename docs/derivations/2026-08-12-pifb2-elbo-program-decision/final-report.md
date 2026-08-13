@@ -11,7 +11,19 @@ This is a bounded checkpoint. `terminal_status` remains null because the correct
 
 ## Certificate
 
-A separate revision-bound verification ledger closes the scoped state-level no-go and the manuscript tier separation. It deliberately leaves the full continuum construction claim inconclusive.
+The scoped state-level no-go is closed by `thm:state_level_elbo_nogo` (`Theory/PIFB2.tex:3280`) and,
+in ledger form, by claim `live-peer-fixed-joint` in
+`docs/derivations/2026-08-12-elbo-to-effective-section-action/claim-ledger.json` — state **REFUTED**,
+`evidence_ids: ["ev-counterexamples"]`, artifact `evidence/adversarial-counterexamples.md`. This
+packet deliberately leaves the full continuum construction claim inconclusive.
+
+*(Provenance repair, 2026-08-13. The previous text read "A separate revision-bound verification ledger
+closes the scoped state-level no-go and the manuscript tier separation" without naming it; no such
+ledger is resolvable in any mounted repository, and this packet's own `claim-ledger.json` carries a
+single `INCONCLUSIVE` target with `evidence_ids: []`. Diagnosed and prescribed at
+`docs/audits/roadmap-review-2026-08-12/rm-05-provenance-gates.md:69,138-140` — filed there at severity
+HIGH, and re-raised independently as Finding 8 of the interim referee review. The underlying no-go is
+sound; this was a provenance defect only.)*
 
 ## Strongest verified result
 

@@ -94,7 +94,17 @@ Consequences:
   Summing \(+h\) and \(-h\) neighbours of the same site gives \(g^F h^2+O(h^4)\), in *both*
   argument orders. Verified concretely (Gaussian scale family, exact closed form: pair sum has
   \(h^3\) coefficient exactly \(0\)).
-- **(C3) Therefore the weight \(h^{d-2}\) is forced, not chosen.** With \(\sim h^{-d}\) sites and a
+- **(C3) The weight \(h^{d-2}\) is forced by edge counting.** *(CORRECTED 2026-08-13 — the original
+  read "Therefore the weight is forced, not chosen", which overreached twice. (a) The forcing is by
+  **counting alone**, not by the \(h^3\) cancellation: an \(O(h^3)\) per-bond remainder contributes
+  \(O(h)\) and vanishes in the limit regardless, so the symmetric stencil improves the **rate** from
+  \(O(h)\) to \(O(h^2)\) but is not needed for the limit to exist — see the explicit "correction to
+  the worklog's framing of E2/C3" at `panelB-V-BRIDGE-derivation.md:63`, confirmed numerically by an
+  oriented uncancelled sum converging to the same target at \(O(h)\) in both flat and covariant
+  settings. (b) "Forced" holds for the unique deterministic **Riemann-sum** weight; the exact ELBO is
+  a counting-measure sum with unit coefficients and supplies \(h^{d-2}\) only via the declared integer
+  replication \(m_h=\lceil dh^{-2}\rceil\) of §4.1(ii) — canonically forced parabolic scaling, but
+  still a declared postulate.)* With \(\sim h^{-d}\) sites and a
   symmetric stencil,
   $$\sum_{\langle c,c'\rangle}h^{d-2}D_{\rm KL}\big(q(c)\,\|\,q(c')\big)\;\longrightarrow\;\tfrac12\int_{\mathcal C}\|\nabla q\|^2_{g^F}\,dc$$
   with **no** surviving Amari–Chentsov correction and relative error \(O(h^2)\).
@@ -153,7 +163,7 @@ this section before any novelty claim is made.
 | # | Finding | Source | Effect on §3 targets |
 |---|---|---|---|
 | **PA-1** | **"Fisher-dressed curvature" is already identified as the repair** for the \(GL(K)\) curvature problem. | `rm-03-action-class.md:0` (verdict §0 item 1) | **T-CURV is not novel as an idea.** Only the *ELBO-derivation route* (holonomy KL) may be new. Do not claim the construction. |
-| **PA-2** | \(\kappa\|F_A\|^2\) **cannot** be both gauge-invariant and nonnegative for \(G=GL(K,\mathbb R)\). Ad-invariant symmetric bilinear forms on \(\mathfrak{gl}(K,\mathbb R)\) form exactly a 2-dim space (\(\mathrm{tr}(XY)\), \(\mathrm{tr}X\,\mathrm{tr}Y\)); **every** element is indefinite — signature \((3,1)\) for \(K=2\), \((6,3)\) for \(K=3\). Exhaustive search. | `rm-04-gauge-kinematics.md` §0(4), §1.5 | Confirms the motivation for T-CURV, and makes compact type a **kinematic** necessity belonging in T0, not an analytical convenience. |
+| **PA-2** *(CORRECTED 2026-08-13)* | For \(G=GL(K,\mathbb R)\), \(K\ge2\), there is **no positive-definite** Ad-invariant inner product on \(\mathfrak{gl}(K,\mathbb R)\), hence no fixed-inner-product \(\kappa\|F_A\|^2\) that is both gauge-invariant and **coercive**. The Ad-invariant symmetric bilinear forms are exactly the 2-dim space \(\{a\,\mathrm{tr}(XY)+b\,\mathrm{tr}X\,\mathrm{tr}Y\}\). With \(S=E_{12}+E_{21}\), \(A=E_{12}-E_{21}\) traceless and \(\mathrm{tr}(S^2)=+2\), \(\mathrm{tr}(A^2)=-2\): every form with \(a\ne0\) is **indefinite** — signature \((3,1)\) for \(K=2\), \((6,3)\) for \(K=3\), the trace direction flipping across \(a+bK=0\) (the Killing form sits on that degenerate locus, signature \((2,1,1)\)/\((5,3,1)\)). But the line \(a=0,\ b>0\) gives \(b\,(\mathrm{tr}X)(\mathrm{tr}Y)\), which **is** Ad-invariant (verified to \(2.8\times10^{-14}\)) and **nonnegative** — degenerate, rank 1, radical \(\mathfrak{sl}(K,\mathbb R)\), i.e. Maxwell for the determinant line and identically zero on \(\mathfrak{sl}(K)\)-valued connections. **So "every element is indefinite" is FALSE; the correct no-go is positive-definiteness.** | `rm-04-gauge-kinematics.md` §1.5 — **erratum:** rm-04 overstates in three places (§0(4) at :43-46, the §1.5 box at :295-299, and finding K1 at :879); only the computation at :285-288 and the ledger at :984, both scoped to positive-definiteness, are correct as written. Do not edit rm-04 — it is an archived verbatim return. | Compact type is necessary **and sufficient** for a *fixed* definite Ad-invariant form, hence for a coercive fixed-inner-product curvature sector, and belongs in T0 **in that scope**. It is **not** required for invariance or nonnegativity as such — §4.2 exhibits a state-dependent Fisher-dressed form that is exactly invariant for noncompact \(G\), at the cost of degeneracy on the isotropy algebra and non-coercivity along gauge orbits. The referee predicted exactly this before T-CURV ran. |
 | **PA-3** | **Lemma (gauge-invariant confinement).** If some fiber gauge orbit is **noncompact**, no \(\rho(G)\)-invariant \(V\) has compact sublevel sets — it is constant on that orbit. Hence **no gauge-invariant coercive confinement exists**. If \(G\) is compact, Haar-averaging any coercive \(W\) gives one. | `rm-02-existence-analysis.md` §3.3, finding **T-3** | **Corrects this session's framing.** Invariance does **not** rescue noncompact \(GL(K)\): invariance and coercivity are in *tension*, not alliance. A Fisher-dressed curvature term fixes the *invariance/positivity* defect but supplies **no coercivity** along noncompact orbits. Anchoring at a fiber point is a **Higgs potential** breaking \(G\to G_{m_0}\). |
 | **PA-4** | **Fisher is the Hessian of the divergence**, hence any map preserving \(D_q\) automatically preserves \(g^F_q\); so invariance of the self+peer sectors alone already forces \(\rho(G)\subseteq\mathrm{Isom}(\mathcal M,g^F)\). | `rm-04` §0(3), Lemma 1.3 | The base fact underlying §2 is **already in the corpus**. §2's genuine increment is only the *third-order coefficients* \((1/3\) vs \(1/6)\) and the *stencil cancellation*. Claim no more than that. |
 | **PA-5** | For the **categorical** fiber the Fisher–Rao isometry group is \(S_{n+1}\), **finite**. No positive-dimensional Lie group acts on a categorical fiber by Fisher–Rao isometries; any connected \(G\) acts trivially. | `rm-04` §0(2), §1.1a | **FATAL** for the "two nonisomorphic families instantiate the hypotheses" gate with one fixed positive-dimensional \(G\). Constrains every multi-family plan. |
@@ -237,7 +247,11 @@ Verbatim (`Theory/04_generative.tex:89-97`, `\status{HYPOTHESIS}`):
 > \(P_\theta(do,dY\mid X)=\bigotimes_{a=1}^{M}P_{\theta,a}(do_a,dY_a\mid X)\).
 > This modeling hypothesis **excludes residual cross-design dependence**.
 
-A base-neighbour block is precisely residual cross-design dependence. It is the *mildest* of O2's
+~~A base-neighbour block is precisely residual cross-design dependence.~~ **WITHDRAWN 2026-08-13**
+— see §3c.9. That identification is false: the base-neighbour sector is available on a *strictly
+design-product* generative law. What the sector actually costs is a transported label-copy block
+\((J_a,X_a)\) added to `Theory/04`'s declared generative class, not a relaxation of
+`hyp:gen-design-product`. `hyp:gen-design-product` is nonetheless the *mildest* of O2's
 three escapes and the only one already tagged `HYPOTHESIS` rather than `ESTABLISHED` — it is a
 declared modelling choice, not a theorem, and it is stated in the manuscript as excluding exactly
 the thing the gradient sector needs.
@@ -258,6 +272,41 @@ So the layered picture is not merely defensible, it is **forced**:
 | Exact ELBO at finite \(\Lambda_h\), cross-design coupling allowed | **EXACT** (tied-replica + base-neighbour block) |
 | \(h\to0\) limit \(=\tfrac12\int\|D^Aq\|^2_{g^F}\) | limit of exact ELBOs; **not itself a finite-design ELBO** |
 | Identification of the limit with a finite-design ELBO | **REFUTED** by A4.4(a) |
+
+### 3c.9 CORRECTION 2026-08-13 — what the base-neighbour sector actually costs
+
+The Proposition above says such a law "exists iff `hyp:gen-design-product` is relaxed". **That clause
+is withdrawn.** It is either tautological (if "a law coupling design points" just means "a law that is
+not a design product") or false (if it means the sector *requires* such a law). Established by
+independent recomputation during the referee adjudication:
+
+- **"\(\Leftarrow\)" is refuted by an explicit witness.** A 3-site cycle with 2 neighbours per site,
+  \(K=3\), nontrivial permutation transports, admits an exact negative-ELBO decomposition (residual
+  \(3.6\times10^{-15}\)) with a **strictly positive** base-neighbour transported-KL sector
+  (\(0.496109389\)) under a generative joint whose total correlation across design points is
+  \(7.4\times10^{-17}\) — i.e. `hyp:gen-design-product` holding **exactly**.
+- **"\(\Rightarrow\)" is unsupported.** Relaxing the hypothesis produces an interaction energy
+  \(-\mathbb E\log\psi(k_a,k_b)\), not a transported KL — verified symbolically to
+  \(5.6\times10^{-17}\), and numerically a different functional with a different value (0.3063 vs
+  0.2532 on a matched instance). Cross-design dependence is neither necessary nor sufficient.
+
+**The corrected statement.** *At every fixed finite \(\Lambda_h\) the base-neighbour transported-KL
+sector is an exact negative-ELBO component of a normalized generative law that is a strict product
+over design points conditional on \(H_n\). What it costs is not `hyp:gen-design-product` but the
+addition of an \(H_n\)-measurable transported label-copy channel \((J_a,X_a)\) to the declared
+generative class of `Theory/04`, plus the replication multiplicity \(m_h\).*
+
+So the sector **does** cost a modification of the generative model — just not the one named. The
+\(h\to0\) row of the table above is unaffected: A4.4(a) still applies to the limit.
+
+Two inherited loci now carry the withdrawn premise and must be flagged where they are read:
+`panelB-V-BRIDGE-derivation.md:67` (H5) and `:314` (OB-12), both self-labelled as inherited.
+
+*Provenance: raised as Finding 2 of `docs/reviews/2026-08-12-pifb2-elbo-program-interim-theory-review.md`,
+upheld at high severity under adversarial verification. The same lagged/contemporaneous dichotomy was
+reached independently and blind by the T-GRAD panel agent.*
+
+---
 
 Theorem A4.5 (`wave2-01:406`) sharpens the last row: if \(\mu\) charges \(\mathcal C\setminus D\),
 then \(\mathcal F_\mu\) can at best be an **extension** of the finite-design ELBO and the extension
@@ -288,10 +337,17 @@ transport of signals through space.
 are structurally different couplings and must not be conflated.
 
 **The correct restatement.** The Dirichlet sector is the ELBO signature of relaxed conditional
-independence *across contexts*; it vanishes identically iff `hyp:gen-design-product` holds. So
-\(\eta_q\) is **the strength of admitted cross-context dependence in the generative model**, not a
-free regularization weight, and roadmap experiment **E4** tests a probabilistic hypothesis rather
-than a postulated term.
+independence *across contexts*. **STRUCK 2026-08-13, in both directions — see §3c.9.** The claim
+that the Dirichlet sector "vanishes identically iff `hyp:gen-design-product` holds" is refuted on
+"\(\Leftarrow\)" by an explicit exact-ELBO witness on a strictly design-product law, and unsupported
+on "\(\Rightarrow\)" because relaxing the hypothesis yields an interaction energy, not a transported
+KL. The most that survives: *a nonzero transported-KL sector requires a generative channel that reads
+beliefs at other contexts; it does not require, and is not implied by, stochastic cross-design
+dependence.* Correspondingly \(\eta_q\) is **fixed by the declared source row \(\beta\) and the
+declared replication \(m_h=\lceil dh^{-2}\rceil\)** (§4.1(ii)) — with \(\sum\beta=1\) and cell weight
+\(h^d\) the coefficient of \(\tfrac12\int\|D^Aq\|^2_{g^F}\) is forced to exactly 1. It is a declared
+coefficient, **not** a measure of dependence, and roadmap experiment **E4** must be re-worded
+accordingly: it tests a postulated term, not a probabilistic hypothesis.
 
 ### 3c.5 The idle-wheel consequence — why this is load-bearing
 
@@ -425,7 +481,11 @@ pure gauge bookkeeping that "cannot generate nontrivial cycle holonomy by itself
 genuine category error in PIFB2). Setting \(\Omega_{ij}:=\mathrm P_\gamma(A)\) instead:
 - derives the transport from the connection rather than declaring it;
 - gives the cocycle property automatically under concatenation of curves;
-- generates nontrivial holonomy **iff** \(A\) has curvature.
+- generates nontrivial holonomy **whenever \(A\) is not gauge-trivial**. *(CORRECTED 2026-08-13 —
+  the original said "iff \(A\) has curvature", which is false in one direction. Nonzero curvature
+  implies nontrivial restricted holonomy (Ambrose–Singer); the converse fails, since a flat
+  connection on a base with nontrivial \(\pi_1\) has nontrivial monodromy and identically zero
+  curvature. That is exactly the situation of the \(S^1\) witness in §3d.8.)*
 
 This is exactly the first of the two repairs the roadmap itself names ("a connection \(A\) whose
 parallel transport compares separated base points, or an independent overlap/link automorphism").
@@ -476,14 +536,27 @@ between the two channels is a gauge-invariant functional of the holonomy.
 
 Predicted phenomenology, stated as consequences to be tested rather than results:
 1. **Path-dependent disagreement.** Two agents linked by two different chains of intermediaries
-   reach different reconciliations. The residual is *not noise* — it is curvature.
+   reach different reconciliations. The residual is *not noise* — it is **holonomy**: the monodromy
+   of \(A\) around \(\gamma'\circ\gamma^{-1}\). On a base of dimension \(\ge2\) the infinitesimal
+   version of the same residual is curvature (cf. the plaquette expansion in §4.2); on a
+   1-dimensional base it is flat monodromy and curvature vanishes identically.
 2. **Consensus obstruction is topological.** Global agreement is reachable iff the holonomy group has
    a fixed point in the fiber under \(\hat\rho\); for a \(G\)-torsor fiber, iff the holonomy is
    trivial. This is precisely the criterion `wave2-01:534-549` (§1.7) derived for the existence of a
-   parallel *background*, now applying to the *interaction*. Frustration becomes a bundle invariant.
+   parallel *background*, now applying to the *interaction*. Frustration becomes an invariant of the
+   flat connection modulo gauge — a point of \(\mathrm{Hom}(\pi_1(\mathcal C),G)/\mathrm{conj}\).
+   *(CORRECTED 2026-08-13: it is **not** a bundle invariant. In the §3d.8 witness the bundle is
+   trivial (\(H^2(S^1;\mathbb Z)=0\)) and the holonomy varies continuously over the modulus space
+   \(U(1)\).)*
 3. **A derived correlation length.** Weighting a curve by its information length (`05c:589`, vertical
    Fisher length) gives \(w(\gamma)\sim e^{-L(\gamma)/\xi}\) and hence a decay scale that is
-   *derived* rather than fitted — relevant to roadmap experiment E7, whose correlation-length
+   **not** derived — *(CORRECTED 2026-08-13: the \(\omega\)-horizontal lift has vertical Fisher
+   length \(L^\omega=0\) identically, by `05c` `prop:pb-curve-taxonomy` (ESTABLISHED), and §3d.1's
+   transport **is** the horizontal lift. So \(w(\gamma)=e^{-L(\gamma)/\xi}\equiv1\) for every curve
+   and every \(\xi\): the weight is not merely underived, it is vacuous. If a weight is wanted,
+   declare the **section-curve** length \(L^\omega(s\circ\gamma)=\int\sqrt{h^\omega_s(\dot\gamma,\dot\gamma)}\)
+   instead and label \(\xi\) an explicit free parameter. The standing warning against this exact use
+   is already at §3c.8.)* — relevant to roadmap experiment E7, whose correlation-length
    observable was judged absorbable by free parameters (`rm-03` §0).
 4. **The bundle stops being empirically idle.** `wave2-01:715-719` observes that under
    `12_philosophy.tex:77`'s own idle-wheel criterion, N3(a) is an argument for *removing* the bundle
@@ -544,6 +617,20 @@ separating statistic \(1.1\times10^{-15}\); max drift of the relational KL terms
 \(3.1\times10^{-15}\). Both are \(\mathrm{Aut}_G(P)\)-invariant, and for abelian \(U(1)\) the
 statistic *is* the holonomy (conjugacy class = element).
 
+> **CORRECTION 2026-08-13 — the last clause is false as implemented.** The statistic at
+> `u1_two_path_holonomy_witness.py:149-154` is \(\arccos(\cos\Theta)\) (verified to
+> \(4.4\times10^{-16}\)), which determines only the **unordered pair**
+> \(\{e^{i\Theta},e^{-i\Theta}\}\). It is nonetheless the *complete gauge-orbit invariant of this
+> design*: the \(\Theta\) and \(2\pi-\Theta\) **record laws** are exactly gauge-equivalent under
+> \(g^*=\pi/2+\Theta/2\) plus a label swap (orbit distance \(1.06\times10^{-16}\) at
+> \(\Theta=\pi/2\); component mismatch \(\le1.7\times10^{-16}\) analytically, for every \(\Theta\)).
+> **Consequence for the table below: the \(3\pi/2\) row is the \(\pi/2\) row mirrored and is not
+> independent evidence.** The root cause is the equal-weight path prior at `:78`, not the statistic —
+> so adding an oriented observable *alone cannot work*; the design must break symmetry first
+> (\(\pi_J=(0.7,0.3)\) gives orbit distance \(0.235>0\)), after which a signed invariant
+> \(\mathrm{atan2}(m_2\times m_1,\ m_1\cdot m_2)\) orients it (gauge drift \(8.9\times10^{-16}\)).
+> The separation of \(\Theta=0\) from \(\Theta=\pi/2\) — the existence claim — is **unaffected**.
+
 **CHECK 3 — flat-coboundary control. PASS.** With PIFB2's declared transport
 \(\Omega_{ij}=e^{i\varphi_i}e^{-i\varphi_j}\), the angle depends only on the endpoints, the loop
 product is identically 0, and the record law is **exactly** \(\Theta\)-independent (TV \(=0\) to
@@ -573,9 +660,12 @@ where the statistic must be a conjugacy-class invariant rather than an element. 
 
 ### 3d.7 Status and obligations
 
-**Status: CONJECTURE with a specific defeat-condition argument.** What is established is only that
-the *hypothesis* of the B4 no-go fails under this construction — not that a separating pair of
-connections exists. Obligations, in order:
+**Status (UPDATED 2026-08-13): WITNESSED — existence, abelian \(G\), flat monodromy.** Obligations 1
+and 2 are discharged by the §3d.8 witness; obligation 3 is discharged **for abelian \(G\)** by CHECK 2;
+obligations 3 (non-abelian, needing a conjugacy-class invariant rather than a group element) and 4
+remain open. *(The previous header read "CONJECTURE … not that a separating pair of connections
+exists", which contradicted the witness reported directly below it. Note also that §3d.8 is presented
+after this list; read them in the order 3d.8 then 3d.7.)* The original obligations, for the record:
 1. Verify the modified source law \((\mathrm P_\gamma)_\#q_j\) still yields a **normalized**
    generative kernel (it does, being a pushforward of a probability law by a measurable bijection) and
    that the tied-replica ELBO identity of (E1) survives verbatim with \(\Omega\to\mathrm P_\gamma\).
@@ -860,7 +950,14 @@ counterexamples). (4) Extra hypotheses are needed: the product reference must be
 laws with the stated domination, and the Hoeffding–Möbius space needs \(S_h\in L^\infty(\nu_h)\),
 which **fails for Gaussian sources under Lebesgue**.
 
-**The consequential negative, which both agree on.** On a balanced stencil the label-marginalization
+**The consequential negative — SCOPE-RESTRICTED 2026-08-13.** The framing "which both agree on" was
+wrong: the skeptic denies that balanced stencils are generic and holds that the **deployed** rows
+recover the sector at \(O(1)\). Independently recomputed retained fractions of the peer sector at
+\(O(h^2)\): **0.900** for a causal two-left-neighbour row \(m=(-1,-2)\); **0.360** \(=(2w-1)^2\) for
+an ALiBi-like \(\pi=(0.8,0.2)\); **1** for single-source agents. PIFB2 deploys exactly these row types
+(causal masking, ALiBi, learned position bias, `PIFB2.tex:709`), so the headline
+"the Fisher-covariant Dirichlet peer sector is not generated" is a **balanced-stencil artifact** and
+must not be cited unrestricted. On a balanced stencil the label-marginalization
 residual is *exactly minus* the retained peer sector at \(O(h^2)\), leaving \(O(h^4)\) — verified in
 closed form (\(q=N(0,1)\), \(u_\pm=N(\pm h,1)\): peer \(=h^2/2\) exactly, contracted
 \(=h^4/4+O(h^6)\)) and by quadrature in 1-D and 2-D. So the criterion \(\|\varepsilon_h\|_\infty\to0\)
@@ -1085,8 +1182,20 @@ forces Amari's \(\alpha=+1\); the Fisher-Dirichlet action's Euler–Lagrange ope
 (\(\alpha=0\)). The gap is \(\tfrac12(g^F)^{-1}T_{\rm AC}(D_\mu q,D_\mu q)\), it does not shrink with
 \(h\), and it persists at every fixed point. This is sharper than the obstruction it replaces, because
 it is not about limits or hypotheses — it is a statement about which operator an ELBO can generate at
-all. **It also explains the \(d=2\) coincidence in 4.6 and the Gaussian-fixed-covariance escape in 4.1
-as the same phenomenon: both are exactly where the Amari–Chentsov contraction drops out.**
+all.
+
+> **RETRACTED 2026-08-13.** This paragraph originally continued: *"It also explains the \(d=2\)
+> coincidence in 4.6 and the Gaussian-fixed-covariance escape in 4.1 as the same phenomenon: both are
+> exactly where the Amari–Chentsov contraction drops out."* That is **wrong**, and contradicted by its
+> own source: `panelB-V-BRIDGE-derivation.md:17` states that the statistical nature of the target
+> (curvature of \(g^F\), the Amari–Chentsov tensor) plays **no** role in the \(d=2\) selection, which
+> is a homogeneity/Weyl fact about \(h\) as an abstract PSD tensor. Refuted directly: the \(d=2\) raw
+> unit-coefficient bond sum converges cleanly with a **Poisson** fibre, for which
+> \(T_{\rm skew}=A'''=e^\theta>0\) everywhere. The accurate unification is the classical
+> scale-invariance of a two-derivative energy density in two dimensions — `V-BRIDGE:197`: *"not an
+> analogy; it is an identity."* The hedged form of the same guess survives at next-step #2, where it
+> is correctly marked "plausibly one phenomenon and worth checking as such"; **do not let it steer the
+> search for the connection-mismatch repair.**
 
 **A pattern across all five Panel A targets.** Every sector reaches the same shape of answer: the ELBO
 supplies the *energy value* exactly, and fails to supply the *variational principle*, the *coercivity*,
@@ -1129,3 +1238,28 @@ re-runnable; patch the `COMMON` block per §4 first.
 
 Read-only outside this worktree. The Research vault (`Desktop/Research`) and MAgent are untouched.
 Nothing is ingested into the wiki without explicit confirmation.
+
+### 6.1 `Theory/` write gate (added 2026-08-13)
+
+Nothing from §4b goes into `Theory/` without a **per-result `SPEC.md:17` compliance check**, in
+addition to the existing rm-01…rm-06 reconciliation gate. `SPEC.md:17` excludes PIFB2 as source,
+crosswalk, motivation, and remark. It is currently **honored** — zero PIFB references across the 20
+chapters, and `PIFB2.tex` is not `\input` by `main.tex`.
+
+But the exclusion is narrower than a blanket ban: **`SPEC.md:20-25` explicitly licenses** (a) deriving
+a categorical source-label attention \(\beta_{ij}\) from a fixed normalized interaction-record joint,
+and (b) holonomy-conditioned projection of transported marginal laws — the two constructions this
+programme most wants to export. Applying the gate result by result:
+
+| Result | `Theory/` admissible? |
+|---|---|
+| §4.1(i) covariant \(O(h^3)\) parity cancellation | **Yes** — no PIFB2 crosswalk |
+| §4.1(iii) connection mismatch (\(\alpha=+1\) vs Levi-Civita) | **Yes** |
+| §4.2 belief-dressed Ad-invariance for noncompact \(G\) | **Yes** |
+| §4.6 the \(d=2\) induced-volume bound | **Yes** |
+| §4.3 \(\varepsilon_h\), \(c_h\) | **No** — defined as a residual against \(S_h^{\rm PIFB}\); PIFB2 *is* the crosswalk |
+| §4.4 the \(\tau=\kappa\sqrt{K_q}\) obstruction | **No** — same reason, and the dispute is unresolved |
+
+Blocked results belong in a distinct synthesis manuscript, or require a deliberate author revision of
+the SPEC. *(Raised as Finding 7 of the interim referee review; the review's blanket "keep it outside
+`Theory/`" over-reaches, since it quotes `SPEC.md:17` without `:20-25`.)*

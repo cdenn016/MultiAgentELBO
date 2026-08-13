@@ -1,0 +1,90 @@
+# F2-lagged-vs-contemporaneous-adjudication
+
+*Verbatim agent return, workflow wf_0b4620e2-7dc, 2026-08-13.*
+
+## finding_id
+
+FINDING-2 (base-neighbour proposition conflates lagged templates with current cross-context coupling)
+
+## verdict
+
+UPHELD
+
+## severity
+
+high
+
+## confidence
+
+high
+
+## restatement
+
+The reviewer asserts a factual premise plus three consequences. Premise: the exact tied-replica witness (docs/derivations/2026-08-12-exact-two-channel-finite-elbo/evidence/typed-construction.md:37-88) freezes the source u_ab^n=(Omega_ab^n)_# q_b^n in the stored history H_n and builds the generative joint as P_h^n = (x)_{a in A} P_a^n, an explicit product over CURRENT agent-site records a=(i,x). Consequences: (1) in the LAGGED reading the base-neighbour label-copy KL is exact but requires no relaxation of hyp:gen-design-product; (2) in the CONTEMPORANEOUS reading the displayed generative factor reads the recognition law being optimized, so fixed-joint exactness is lost; therefore (3) worklog 3c.3's "such a law exists iff hyp:gen-design-product is relaxed" (:250), 3c.4's "it vanishes identically iff hyp:gen-design-product holds" (:290-291), and 3c.4's "eta_q is the strength of admitted cross-context dependence in the generative model" (:292-293) do not follow — and with them 3c.5's load-bearing "C earns its manifold structure iff the generative model admits cross-context dependence" (:309-311, echoed at overview.md:170-173). Offered counterexamples to the last equivalence: equal-marginal dependent Bernoullis, and unequal-marginal independent Bernoullis.
+
+## superseded_status
+
+NOT superseded and NOT answered. Section 4b of the worklog (docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md:693-1104) never revisits the 3c gen-design-product claim: 4.1's reconciliation (:793-796) endorses only the A4.4 escape, and the hand-written synthesis 4.7 (:1069-1104) is silent. The panel returns in docs/audits/panels-2026-08-12/ CONFIRM the reviewer's premise rather than answering it — panelA-T-GRAD-derivation.md:328,351 states the lagged/contemporaneous dichotomy independently and blind; panelA-T-GRAD-skeptic.md:134 endorses the mixed-time reading while overturning only the derivation's mass-term inference; and worklog 4.5 (:918-947, T-SIMUL) newly PROVES the lagged and same-time schemes are not the dt->0 limit of one another, strengthening the finding. The only text pointing the other way, panelB-V-TYPE-derivation.md:52, merely inherits 'hyp:gen-design-product IS RELAXED' from the worklog as a declared hypothesis of its own construction, so it is not independent evidence. Net: 4b makes the finding MORE, not less, forceful.
+
+## evidence
+
+### 1
+
+CITED + verified locus. Worklog 3c is at docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md:194-386. The three attacked claims are stated exactly as the reviewer characterizes them: :247-252 (Proposition: '...such a law exists iff `hyp:gen-design-product` is relaxed'); :290-293 ('The Dirichlet sector is the ELBO signature of relaxed conditional independence across contexts; it vanishes identically iff `hyp:gen-design-product` holds. So eta_q is **the strength of admitted cross-context dependence in the generative model**'); :309-311 (boxed: 'that sector exists iff `hyp:gen-design-product` is relaxed. Hence C earns its manifold structure iff the generative model admits cross-context dependence.'). :240 additionally asserts 'A base-neighbour block is precisely residual cross-design dependence.' All three have propagated verbatim into the program summary at overview.md:165-173. The reviewer's line cite (:213-242,280-301) has drifted by ~4-10 lines but points at the right material.
+
+### 2
+
+CITED. hyp:gen-design-product read verbatim at Theory/04_generative.tex:89-96: 'Distinct design points are conditionally independent given X: P_theta(do,dY|X) = (x)_{a=1}^{M} P_{theta,a}(do_a,dY_a|X). This modeling hypothesis excludes residual cross-design dependence and is used in the finite-design normalization and factor count. \\status{HYPOTHESIS}'. It is a statement of STOCHASTIC conditional independence of the per-design blocks, not a statement about which data the per-design kernels may read.
+
+### 3
+
+CITED. The witness is exactly as the reviewer describes. typed-construction.md:5-7 defines A as agent-SITE indices a=(i,x), 'one of finitely many agents at one point of a finite lattice or experimental design' — i.e. the design points ARE the a's. :39-54 conditions on H_n and defines u_ab^n=(Omega_ab^n)_# q_b^n from the PREVIOUS laws q_b^n. :71-88 gives P_a^n = p_a(dk) r_a(dm) L_a(do|k,m) x pi^q_aj u^n_aj(dx) x pi^s_al v^n_al(dy) and P_h^n = (x)_{a in A} P_a^n, 'Every displayed factor is normalized'. The instantiation used for the Dirichlet sector is panelA-T-GRAD-derivation.md:37: 'Let A = {i} x Lambda_h, and instantiate the tied-replica theorem ... with ... lagged sources u_{c,c'} = (Omega^A_{c,c'})_# q_i^n(c')'. So the sector's own exactness proof runs on a law that factorizes across every design point.
+
+### 4
+
+RECOMPUTED (decisive). I built the label-copy model explicitly on two design sites with binary latents, a STRICT product generative law P = P_a (x) P_b (verified numerically to be the outer product of its design marginals), lagged sources u_ab = q_b^n, u_ba = q_a^n, and the tied-replica recognition Q_a(k,x) = q_a(k) q_a(x). The exact negative ELBO KL(Q||P) = 1.504459858586565 equals the block decomposition sum_a [KL(q_a||p_a) - E log ell_a + KL(q_a||u_ab)] = 1.504459858586566, residual 4.4e-16, reproducing exact-elbo-proof.md:60-118. The transported-KL terms are present and strictly positive (0.010028 and 0.037795) with hyp:gen-design-product satisfied EXACTLY. This refutes the '=>' direction of worklog:250 and the '<=' direction of worklog:290-291 outright, and under both the pointwise and the 'identically as a functional' reading (the terms are nonconstant functionals of q_a). Script: C:\Users\CHRISA~1\AppData\Local\Temp\claude\C--Users-chris-and-christine-Desktop-MultiAgentELBO\c87a5256-fdb7-4d07-a3d8-c6455d784e89\scratchpad\f2_check.py
+
+### 5
+
+RECOMPUTED. Reviewer's counterexample A (equal-marginal dependent Bernoullis): P(k_a,k_b) with marginals (1/2,1/2) and correlation rho gives I(K_a;K_b) = 0.000000 / 0.082283 / 0.368064 at rho = 0 / 0.4 / 0.8 while the transported-KL term D(q_a||q_b) with q_a=q_b= the marginals is exactly 0 throughout. Counterexample B (product law, unequal recognition marginals q_a=Bern(0.2), q_b=Bern(0.8)): mutual information -2.2e-16, transported-KL = 0.831777 = 0.6 log 4 > 0. Both compute as the reviewer says. Verdict on them: B is correct but subsumed by (and much weaker than) the witness recomputation above; A is correct only against a POINTWISE reading of 'vanishes identically' — at a single configuration — so it does not by itself refute the functional-identity reading. The reviewer therefore reached the right conclusion with weaker ammunition than was available.
+
+### 6
+
+RECOMPUTED (what real cross-design dependence actually contributes). With a genuinely non-product P (rho=0.6) and mean-field Q = q_a (x) q_b, the exact cross-design excess KL(Q||P) - KL(Q||P_a (x) P_b) = 0.306321213, while D(q_a||q_b) = 0.253246060. The coupling generated by relaxing gen-design-product is an interaction energy -E_{q_a (x) q_b} log psi(k_a,k_b); it has neither the form nor the value of a transported KL between marginals. So relaxing the hypothesis is not sufficient for a Dirichlet/transported-KL sector either — neither direction of worklog:250/290-291 is established.
+
+### 7
+
+RECOMPUTED + CITED (independent third route). Theorem A4.1 at docs/audits/ultradeep-wave2-2026-08-12/wave2-01-constructions.md:314-338 proves that ASSUMING hyp:gen-design-product, F[Q_X] = sum_a f(c_a,Q_a) + TC_D(Q_X) with TC_D = KL(Q_X || (x)_a Q_a) >= 0. I reproduced this to 5.6e-17 (F = 0.238399726773653 = sum_a F_a + TC_D, TC_D = 0.130812036). So the programme's own audit already exhibits a strictly positive cross-design coupling term in the exact free energy with hyp:gen-design-product intact — a second, structurally different refutation of 'cross-design term in F => hypothesis relaxed'.
+
+### 8
+
+CITED (task c — does 4b dissolve the lagged/contemporaneous distinction? No: it sharpens it). panelA-T-GRAD-derivation.md:328 restates the reviewer's premise independently and blind: 'The theorem's sources are H_n-measurable ... The target's displayed formula "KL(q_i(c) || (Omega^A)_# q_i(c'))" drops the time superscripts and thereby HIDES a mixed-time object.' :351 states the dichotomy verbatim: 'To make the Dirichlet integral a functional of the free field, the second slot must carry q_i^{n+1}(c') — the generative law must read the current recognition law. That is exactly the same-time obstruction ... (i,c') is a distinct element of A whose recognition marginal is being optimized simultaneously, so it is structurally identical to a peer.' The underlying prohibition is boundary-counterexamples.md:68-73: 'Replacing q_b^n, s_b^n in the generative kernel by the current optimization variables makes the purported fixed joint depend on its recognition law. The one-step ELBO proof then fails.'
+
+### 9
+
+CITED (the skeptic overturns only the mass-term inference, not the distinction). panelA-T-GRAD-skeptic.md:17-27 and attack 5 (:68-70) kill the derivation's Part II conclusion by an order-of-limits argument: the lagged block's closed-form argmin is the e-geodesic barycentre of the transported neighbours, so the block is a forward-Euler step of a covariant diffusion with Delta t = h^2/d, and (c) 'The block's value at the diagonal is exactly (1/2) INT ||D^A q||^2 dc + O(h^2).' Crucially the skeptic keeps the LAG: attack 13 (:134) explicitly endorses the mixed-time reading — 'the target's displayed KL ... does drop the time superscripts and hide a mixed-time object (boundary-counterexamples.md:68-73 and PIFB2.tex:678 both record the same-time obstruction)'. So the exchange dissolves the derivation's negative conclusion while CONFIRMING the reviewer's lagged-vs-contemporaneous distinction and confirming that the Dirichlet energy is obtainable from the LAGGED, product-law construction.
+
+### 10
+
+CITED (new material that settles the reviewer's distinction against the worklog). Worklog 4.5 (T-SIMUL, :918-960) — the only Panel A target whose skeptic upholds it — proves '"Same-time PIFB2 is the dt->0 limit of the lagged ELBO-exact scheme" is FALSE', robustly and discretization-independently (the fields differ by R^react which is O(1) in dt; V^rec is generically not a gradient — complex linearization eigenvalues on a directed 3-cycle). This answers overview.md:198's open decision 4 ('Whether they agree in a dt->0 limit is open') in the NEGATIVE and makes the reviewer's distinction not merely a semantic separation but a proven inequivalence of two different objects.
+
+### 11
+
+CHECKED (is the finding answered/superseded by 4b?). No. Worklog 4.1's reconciliation line (:793-796) endorses only 3c.2's A4.4-escape ('the two-point functional escapes A4.4 at finite h, and the limit is a jet functional') and never revisits the gen-design-product claim. The hand-written synthesis 4.7 (:1069-1104) does not mention it. The only panel text touching it is panelB-V-TYPE-derivation.md:52, which lists 'hyp:gen-design-product ... IS RELAXED' as an inherited HYPOTHESIS of its own construction, citing the worklog — not an independent verification — and its :223 assertion that 'the idle-wheel argument for why C earns its manifold structure ... stands untouched' is a scope disclaimer, not a test.
+
+### 12
+
+RE-RAN. docs/verification/kl_expansion_check.py passes all assertions (1/2 g^F h^2, 1/3 and 1/6 T_skew, h^3 cancellation on the symmetric stencil across Gaussian, Bernoulli, Exponential families) — confirming the reviewer's separate statement that the local expansion reproduces, and confirming that nothing in that script bears on the gen-design-product question.
+
+
+## recomputation
+
+Wrote and ran C:\Users\CHRISA~1\AppData\Local\Temp\claude\C--Users-chris-and-christine-Desktop-MultiAgentELBO\c87a5256-fdb7-4d07-a3d8-c6455d784e89\scratchpad\f2_check.py (numpy, exact finite alphabets; no repository file touched). (1) Exact tied-replica label-copy ELBO on a STRICTLY design-product generative law: KL(Q||P) = 1.504459858586565 vs block sum 1.504459858586566, residual 4.441e-16, with transported-KL terms KL(q_a||u_ab) = 0.010028 and KL(q_b||u_ba) = 0.037795 both strictly positive; P verified equal to the outer product of its design marginals. (2) Equal-marginal dependent Bernoullis: I(K_a;K_b) = 0.000000 / 0.082283 / 0.368064 at rho = 0 / 0.4 / 0.8 with transported KL identically 0.000000. (3) Product law, unequal recognition marginals Bern(0.2) vs Bern(0.8): mutual information -2.2e-16, transported KL = 0.831777 = 0.6 log 4 exactly. (4) Genuine non-product generative law, mean-field recognition: cross-design excess 0.306321213 vs transported KL 0.253246060 — different functionals, different values. (5) Independent re-derivation of wave2-01 Theorem A4.1: F[Q] = 0.238399726773653 = sum_a F_a + TC_D with TC_D = 0.130812036, residual 5.551e-17, i.e. a strictly positive cross-design free-energy term under an exactly design-product generative law. Separately re-ran docs/verification/kl_expansion_check.py: all assertions pass.
+
+## reviewer_missed
+
+Three things. (a) The reviewer under-armed the strongest half of his own case. He cites the witness's product structure but does not carry it through to an explicit exact-ELBO instance; doing so (my Test 1) refutes worklog:250 and :290-291 under BOTH the pointwise and the 'vanishes identically as a functional' readings, whereas his equal-marginal-dependent-Bernoulli example only refutes the pointwise reading. And his unequal-marginal-independent-Bernoulli example is essentially subsumed by Test 1. (b) He missed two independent internal refutations already in the repository: wave2-01-constructions.md:314-338 (Theorem A4.1) exhibits a strictly positive cross-design term TC_D = KL(Q_X||(x)_a Q_a) in the exact free energy while ASSUMING hyp:gen-design-product; and the converse leg is also unsupported — my Test 3 shows that relaxing the hypothesis produces an interaction energy -E log psi(k_a,k_b), not a transported KL, so cross-design dependence is not sufficient for a Dirichlet sector either. Neither direction of the iff is established, not just one. (c) He is too coarse on eta_q. Worklog 4.1(ii) (:766-768) and skeptic attack 10 (:110) show the Dirichlet coefficient is fixed by the DECLARED source row beta and the DECLARED replication multiplicity m_h = ceil(d h^{-2}) — 'still a declaration, but the canonically forced one' — so 'eta_q is declared' is not merely unproven-until-derived, it is positively identified with two declared objects. On the other side, the reviewer slightly overreaches in implying the whole of 3c.5 falls: the idle-wheel half (no nonlocal-in-C term => the action factorizes over c => C's manifold structure is idle) is a statement about the form of the action and is untouched; only its identification with generative cross-context dependence fails. He also does not note the honest residue — the lagged witness is not a model in Theory/04's declared class either, since it ADDS a label-copy latent block (J_a,X_a); the base-neighbour sector does cost a modification of the generative model, just not the one named.
+
+## recommended_action
+
+Rewrite worklog 3c.3-3c.5 and overview.md:165-173. Specifically: (1) Replace the Proposition at worklog:247-252. The clause 'such a law exists iff `hyp:gen-design-product` is relaxed' is either tautological (if 'a law that couples design points' just means 'a law that is not a design product') or false (if it means the base-neighbour sector requires such a law). Replace with the true statement, which the witness supplies: 'At every fixed finite Lambda_h the base-neighbour transported-KL sector is an exact negative-ELBO component of a normalized generative law that is a strict product over design points conditional on the history H_n; what it costs is not `hyp:gen-design-product` but the addition of an H_n-measurable transported label-copy channel (J_a,X_a) to the declared generative class of Theory/04, plus the replication multiplicity m_h.' (2) Delete the claim at :240 that 'A base-neighbour block is precisely residual cross-design dependence'; it is true only of the contemporaneous variant, which boundary-counterexamples.md:68-73, panelA-T-GRAD-derivation.md:351 and worklog 4.5 all show is not an exact fixed-joint ELBO and is not the dt->0 limit of the lagged one. (3) Strike the iff at :290-291 in both directions: '<=' is refuted by the witness (exact sector with the hypothesis intact); '=>' is unsupported because relaxing the hypothesis yields an interaction energy, not a transported KL. State at most: 'a nonzero transported-KL sector requires a generative channel that reads beliefs at other contexts; it does not require, and is not implied by, stochastic cross-design dependence.' (4) Replace ':292-293' with 'eta_q is fixed by the declared source row beta and the declared replication m_h = ceil(d h^{-2}) (worklog 4.1(ii), skeptic attack 10); it is a declared coefficient, not a derived measure of dependence' — and correspondingly re-word roadmap experiment E4, which :293-294 claims 'tests a probabilistic hypothesis rather than a postulated term'. (5) Narrow the boxed 3c.5 conclusion (:309-311) and its overview.md:170-173 copy to: 'C earns its manifold structure iff the action contains a term coupling distinct contexts; such a term is available from an exact finite ELBO with `hyp:gen-design-product` intact, via a lagged, history-measurable transported label-copy channel.' Drop 'iff the generative model admits cross-context dependence' entirely. (6) Add a cross-reference from 3c to 4.5, and update overview.md:198 open decision 4 — 'whether they agree in a dt->0 limit' is no longer open, it is answered no.

@@ -92,7 +92,7 @@ provides a non-circular derivation test.
 
 ```mermaid
 flowchart LR
-    A["microscopic<br/>normalized joint"] -->|EXACT| B["exact finite-lattice<br/>ELBO"]
+    A["microscopic<br/>normalized joint"] -->|EXACT| B["exact finite-site<br/>ELBO"]
     B -->|"EXACT<br/>(contraction)"| C["effective action<br/>S_h^eff"]
     C -->|"projection<br/>+ residual eps_h"| D["PIFB2 operator<br/>basis"]
     D -->|"h -> 0<br/>OPEN"| E["continuum<br/>action"]
@@ -102,9 +102,10 @@ Status of each arrow:
 
 | Arrow | Status |
 |---|---|
-| microscopic joint → finite-lattice ELBO | **EXACT** — the closed theorem, §6 |
-| finite-lattice ELBO → effective action | **EXACT** identity by KL disintegration |
-| effective action → PIFB2 basis | **OPEN**. \(S_h^{\rm exact}=S_h^{\rm PIFB}+\varepsilon_h+c_h\) is currently a *tautology*; \(\varepsilon_h\) is defined as the difference |
+| microscopic joint → finite-site ELBO | **EXACT** — the closed theorem, §6 |
+| finite-site ELBO → effective action | **PROVEN, CONDITIONAL** — exact given a normalized posterior, a recognition-independent measurable \(C_h\), a common pushforward path, and a declared **product** reference measure |
+| tied-replica/PIFB2 instantiation | **OPEN** — three explicit \(C_h\) supplied (worklog §4.3) and \(\varepsilon_h,c_h\) now in closed form, but \(\varepsilon_h=0\) only at \(C_h=\mathrm{id}\), and the law is blockwise-product, so it cannot pose the effective-action question |
+| effective action → PIFB2 basis | **OPEN**. \(S_h^{\rm exact}=S_h^{\rm PIFB}+\varepsilon_h+c_h\) is no longer a tautology (worklog §4.3 gives closed forms), but the residual is computed against a *stipulated* projection on a law with no cross-agent content |
 | finite lattice → continuum | **OPEN**. Needs equicoercivity + \(\Gamma\)-convergence; the gauge sector is Millennium-adjacent |
 
 ---
@@ -131,9 +132,22 @@ Reading of the terms:
   currently omits it.
 - It is exact on an **enlarged tied-replica inventory**, and it is **lagged** — the generative law
   reads \(q^n\), never the same-step \(q^{n+1}\).
+- **The observation term is not matched to literal PIFB2.** The theorem's term is
+  \(-\mathbb E_{\zeta_a}\log L_a(o_a\mid K_a,M_a)\), an expectation under the **joint** private law.
+  PIFB2's boxed display (`Theory/PIFB2.tex:689`) writes \(\mathbb E_{q_i(c)}[\log p(o(c)\mid k_i,m_i)]\)
+  with \(m_i\) **unbound and not among the functional's declared arguments** (`:684`); its pointwise
+  display (`:669`) drops \(m_i\) entirely. **Equality to the literal PIFB2 observation term is not
+  proved and is not currently well-posed.** The joint typing is the one the ELBO forces —
+  \(D_{\rm KL}(\zeta\|p\otimes r)=D_{\rm KL}(q\|p)+D_{\rm KL}(s\|r)+I_\zeta(K;M)\), verified to
+  \(1.1\times10^{-16}\). If `:669` is read as the predictive marginal
+  \(-\mathbb E_q\log\int L(o\mid k,m)s(dm)\), the two differ by
+  \(\mathbb E_q[D_{\rm KL}(s\|s^{(o,k)})]\ge0\), so the theorem's scalar is an **upper bound**, and the
+  gap is **unbounded** in the model uncertainty (Gaussian instance:
+  \(d^2v/(2(v+1))+(v-\log(1+v))/2\)). Registered internally since
+  `docs/research-plans/2026-08-12-pifb2-continuum-roadmap.md:104` and `rm-03-action-class.md:363-365`.
 
 **Other established results:** exact fast-state profiling identity; compact-subgroup reduction by
-Haar averaging; exact finite-lattice KL contraction; gauge-covariant informational pullback geometry
+Haar averaging; exact finite-site KL contraction; gauge-covariant informational pullback geometry
 with an exact defect cocycle (`Theory/05c`); exact agent-network RG (`Theory/07b`).
 
 ---
@@ -148,9 +162,10 @@ These are the programme's teeth. Every one is a proved negative.
 | **A-NOGO (O1)** | For a \(G\)-torsor fiber, \(\mathrm{Aut}_G(P)\) acts simply transitively on sections, so **every** gauge-invariant functional of a section is constant | wave2-01 |
 | **O2 / Thm A4.4** | If a section functional is *required* to equal the finite-design ELBO, its integrand must be **jet-free** — the connection is expelled | wave2-01:385, :488 |
 | **Thm A4.5** | A genuine integral over \(\mathcal C\) can at best be a non-unique **extension** of a finite-design ELBO | wave2-01:406 |
-| **B4 finite-design holonomy** | No observation-record statistic detects holonomy, curvature, or bundle topology **for any finite design** — because the connection is not an argument of any generative kernel. **Defeated for curve-mediated transport** (§8): its own defeat condition at wave2-01:709 is "change either and the theorem is unavailable", and putting the connection into the source law \((\mathrm P_\gamma)_\#q_j\) does exactly that | wave2-01:695 |
+| **B4 finite-design holonomy** | No observation-record statistic detects holonomy, curvature, or bundle topology **for any finite design** — because the connection is not an argument of any generative kernel. **Its HOLONOMY clause is defeated for curve-mediated transport** (§8), for **flat monodromy only**: its own defeat condition at wave2-01:709 is "change either and the theorem is unavailable", and putting the connection into the source law \((\mathrm P_\gamma)_\#q_j\) does exactly that. **The curvature and bundle-topology clauses are untouched** — \(F=dA\equiv0\) on any 1-dimensional base and every principal \(U(1)\) bundle over \(S^1\) is trivial (\(H^2(S^1;\mathbb Z)=0\)), so the witness cannot test them. Testing those needs \(\mathcal C=T^2\) (curvature, nontrivial \(H^2\)) or \(S^2\) (Chern classes, matching B4's own F4 counterexample at wave2-01:674-680) | wave2-01:695 |
 | **Coercivity lemma** | If a fiber gauge orbit is noncompact, **no** gauge-invariant function has compact sublevel sets. Invariance and coercivity are in tension | `rm-02` §3.3 |
-| **Yang–Mills indefiniteness** | \(\kappa\|F_A\|^2\) cannot be both gauge-invariant and bounded below for \(GL(K,\mathbb R)\); all Ad-invariant forms on \(\mathfrak{gl}(K)\) are indefinite | `rm-04` §1.5 |
+| **Yang–Mills non-definiteness** | \(\mathfrak{gl}(K,\mathbb R)\) admits **no positive-definite** Ad-invariant inner product, hence no fixed-inner-product \(\kappa\|F_A\|^2\) that is both gauge-invariant and coercive. The Ad-invariant symmetric forms are exactly the 2-dim space \(\{a\,\mathrm{tr}(XY)+b\,\mathrm{tr}X\,\mathrm{tr}Y\}\); every form with \(a
+e0\) is indefinite (signature \((3,1)\) for \(K=2\), \((6,3)\) for \(K=3\)), but the line \(a=0,b>0\) gives \(b\,(\mathrm{tr}X)(\mathrm{tr}Y)\), which **is** Ad-invariant and nonnegative — degenerate, with radical \(\mathfrak{sl}(K,\mathbb R)\), vanishing identically on \(\mathfrak{sl}(K)\)-valued connections. So "every Ad-invariant form is indefinite" is **false**; the correct no-go is positive-definiteness. Compact type is necessary *and* sufficient for a **fixed** definite form, but is **not** required for invariance or nonnegativity as such — see worklog §4.2 | `rm-04` §1.5 (erratum: rm-04 overstates at :43-46, :295-299 and :879; only :285-288 and :984 are correctly scoped) |
 | **Categorical rigidity** | The Fisher–Rao isometry group of the simplex is \(S_{n+1}\), **finite** — no positive-dimensional \(G\) acts on a categorical fiber by isometries | `rm-04` §1.1a |
 | **Apex closure** | The tower cannot self-close; the apex prior cannot be derived | `Theory/11:239` |
 
@@ -161,16 +176,32 @@ These are the programme's teeth. Every one is a proved negative.
 - **Gradient sector.** The Fisher metric *is* the Hessian of KL, so base-neighbour transported KL is
   already a discrete Dirichlet energy. Verified: \(\tfrac12g^Fh^2+\tfrac13T_{\rm skew}h^3\) (or
   \(\tfrac16\) in the other argument order), with the \(h^3\) term cancelling on a symmetric stencil
-  — so the weight \(h^{d-2}\) is **forced**. Flat transport only; covariant case open.
-- **Escape from O2.** The finite-lattice base-neighbour term is a **two-point functional of values**,
+  — so the weight \(h^{d-2}\) is forced **as the unique deterministic Riemann-sum weight**. Two
+  caveats: the exact ELBO is a counting-measure sum with unit coefficients and supplies \(h^{d-2}\)
+  only via the declared integer replication \(m_h=\lceil dh^{-2}
+ceil\); and the forcing is by **edge
+  counting alone**, not by the \(h^3\) cancellation, which improves the *rate* from \(O(h)\) to
+  \(O(h^2)\) but is not needed for the limit to exist (`panelB-V-BRIDGE-derivation.md:63`).
+  **The covariant case is now CLOSED** — see worklog §4.1(i).
+- **Escape from O2.** The finite-site base-neighbour term is a **two-point functional of values**,
   not a jet functional, so A4.4 does not apply to it. It costs exactly one hypothesis —
   `hyp:gen-design-product` ("excludes residual cross-design dependence", tagged `HYPOTHESIS`). A4.4
   then correctly says the \(h\to0\) *limit* is not a finite-design ELBO, which is precisely what
   licenses the effective-action framing.
-- **Idle-wheel result.** Without a base-derivative sector the action factorizes over \(c\) entirely
-  and \(\mathcal C\)'s manifold structure is idle by `12_philosophy.tex:77`'s own criterion. So
-  **\(\mathcal C\) earns its manifold structure iff the generative model admits cross-context
-  dependence**, and \(\eta_q\) is the strength of that dependence, not a free regularizer.
+- **Idle-wheel result (NARROWED 2026-08-13).** Without a base-derivative sector the action
+  factorizes over \(c\) entirely and \(\mathcal C\)'s manifold structure is idle by
+  `12_philosophy.tex:77`'s own criterion. That half stands. So **\(\mathcal C\) earns its manifold
+  structure iff the action contains a term coupling distinct contexts** — and such a term is
+  available from an exact finite ELBO **with `hyp:gen-design-product` intact**, via a lagged,
+  history-measurable transported label-copy channel. The earlier phrasing "iff the generative model
+  admits cross-context dependence" is **withdrawn**: an explicit exact-ELBO instance on a strictly
+  design-product law (total correlation \(7.4\times10^{-17}\)) carries a strictly positive
+  base-neighbour sector, and conversely relaxing the hypothesis yields an interaction energy
+  \(-\mathbb E\log\psi(k_a,k_b)\), not a transported KL — a different functional with a different
+  value. What the sector actually costs is a transported label-copy block \((J_a,X_a)\) added to
+  `Theory/04`'s declared generative class, plus the replication multiplicity \(m_h\). Correspondingly
+  \(\eta_q\) is **fixed by the declared source row \(\beta\) and the declared \(m_h\)** — a declared
+  coefficient, not a measure of dependence.
 - **Base geometry decision (taken).** Keep N1; derive base geometry from information via the
   section-induced volume \(\int\sqrt{\det(\sigma^*g^F)}\), with the Polyakov auxiliary-metric form as
   the candidate ELBO bridge. Under test.
@@ -179,7 +210,10 @@ These are the programme's teeth. Every one is a proved negative.
   B4 names as load-bearing. The \(U(1)\) two-path witness now runs
   (`docs/verification/u1_two_path_holonomy_witness.py`, all four checks pass): distinct holonomies
   give record laws at gauge-orbit distance \(0.319>0\), the separating statistic is
-  \(\mathrm{Aut}_G(P)\)-invariant to \(10^{-15}\) and equals the holonomy, the flat coboundary gives
+  \(\mathrm{Aut}_G(P)\)-invariant to \(10^{-15}\) and **separates the holonomy up to \(\Theta\leftrightarrow-\Theta\)**
+  (the implemented statistic is \(\arccos(\cos\Theta)\); the \(\Theta\) and \(2\pi-\Theta\) *record laws*
+  are exactly gauge-equivalent under \(g^*=\pi/2+\Theta/2\) plus a label swap, so the equal-weight
+  design cannot orient it), the flat coboundary gives
   *exactly* zero dependence (reproducing B4 under PIFB2's declared transport), and the tied-replica
   ELBO identity survives \(\Omega\to\mathrm P_\gamma\) to \(5\times10^{-13}\).
   **Existence witness, not a theorem** — one bundle, one fiber, one statistic, abelian \(G\).
@@ -195,8 +229,13 @@ These are the programme's teeth. Every one is a proved negative.
 3. **Compact \(G\) vs full \(GL(K)\).** Compact is kinematically necessary for the curvature sector
    and for coercivity. \(GL(K)\)'s SPD sector may encode complexity — but that needs a transforming
    SPD metric, coercivity control, and a gauge-invariant definition of "complexity".
-4. **Same-time vs lagged.** Lagged is exact; same-time is what the code does. Whether they agree in a
-   \(dt\to0\) limit is open.
+4. **Same-time vs lagged — ANSWERED (negatively), 2026-08-13.** Lagged is exact; same-time is what
+   the code does. They do **not** agree in a \(dt\to0\) limit: worklog §4.5 proves the lagged scheme
+   converges to \(\dot x=-V^{\rm rec}\), not to \(-\nabla S\), and \(V^{\rm rec}\) is generically not
+   the gradient of any \(C^2\) potential (directed attention 3-cycle: complex eigenvalues for every
+   \(b>0\), so no gradient flow). Scope: that counterexample is a *directed peer* cycle, whereas the
+   base-neighbour stencil is edge-symmetric, where the two flows agree up to halved coupling.
+   Remaining open: which to deploy.
 
 ---
 
@@ -219,14 +258,21 @@ minimizers exist for noncompact \(G\).
 
 ## 11. Where everything lives
 
+*Rebuilt 2026-08-13 from `git ls-files` at `4dee0db`; the previous table was stale.*
+
 | Location | Holds |
 |---|---|
-| `Desktop/MultiAgentELBO` | `Theory/*.tex`, PIFB2 copy, ultradeep audit waves 1–2, roadmap + coordinator review, the 3 derivation runs |
-| `Documents/ChatGPT/MultiAgentELBO` | same derivations, plus the six `rm-01`…`rm-06` referee reports and the program-decision run |
-| `C:/tmp/MultiAgentELBO-elbo-action-019ff75d` (branch `codex/elbo-effective-action-derivation`) | 3 derivation runs, this overview, the live worklog |
+| `Desktop/MultiAgentELBO` (**this repo, `main`**) | `Theory/*.tex`, PIFB2 copy, ultradeep audit waves 1–2, roadmap + coordinator review, the six `rm-01`…`rm-06` referee reports, the program-decision run, the 16 recovered panel returns (`docs/audits/panels-2026-08-12/`), this overview, the live worklog, both verification scripts, and the interim referee review |
+| `Documents/ChatGPT/MultiAgentELBO` | a second checkout of the same history; owns several `.superpowers` worktrees |
 | `Desktop/Research` | live `PIFB2.tex`, the Obsidian wiki, `magent_elbo_whitepaper` |
 
-**Nothing holds all of it.** The referee reports `rm-01`…`rm-06` exist in only one copy, and the
-continuum roadmap was authored where neither audit wave was on disk — which is why the referees found
-"non-collision through non-contact" rather than genuine agreement. **Consolidation should precede
-further theory expansion.**
+The `C:/tmp/MultiAgentELBO-elbo-action-019ff75d` worktree was **removed on 2026-08-13**. It was
+registered to the `Documents/ChatGPT` checkout, held no unmerged commits (`HEAD = e1f8795`, already an
+ancestor of `main`), and its four uncommitted files were strictly behind `main`. The branch ref
+survives.
+
+**The Desktop checkout now holds all of the derivation and audit material** — the earlier claim that
+`rm-01`…`rm-06` "exist in only one copy" was falsified by commit `caa4a15` itself. What remains true
+is the historical point: the continuum roadmap was authored where neither audit wave was on disk,
+which is why the referees found "non-collision through non-contact" rather than genuine agreement.
+**Consolidation of the two checkouts should still precede further theory expansion.**

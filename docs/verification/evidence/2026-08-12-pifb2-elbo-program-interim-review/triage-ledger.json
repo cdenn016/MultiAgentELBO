@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.1",
+  "mode": "triage",
+  "artifact_revision": "git:c799a5ba8d337c66a6b9a9b7c2130a0acd0b0991:sha256:bff1a19560be6b8efcd7e6904c1d6d089538c92254caa6ecf667f77b8bd64d5b",
+  "claims": [
+    {
+      "id": "continuum-program-closure",
+      "domain": "mathematics",
+      "statement": "The reviewed revision does not close a rigorous PIFB2 continuum-action theorem; the restricted direct-method target remains incomplete.",
+      "severity": "high",
+      "state": "INCONCLUSIVE",
+      "artifact_revision": "git:c799a5ba8d337c66a6b9a9b7c2130a0acd0b0991:sha256:bff1a19560be6b8efcd7e6904c1d6d089538c92254caa6ecf667f77b8bd64d5b",
+      "evidence": [{"id": "review-assessment", "kind": "llm_judgment", "location": "README.md", "artifact_revision": "git:c799a5ba8d337c66a6b9a9b7c2130a0acd0b0991:sha256:bff1a19560be6b8efcd7e6904c1d6d089538c92254caa6ecf667f77b8bd64d5b"}],
+      "counterevidence": [],
+      "verifiers": [],
+      "open_obligations": ["Freeze the corrected action and admissible spaces and prove well-definedness, gauge invariance, coercivity or a gauge slice, lower semicontinuity, and boundary closure.", "Prove fixed-N lattice-to-continuum convergence and separately construct any claimed continuum probability law."],
+      "evidence_invalidated": false
+    },
+    {
+      "id": "kl-stencil-and-coefficient",
+      "domain": "mathematics",
+      "statement": "The pointwise KL expansion is correct, but the global O(h^2) error and exact-ELBO-to-Dirichlet limit need a stated symmetric counting rule and a normalized microscopic construction supplying the h^(d-2) coefficient.",
+      "severity": "high",
+      "state": "INCONCLUSIVE",
+      "artifact_revision": "git:c799a5ba8d337c66a6b9a9b7c2130a0acd0b0991:sha256:bff1a19560be6b8efcd7e6904c1d6d089538c92254caa6ecf667f77b8bd64d5b",
+      "evidence": [{"id": "panel-kl-assessment", "kind": "llm_judgment", "location": "README.md", "artifact_revision": "git:c799a5ba8d337c66a6b9a9b7c2130a0acd0b0991:sha256:bff1a19560be6b8efcd7e6904c1d6d089538c92254caa6ecf667f77b8bd64d5b"}],
+      "counterevidence": [],
+      "verifiers": [],
+      "open_obligations": ["Specify edge orientation, multiplicity, boundaries, interpolation, and covariant transport, then prove the global limit.", "Derive the mesh-dependent coefficient from a normalized joint including its normalizers, or restrict the unweighted claim to d equals 2."],
+      "evidence_invalidated": false
+    },
+    {
+      "id": "u1-holonomy-scope",
+      "domain": "mathematics",
+      "statement": "The U(1) computation supplies one nontrivial-holonomy separation witness, but the implemented angle statistic is arccos(cos Theta), so it neither equals the U(1) holonomy element nor identifies all distinct holonomies.",
+      "severity": "medium",
+      "state": "LLM_SUPPORTED",
+      "artifact_revision": "git:c799a5ba8d337c66a6b9a9b7c2130a0acd0b0991:sha256:bff1a19560be6b8efcd7e6904c1d6d089538c92254caa6ecf667f77b8bd64d5b",
+      "evidence": [{"id": "panel-holonomy-assessment", "kind": "llm_judgment", "location": "README.md", "artifact_revision": "git:c799a5ba8d337c66a6b9a9b7c2130a0acd0b0991:sha256:bff1a19560be6b8efcd7e6904c1d6d089538c92254caa6ecf667f77b8bd64d5b"}],
+      "counterevidence": [],
+      "verifiers": [],
+      "open_obligations": ["Downgrade the prose to an existence witness or add an oriented asymmetric observable and prove its separation class."],
+      "evidence_invalidated": false
+    },
+    {
+      "id": "literal-pifb2-crosswalk",
+      "domain": "mathematics",
+      "statement": "The tied-replica theorem proves an exact repaired lagged scalar, but equality with literal PIFB2 requires resolving the unbound model variable and the distinction between expectation of log likelihood and log predictive likelihood.",
+      "severity": "high",
+      "state": "INCONCLUSIVE",
+      "artifact_revision": "git:c799a5ba8d337c66a6b9a9b7c2130a0acd0b0991:sha256:bff1a19560be6b8efcd7e6904c1d6d089538c92254caa6ecf667f77b8bd64d5b",
+      "evidence": [{"id": "panel-variational-assessment", "kind": "llm_judgment", "location": "README.md", "artifact_revision": "git:c799a5ba8d337c66a6b9a9b7c2130a0acd0b0991:sha256:bff1a19560be6b8efcd7e6904c1d6d089538c92254caa6ecf667f77b8bd64d5b"}],
+      "counterevidence": [],
+      "verifiers": [],
+      "open_obligations": ["Fix the literal likelihood typing and state whether the intended scalar uses the expected conditional log likelihood or the log predictive mixture, retaining their Jensen gap."],
+      "evidence_invalidated": false
+    }
+  ]
+}
