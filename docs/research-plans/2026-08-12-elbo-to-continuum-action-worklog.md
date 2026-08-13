@@ -1672,7 +1672,16 @@ transported-KL form with the Fisher weight \(W_{ab}=S_a^{-1}\) (per O5) gives, u
 invertible iff \(d\ge K\). So a **nontrivial transport is induced** — answering §3g.5's own next
 question affirmatively. Woodbury verified to \(2.4\times10^{-15}\), \(\operatorname{rank}\Omega=K\).
 
-**But it is never a cocycle, and this is a no-go rather than a genericity statement.**
+**But it is not a frame coboundary, and this is a no-go rather than a genericity statement.**
+*(Wording corrected 2026-08-13: the earlier "never a connection" conflated two objects. The
+**declared** frame transport \(\Omega_{ij}=g_ig_j^{-1}\) certainly IS a connection — verified self-edge
+\(2.4\times10^{-16}\), cocycle \(3.1\times10^{-16}\), loop holonomy \(4.8\times10^{-16}\) — and being a
+coboundary it is **identically flat for any frames whatsoever**; likewise a frame field on the base
+gives \(A=g^{-1}dg\) with curvature \(2.2\times10^{-11}\). The claim here concerns the **induced**
+coupling only.)* The induced object fails the **self-edge identity** first,
+\(\|\Omega_{aa}-\mathbb 1\|=1.51\), and the cocycle failure is downstream of that. It is
+"coboundary-shaped" — it factors as \((\Lambda_aM)(\Lambda_b^{\mathsf T}S_b^{-1})=A_aB_b\) — but
+\(B_b\ne A_b^{-1}\), so it is not \(g_ag_b^{-1}\) for any frames \(g\). Formally:
 \(\Omega_{ab}\Omega_{bc}=\Omega_{ac}\) requires \(F_bM=\mathbb 1\) for every \(b\), where
 \(F_b=\Lambda_b^{\mathsf T}S_b^{-1}\Lambda_b\succeq0\). Since \(M^{-1}=T^{-1}+\sum_bF_b\), that forces
 all \(F_b\) equal to a common \(F\) with \(F(1-N)=T^{-1}\), i.e.
