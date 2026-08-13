@@ -105,6 +105,16 @@ the two neighbours are compared through *different* transports \(\Omega_{c,c+h}\
 is **not automatic** in the covariant setting and must be redone there. Until that is closed, (C3)
 holds for the flat/trivial-transport case only.
 
+> **CLOSED 2026-08-13 — see §4.1(i).** The covariant cancellation holds. On the symmetric stencil the
+> full \(h^3\) coefficient (Amari–Chentsov, exponential-connection and covariant-acceleration parts
+> together) cancels exactly and pointwise at every site, by \(\pm\)-parity of the transported-back
+> curve, with no discrete integration by parts and no boundary term. Derived by the T-GRAD agent and
+> independently reproduced symbolically by its skeptic, who supplied a shorter proof that does not
+> depend on the second or third jet of the curve. **(C3) now holds in the covariant setting.** One
+> correction carried over: the *one-sided* \(O(h)\) coefficient must be stated invariantly as
+> \(c_3=\tfrac12g^F(D^A_\mu q,\nabla^{(e)}_\mu D^A_\mu q)+\tfrac16T_{\rm AC}(D^A_\mu q,D^A_\mu q,D^A_\mu q)\);
+> the form displayed in §4.1 as \((D^A_\mu)^2q\) and \(W\) is chart-dependent term by term.
+
 ---
 
 ## 3. Deployed investigation (14 agents, workflow `wf_f576312d-d2a`)
@@ -584,6 +594,10 @@ connections exists. Obligations, in order:
 
 ## 4. RESULTS — PENDING / RESUME HERE
 
+> **RESOLVED 2026-08-13.** Both panels were recovered from `journal.jsonl`. Results are in **§4b**;
+> the verbatim returns are landed at `docs/audits/panels-2026-08-12/`. The recovery instructions
+> below are retained because they worked and are the operative procedure for any future cutoff.
+
 Two agent panels were dispatched and had **not returned** when the session ended. Their results are
 not in this document and must be treated as unknown, not as absent.
 
@@ -643,39 +657,456 @@ and its invariance verified to ~7e-8) and on any coercivity optimism (PA-3).
 
 ### Highest-value next steps, in order
 
-1. **Discharge §3d.7 obligations 3–4** — gauge-invariance of the statistic under non-abelian \(G\)
+*Superseded 2026-08-13 — items 2 and 3 are done (§4.1(i), §4.3). Revised list:*
+
+1. **Settle the T-COEF dispute (§4.4).** The derivation and its skeptic reach opposite verdicts on
+   whether PIFB2's deployed coefficients are ELBO-reachable, and it reduces to one clean modelling
+   question: *may a generative model declare a block-multiplicity prior matched to the recognition
+   multiplicity?* If yes, the \(\sqrt{K_q/K_m}\) obstruction dissolves; if that counts as tuning the
+   model to the answer, it stands. Nothing from T-COEF is exportable until this is decided, and it is
+   the cheapest decisive item on the list.
+2. **Chase the connection mismatch (§4.1(iii)).** The ELBO generates \(\Delta^{(e)}\) (Amari
+   \(\alpha=+1\), forced by KL orientation) while the Fisher-Dirichlet action's Euler–Lagrange
+   operator is \(\Delta^{(LC)}\). Determine whether some *other* action is the ELBO's genuine
+   variational principle — the natural candidate being the one whose EL operator is \(\Delta^{(e)}\)
+   — or whether an ELBO simply has no variational principle in this class. Note the gap vanishes
+   exactly where \(T_{\rm AC}(D_\mu q,D_\mu q)=0\), which is also where \(d=2\) works in §4.6; those
+   are plausibly one phenomenon and worth checking as such.
+3. **Write up the \(d=2\) induced-volume bound (§4.6).** \(S_{\rm vol}=\inf_{\mathfrak g}\lim_h
+   \mathcal F^{\rm base}_{h,\mathfrak g}\) is a genuine variational bound with a genuine minimum,
+   numerically confirmed to \(1.7\times10^{-16}\). It is the strongest base-geometry result the
+   programme has, and it is currently recorded in no manuscript. Carry the three caveats: \(\rho\)
+   stays exogenous, attainment fails on the rank-drop locus (\(\inf\), not \(\min\)), and every
+   one-parameter fiber is excluded.
+4. **Discharge §3d.7 obligations 3–4** — gauge-invariance of the statistic under non-abelian \(G\)
    (needs a conjugacy-class invariant, not an element), and whether curve-mediated coupling relaxes
-   `hyp:gen-design-product` identically to §3c or strictly further.
-2. **Close the covariant \(O(h^3)\) cancellation** (§2 caveat). This is the one gap between the
-   verified flat-transport result and the covariant Dirichlet limit. Small, self-contained, decisive.
-3. **T-RESID by hand if the panel did not land it** — take the tied-replica joint as *the*
-   microscopic law and compute \((C_h)_\#P_h(\cdot\mid o)\) in closed form. This is what converts
-   \(S_h^{\rm exact}=S_h^{\rm PIFB}+\varepsilon_h+c_h\) from a tautology into a computation.
-4. **Consolidate the four repositories** before further theory expansion (§3b.3).
+   `hyp:gen-design-product` identically to §3c or strictly further. Untouched by either panel.
+5. **Supply a microscopic law with genuine cross-agent coupling** (§4.3). Blockwise-product rigidity
+   makes the tied-replica law structurally incapable of generating multi-body operators, so the
+   effective-action question cannot be posed on it. Minimal repair: a shared latent, or a
+   non-blockwise block-spin \(C_h\) whose coarse coordinates each read several agents' fine blocks.
+6. **Consolidate the four repositories** before further theory expansion (§3b.3). Still outstanding,
+   and §4b has now added a fifth artifact set that lives only in transcript directories.
 
 ---
 
 ## 4b. RESULTS (recorded)
 
-*(none yet — the two panels above are the outstanding source)*
+**Recovery, 2026-08-13.** Both panels were recovered from `journal.jsonl`, as §4 anticipated. The
+panels had *not* produced nothing — they had very nearly finished.
 
-### 4.1 T-GRAD
-_pending_
+| Panel | Dispatched | Returns recorded | Lost |
+|---|---|---|---|
+| A `wf_f576312d-d2a` | 14 | **13** — 3 grounding, all 5 derivations, all 5 skeptics | the final synthesis agent (cut mid-run, no salvageable text) |
+| B `wf_0bb5bbd2-10a` | 9 | **3** — V-EXIST, V-TYPE, V-BRIDGE | V-DIFF and all skeptics (cut mid-run, no salvageable text) |
 
-### 4.2 T-CURV
-_pending_
+Verbatim returns are extracted; the per-agent `agent-<id>.jsonl` files of the lost agents contain no
+final answer text, so those four are genuinely unrecoverable and would have to be re-run.
 
-### 4.3 T-RESID
-_pending_
+Both panels ran blind to §3b (PA-1…PA-13), exactly as §4 warned. Each result below therefore carries
+an explicit reconciliation line. **The synthesis below is written here, by hand, in place of the lost
+synthesis agent.**
 
-### 4.4 T-COEF
-_pending_
+Every derivation was returned with its own adversarial skeptic (Panel A only). The skeptics are not
+decoration: **four of five refused to certify their target**, and in two cases the correction is more
+valuable than the original claim.
 
-### 4.5 T-SIMUL
-_pending_
+### 4.1 T-GRAD — the covariant \(O(h^3)\) cancellation is CLOSED; a new and sharper obstruction replaces it
 
-### 4.6 Synthesis
-_pending_
+Derivation status **PARTIAL**; skeptic verdict `survives: false`, but the skeptic *strengthens* the
+positive half and overturns the derivation's own negative half.
+
+**(i) §2's standing caveat is discharged. This was ranked next-step #2 and it is now closed.**
+On the symmetric (all-directed-edge) stencil, with genuine transport \(\Omega^A_{c,c+h}\ne
+\Omega^A_{c,c-h}\),
+
+$$\tfrac{h^{d-2}}{2}\sum_{c\in\Lambda_h}\sum_\mu\big[E_{c,+\mu}(h)+E_{c,-\mu}(h)\big]
+=\tfrac12\int_{\mathcal C}\|D^Aq\|^2_{g^F}\,dc+O(h^2).$$
+
+The full \(h^3\) coefficient — Amari–Chentsov, exponential-connection, **and** covariant-acceleration
+parts together — cancels **exactly and pointwise at every site** by \(\pm\)-parity of the
+transported-back curve. No discrete integration by parts, no boundary term. The skeptic recomputed
+this symbolically (SymPy, exact Gaussian integrals in a deliberately non-natural chart so
+\(\Gamma^{(e)}\ne0\)), reproduced every quantity exactly, called it "the strongest part of the
+claim", and supplied a shorter proof: \(f(\varepsilon):=D(\theta_0,\hat\theta(\varepsilon))\) is a
+single \(C^3\) function of one variable with \(f(0)=f'(0)=0\), so \(f(h)+f(-h)\) has only even powers
+by elementary parity — **independent of the second and third jet of the transported-back curve**.
+So (C3) of §2 now holds in the covariant setting, not just the flat one.
+
+One-sided edges are genuinely worse: \(\Theta(h)\) rather than \(\Theta(h^2)\), with the \(O(h)\)
+coefficient generically nonzero and *not* a total derivative (\(\int c_3=-3.219270\ne0\)).
+
+**Correction accepted (skeptic, `WEAKENS_SCOPE`).** The \(O(h)\) coefficient must be stated
+invariantly as
+\(c_3=\tfrac12 g^F(D^A_\mu q,\nabla^{(e)}_\mu D^A_\mu q)+\tfrac16 T_{\rm AC}(D^A_\mu q,D^A_\mu q,D^A_\mu q)\)
+with \(\nabla^{(e)}\) Amari's \(\alpha=+1\) connection. As the derivation displayed it — with
+\((D^A_\mu)^2q\) and \(W_{ijk}=\mathbb E[\partial_i\partial_j\partial_k\log p]\) — it is
+chart-dependent term by term, and \((D^A_\mu)^2\) is undefined by the source geometry
+(`Theory/05c:99-107`: \(D^\omega s\) is a vertical-valued one-form, "not a linear covariant
+derivative on a vector space of sections"). Only the sum is invariant. This is exactly the ambiguity
+`Theory/05c:578-587` flags, and the derivation reintroduced it in its own display. Also: §3.5's
+Gaussian witness omits a \(\tfrac13 g^F(v,u)\) term at \(O(h^4)\) — a slip, affecting no conclusion.
+
+**(ii) The derivation's Part II ("REFUTED — the lag turns the Dirichlet term into a mass term") is
+itself refuted.** The derivation argued that because sources are \(H_n\)-measurable, the block
+becomes \(\tfrac d2\int g^F_{q^n}(\varphi,\varphi)+\text{const}\), a positive-definite Fisher **mass**
+term with unique minimizer \(\varphi=0\) — "the gradient operator acts on the wrong field". The
+skeptic computed the block's exact minimizer in closed form on the derivation's own \(d=1\)
+circle/Gaussian instance and found this is an **order-of-limits error**: taking \(h\to0\) at fixed
+\(\varphi\) destroys precisely the \(O(h)\) information that carries the dynamics. The true minimizer
+is the exponential-family (e-geodesic) barycentre \(\prod_b u_b^{\beta_b}/Z\) of the transported
+neighbours — a discrete heat-kernel average — giving
+
+$$q^{n+1}_i(c)-q^n_i(c)=\frac{h^2}{d}\Big[\tfrac12\Delta^{(e),A}q^n_i(c)-\operatorname{grad}^{g^F}V(q^n_i(c))\Big]+O(h^3),$$
+
+verified to 6–7 digits with clean \(O(h^2)\) convergence (errors \(3.5\times10^{-3}\to3.5\times10^{-5}
+\to6.6\times10^{-7}\)). **The base-neighbour block is a forward-Euler / minimizing-movement step of a
+covariant diffusion with time step \(\Delta t=h^2/d\), and the Fisher-Dirichlet energy is the energy
+that drives it.** Its value at the diagonal is exactly \(\tfrac12\int\|D^Aq\|^2_{g^F}dc+O(h^2)\).
+A corollary worth keeping: the replication postulate \(m_h=\lceil dh^{-2}\rceil\) is exactly the
+parabolic scaling \(\Delta t\propto h^2\) — still a declaration, but the canonically forced one
+rather than an arbitrary one, and at \(d=2\) no weighting is needed at all.
+
+**(iii) NEW OBSTRUCTION — the connection mismatch. This is the real residual obstruction and neither
+§2 nor §3c saw it.** The operator the ELBO generates is \(\Delta^{(e),A}=\sum_\mu\nabla^{(e)}_\mu D^A_\mu\),
+whereas the Euler–Lagrange operator of \(\tfrac12\int\|D^Aq\|^2_{g^F}\) is the harmonic-map
+(Levi-Civita) Laplacian
+\(\Delta^{(LC)}=\Delta^{(e)}+\tfrac12(g^F)^{-1}T_{\rm AC}(D_\mu q,D_\mu q)\).
+Tested against the whole Amari \(\alpha\)-family: the ELBO's KL orientation (recognition in slot 1)
+forces \(\alpha=+1\) **exactly** — matched to \(5.8\times10^{-7}\), while missing \(\alpha=0\) by
+\(1.2\) and \(\alpha=-1\) by \(2.3\), mismatches that do **not** shrink with \(h\). (Reverse
+orientation matches \(\alpha=-1\), the m-projection.)
+
+> **Net T-GRAD verdict.** The covariant Fisher-Dirichlet term is ELBO-derived **as an energy value**
+> and **as the generator of a covariant diffusion**, under one canonically forced parabolic
+> replication. It is **not** ELBO-derived **as a variational principle**: the ELBO's stationary
+> sections are \(e\)-harmonic (\(\Delta^{(e),A}q=\operatorname{grad}^{g^F}V\)), not critical points of
+> the Fisher-Dirichlet action. The gap is exactly \(T_{\rm AC}(D_\mu q,D_\mu q)\), and it vanishes iff
+> the Amari–Chentsov contraction vanishes along the section — in particular on Gaussian mean
+> submodels with fixed covariance (`Theory/08_infogeometry.tex:238-247`). It persists at every fixed
+> point and is *not* repaired by evaluating at \(q^{n+1}=q^n\).
+
+Unchanged and still open: this is pointwise convergence at a fixed \(C^2\) section, **not**
+\(\Gamma\)-convergence. Equicoercivity, liminf, recovery sequences, interpolation topology and gauge
+compactness all remain missing, and six independent failures block the \(H^1\) case.
+
+*Reconciliation.* Consistent with §3c: the two-point functional escapes A4.4 at finite \(h\), and the
+limit is a jet functional. PA-4 stands — the Fisher-as-KL-Hessian base fact is corpus prior art; the
+genuine increment is the third-order coefficients and the parity cancellation, now covariant. The
+connection mismatch is new and is not anticipated by any of PA-1…PA-13.
+
+### 4.2 T-CURV — invariance proved for noncompact \(G\), but PA-1 and PA-3 both bite
+
+Derivation status **PARTIAL**; skeptic verdict `survives: false` with an exportable surviving core.
+
+**Surviving core (skeptic-certified, "the one exportable piece").** With the belief-dressed
+Lie-algebra form \(\langle Y,Z\rangle_q:=g^F_q(Y.q,Z.q)=\mathbb E_q[\psi_Y\psi_Z]\):
+
+$$\big\langle \mathrm{Ad}_gY,\ \mathrm{Ad}_gZ\big\rangle_{\,g_\#q}=\langle Y,Z\rangle_q
+\qquad\text{for every }g\in G\text{ (noncompact permitted).}$$
+
+No compactness, no \(\mathrm{Ad}\)-invariant form on \(\mathfrak g\), no Haar measure, no gauge slice.
+Verified to 12 digits at \(\operatorname{cond}(g)\) up to 99, while the Frobenius energy swings by
+\(679\times\). The plaquette expansion gives
+\(D_{\rm KL}(q\|(H_P)_\#q)=\tfrac12h^4\|F_{\mu\nu}(c).q\|^2_{g^F(q)}+O(h^5)\), a **Fisher-weighted,
+state-dependent** Yang–Mills energy, not \(\|F\|_F^2\).
+
+**Hypothesis the derivation missed (skeptic, necessary).** \(\psi_Y\in L^2(q)\) is **not** sufficient;
+one needs \(q\sim g_\#q\) for \(g\) near the identity, i.e. \(\operatorname{supp}q\) is
+\(G\)-invariant. Counterexample: uniform on the disc, where \(\psi_Y=-1\in L^2(q)\),
+\(\langle Y,Y\rangle_q=1\), yet \(D_{\rm KL}(q\|q_\varepsilon)=+\infty\) while the claimed expansion
+is finite. Holds automatically for Gaussians with \(\Sigma\succ0\).
+
+**Reconciliation — PA-1 fires as predicted, and so does PA-3.** The skeptic independently reached
+§3b's conclusion without having seen it: the invariance is a corollary of
+`prop:pb-statistical-tensor-descent` (`05c:59-74`, already `ESTABLISHED`) evaluated on fundamental
+vertical fields, and the form together with the radical identification is already `ESTABLISHED` at
+`05c:946-949`. **Do not claim the construction** (PA-1). What is genuinely new is the evaluation on
+the *curvature* and the noncompactness statement. And PA-3 is confirmed from the other side: the
+invariance discharges only the norm-invariance clause; **it supplies no coercivity**, and the
+derivation's own obstruction list agrees — \(\operatorname{rad}(\sum_i m_{q_i})=\bigcap_i\mathfrak g_{q_i}\)
+degenerates on exactly the consensus configuration that PIFB2's own alignment terms drive toward.
+
+Four further obstructions returned, all recorded: the same-time loop is not ELBO-derivable (CE-6, only
+the lagged term escapes); **belief screening makes the sector vanish to leading order at \(d=2\)**,
+which is PIFB2's deployed base (`PIFB2.tex:434`), so it is nonvacuous only for \(d\ge3\); PIFB2's
+**per-agent** \(F^{(i)}_{\mu\nu}\) (`:429`, `:713`) kills the multi-agent nondegeneracy repair, which
+needs one shared connection; and for \(G=SO(K)\) with isotropic beliefs the energy vanishes
+identically, so this is **complementary to** the classical Wilson action, not a generalization of it.
+
+### 4.3 T-RESID — status **PROVED**, but the skeptic finds the headline vacuous and one clause false
+
+Derivation status **PROVED**; skeptic verdict `survives: false`, `confidence: high`.
+
+**What survives, and it is the real result.** The label-marginalizing contraction has an exact
+closed-form residual, and the skeptic upgraded it from an expectation identity to a *pointwise
+algebraic* one:
+
+$$\varepsilon_a(x)=\log\frac{\prod_j u_{aj}(x)^{\pi^q_{aj}}}{\sum_j\pi^q_{aj}u_{aj}(x)}
+=-D_{\rm KL}\big(\pi^q_a\,\big\|\,\pi^{q,\rm post}_a(\cdot\mid x)\big)\le0,$$
+
+zero iff \(X_a\) is independent of \(J^q_a\). This gives \(c_h\) its **first definition anywhere in
+the corpus** (\(c_h=-\sum_a\log Z^q_aZ^s_a\), a weighted Bhattacharyya–Chernoff overlap deficit) and
+\(\varepsilon_h\) its first closed form. Before this, \(\varepsilon_h\) and \(c_h\) occurred in
+exactly three lines of the whole corpus and \(c_h\) was never defined.
+
+**Struck by the skeptic.** (1) Blockwise-product rigidity is *true but vacuous* — a restatement of the
+product hypothesis; it proves nothing about any law with cross-agent coupling and does not discharge
+`final-report.md:55`. (2) The label-retaining contraction has \(C_h\) a bimeasurable relabeling of the
+identity, so it is `exact-elbo-proof.md:141-147` verbatim; since the microscopic law was *engineered*
+to have this ELBO, it establishes nothing about PIFB2's effective-action status, and \(c_h=0\) only
+under the unnormalized convention. (3) Statement (4) is false as written (two independent
+counterexamples). (4) Extra hypotheses are needed: the product reference must be of *probability*
+laws with the stated domination, and the Hoeffding–Möbius space needs \(S_h\in L^\infty(\nu_h)\),
+which **fails for Gaussian sources under Lebesgue**.
+
+**The consequential negative, which both agree on.** On a balanced stencil the label-marginalization
+residual is *exactly minus* the retained peer sector at \(O(h^2)\), leaving \(O(h^4)\) — verified in
+closed form (\(q=N(0,1)\), \(u_\pm=N(\pm h,1)\): peer \(=h^2/2\) exactly, contracted
+\(=h^4/4+O(h^6)\)) and by quadrature in 1-D and 2-D. So the criterion \(\|\varepsilon_h\|_\infty\to0\)
+is satisfied **and vacuous**; the live question is the *relative* one, which is computed and equals 1
+on a balanced stencil. And because \(P^n_h=\bigotimes_aP^n_a\) by construction, this law is
+**structurally incapable** of generating multi-body operators — substituting it makes \(\varepsilon_h\)
+determinate at the cost of trivializing the very question CE-1/CE-2 were designed to pose.
+
+> So T-RESID converts the tautology into a computation, as intended, and the computation says the
+> tied-replica law is the wrong microscopic law for the question. A law with genuine cross-agent
+> coupling — a shared latent, or a non-blockwise block-spin \(C_h\) — is still needed.
+
+### 4.4 T-COEF — derivation and skeptic reach nearly opposite conclusions. UNRESOLVED, and this is now the sharpest open dispute.
+
+Derivation status **PARTIAL**; skeptic verdict `survives: false`, `confidence: high`. Unlike 4.1–4.3
+the disagreement here is not a correction but a **reversal**, and there was no third agent to break it.
+
+**Derivation's claim.** A "unit-entropy principle": the only non-affine dependence of an exact
+negative ELBO on its recognition law is minus the Shannon entropy, with coefficient exactly one; a law
+entering \(N\) blocks enters with entropy coefficient exactly \(-N\in\mathbb Z_{\le0}\). Hence
+temperatures are **block counts** (proved via non-polynomiality of Shannon entropy on a simplex
+segment), all pairwise ratios among \(\{\tau,\tau_s,\alpha+1,\lambda_s+1\}\) are rational, and
+therefore PIFB2's deployed pair \(\tau_\beta=\kappa\sqrt{K_q}\), \(\tau_\gamma=\kappa\sqrt{K_m}\)
+(`PIFB2.tex:673`) is **OBSTRUCTED** whenever \(K_q/K_m\) is not a rational square — \(\kappa\)-free
+and scale-free. Learnable \(\kappa\) admissible only on a Lebesgue-null set. Smooth \(\chi\)
+obstructed on T1/T2. State-dependent \(\alpha^*_i(c)\) obstructed.
+
+**Skeptic's counter.** Lemma 0 is the special case of a *deterministic* block count. Randomize the
+multiplicity: a tied law whose block multiplicity is a \(Q\)-random variable \(N_\theta\) enters with
+entropy coefficient \(-\mathbb E_Q[N_\theta]\in(-\infty,0]\) — **integer iff \(N_\theta\) is a.s.
+constant** (verified numerically to \(8.3\times10^{-17}\)). Declaring the generative multiplicity
+prior \(\rho:=\xi\) makes \(D_{\rm KL}(\xi\|\rho)=0\) and the coefficient an arbitrary nonnegative
+real. On this reading Theorem A is correct but is a theorem about a *hypothesis* (a.s. constant block
+count), not about ELBOs, and Corollaries A1–A4 are false without it. The skeptic reports an
+end-to-end verification at \(K_q=2\), \(K_m=3\), \(\kappa=1\), irrational ratio \(\sqrt{2/3}\),
+concluding that **every constant coefficient PIFB2 deploys is exactly reachable with zero residue**,
+and \(\chi\) is reachable as a Bernoulli presence probability reproducing T1, T2 and T5 at once.
+
+**Assessment for the record.** The dispute reduces to one modelling question: *is a generative model
+permitted to declare a block-multiplicity prior matched to the recognition multiplicity?* If yes the
+skeptic is right and the obstruction dissolves; if that is ruled out as tuning the model to the
+answer, the derivation stands. This is exactly the kind of question the roadmap-review referees were
+convened for, and it is **not settled here**. Both readings are recorded; neither is to be exported
+to `Theory/` until it is.
+
+Three of the derivation's obstructions are *not* touched by the skeptic's mechanism and stand
+independently: there is **no** law \(w\) with \(D_{\rm KL}(q\|w)=\tau^{-1}D_{\rm KL}(q\|u)+\text{const}\)
+unless \(\tau=1\) (so tempering is provably the closest possible and its residue unavoidable);
+tempering leaves a \(\beta\)-dependent normalizer with Gaussian coefficient
+\(\tfrac{\tau-1}{2\tau}\log|S_b|\), absorbable only into the attention prior and vanishing only under
+a non-generic unimodular gauge condition \(GL(K_q)\) does not supply; and it leaves an entropy residue
+\((1-\tau)H_\nu(q)\) that PIFB2's action has no term for. These quantify `PIFB2.tex:678`'s own
+qualitative concession.
+
+### 4.5 T-SIMUL — the only target whose skeptic upholds it. `survives: true`.
+
+Derivation status **PARTIAL**; skeptic verdict `survives: true`, `confidence: high`, with (A), (B),
+(C), (E) intact and (D) surviving as an identity but with its headline inference struck.
+
+**(A) Diagonal identity.** \(S(x)=L(x\mid x)\) for *every* \(x\), not only at fixed points. The
+skeptic notes this is true by definition and therefore constrains only derivatives *along* the
+diagonal, and insists the word "deployed" be dropped: \(S\) is the \(\tau=1\), unit-coefficient,
+\(\chi\)-free skeleton, not PIFB2's actual functional.
+
+**(B) Reaction decomposition.** \(\nabla S=V^{\rm rec}+R^{\rm react}\) with
+
+$$R^{\rm react}_i(x)=-b_i\,\mathbb E_{\bar q_i}[s_{x_i}],\qquad
+b_i=\sum_{l\ne i}\beta_{li},\quad \bar q_i=\tfrac1{b_i}\sum_l\beta_{li}(\Omega_{il})_\#q_{x_l},$$
+
+equal to \(b_i(m_i-\bar m_i)\) in exponential-family natural coordinates. It vanishes iff \(q_{x_i}\)
+is the M-projection of the attention-weighted back-transported audience mixture — in particular at
+exact transported consensus. The skeptic verified the Gaussian case forces \(\Sigma_i\) to equal the
+mixture covariance **including between-component dispersion** (eigenvalues 0.6125, 1.4414 vs
+weighted-average 0.3912, 1.2529), matching `PIFB2.tex:1602`'s "dispersion term included". The
+decomposition needs no frozen-frame hypothesis and survives co-evolving frames.
+
+**(C) The bridge is REFUTED — this settles a standing open question in the negative.** The lagged
+scheme converges at \(O(dt)\) to \(\dot x=-V^{\rm rec}(x)\), **not** to \(\dot x=-\nabla S(x)\); the
+fields differ by \(R^{\rm react}\), which is \(O(1)\) in \(dt\). Moreover \(V^{\rm rec}\) is
+generically not the gradient of any \(C^2\) potential: on a directed attention 3-cycle with mean-only
+Gaussian beliefs the linearization has eigenvalues \(-(a+3b/2)\pm ib\sqrt3/2\), **complex for every
+\(b>0\)**, whereas every \(C^2\) gradient flow linearizes to a symmetric matrix with real spectrum.
+The skeptic confirms this is discretization-independent — it holds for the delay ODE, Gauss–Seidel
+sweeps, and the \(dt\)-free exact-argmin update alike.
+
+> **"Same-time PIFB2 is the \(dt\to0\) limit of the lagged ELBO-exact scheme" is FALSE.** This was
+> §4's ranked highest-value T-SIMUL question and it is now answered, negatively and robustly.
+
+**(D) Positive settlement, with its headline struck.** The belief and model label-copy blocks carry no
+observation factor, so the marginal evidence \(p^n(o)=\prod_a\int p_a(dk)r_a(dm)L_a(o_a\mid k,m)\) is
+independent of the source laws, hence of \(n\) and of any tie: the tied family lies entirely on **one
+level set of the log evidence**. This yields \(S(x)=-\log p(o)+D_{\rm KL}(Q_x\|P_{\theta=x}(\cdot\mid o))\)
+for every \(x\). But the tie makes \(\{P_\theta\}\) a \(Q\)-indexed family, so
+`thm:state_level_elbo_nogo` (`PIFB2.tex:3281`) still correctly forbids the strong reading. The honest
+statement is **"a valid bound on a fixed number via a moving model"**, not "an exact ELBO of one fixed
+joint". The skeptic additionally refutes the EM reading.
+
+**New obstruction, previously unrecorded.** Even with perfectly symmetric energies and priors, live
+softmax \(\beta^*\) is generically **not** symmetric because the row partition functions differ
+(verified: \(\max|\beta^*-\beta^{*\top}|=0.547\) at \(N=4\), \(K=3\), \(\tau=0.7\)). This kills the
+halving repair on the deployed softmax path. Edge-symmetry also fails independently on the deployed
+path because \(GL(K_q)\) transports act on full covariances.
+
+**Checkable prediction.** Under edge-symmetry the lagged flow equals the same-time flow at *halved*
+peer coupling. Even where edge-symmetry fails this predicts a systematic factor-2 offset between any
+ELBO-calibrated peer coefficient and the deployed \(\beta\) — testable in MAgent by comparing a
+detached-sender ablation against the live path at doubled coupling.
+
+### 4.6 Panel B — the induced-volume horn (§3c.6). Three independent agents, one verdict: **do not commit, except at \(d=2\).**
+
+V-EXIST and V-TYPE returned `OBSTRUCTED`; V-BRIDGE returned `PARTIAL`. V-DIFF and all Panel-B
+skeptics were lost. The three surviving agents were mutually blind and **converged**, which
+substitutes for the missing adversarial pass on the points where all three agree.
+
+**The Polyakov algebra is correct.** Varying \(\gamma\) does give \(\gamma_{\mu\nu}=h_{\mu\nu}\) and
+\(S_P|_{\rm on-shell}=S_{\rm vol}\); \(\Lambda=d-2\) is forced uniquely (by injectivity of
+\(t\mapsto t^{1-d/2}\) on \((0,\infty)\) for \(d\ne2\)). Verified symbolically at \(d=1,2,3,4\).
+**That is the only half that works.**
+
+**Why it fails for \(d\ge3\) — four independent proofs, no two sharing an assumption:**
+
+1. **Conformal mode.** \(\gamma=h\) is a **saddle** of signature \((d(d+1)/2-1,\,1)\), and along the
+   conformal ray \(f(\Omega)=\tfrac12(d\Omega^{d-2}-(d-2)\Omega^d)\to-\infty\). So
+   \(\inf_\gamma S_P=-\infty\) pointwise. An ELBO is an infimum and is bounded below by
+   \(-\log p(o)\); "minimize the free energy over \(\gamma\)" is not a mischaracterization to be
+   softened into "extremize" — **the objective has no infimum**. Restated as stationarity it is a
+   Virasoro-type *constraint*, and a constraint supplies no bound, hence no variational-inference
+   reading. §4 recorded this as unchecked; it is now checked and negative.
+2. **Homogeneity / concavity.** \(\sqrt{\det h}\) is degree-\(d/2\) homogeneous and strictly convex
+   along rays; any nearest-neighbour transported-KL lattice sum is degree-1 homogeneous and linear in
+   \(h\); an infimum of affine functions is concave. By Minkowski's determinant theorem
+   \(\det^{1/2}\) is concave on \(\mathrm{PSD}_d\) **iff \(d\le2\)**. So no auxiliary field entering
+   linearly can produce \(S_{\rm vol}\) at \(d\ge3\), Polyakov or otherwise, and no additive constant
+   repairs it (\(1,\lambda,\lambda^{d/2}\) are linearly independent for \(d\ne2\)).
+3. **The \((d-2)\) term.** It *does* have a lattice counterpart — the ELBO's site sector — but
+   matching demands \(f_{\rm site}\equiv-(d-2)/2\), a strictly **negative** constant per design point.
+   Every ELBO site block except \(-\mathbb E\log\ell\) is nonnegative, and a negative constant needs an
+   observation reference measure of total mass \(\ne1\), breaking exactly the normalization hypothesis
+   that certifies the closed theorem. Lattice reading: refining the design would lower the free energy
+   without bound — obstruction 1 in disguise.
+4. **Non-coercivity, and it is PA-3 again.** \(S_{\rm vol}[q\circ\varphi]=S_{\rm vol}[q]\) **exactly**
+   for every \(\varphi\in\mathrm{Diff}(\mathcal C,\partial\mathcal C)\), and those orbits are unbounded
+   in every Sobolev norm. No sublevel set is bounded; the direct method is dead in every dimension, on
+   every fiber, with any boundary data. **PA-3's escape — pick compact \(G\) — does not exist here:
+   \(\mathrm{Diff}\) of a positive-dimensional manifold is never compact.** Committing to
+   \(S_{\rm vol}\) converts a fixable obstruction into an unfixable one.
+
+**Two further structural defects.** \(F\equiv0\) on \(\{\operatorname{rank}\xi<d\}\), a cone containing
+rays of unbounded norm — an explicit family has \(S_{\rm vol}\equiv0\) *exactly* while
+\(\|Dq_k\|_{L^2}\to\infty\), so minimizing \(S_{\rm vol}\) actively drives the belief field toward rank
+deficiency (the Nambu–Goto crumpling instability). And by the area formula \(S_{\rm vol}\) is a
+parametric Plateau problem whose compactness theory lives on integral **currents**; the relaxed
+minimizer generically is not the graph of a section, so **the minimizer of \(S_{\rm vol}\) is not an
+agent** — contradicting the ontology at `Theory/02_geometry.tex:16-34`. Also \(\det h\equiv0\)
+identically whenever \(d>\dim\mathcal B\) (Cauchy–Binet).
+
+**Rigidity — the finding that should change the plan.** If \(S[q]=\int f(h)\) is
+\(\mathrm{Diff}(\mathcal C)\)-invariant with \(f\) continuous, then \(f(A^\top hA)=|\det A|f(h)\),
+forcing \(f(h)=f(I)\sqrt{\det h}\). \(S_{\rm vol}\) is **the unique** local
+\(\mathrm{Diff}(\mathcal C)\)-invariant first-order scalar. So there is no better invariant action to
+go looking for, and combined with the non-coercivity the conclusion is not "\(S_{\rm vol}\) is hard"
+but:
+
+> **Full base-diffeomorphism invariance and existence-by-the-direct-method are incompatible.** That is
+> the clean negative.
+
+**Where it *does* work — \(d=2\), and better than anyone in this programme had argued.** Four things
+line up and they are the same fact seen four ways: the forced bond weight \(h^{d-2}=1\); every Bravais
+lattice supplies a **unimodular** densitized cometric, so the ELBO carries the lattice's conformal
+structure and is blind to its scale; the cosmological constant \((d-2)\) vanishes, so no term without
+an ELBO origin is needed; and \(\sqrt{\det h}\) is concave and 1-homogeneous on the \(2\times2\) PSD
+cone, hence *exactly* the infimum of the linear forms dominating it — which is precisely the lattice
+form. The result
+
+$$S_{\rm vol}[q]=\inf_{\mathfrak g}\ \lim_{h\to0}\ \mathcal F^{\rm base}_{h,\mathfrak g}[q]\qquad(d=2)$$
+
+is a genuine variational **bound** with a genuine **minimum**, not a saddle, saturated exactly on the
+conformal class of \(h\). Numerically confirmed to \(1.7\times10^{-16}\) with exact Gaussian KL on real
+lattices. V-BRIDGE's own assessment: "that is a publishable theorem and it is the strongest thing this
+programme has produced on base geometry." Three tempering caveats: N1 is only **half** saved
+(unimodularity leaves the site density \(\rho\) exogenous, and the site sector is the bulk of the
+ELBO); attainment still fails on the rank-drop locus, so the theorem reads \(\inf\), not \(\min\); and
+\(d=2\) excludes every one-parameter fiber (\(\dim\mathcal B\ge2\) is hard).
+
+**On the typing question (V-TYPE).** The answer is **mixed, and the load-bearing half is generative.**
+Support, density and reference row are all generative/design data; only the **anisotropy** is
+recognition-side. Worse, it is *frozen*: at the unit coefficients the exact theorem actually delivers,
+\(\beta^*=\pi+O(h^2)\) and the cost/benefit ratio for moving \(\gamma\) an \(O(1)\) distance is
+\(h^{-2}\to\infty\). And the **scale** can never be recognition-side, because a probability row is
+trace-normalized — the ELBO's own \(\gamma\)-elimination returns a soft-*min* (a soft smallest
+eigenvalue of \(h\)), not a determinant: different constraint set, different homogeneity degree.
+
+> **Net Panel B verdict.** §3c.6's conjecture is resolved, and against itself. The induced-volume horn
+> does **not** remove the exogenous cometric and density — it renames them \(\pi\) and \(\rho\) and
+> moves them to a different chapter. Keep \(S_{\rm vol}\) if at all as an **engineered**
+> \(\mathrm{Diff}(\mathcal C)\)-invariant action, stated as engineered in PIFB2's own register
+> (`PIFB2.tex:3407`), which is still a real gain — it deletes `PIFB2.tex:1731`'s \(\sqrt{|g|}(c)dc\)
+> and with it the intrinsic base metric that contradicts N1 (§3c.7). **Claim no ELBO derivation**,
+> except at \(d=2\), where the bound is genuine and should be written up.
+
+Worth recording that §3c.6's own caveats were right on both counts it flagged ("not the \(h\to0\)
+limit of the lattice KL sum"; "degenerate on the rank-drop locus"), and that
+`wave2-01-constructions.md:134-136` had already rejected \(\sqrt{\det h^\omega_s}\) for the rank
+reason. The PI was re-proposing an object the wave-2 audit had already turned down.
+
+### 4.7 Synthesis (written by hand — the synthesis agent was lost)
+
+**What moved.**
+
+1. **§2's covariant \(O(h^3)\) gap is closed** (4.1), by a pointwise parity argument that is more
+   robust than expected — it does not depend on the second or third jet of the transported-back curve.
+   Ranked next-step #2 is done.
+2. **The same-time bridge is refuted** (4.5), robustly and discretization-independently. The standing
+   T-SIMUL question is closed in the negative.
+3. **The induced-volume horn is resolved against itself for \(d\ge3\) and confirmed for \(d=2\)** (4.6),
+   by four independent arguments from three mutually blind agents.
+4. **\(\varepsilon_h\) and \(c_h\) now have closed forms** (4.3) — \(c_h\)'s first definition anywhere —
+   at the cost of showing this microscopic law cannot pose the question it was substituted to answer.
+
+**The one genuinely new obstruction: the connection mismatch (4.1(iii)).** The ELBO's KL orientation
+forces Amari's \(\alpha=+1\); the Fisher-Dirichlet action's Euler–Lagrange operator is Levi-Civita
+(\(\alpha=0\)). The gap is \(\tfrac12(g^F)^{-1}T_{\rm AC}(D_\mu q,D_\mu q)\), it does not shrink with
+\(h\), and it persists at every fixed point. This is sharper than the obstruction it replaces, because
+it is not about limits or hypotheses — it is a statement about which operator an ELBO can generate at
+all. **It also explains the \(d=2\) coincidence in 4.6 and the Gaussian-fixed-covariance escape in 4.1
+as the same phenomenon: both are exactly where the Amari–Chentsov contraction drops out.**
+
+**A pattern across all five Panel A targets.** Every sector reaches the same shape of answer: the ELBO
+supplies the *energy value* exactly, and fails to supply the *variational principle*, the *coercivity*,
+or the *measure*. T-GRAD gives the Dirichlet energy but the wrong stationarity operator; T-CURV gives
+an invariant curvature density but no coercivity (PA-3) and nothing at \(d=2\); T-RESID gives an exact
+residual but on a law with no cross-agent content; Panel B gives an exact \(d=2\) bound but leaves
+\(\rho\) exogenous. This is consistent enough to be worth stating as a program-level finding rather
+than five separate caveats.
+
+**Reconciliation summary against §3b.** PA-1 fired exactly as predicted (T-CURV construction is not
+novel; only the noncompactness route is). PA-3 fired twice, once as predicted on T-CURV and once
+unforeseen on \(\mathrm{Diff}(\mathcal C)\), where it is fatal rather than fixable. PA-4 stands. No
+returned result contradicts rm-01…rm-06. **Nothing here is cleared for `Theory/` yet** — 4.4 is an
+unresolved dispute, and 4.1's positive half needs the invariant restatement of \(c_3\) before it is
+written down.
+
+**Missing and worth re-running:** Panel B's V-DIFF (\(\mathrm{Diff}(\mathcal C)\) invariance,
+surviving observables, local d.o.f. in \(d=1,2,3\), whether O3 dissolves) — though 4.6 has largely
+answered it in the negative — and Panel B's skeptic tier. Both scripts are self-contained and
+re-runnable; patch the `COMMON` block per §4 first.
 
 ---
 
