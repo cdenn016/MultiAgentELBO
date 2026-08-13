@@ -1972,6 +1972,87 @@ SPD-as-matter reading has an exact ELBO term of its own, or only the gauge secto
 prior-art check on gauged sigma models with symmetric-space targets, which must precede any novelty
 claim.
 
+## 3j. WHICH FIBERS ADMIT A GAUGE GROUP AT ALL - the generality constraint
+
+*Opened 2026-08-13 in response to the standing position that multivariate Gaussians are only a
+computational example and the theory should sit at the level of general exponential families. That
+position is right about the ontology and wrong about what the gauge structure will bear. This section
+records the obstruction and names the class that does work.*
+
+### 3j.1 The requirement
+
+Established earlier this session: for the represented action to preserve the Fisher metric it must be
+by PUSHFORWARD under bimeasurable sample-space automorphisms, rho-hat(g) = (rho(g))_#, and a merely
+smooth action of G <= GL(K,R) on a law fiber is not Fisher-isometric (projective tilting on the
+simplex drifts g^F by up to 64%). So the available gauge group is the pushforward isometry group of
+the fiber, and nothing larger. A *nontrivial* connection therefore requires a fiber whose isometry
+group is large - ideally transitive.
+
+### 3j.2 Generic exponential families have no gauge group [COMPUTED]
+
+In two dimensions a transitive isometry group forces constant Gaussian curvature. Computing the
+curvature of the Fisher metric symbolically:
+
+| family | Fisher curvature | consequence |
+|---|---|---|
+| Gaussian location-scale | K = -1/2, **constant** | hyperbolic plane; Isom = PSL(2,R), **transitive** |
+| Gamma(shape a, rate b) | K(a) = (a psi2(a) + psi1(a)) / (4(a psi1(a) - 1)^2) | **non-constant**: -0.4040, -0.4563, -0.4859, -0.4976, -0.4994 at a = 0.5, 1, 2, 5, 10 |
+| Beta(a, b) | K(a,b), full polygamma expression | **non-constant**: -0.3894, -0.4757, -0.3991 at (1,1), (2,3), (5,0.5) |
+| categorical (simplex) | - | Isom = S_{n+1}, **finite** (overview 7, categorical rigidity) |
+
+Gamma and Beta admit **no transitive isometry group**, hence no nontrivial pushforward gauge group.
+The Gaussian family has gauge structure *because* its Fisher metric is the hyperbolic plane, not
+because it is a convenient example. **The gauge apparatus is not generic over exponential families;
+it is a property of the Gaussian one.**
+
+Worth noting: Gamma's curvature tends to -1/2 as the shape parameter grows (0.4996 at a = 50,
+0.499999 at a = 200), which is the Gaussian limit. So Gamma is *asymptotically* homogeneous, and there
+may be an approximate-gauge regime at large shape. Not pursued.
+
+### 3j.3 The class that does work
+
+The correct generalization is not "exponential families" but **homogeneous statistical manifolds** -
+those whose Fisher metric admits a transitive isometry group. That class has an existing theory which
+this programme should adopt rather than reconstruct: Hessian geometry and homogeneous Hessian
+manifolds (Shima, *The Geometry of Hessian Structures*), Koszul forms, and Vinberg's theory of
+homogeneous convex cones, of which the SPD cone is the canonical symmetric example. A dually flat
+statistical manifold *is* a Hessian manifold, so this is the natural home for the programme's
+exponential-family tier, and homogeneity is exactly the extra condition the gauge structure needs.
+
+This also corrects 3i.4. That section argued the SPD sector "stops being gauge and becomes matter"
+because GL(K)/O(K) is the SPD symmetric space - reasoning that is **Gaussian-specific** and does not
+survive the move to a general fiber, where there is no Sigma and no symmetric space. The general
+statement is: a homogeneous fiber Isom/K_max splits into a compact gauge part and a symmetric-space
+matter part; for Gaussians that reads Aff(K)/O(K) with SPD as matter, and for a fiber that is not
+homogeneous it reads nothing at all.
+
+### 3j.4 The consequence for the ontology
+
+There is a genuine tension to record rather than paper over. overview.md section 2.1 declares the
+ontological target to be general normalized-law fibers, with Gaussians a "tractable coordinate
+backend, not the ontology". The gauge structure points the other way: it exists only on homogeneous
+fibers, and the ontology's generality is exactly what removes it. Three honest positions:
+
+1. **Keep the gauge structure and restrict the ontology** to homogeneous statistical manifolds. Loses
+   the claimed generality; gains everything in 3h and 3i.
+2. **Keep the general ontology and drop the gauge structure** on non-homogeneous fibers, where the
+   connection is inert. That is the categorical case (rm-04:244-250: connected G acts trivially, the
+   bundle is canonically trivial, D^omega q = dq for every connection) generalized.
+3. **Two tiers**: a general ontological tier with no gauge content, and a homogeneous tier where the
+   connection, holonomy, curvature and meta-agent machinery live. This matches the corpus's existing
+   tier structure and is probably what is actually meant, but it is nowhere stated, and section 2.1
+   currently reads as though the gauge apparatus survives the generalization. It does not.
+
+### 3j.5 Scope
+
+Two-parameter families only; the curvature-constancy criterion for transitivity is exact in 2-D and
+needs the full isometry-algebra computation in higher dimensions. Non-constant curvature rules out a
+*transitive* group but does not by itself rule out a positive-dimensional non-transitive one - though
+for the connection to be non-inert one needs the orbits to be positive-dimensional in the directions
+the section varies, which is the sharper statement and is not computed here. No claim about mixtures,
+which are not exponential families and were also named in the standing position; the mixture case is
+open and is the obvious next computation.
+
 ## 4. RESULTS — PENDING / RESUME HERE
 
 > **RESOLVED 2026-08-13.** Both panels were recovered from `journal.jsonl`. Results are in **§4b**;
