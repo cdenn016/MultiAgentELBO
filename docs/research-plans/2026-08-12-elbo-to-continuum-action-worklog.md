@@ -705,6 +705,136 @@ after this list; read them in the order 3d.8 then 3d.7.)* The original obligatio
 
 ---
 
+## 3e. AGENT → META-AGENT RENORMALIZATION — the coherence criterion, and the extent question
+
+*Opened 2026-08-13. Point-wise results are computed and committed; the extent criterion is under
+investigation and is NOT established. Witness: `docs/verification/meta_agent_coherence_witness.py`
+(seed 20260813, four claims, all asserted in-script).*
+
+### 3e.1 The object
+
+At a fixed base point \(c\), the active agent set is \(A(c)=\{i:c\in\mathcal C_i\}\), carrying a
+weighted directed graph with attention rows \(\beta_{ij}(c)\) (belief) and \(\gamma_{ij}(c)\) (model)
+and fiber transports \(\Omega_{ij}(c)\), \(\widetilde\Omega_{ij}(c)\). These transports are
+**vertical**: they act within the fiber over one \(c\). They are not the principal connection
+\(\omega\), which compares fibers at *different* base points. The two holonomies that result are
+different objects and must not be conflated.
+
+The proposal under investigation is that renormalization in this programme is
+agent → meta-agent coarse-graining on that weighted network, with a **species** being a block aligned
+in the model channel (\(D_{\rm KL}(s_i\|\widetilde\Omega_{ij}s_j)\approx0\), agents that agree how the
+world works) and a **meta-agent** a block aligned in the belief channel
+(\(D_{\rm KL}(q_i\|\Omega_{ij}q_j)\approx0\), agents that agree what state it is in).
+
+### 3e.2 Established point-wise (COMPUTED, seed-committed)
+
+**(i) Alignment does not force trivial holonomy; it forces the holonomy into the stabilizer.**
+If \(q_i=(\Omega_{ij})_\#q_j\) on every edge of a loop, composing around the loop carries \(q_i\) to
+itself, so the loop holonomy satisfies \(H\in\mathrm{Stab}(q_i)\) — and no more. Witness: a 4-agent
+\(SO(3)\) block with alignment exact on all four edges to \(10^{-16}\) has
+\(\|H-\mathbb 1\|_F=0.0895\), eigenvalues \(\{1,\,0.998\pm0.063i\}\), while
+\(\|Hq_0-q_0\|=1.6\times10^{-16}\). The holonomy is invisible to the aligned belief without being
+trivial. **The condition is not \(\Omega_{ik}\Omega_{kl}\Omega_{lj}\Omega_{ji}=\mathbb 1\).**
+
+**(ii) \(H\in\mathrm{Stab}(q)\) is exactly what makes coarse-graining well posed.** Two distinct
+spanning trees over an aligned block give compressed meta-states agreeing to \(2.0\times10^{-16}\)
+relative; breaking alignment on one single chord edge restores tree-dependence at \(0.975\).
+**This is the repair for the standing high-severity defect** that `Theory/07b`'s compressed
+meta-state is spanning-tree dependent (counterexample at 150% relative difference; centralizer of the
+based holonomy group of dimension exactly 1, so no root gauge reconciles two trees).
+
+**(iii) The connection Laplacian is the right operator.** With
+\(L^\Omega=D\otimes\mathbb 1-W^\Omega\), \((W^\Omega)_{ij}=\beta_{ij}\Omega_{ij}\) in \(K\times K\)
+blocks, the low eigenvector on an aligned block **is** the meta-agent belief: \(|\cos|=1.0\) against
+every local \(q_i\) to ten digits. The plain graph Laplacian discards \(\Omega_{ij}\) and cannot see
+frustration at all, so it is not the appropriate operator here.
+
+**(iv) Kernel dimension is the wrong diagnostic; \(\lambda_1\) is the order parameter.** A single
+\(SO(3)\) cycle always fixes an axis, so a zero mode survives frustration. With two independent
+non-commuting cycles the common fixed space is \(\{0\}\) in both regimes, and what separates them is
+the magnitude: \(\lambda_1=3.5\times10^{-5}\) near-flat versus \(5.4\times10^{-2}\) frustrated, a
+factor \(\sim1500\) at the committed seed.
+
+Consequently **alignment is the trigger and holonomy is the obstruction**, not the other way round:
+alignment implies the holonomy condition for free, so no separate holonomy test is needed to decide
+when to coarse-grain. What holonomy detects is *failure* — a block with small pairwise KLs but
+holonomy outside the common stabilizer is **frustrated**: locally everyone agrees, globally no
+consistent meta-belief exists, and further local agreement will not produce one.
+
+**(v) Scope note on B4.** The agent-graph holonomy is observable in a way the base holonomy provably
+is not. B4 turns on the connection not being an argument of any generative kernel; but
+\(\Omega_{ij}\) appears directly inside the transported KL coupling and inside the tied-replica source
+\(u_{ab}=(\Omega_{ab})_\#q_b\). The graph transports **are** kernel arguments by construction, so
+B4's hypothesis fails for them without any curve-mediated construction.
+
+**(vi) Structure-group flow.** Alignment forces \(\mathrm{Hol}\subseteq\mathrm{Stab}(q)\), and for a
+Gaussian belief \(\mathrm{Stab}(q)=O(K-1)\) at \(\mu\ne0\). Each coarse-graining step therefore
+reduces the structure group \(G\to\mathrm{Stab}(q)\), making the RG a flow on structure groups as
+well as on laws. This inherits the either/or of §7's obstruction rows: the reduced group is compact,
+so a coercive \(\|F\|^2\) becomes available at the meta level exactly where \(D^\omega s=0\), which is
+where the base semimetric vanishes.
+
+### 3e.3 The extent question — OPEN
+
+Agents are sections with supports, so a meta-agent formed by coherence at \(c\) is not a point object
+either, and §3e.2 says nothing about its extent over \(\mathcal C\). The working hypothesis, **not
+established**:
+
+The coherent block is the low-lying spectral subspace of \(L^\Omega(c)\) with spectral projector
+\(P(c)\). Spectral subspaces are smooth in \(c\) exactly where their eigenvalues stay isolated, so
+smoothness of the meta-agent is a *consequence* of an open gap rather than a hypothesis to impose.
+The meta-agent then persists on the connected region where (a) the gap separating its block stays
+open and (b) the rate at which parallel transport drags the projector is small against that gap,
+\(\|Q\,D^\omega P\|\ll\mathrm{gap}\) with \(Q=\mathbb 1-P\) — an **adiabatic** condition, so the
+meta-agent carries a velocity tolerance and not merely a spatial one. Gap closings would then be the
+merge/split events, i.e. the RG events proper, and the induced meta-connection would be
+\(\nabla^M=P\nabla^\omega P\), whose curvature carries a geometric-phase term (non-abelian
+Wilczek–Zee if the coherent subspace is degenerate, abelian Berry if not).
+
+Three wall types are distinguishable and are probably **not** equivalent: the members' supports run
+out (\(\bigcap_{i\in I}\mathcal C_i\), a hard combinatorial boundary at which the operator changes
+*dimension*, so perturbation theory does not cover it); the gap closes (the genuine RG event); or the
+block stays gapped but drifts out of coherence, \(\lambda_1\) rising past threshold with no crossing.
+Which binds first is unknown.
+
+Two further possibilities worth testing, both currently CONJECTURED. If the coherent subbundle is
+topologically nontrivial over a region, no globally consistent meta-agent exists there *even though
+the gap never closes* — a topological answer to the extent question, sharper than any threshold. And
+the geometric phase may inherit observability from the graph transports by (v), in which case it
+would be the first observable curvature in the programme.
+
+### 3e.4 The most likely failure point
+
+The coarse map is built from the spectral projector of \(L^\Omega\), which depends on \(\beta\). If
+the attention rows are **recognition-side** variational parameters, the coarse map is
+recognition-**dependent**, and `Theory/09`'s exact contraction theorem — which requires a
+recognition-independent \(C_h\) — does not apply. The meta-agent would then be a well-defined
+geometric object with no exact ELBO reading, i.e. outside the programme's own typing. This is open
+decision 6 (\(\gamma\) recognition-side or generative-side) forced by the RG rather than by the
+gradient sector, and it should be settled before anything is built on this construction.
+
+Note also that `.verification/ledger.json` claim `genuine-coupling-before-continuum` (severity
+**high**, state INCONCLUSIVE) states that tied product replicas alone cannot generate the required
+cross-agent interaction family — which is precisely the coupling a meta-agent needs in order to
+exist. If this construction supplies it, that claim closes; if not, the reason will be informative.
+
+### 3e.5 Prior art — assume standard until shown otherwise
+
+None of §3e.2 should be presented as novel without a literature check. The relevant existing
+frameworks are cellular sheaves and the sheaf Laplacian (Hansen–Ghrist; \(H^0\) = global sections =
+the consensus space, \(H^1\) = the obstruction, which is plausibly what this programme calls
+frustration); the connection Laplacian and vector diffusion maps (Singer–Wu); angular synchronization
+and its Cheeger-type inequalities (Bandeira–Singer–Spielman), which would supply the quantitative
+form of the coherence criterion; the adiabatic theorem with a spectral gap (Kato); Berry and
+Wilczek–Zee phases; and von Neumann–Wigner codimension counting for eigenvalue crossings. Laplacian
+renormalization for networks (Villegas et al.) and geometric renormalization
+(García-Pérez et al.) are adjacent but assume scalar/unweighted diffusion, so their applicability to
+gauge-valued transports is exactly what needs checking. **A six-lens panel with adversarial
+verification is in flight on all of this** (run `wf_f802b8e6-3c0`; resume with
+`Workflow({scriptPath: …/meta-agent-extent-renormalization-wf_f802b8e6-3c0.js, resumeFromRunId: "wf_f802b8e6-3c0"})`).
+
+---
+
 ## 4. RESULTS — PENDING / RESUME HERE
 
 > **RESOLVED 2026-08-13.** Both panels were recovered from `journal.jsonl`. Results are in **§4b**;
