@@ -64,3 +64,13 @@ Verifier corrections govern over the adjudications they attack. In particular `F
 corrects the adjudication's source forensics: `rm-04` overstates in **three** places (`:43-46`,
 `:295-299`, `:879`), not one, so `rm-04`'s finding K1 must not be cited as the authoritative wording.
 `rm-04` itself is left unedited — it is an archived verbatim return.
+
+## Current-revision supersession note
+
+The F5 pair is historical evidence, not current executable closure. It reproduced an earlier
+`u1_two_path_holonomy_witness.py` (Git blob `78cb5cf...`) and therefore retains the former sampled
+gauge-grid argument, raw-TV wording, and `5.5e-13` quadrature residual. The witness was changed at
+`cbacfc6` (blob `3e7070d...`) and then superseded again by the exact record-moment and analytic-gauge
+repair in `docs/verification/u1_two_path_holonomy_witness.py`, with its derivation in
+`docs/derivations/2026-08-13-u1-record-moment-derivation.md`. Do not transfer F5's numerical details
+to a later revision without fresh revision-bound verification.

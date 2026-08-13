@@ -12,10 +12,13 @@ This reconstruction starts only from the frozen contract.
    self KLs and (I_\zeta(K;M)).
 5. Apply the finite-mixture KL chain rule independently to the belief and model relational blocks.
    This produces categorical row KL plus expected transported marginal KL in each channel.
-6. Under (\zeta=q\otimes s), the mutual information vanishes and the remaining terms are exactly
-   the lagged unit-coefficient PIFB2 inventory.
+6. Define the remaining well-typed terms, including the joint-private observation expectation, as
+   the joint-typed lagged unit-coefficient two-channel scalar
+   (\mathcal F_{\mathrm{JT},h}^{\mathrm{lag},1}). Under (\zeta=q\otimes s), the mutual
+   information vanishes and the exact negative ELBO equals this scalar.
 7. Push every fiber law through the declared endpoint coordinate bijection. Relative-entropy
    invariance and likelihood covariance reproduce the same scalar.
 
-No PIFB2 formula is required to establish the construction. PIFB2 enters only after the proof, when
-the derived terms are named and compared with its operator basis.
+No manuscript formula is required to establish the construction or identity. Comparing the
+derived joint-private observation expectation with the literal PIFB2 observation display is a
+separate, nondependency question, and the current manuscript typing does not close it.

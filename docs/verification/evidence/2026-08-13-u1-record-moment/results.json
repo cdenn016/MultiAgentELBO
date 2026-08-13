@@ -1,0 +1,40 @@
+{
+  "captured_stdout": "==============================================================================\nCHECK 1 -- exact record-moment separation and exact gauge equivalences\n==============================================================================\n   Theta      ||E[O]||^2       tr Cov(O)\n    0.0000     1.0000000000     0.9450000000\n    0.3927     0.9619397663     0.9830602337\n    0.7854     0.8535533906     1.0914466094\n    1.5708     0.5000000000     1.4450000000\n    3.1416     0.0000000000     1.9450000000\n    4.7124     0.5000000000     1.4450000000\n    6.2832     1.0000000000     0.9450000000\n  exact separator gap S(0)-S(pi/2) = 0.500000000000\n  exact periodic component error    = 2.449e-16\n  exact mirror component error      = 2.220e-16\n  raw TV diagnostic (not a proof)   = 0.3278284444\n  PASS\n\n==============================================================================\nCHECK 2 -- passive gauge invariance of record moments and relational KL\n==============================================================================\n  max record-moment drift = 5.551e-16\n  max relational-KL drift = 3.109e-15\n  PASS\n\n==============================================================================\nCHECK 3 -- exact coboundary control and executable flat-twist counterpresentation\n==============================================================================\n  exact coboundary alignment error = 0.000e+00\n  flat-twist reproduction error    = 0.000e+00\n  PASS -- the constrained curve family is monodromy-sensitive, but the\n          same record law has a zero-connection, explicit-twist presentation.\n\n==============================================================================\nCHECK 4 -- finite-mixture KL identity after curve transport\n==============================================================================\n  LHS = 2.449535554913\n  RHS = 2.449535554913\n  residual = 1.332e-15\n  PASS\n",
+  "numpy": "2.4.4",
+  "python": "3.14.4",
+  "result": {
+    "check1_record_separation": {
+      "mirror_component_error": 2.220446049250313e-16,
+      "periodic_component_error": 2.4492935982947064e-16,
+      "raw_tv_diagnostic": 0.3278284444304815,
+      "record_moment_gap": 0.5,
+      "record_moment_theta_0": 1.0,
+      "record_moment_theta_pi_over_2": 0.5
+    },
+    "check2_gauge_invariance": {
+      "record_moment_gauge_drift": 5.551115123125783e-16,
+      "relational_kl_gauge_drift": 3.1086244689504383e-15
+    },
+    "check3_controls": {
+      "coboundary_component_error": 0.0,
+      "flat_twist_component_error": 0.0
+    },
+    "check4_elbo_identity": {
+      "lhs": 2.4495355549129756,
+      "residual": 1.3322676295501878e-15,
+      "rhs": 2.449535554912977
+    },
+    "schema_version": "u1-two-path-witness/v2",
+    "scope": {
+      "base": "S1",
+      "bundle_topology_tested": false,
+      "connection_identified_from_records": false,
+      "curvature_tested": false,
+      "group": "U(1)",
+      "live_source_law": false
+    }
+  },
+  "schema_version": "u1-record-moment-evidence/v1",
+  "witness_path": "docs/verification/u1_two_path_holonomy_witness.py",
+  "witness_sha256": "dc0914640ac2c1ba3b446561a22cc8394f63cb25ca14be157764026ddadb406e"
+}

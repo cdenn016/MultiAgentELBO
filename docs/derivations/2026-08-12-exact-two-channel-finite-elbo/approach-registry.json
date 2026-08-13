@@ -1,7 +1,7 @@
 {
   "schema_version": "rigorous-theory-search/v1",
-  "contract_id": "contract-sha256-ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
-  "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+  "contract_id": "contract-sha256-f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
+  "target_digest": "f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
   "mechanism_families": [
     {
       "family_id": "LAGGED-TIED-REPLICA",
@@ -9,22 +9,23 @@
       "target_obligation_ids": [
         "normalized-witness",
         "exact-elbo-expansion",
-        "mean-field-pifb2"
+        "mean-field-joint-typed-scalar"
       ],
       "representation": "Finite product of private state-model and two label-copy probability blocks.",
       "invariant_or_obstruction": "Finite-product normalization and KL chain rules.",
       "obligations": [
         "normalized-witness",
         "exact-elbo-expansion",
-        "mean-field-pifb2"
+        "mean-field-joint-typed-scalar"
       ],
       "bridge": "Tie recognition marginals across distinct informational replicas.",
       "failure_test": "Identify hidden recognition dependence, a missing entropy, or an unnormalized factor.",
       "verified_results": [
-        "Exact unit-coefficient lagged PIFB2 lift plus mutual-information correction."
+        "Exact unit-coefficient lagged joint-typed scalar plus mutual-information correction."
       ],
       "open_gaps": [
-        "Replica ontology is a modeling postulate; same-time emergence is not supplied."
+        "Replica ontology is a modeling postulate; same-time emergence is not supplied.",
+        "Equality to the literal PIFB2 observation display requires an author-approved typing convention and is not a target dependency."
       ],
       "novelty_fingerprint": "finite replicated inventory + lagged source mixtures + KL chain rules + tied marginal bridge + unit coefficients",
       "disposition": "accepted"
@@ -41,7 +42,7 @@
         "exact-elbo-expansion"
       ],
       "bridge": "Normalize the product of the private prior and peer experts.",
-      "failure_test": "Compare the normalized one-latent KL to the additive PIFB2 self-plus-peer expression.",
+      "failure_test": "Compare the normalized one-latent KL to the additive self-plus-peer sector of the joint-typed scalar.",
       "verified_results": [
         "Mismatch identity with entropy and partition corrections."
       ],
@@ -62,7 +63,7 @@
       "obligations": [
         "same-time-emergence"
       ],
-      "bridge": "Derive the configuration law independently of the desired PIFB2 action.",
+      "bridge": "Derive the configuration law independently of the desired same-time scalar.",
       "failure_test": "The action is merely exponentiated to define its own prior or the partition function diverges.",
       "verified_results": [],
       "open_gaps": [

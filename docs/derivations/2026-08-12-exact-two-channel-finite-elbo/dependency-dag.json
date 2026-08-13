@@ -1,7 +1,7 @@
 {
   "schema_version": "rigorous-theory-search/v1",
-  "contract_id": "contract-sha256-ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
-  "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+  "contract_id": "contract-sha256-f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
+  "target_digest": "f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
   "edges": [
     {
       "from": "target",
@@ -13,7 +13,7 @@
     },
     {
       "from": "target",
-      "to": "mean-field-pifb2"
+      "to": "mean-field-joint-typed-scalar"
     },
     {
       "from": "target",

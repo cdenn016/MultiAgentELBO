@@ -1,7 +1,7 @@
 {
   "schema_version": "rigorous-theory-search/v1",
-  "contract_id": "contract-sha256-ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
-  "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+  "contract_id": "contract-sha256-f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
+  "target_digest": "f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
   "assumptions": [
     {
       "id": "a-standard-borel",
@@ -50,12 +50,12 @@
       "id": "ev-elbo",
       "kind": "DERIVATION",
       "supports": true,
-      "scope": "Exact negative-ELBO expansion, mutual-information correction, and mean-field PIFB2 equality.",
+      "scope": "Exact negative-ELBO expansion, mutual-information correction, definition of the joint-typed lagged unit-coefficient two-channel scalar, and mean-field equality with that scalar.",
       "side_conditions": [
         "Only the hypotheses and scope stated in the referenced artifact are certified."
       ],
       "artifact_path": "evidence/exact-elbo-proof.md",
-      "artifact_sha256": "58592615bbb0951818ed4e94eddb83052025d399c0c407f381fac104102d185a"
+      "artifact_sha256": "09029e758f3e2b478e535477e7f4a6905093a41b0731e454bd87791db98fe73a"
     },
     {
       "id": "ev-gauge",
@@ -83,23 +83,23 @@
       "id": "ev-boundary",
       "kind": "COUNTEREXAMPLE",
       "supports": false,
-      "scope": "Counterexamples and mismatch identities delimiting the theorem.",
+      "scope": "Counterexamples, mismatch identities, and typing obstructions delimiting the theorem.",
       "side_conditions": [
         "Only the hypotheses and scope stated in the referenced artifact are certified."
       ],
       "artifact_path": "evidence/boundary-counterexamples.md",
-      "artifact_sha256": "97f51ab5c1b48a718596698478f40ab1d12fb6b45c341c009c08cb406ebb92ef"
+      "artifact_sha256": "aa6ecdb4f522b79cd36783c7e2afdc74d9ff2a3c592e975af4a860d08b3affca"
     },
     {
       "id": "ev-crosswalk",
       "kind": "PRIMARY_SOURCE",
       "supports": true,
-      "scope": "Revision-bound PIFB2 and exact-whitepaper term map.",
+      "scope": "Revision-bound source comparison showing that equality between the joint-private observation expectation and the literal PIFB2 observation display is not currently well-posed and requires an author-approved convention repair.",
       "side_conditions": [
         "Only the hypotheses and scope stated in the referenced artifact are certified."
       ],
       "artifact_path": "evidence/pifb2-crosswalk.md",
-      "artifact_sha256": "6aa617141e6c6c4fc92286ab8c1e55e7a50b1447cc738c54ccd0e619fcd9e8fc"
+      "artifact_sha256": "602adf4b6e77ffb0363dde6c5c7038f7fe9bd6af4ab4f34f2d8f52c15a543306"
     },
     {
       "id": "ev-reconstruction",
@@ -110,7 +110,7 @@
         "Only the hypotheses and scope stated in the referenced artifact are certified."
       ],
       "artifact_path": "evidence/independent-reconstruction.md",
-      "artifact_sha256": "810fc27c36f1e5ec5429255da473774afce3e8817f12d1acbf194219794a45da"
+      "artifact_sha256": "2960b8173f6ea21dd4ecd1d804bd701096695453e4b4692ff919ed956a51db65"
     },
     {
       "id": "ev-oracle",
@@ -121,7 +121,7 @@
         "Only the hypotheses and scope stated in the referenced artifact are certified."
       ],
       "artifact_path": "evidence/oracle-erasure.md",
-      "artifact_sha256": "2bd3f01ead9938f80cf2c6ac791f26c45b50aaa8b31ef5083918c07e9dd849e4"
+      "artifact_sha256": "a2961216850843f6c33697f6e6db4aabb21d0c70f141c0115c61cb6358c6d5fc"
     },
     {
       "id": "ev-attacks",
@@ -132,16 +132,16 @@
         "Only the hypotheses and scope stated in the referenced artifact are certified."
       ],
       "artifact_path": "evidence/adversarial-attacks.md",
-      "artifact_sha256": "e2702c27fe0e1d826d925692ea98e45f1022d0ece788ca2be471f3dd9cc5b937"
+      "artifact_sha256": "d68a7697c398d91ed16ce20554056ce10c61232598fb7d2e75647beffaacc4de"
     }
   ],
   "claims": [
     {
       "id": "target",
-      "statement": "For every fixed finite agent-site index set and every admissible standard-Borel two-channel datum with normalized private priors, normalized likelihood kernels, normalized positive source rows, lagged transported source laws, and the stated absolute-continuity and finiteness conditions, prove that the tied-replica construction defines a normalized generative joint independent of the current recognition law and that its unit-temperature negative ELBO equals the finite lagged two-channel PIFB2 scalar plus the state-model mutual-information correction; prove exact equality with that PIFB2 scalar under state-model mean field and prove invariance under the declared simultaneous fiber-coordinate pushforwards.",
+      "statement": "For every fixed finite agent-site index set and every admissible standard-Borel two-channel datum with normalized private priors, normalized likelihood kernels, normalized positive source rows, lagged transported source laws, and the stated absolute-continuity and finiteness conditions, prove that the tied-replica construction defines a normalized generative joint independent of the current recognition law and that its unit-temperature negative ELBO equals the joint-typed lagged unit-coefficient two-channel scalar F_JT,h^{lag,1} plus the state-model mutual-information correction; prove exact equality with this joint-typed scalar under state-model mean field and prove invariance under the declared simultaneous fiber-coordinate pushforwards.",
       "quantifiers": "For every nonempty finite agent-site set A, every finite source set in each active relational channel, and every collection of standard-Borel probability data satisfying the declared normalization, measurability, absolute-continuity, and finiteness hypotheses.",
       "kind": "MATHEMATICAL",
-      "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+      "target_digest": "f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
       "state": "EVIDENCE_VERIFIED",
       "assumption_ids": [
         "a-standard-borel",
@@ -159,14 +159,14 @@
         "ev-oracle"
       ],
       "bridge_premise_ids": [],
-      "falsifier": "An admissible normalized datum violates normalization, the ELBO identity, the mean-field specialization, or simultaneous-pushforward invariance."
+      "falsifier": "An admissible normalized datum violates normalization, the ELBO identity with F_JT,h^{lag,1}, the mean-field specialization, or simultaneous-pushforward invariance."
     },
     {
       "id": "normalized-witness",
       "statement": "The conditional tied-replica generative joint and the restricted recognition law are normalized for every admitted finite datum.",
       "quantifiers": "For every nonempty finite agent-site set A, every finite source set in each active relational channel, and every collection of standard-Borel probability data satisfying the declared normalization, measurability, absolute-continuity, and finiteness hypotheses.",
       "kind": "MATHEMATICAL",
-      "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+      "target_digest": "f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
       "state": "EVIDENCE_VERIFIED",
       "assumption_ids": [
         "a-standard-borel",
@@ -182,10 +182,10 @@
     },
     {
       "id": "exact-elbo-expansion",
-      "statement": "The negative ELBO equals the two marginal self KLs, the observation term, two categorical row KLs, two weighted transported peer KL sectors, and the private state-model mutual information.",
+      "statement": "The negative ELBO equals the joint-typed lagged unit-coefficient two-channel scalar F_JT,h^{lag,1} plus the private state-model mutual information.",
       "quantifiers": "For every nonempty finite agent-site set A, every finite source set in each active relational channel, and every collection of standard-Borel probability data satisfying the declared normalization, measurability, absolute-continuity, and finiteness hypotheses.",
       "kind": "MATHEMATICAL",
-      "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+      "target_digest": "f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
       "state": "EVIDENCE_VERIFIED",
       "assumption_ids": [
         "a-ac-finite",
@@ -196,31 +196,31 @@
         "ev-reconstruction"
       ],
       "bridge_premise_ids": [],
-      "falsifier": "A valid Radon-Nikodym example violates one of the two KL chain-rule expansions."
+      "falsifier": "A valid Radon-Nikodym example violates the product-reference or finite-mixture KL expansions."
     },
     {
-      "id": "mean-field-pifb2",
-      "statement": "Under zeta_a=q_a tensor s_a, the mutual-information correction vanishes and the exact ELBO equals the lagged unit-temperature, unit-private-coefficient finite PIFB2 scalar.",
+      "id": "mean-field-joint-typed-scalar",
+      "statement": "Under zeta_a=q_a tensor s_a, the mutual-information correction vanishes and the exact ELBO equals the joint-typed lagged unit-coefficient two-channel scalar F_JT,h^{lag,1}.",
       "quantifiers": "For every nonempty finite agent-site set A, every finite source set in each active relational channel, and every collection of standard-Borel probability data satisfying the declared normalization, measurability, absolute-continuity, and finiteness hypotheses.",
       "kind": "MATHEMATICAL",
-      "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+      "target_digest": "f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
       "state": "EVIDENCE_VERIFIED",
       "assumption_ids": [
         "a-ac-finite"
       ],
       "evidence_ids": [
         "ev-elbo",
-        "ev-crosswalk"
+        "ev-reconstruction"
       ],
       "bridge_premise_ids": [],
-      "falsifier": "A product private recognition law has nonzero mutual information or a retained unit PIFB2 term is absent from the exact expansion."
+      "falsifier": "A product private recognition law has nonzero mutual information or a term in the defined joint-typed scalar is absent from the exact expansion."
     },
     {
       "id": "gauge-invariance",
       "statement": "The exact finite scalar is invariant under the declared simultaneous bimeasurable fiber-coordinate pushforwards and covariant likelihood transformation.",
       "quantifiers": "For every nonempty finite agent-site set A, every finite source set in each active relational channel, and every collection of standard-Borel probability data satisfying the declared normalization, measurability, absolute-continuity, and finiteness hypotheses.",
       "kind": "MATHEMATICAL",
-      "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+      "target_digest": "f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
       "state": "EVIDENCE_VERIFIED",
       "assumption_ids": [
         "a-gauge-likelihood"
@@ -237,7 +237,7 @@
       "statement": "Measurable one-step kernels of the stated form assemble into a normalized finite-horizon adaptive process conditional on stored law-valued histories.",
       "quantifiers": "For every nonempty finite agent-site set A, every finite source set in each active relational channel, and every collection of standard-Borel probability data satisfying the declared normalization, measurability, absolute-continuity, and finiteness hypotheses.",
       "kind": "MATHEMATICAL",
-      "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+      "target_digest": "f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
       "state": "EVIDENCE_VERIFIED",
       "assumption_ids": [
         "a-standard-borel",
@@ -252,20 +252,37 @@
     },
     {
       "id": "same-time-emergence",
-      "statement": "The theorem derives the same-time reciprocal live-peer PIFB2 scalar from one fixed normalized joint on shared contemporaneous agent variables.",
+      "statement": "The theorem derives a same-time reciprocal live-peer joint-typed scalar from one fixed normalized joint on shared contemporaneous agent variables.",
       "quantifiers": "For every nonempty finite agent-site set A, every finite source set in each active relational channel, and every collection of standard-Borel probability data satisfying the declared normalization, measurability, absolute-continuity, and finiteness hypotheses.",
       "kind": "MATHEMATICAL",
-      "target_digest": "ea859a3e62b93365692fe1b959217ec3c21100b535e3a6633999bc36a431af9f",
+      "target_digest": "f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
       "state": "INCONCLUSIVE",
       "assumption_ids": [
         "a-standard-borel"
       ],
       "evidence_ids": [
-        "ev-boundary",
-        "ev-crosswalk"
+        "ev-boundary"
       ],
       "bridge_premise_ids": [],
       "falsifier": "A fixed normalized shared-variable construction proves it; contemporaneous recognition dependence or a normalization cycle defeats the proposed construction."
+    },
+    {
+      "id": "literal-pifb2-observation-match",
+      "statement": "The joint-private observation expectation in F_JT,h^{lag,1} equals the literal PIFB2 observation display as presently written.",
+      "quantifiers": "For every nonempty finite agent-site set A and every admitted state-model observation datum under the manuscript's declared variables and functional arguments.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "f091d276dce8d75cad91f94bafb714df817d148010529b51cdde612e77ff4bc2",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "a-standard-borel",
+        "a-ac-finite"
+      ],
+      "evidence_ids": [
+        "ev-crosswalk",
+        "ev-boundary"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Closure requires an author-approved convention repair that binds the model variable and declares a joint-private or predictive-marginal observation term; under the predictive-marginal reading and state-model mean field, any nonzero posterior-KL gap falsifies literal equality; for correlated zeta the signed comparison must be used."
     }
   ]
 }

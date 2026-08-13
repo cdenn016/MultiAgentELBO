@@ -114,9 +114,12 @@ exact negative ELBO
 Thus the two transported KL channels are not guessed penalties in this model: they are exact
 finite-mixture KL components. Under the explicit mean-field restriction
 \(\zeta_i=q_i\otimes s_i\), the mutual-information correction vanishes and this equals the
-lagged, unit-temperature, unit-private-coefficient PIFB2 scalar. For correlated state/model
-recognition the mutual information is mandatory. The theorem is an existence result for a tied-
-replica representation, not a uniqueness or microscopic-emergence theorem.
+declared joint-typed lagged unit-coefficient scalar \(\mathcal F_{\rm JT,h}^{\rm lag,1}\). For
+correlated state/model recognition the mutual information is mandatory. This exact identity does
+not establish equality to the literal observation sector printed in `Theory/PIFB2.tex`; that
+crosswalk remains **INCONCLUSIVE** because the pointwise and full-functional displays are not
+consistently typed. The theorem is an existence result for a tied-replica representation, not a
+uniqueness or microscopic-emergence theorem.
 
 The verified construction, proof, counterexamples, and release record are in
 [`2026-08-12-exact-two-channel-finite-elbo`](../derivations/2026-08-12-exact-two-channel-finite-elbo/construction-or-strongest-theorem.md).

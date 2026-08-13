@@ -1,413 +1,368 @@
-"""U(1) two-path witness: does curve-mediated transport make holonomy observable?
+"""Finite U(1) two-path record-law witness with exact controls.
 
-Tests the conjecture of worklog section 3d against the standing negative result B4
-(docs/audits/ultradeep-wave2-2026-08-12/wave2-01-constructions.md:695), which states that
-for ANY finite design no observation-record statistic detects holonomy, curvature, or
-bundle topology -- "because the connection is not an argument of any generative kernel"
--- and which names its own defeat condition at :709: "Change either and the theorem is
-unavailable."
+This witness asks a deliberately narrow question: once parallel transport along a
+curve is declared as an argument of a normalized generative record kernel, can two
+flat connections on S^1 with different monodromy produce different record laws?
 
-Curve-mediated transport puts the connection INSIDE a generative kernel, via the source
-law u = (P_gamma)_# q_j. This script checks whether that actually separates holonomies.
+The load-bearing separator is a moment of the marginalized observation law.  For
+equal path weights and path-angle difference Theta,
 
-SETUP
-  Base            C = S^1, coordinate phi in [0, 2pi)
-  Group           G = U(1), connection A = (Theta/2pi) dphi, full-loop holonomy Theta
-  Fiber           2-D Gaussians; U(1) acts by pushforward under rotation,
-                  rho(theta): (mu, Sigma) -> (R_theta mu, R_theta Sigma R_theta^T).
-                  This is a genuine statistical isometry (pushforward by a bimeasurable
-                  bijection), as the corpus requires (Theory/05c:59).
-  Agents          j at phi = 0, i at phi = phi_0
-  Two paths       gamma  : direct arc      0 -> phi_0        transport angle a
-                  gamma' : the other way   0 -> phi_0 - 2pi  transport angle a - Theta
-                  The two transports differ by exactly the full holonomy.
-  Generative      label J in {gamma, gamma'} with prior pi_J; given J the relational copy
-                  X ~ u_J = (P_J)_# q_j ; observation o | X ~ N(X, sigma_o^2 I).
-                  Record law  p(o | Theta) = sum_J pi_J N(o ; R_{a_J} mu_j,
-                                                  R_{a_J} Sigma_j R_{a_J}^T + sigma_o^2 I).
+    ||E[O | Theta]||^2 = ||mu||^2 (1 + cos Theta) / 2.
 
-CHECKS
-  1  record laws for distinct holonomies differ                      (the separating tuple)
-  2  the separating statistic is gauge invariant                     (Aut_G(P) check)
-  3  a flat coboundary Omega_ij = e^{i phi_i} e^{-i phi_j} shows NO holonomy dependence
-     -- reproducing B4's negative and isolating the connection as the cause
-  4  the tied-replica ELBO identity survives Omega -> P_gamma        (worklog 3d.7 item 1)
+It is therefore gauge invariant, observable without the latent path label, and
+separates Theta=0 from Theta=pi/2 exactly.  Sampled total variation is retained only
+as a numerical diagnostic; a sampled gauge grid cannot prove a lower bound on an
+orbit infimum.
 
-Run:  python docs/verification/u1_two_path_holonomy_witness.py
+The exact controls also show the interpretation boundary.  A zero-connection model
+with label-dependent group twists reproduces the same component laws exactly.  Thus
+the constrained curve-transport family is monodromy-sensitive, but records alone
+identify a relative group twist, not its connection origin.
+
+Run: C:\\Python314\\python.exe docs/verification/u1_two_path_holonomy_witness.py
 Requires: numpy.
 """
 
+from __future__ import annotations
+
+import json
+
 import numpy as np
 
+
 TWO_PI = 2.0 * np.pi
+PHI0 = np.pi / 2
+MU_J = np.array([1.0, 0.0])
+SIG_J = np.diag([0.50, 0.20])
+SIGMA_O = 0.35
+PI_ROW = np.array([0.5, 0.5])
 
 
-def R(theta):
+def R(theta: float) -> np.ndarray:
     c, s = np.cos(theta), np.sin(theta)
     return np.array([[c, -s], [s, c]])
 
 
-def push(theta, mu, Sigma):
-    """rho_hat(theta)_# N(mu, Sigma) -- pushforward by rotation."""
-    Q = R(theta)
-    return Q @ mu, Q @ Sigma @ Q.T
+def push(theta: float, mu: np.ndarray, covariance: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Push a Gaussian law forward by the U(1) rotation with angle ``theta``."""
+    rotation = R(theta)
+    return rotation @ mu, rotation @ covariance @ rotation.T
 
 
-def kl_gauss(m1, S1, m0, S0):
-    """Exact KL( N(m1,S1) || N(m0,S0) ) in n dimensions."""
-    n = len(m1)
-    S0i = np.linalg.inv(S0)
-    d = m0 - m1
-    return 0.5 * (np.trace(S0i @ S1) + d @ S0i @ d - n
-                  + np.log(np.linalg.det(S0) / np.linalg.det(S1)))
+def kl_gauss(
+    mean_1: np.ndarray,
+    covariance_1: np.ndarray,
+    mean_0: np.ndarray,
+    covariance_0: np.ndarray,
+) -> float:
+    """Exact KL(N(mean_1,covariance_1) || N(mean_0,covariance_0))."""
+    dimension = len(mean_1)
+    inverse_0 = np.linalg.inv(covariance_0)
+    displacement = mean_0 - mean_1
+    return float(
+        0.5
+        * (
+            np.trace(inverse_0 @ covariance_1)
+            + displacement @ inverse_0 @ displacement
+            - dimension
+            + np.log(np.linalg.det(covariance_0) / np.linalg.det(covariance_1))
+        )
+    )
 
 
-def gauss_pdf(X, mu, Sigma):
-    """Evaluate N(mu,Sigma) on a stack of points X of shape (...,2)."""
-    Si = np.linalg.inv(Sigma)
-    d = X - mu
-    q = np.einsum('...a,ab,...b->...', d, Si, d)
-    return np.exp(-0.5 * q) / (TWO_PI * np.sqrt(np.linalg.det(Sigma)))
+def gauss_pdf(points: np.ndarray, mean: np.ndarray, covariance: np.ndarray) -> np.ndarray:
+    inverse = np.linalg.inv(covariance)
+    displacement = points - mean
+    quadratic = np.einsum("...a,ab,...b->...", displacement, inverse, displacement)
+    return np.exp(-0.5 * quadratic) / (TWO_PI * np.sqrt(np.linalg.det(covariance)))
 
 
-# ---------------------------------------------------------------- configuration
-PHI0 = np.pi / 2          # location of agent i
-MU_J = np.array([1.0, 0.0])
-SIG_J = np.diag([0.50, 0.20])   # anisotropic, so rotation is visible in Sigma too
-SIGMA_O = 0.35                  # observation noise
-PI_ROW = np.array([0.5, 0.5])   # source-label prior over {gamma, gamma'}
+def transport_angles(theta: float) -> tuple[float, float]:
+    """Angles along the short and long paths; their difference is ``theta``."""
+    direct = theta * PHI0 / TWO_PI
+    around = theta * (PHI0 - TWO_PI) / TWO_PI
+    return direct, around
 
 
-def transport_angles(Theta):
-    """Transport angles along the two paths. They differ by exactly Theta."""
-    a_direct = Theta * PHI0 / TWO_PI
-    a_around = Theta * (PHI0 - TWO_PI) / TWO_PI
-    return a_direct, a_around
+def source_laws(
+    theta: float, gauge_i: float = 0.0, gauge_j: float = 0.0
+) -> list[tuple[np.ndarray, np.ndarray]]:
+    mean_j, covariance_j = push(gauge_j, MU_J, SIG_J)
+    return [
+        push(gauge_i + angle - gauge_j, mean_j, covariance_j)
+        for angle in transport_angles(theta)
+    ]
 
 
-def source_laws(Theta, gauge_i=0.0, gauge_j=0.0):
-    """The two connection-dependent generative source laws u_J = (P_J)_# q_j.
+def record_law_components(
+    theta: float, gauge_i: float = 0.0, gauge_j: float = 0.0
+) -> list[tuple[np.ndarray, np.ndarray]]:
+    noise = SIGMA_O**2 * np.eye(2)
+    return [(mean, covariance + noise) for mean, covariance in source_laws(theta, gauge_i, gauge_j)]
 
-    Under a gauge transformation g with angles (gauge_i, gauge_j) at the two base points,
-    q_j -> (R_{g_j})_# q_j  and  P_gamma -> R_{g_i} P_gamma R_{g_j}^{-1}, so every source
-    law rotates by the SAME R_{g_i}. That is the content of check 2.
+
+def mixture_moments(
+    components: list[tuple[np.ndarray, np.ndarray]],
+    weights: np.ndarray = PI_ROW,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return the exact mean and covariance of a finite Gaussian mixture."""
+    mean = sum(weight * component_mean for weight, (component_mean, _) in zip(weights, components))
+    covariance = np.zeros((2, 2))
+    for weight, (component_mean, component_covariance) in zip(weights, components):
+        offset = component_mean - mean
+        covariance += weight * (component_covariance + np.outer(offset, offset))
+    return mean, covariance
+
+
+def record_mean_norm_sq(theta: float) -> float:
+    mean, _ = mixture_moments(record_law_components(theta))
+    return float(mean @ mean)
+
+
+def record_covariance_spectrum(theta: float) -> np.ndarray:
+    _, covariance = mixture_moments(record_law_components(theta))
+    return np.linalg.eigvalsh(covariance)
+
+
+def _component_error(
+    left: list[tuple[np.ndarray, np.ndarray]],
+    right: list[tuple[np.ndarray, np.ndarray]],
+) -> float:
+    errors: list[float] = []
+    for (left_mean, left_covariance), (right_mean, right_covariance) in zip(left, right, strict=True):
+        errors.extend(
+            [
+                float(np.max(np.abs(left_mean - right_mean))),
+                float(np.max(np.abs(left_covariance - right_covariance))),
+            ]
+        )
+    return max(errors, default=0.0)
+
+
+def periodic_aligned_component_error(theta: float, turns: int) -> float:
+    """Exact component error after aligning theta+2*pi*turns by one common gauge."""
+    gauge = -turns * PHI0
+    shifted = record_law_components(theta + TWO_PI * turns, gauge_i=gauge)
+    return _component_error(shifted, record_law_components(theta))
+
+
+def mirror_aligned_component_error(theta: float) -> float:
+    """Exact theta <-> 2*pi-theta equivalence after common gauge and label swap."""
+    gauge = np.pi / 2 + theta / 2
+    gauged = record_law_components(theta, gauge_i=gauge)
+    mirrored_and_swapped = list(reversed(record_law_components(TWO_PI - theta)))
+    return _component_error(gauged, mirrored_and_swapped)
+
+
+def coboundary_record_law_components(
+    theta: float, gauge_i: float = 0.0
+) -> list[tuple[np.ndarray, np.ndarray]]:
+    """Record components for A=d lambda, lambda=theta*sin(phi)/(2*pi).
+
+    Both routes have the same endpoint angle alpha=lambda(PHI0)-lambda(0).
     """
-    mu_j, S_j = push(gauge_j, MU_J, SIG_J)
-    out = []
-    for a in transport_angles(Theta):
-        # P_gamma acting after the gauge rotation at j, then the gauge rotation at i
-        out.append(push(gauge_i + a - gauge_j, mu_j, S_j))
-    return out
+    alpha = theta * np.sin(PHI0) / TWO_PI
+    mean, covariance = push(alpha + gauge_i, MU_J, SIG_J)
+    record_component = (mean, covariance + SIGMA_O**2 * np.eye(2))
+    return [record_component, (record_component[0].copy(), record_component[1].copy())]
 
 
-def record_law_components(Theta, gauge_i=0.0, gauge_j=0.0):
-    """Mixture components of p(o | Theta): source law convolved with observation noise."""
-    comps = []
-    for mu, S in source_laws(Theta, gauge_i, gauge_j):
-        comps.append((mu, S + SIGMA_O ** 2 * np.eye(2)))
-    return comps
+def coboundary_aligned_component_error(theta: float) -> float:
+    alpha = theta * np.sin(PHI0) / TWO_PI
+    aligned = coboundary_record_law_components(theta, gauge_i=-alpha)
+    return _component_error(aligned, coboundary_record_law_components(0.0))
 
 
-def record_pdf(X, Theta, gauge_i=0.0, gauge_j=0.0):
-    comps = record_law_components(Theta, gauge_i, gauge_j)
-    return sum(w * gauss_pdf(X, m, S) for w, (m, S) in zip(PI_ROW, comps))
+def flat_twist_record_law_components(theta: float) -> list[tuple[np.ndarray, np.ndarray]]:
+    """Zero-connection presentation with explicit label-dependent kernel twists.
 
-
-def grid(n=421, half=4.0):
-    ax = np.linspace(-half, half, n)
-    G = np.stack(np.meshgrid(ax, ax, indexing='ij'), axis=-1)
-    return G, (2 * half / (n - 1)) ** 2
-
-
-def total_variation(Theta_a, Theta_b, gauge_a=0.0):
-    G, cell = grid()
-    pa = record_pdf(G, Theta_a, gauge_i=gauge_a)
-    pb = record_pdf(G, Theta_b)
-    return 0.5 * np.abs(pa - pb).sum() * cell
-
-
-def orbit_distance(Theta_a, Theta_b, n_gauge=360):
-    """Distance between the GAUGE ORBITS of the two record laws:
-
-        d([p_a], [p_b]) = min_{g in U(1)} TV( (R_g)_# p(.|Theta_a) , p(.|Theta_b) ).
-
-    The raw record law is NOT gauge invariant -- a gauge transformation at c_i rotates
-    every component in common, so p transforms covariantly. Comparing raw record laws
-    therefore conflates gauge-variant overall rotation with genuine holonomy content.
-    The orbit distance is the correct gauge-invariant separation, and it is what a
-    holonomy-detecting statistic must be built from.
+    The ordinary kernel parameters are the two group angles that the curve presentation
+    obtains from its paths.  No connection variable is present in this presentation.
     """
-    return min(total_variation(Theta_a, Theta_b, gauge_a=g)
-               for g in np.linspace(0.0, TWO_PI, n_gauge, endpoint=False))
+    noise = SIGMA_O**2 * np.eye(2)
+    return [
+        (mean, covariance + noise)
+        for mean, covariance in (push(twist, MU_J, SIG_J) for twist in transport_angles(theta))
+    ]
 
 
-def mass_check(Theta):
-    G, cell = grid()
-    return record_pdf(G, Theta).sum() * cell
+def record_pdf(
+    points: np.ndarray, theta: float, gauge_i: float = 0.0, gauge_j: float = 0.0
+) -> np.ndarray:
+    components = record_law_components(theta, gauge_i, gauge_j)
+    return sum(
+        weight * gauss_pdf(points, mean, covariance)
+        for weight, (mean, covariance) in zip(PI_ROW, components)
+    )
 
 
-def separating_statistic(Theta, gauge_i=0.0, gauge_j=0.0):
-    """A gauge-invariant record statistic: the angle between the two mixture component
-    means. A common rotation of both components leaves it fixed. It SEPARATES the holonomy
-    only up to Theta <-> -Theta: the implemented statistic is arccos(cos Theta), and under the
-    equal-weight design the Theta and 2*pi - Theta record laws are exactly gauge-equivalent
-    (g* = pi/2 + Theta/2 plus a label swap), so no observable can orient them. Breaking the
-    tie requires an asymmetric PI_ROW first, then a signed statistic."""
-    (m1, _), (m2, _) = record_law_components(Theta, gauge_i, gauge_j)
-    c = np.dot(m1, m2) / (np.linalg.norm(m1) * np.linalg.norm(m2))
-    return np.arccos(np.clip(c, -1.0, 1.0))
+def grid(n: int = 421, half: float = 4.0) -> tuple[np.ndarray, float]:
+    axis = np.linspace(-half, half, n)
+    points = np.stack(np.meshgrid(axis, axis, indexing="ij"), axis=-1)
+    return points, (2 * half / (n - 1)) ** 2
 
 
-# ================================================================ CHECK 1
-def check1():
-    print("=" * 74)
-    print("CHECK 1 -- do distinct holonomies induce distinct record laws?")
-    print("=" * 74)
-    print("  (B4 says this is impossible for any finite design, when the connection is")
-    print("   not an argument of a generative kernel. Here it is one.)")
-    print()
-    base = 0.0
-    print(f"  normalization of p(.|Theta):  Theta=0 -> {mass_check(0.0):.6f}   "
-          f"Theta=pi/2 -> {mass_check(np.pi/2):.6f}")
-    print()
-    print("  NOTE: the raw record law is NOT gauge invariant -- it transforms covariantly")
-    print("  under a gauge rotation at c_i. The gauge-invariant separation is the distance")
-    print("  between gauge ORBITS. Both are shown; only the orbit column is meaningful.")
-    print()
-    print("   Theta      raw TV (gauge-variant)   ORBIT distance    statistic (rad)")
-    print("   " + "-" * 68)
-    for Th in [0.0, np.pi / 8, np.pi / 4, np.pi / 2, np.pi, 3 * np.pi / 2, TWO_PI]:
-        print(f"   {Th:7.4f}     {total_variation(Th, base):16.10f}"
-              f"   {orbit_distance(Th, base):14.10f}   {separating_statistic(Th):12.6f}")
+def mass_check(theta: float) -> float:
+    points, cell = grid()
+    return float(record_pdf(points, theta).sum() * cell)
 
-    d_sep = orbit_distance(np.pi / 2, 0.0)
-    d_periodic = orbit_distance(TWO_PI, 0.0)
-    print()
-    print(f"  SEPARATION at Theta=pi/2:  orbit distance = {d_sep:.8f} > 0")
-    print("      -> the record laws are NOT gauge-equivalent: holonomy is detected.")
-    print(f"  PERIODICITY at Theta=2pi:  orbit distance = {d_periodic:.2e} ~ 0")
-    print("      -> depends only on the holonomy ELEMENT e^{i Theta}, not on the")
-    print("         connection representative. (Raw TV is large here purely because the")
-    print("         whole configuration is rotated -- pure gauge, correctly quotiented out.)")
-    assert d_sep > 1e-3, d_sep
-    assert d_periodic < 1e-6, d_periodic
+
+def total_variation(theta_a: float, theta_b: float, gauge_a: float = 0.0) -> float:
+    """Grid quadrature diagnostic; never used as a proof of orbit separation."""
+    points, cell = grid()
+    density_a = record_pdf(points, theta_a, gauge_i=gauge_a)
+    density_b = record_pdf(points, theta_b)
+    return float(0.5 * np.abs(density_a - density_b).sum() * cell)
+
+
+def check1() -> dict[str, float]:
+    print("=" * 78)
+    print("CHECK 1 -- exact record-moment separation and exact gauge equivalences")
+    print("=" * 78)
+    rows = []
+    for theta in (0.0, np.pi / 8, np.pi / 4, np.pi / 2, np.pi, 3 * np.pi / 2, TWO_PI):
+        rows.append((theta, record_mean_norm_sq(theta), float(np.trace(mixture_moments(record_law_components(theta))[1]))))
+    print("   Theta      ||E[O]||^2       tr Cov(O)")
+    for theta, moment, covariance_trace in rows:
+        print(f"   {theta:7.4f}     {moment:12.10f}     {covariance_trace:12.10f}")
+
+    statistic_zero = record_mean_norm_sq(0.0)
+    statistic_quarter_turn = record_mean_norm_sq(np.pi / 2)
+    periodic_error = periodic_aligned_component_error(0.0, turns=1)
+    mirror_error = mirror_aligned_component_error(np.pi / 3)
+    raw_tv = total_variation(np.pi / 2, 0.0)
+    assert abs(statistic_zero - 1.0) < 1e-12
+    assert abs(statistic_quarter_turn - 0.5) < 1e-12
+    assert periodic_error < 1e-12
+    assert mirror_error < 1e-12
+    print(f"  exact separator gap S(0)-S(pi/2) = {statistic_zero-statistic_quarter_turn:.12f}")
+    print(f"  exact periodic component error    = {periodic_error:.3e}")
+    print(f"  exact mirror component error      = {mirror_error:.3e}")
+    print(f"  raw TV diagnostic (not a proof)   = {raw_tv:.10f}")
     print("  PASS")
+    return {
+        "record_moment_theta_0": statistic_zero,
+        "record_moment_theta_pi_over_2": statistic_quarter_turn,
+        "record_moment_gap": statistic_zero - statistic_quarter_turn,
+        "periodic_component_error": periodic_error,
+        "mirror_component_error": mirror_error,
+        "raw_tv_diagnostic": raw_tv,
+    }
 
 
-# ================================================================ CHECK 2
-def check2():
-    print()
-    print("=" * 74)
-    print("CHECK 2 -- is the separating statistic gauge invariant?")
-    print("=" * 74)
+def check2() -> dict[str, float]:
+    print("\n" + "=" * 78)
+    print("CHECK 2 -- passive gauge invariance of record moments and relational KL")
+    print("=" * 78)
     rng = np.random.default_rng(20260812)
-    Th = np.pi / 2
-    ref = separating_statistic(Th)
-    worst_stat, worst_kl = 0.0, 0.0
+    theta = np.pi / 2
+    reference_moment = record_mean_norm_sq(theta)
+    worst_moment = 0.0
+    worst_kl = 0.0
     for _ in range(200):
-        gi, gj = rng.uniform(0, TWO_PI, size=2)
-        worst_stat = max(worst_stat, abs(separating_statistic(Th, gi, gj) - ref))
-        # the two relational KL terms must also be invariant under a common pushforward
-        q_i_mu, q_i_S = push(gi, np.array([0.3, 0.9]), np.diag([0.30, 0.45]))
-        for (u_m, u_S), (v_m, v_S) in zip(source_laws(Th, gi, gj), source_laws(Th)):
-            a = kl_gauss(q_i_mu, q_i_S, u_m, u_S)
-            b = kl_gauss(*push(0.0, np.array([0.3, 0.9]), np.diag([0.30, 0.45])),
-                         v_m, v_S)
-            worst_kl = max(worst_kl, abs(a - b))
-    print(f"  200 random gauge transformations g(c_i), g(c_j) in U(1)")
-    print(f"    max drift of separating statistic : {worst_stat:.3e}")
-    print(f"    max drift of relational KL terms  : {worst_kl:.3e}")
-    assert worst_stat < 1e-12 and worst_kl < 1e-12
-    print("  PASS -- statistic and energies are Aut_G(P)-invariant; the statistic SEPARATES")
-    print("         the holonomy only up to Theta <-> -Theta (it is arccos(cos Theta), and")
-    print("         the Theta / 2*pi - Theta record laws are gauge-equivalent here).")
+        gauge_i, gauge_j = rng.uniform(0.0, TWO_PI, size=2)
+        mean, _ = mixture_moments(record_law_components(theta, gauge_i, gauge_j))
+        worst_moment = max(worst_moment, abs(float(mean @ mean) - reference_moment))
+        q_i = push(gauge_i, np.array([0.3, 0.9]), np.diag([0.30, 0.45]))
+        q_reference = (np.array([0.3, 0.9]), np.diag([0.30, 0.45]))
+        for transformed, reference in zip(source_laws(theta, gauge_i, gauge_j), source_laws(theta)):
+            worst_kl = max(
+                worst_kl,
+                abs(kl_gauss(*q_i, *transformed) - kl_gauss(*q_reference, *reference)),
+            )
+    assert worst_moment < 1e-12
+    assert worst_kl < 1e-12
+    print(f"  max record-moment drift = {worst_moment:.3e}")
+    print(f"  max relational-KL drift = {worst_kl:.3e}")
+    print("  PASS")
+    return {"record_moment_gauge_drift": worst_moment, "relational_kl_gauge_drift": worst_kl}
 
 
-# ================================================================ CHECK 3
-def check3():
-    print()
-    print("=" * 74)
-    print("CHECK 3 -- the flat-coboundary control: Omega_ij = e^{i phi_i} e^{-i phi_j}")
-    print("=" * 74)
-    print("  PIFB2's declared transport is a coboundary. Around any loop it telescopes,")
-    print("  so the two paths give the SAME transport and Theta cannot enter the record.")
-    print()
-    # Two distinct routes on S^1 from c_j (phi = 0) to c_i (phi = PHI0): the short way,
-    # and the long way round. Transport angles are obtained by QUADRATURE of a declared
-    # 1-form along each route -- never by a telescoping sum of node differences, which
-    # would collapse to (endpoint - startpoint) for any 1-form and could not detect
-    # non-exactness. (Two earlier versions of this check were vacuous for that reason.)
-    ROUTE_SHORT = (0.0, 0.25 * PHI0, 0.5 * PHI0, PHI0)
-    ROUTE_LONG = (0.0, -0.4 * (TWO_PI - PHI0), -0.8 * (TWO_PI - PHI0), PHI0 - TWO_PI)
-
-    def line_integral(one_form, nodes, n=4001):
-        """int_gamma A along a piecewise route, by trapezoid quadrature."""
-        tot = 0.0
-        for a, b in zip(nodes[:-1], nodes[1:]):
-            t = np.linspace(a, b, n)
-            tot += float(np.trapezoid(one_form(t), t))
-        return tot
-
-    def coboundary_form(Theta):
-        """A = d(lambda) with lambda = Theta*sin(phi)/2pi PERIODIC on S^1 -- a pure
-        gauge / coboundary, exactly PIFB2's declared transport class. Theta enters the
-        potential and must cancel out of every closed loop."""
-        return lambda ph: Theta * np.cos(ph) / TWO_PI
-
-    def uniform_form(Theta):
-        """CHECK 1's connection A = (Theta/2pi) dphi -- NOT exact on S^1. Included as
-        the contrast that makes this check evidence rather than an identity."""
-        return lambda ph: np.full_like(np.asarray(ph, dtype=float), Theta / TWO_PI)
-
-    def cob_pdf(X, Theta):
-        """Record law under the coboundary transport, built from the two route
-        integrals. Both routes are integrated independently; their agreement is a
-        COMPUTED consequence of exactness, and swapping in `uniform_form` below makes
-        this function Theta-dependent and the assertion fire."""
-        comps = []
-        for nodes in (ROUTE_SHORT, ROUTE_LONG):
-            mu, S = push(line_integral(coboundary_form(Theta), nodes), MU_J, SIG_J)
-            comps.append((mu, S + SIGMA_O ** 2 * np.eye(2)))
-        return sum(w * gauss_pdf(X, m, S) for w, (m, S) in zip(PI_ROW, comps))
-
-    def loop_holonomy(form_factory, Theta):
-        """Holonomy around the closed loop ROUTE_SHORT then ROUTE_LONG reversed."""
-        f = form_factory(Theta)
-        return line_integral(f, ROUTE_SHORT) - line_integral(f, ROUTE_LONG)
-
-    def cob_orbit_distance(G, cell, Theta, p_ref, n_gauge=360):
-        """Gauge-orbit distance of the coboundary record law against the reference.
-
-        This actually reads Theta (the previous version built a Theta-free literal and
-        repeated it twice, so its column was 0.0 by construction rather than by result).
-        """
-        comps = []
-        for nodes in (ROUTE_SHORT, ROUTE_LONG):
-            mu, S = push(line_integral(coboundary_form(Theta), nodes), MU_J, SIG_J)
-            comps.append((mu, S + SIGMA_O ** 2 * np.eye(2)))
-        best = np.inf
-        for g in np.linspace(0.0, TWO_PI, n_gauge, endpoint=False):
-            pg = sum(w * gauss_pdf(G, R(g) @ m, R(g) @ S @ R(g).T)
-                     for w, (m, S) in zip(PI_ROW, comps))
-            best = min(best, 0.5 * np.abs(pg - p_ref).sum() * cell)
-        return best
-
-    G, cell = grid()
-    p0 = cob_pdf(G, 0.0)
-    print("  NOTE: the RAW record law is not the invariant here. Under a coboundary both")
-    print("  routes agree, but their COMMON angle still moves with Theta, which rotates the")
-    print("  whole record law -- a gauge motion, not holonomy. The invariants are the loop")
-    print("  holonomy, the inter-component angle, and the gauge-orbit distance.")
-    print()
-    print("   Theta    loop (coboundary)   loop (uniform A)   comp. angle   orbit dist")
-    print("   " + "-" * 74)
-    worst_loop = 0.0
-    worst_ang = 0.0
-    worst_orb = 0.0
-    for Th in [0.0, np.pi / 4, np.pi / 2, np.pi]:
-        loop_cob = loop_holonomy(coboundary_form, Th)
-        loop_uni = loop_holonomy(uniform_form, Th)
-        angs = [line_integral(coboundary_form(Th), nodes)
-                for nodes in (ROUTE_SHORT, ROUTE_LONG)]
-        comp_ang = abs(angs[0] - angs[1])
-        d = cob_orbit_distance(G, cell, Th, p0)
-        worst_loop = max(worst_loop, abs(loop_cob))
-        worst_ang = max(worst_ang, comp_ang)
-        worst_orb = max(worst_orb, d)
-        print(f"   {Th:7.4f}  {loop_cob:16.10f}  {loop_uni:16.10f}   {comp_ang:11.4e}  {d:11.6e}")
-
-    # (i) the coboundary carries no holonomy, computed by quadrature
-    assert worst_loop < 1e-8, worst_loop
-    # (ii) hence the two routes give the SAME transport, so the mixture components coincide
-    assert worst_ang < 1e-8, worst_ang
-    # (iii) and the record laws all lie on ONE gauge orbit (grid-limited floor ~5e-3)
-    assert worst_orb < 5e-3, worst_orb
-    # (iv) THE CONTRAST -- the same quadrature on CHECK 1's non-exact A returns exactly
-    #      Theta, so (i)-(iii) are results about the coboundary, not identities of the code.
-    assert abs(loop_holonomy(uniform_form, np.pi / 2) - np.pi / 2) < 1e-9
-    print()
-    print("  PASS -- integrating the SAME routes against the declared coboundary returns")
-    print("         loop holonomy 0, coincident mixture components, and a single gauge")
-    print("         orbit; the very same quadrature against CHECK 1's non-exact A returns")
-    print("         exactly Theta. So B4's negative is reproduced under PIFB2's declared")
-    print("         transport, and CHECK 1's separation is caused by the CONNECTION, not")
-    print("         by the two-path construction per se. Substitute uniform_form for")
-    print("         coboundary_form above and (i)-(iii) all fail -- that is the control.")
+def check3() -> dict[str, float]:
+    print("\n" + "=" * 78)
+    print("CHECK 3 -- exact coboundary control and executable flat-twist counterpresentation")
+    print("=" * 78)
+    coboundary_error = max(
+        coboundary_aligned_component_error(theta)
+        for theta in (0.0, np.pi / 4, np.pi / 2, np.pi)
+    )
+    flat_twist_error = 0.0
+    for theta in (0.0, np.pi / 4, np.pi / 2, np.pi):
+        flat_twist_error = max(
+            flat_twist_error,
+            _component_error(record_law_components(theta), flat_twist_record_law_components(theta)),
+        )
+    assert coboundary_error < 1e-12
+    assert flat_twist_error < 1e-12
+    print(f"  exact coboundary alignment error = {coboundary_error:.3e}")
+    print(f"  flat-twist reproduction error    = {flat_twist_error:.3e}")
+    print("  PASS -- the constrained curve family is monodromy-sensitive, but the")
+    print("          same record law has a zero-connection, explicit-twist presentation.")
+    return {
+        "coboundary_component_error": coboundary_error,
+        "flat_twist_component_error": flat_twist_error,
+    }
 
 
-# ================================================================ CHECK 4
-def check4():
-    print()
-    print("=" * 74)
-    print("CHECK 4 -- does the tied-replica ELBO identity survive Omega -> P_gamma?")
-    print("=" * 74)
-    print("  Claim:  KL( Q || P ) = KL( beta || pi ) + sum_J beta_J KL( q_i || u_J )")
-    print("  with    Q(J,x) = beta_J q_i(x),   P(J,x) = pi_J u_J(x).")
-    print()
-    Th = np.pi / 2
+def check4() -> dict[str, float]:
+    print("\n" + "=" * 78)
+    print("CHECK 4 -- finite-mixture KL identity after curve transport")
+    print("=" * 78)
+    theta = np.pi / 2
     q_i = (np.array([0.3, 0.9]), np.diag([0.30, 0.45]))
     beta = np.array([0.7, 0.3])
-    us = source_laws(Th)
-
+    sources = source_laws(theta)
     rhs = float(np.sum(beta * np.log(beta / PI_ROW)))
-    rhs += float(sum(b * kl_gauss(*q_i, m, S) for b, (m, S) in zip(beta, us)))
+    rhs += sum(weight * kl_gauss(*q_i, mean, covariance) for weight, (mean, covariance) in zip(beta, sources))
 
-    # LHS by direct 2-D quadrature on the joint label-copy space
-    G, cell = grid(n=801, half=8.0)
+    points, cell = grid(n=801, half=8.0)
+    q_density = gauss_pdf(points, *q_i)
     lhs = 0.0
-    for b, p_, (m, S) in zip(beta, PI_ROW, us):
-        qx = gauss_pdf(G, *q_i)
-        ux = gauss_pdf(G, m, S)
-        integrand = b * qx * (np.log(b * qx) - np.log(p_ * ux))
-        lhs += integrand.sum() * cell
+    for weight, prior_weight, (mean, covariance) in zip(beta, PI_ROW, sources):
+        source_density = gauss_pdf(points, mean, covariance)
+        integrand = weight * q_density * (
+            np.log(weight * q_density) - np.log(prior_weight * source_density)
+        )
+        lhs += float(integrand.sum() * cell)
+    residual = abs(lhs - rhs)
+    assert residual < 1e-6
+    print(f"  LHS = {lhs:.12f}")
+    print(f"  RHS = {rhs:.12f}")
+    print(f"  residual = {residual:.3e}")
+    print("  PASS")
+    return {"lhs": lhs, "rhs": rhs, "residual": residual}
 
-    print(f"    LHS (quadrature on the joint label-copy space) = {lhs:.10f}")
-    print(f"    RHS (row KL + weighted transported KLs)        = {rhs:.10f}")
-    print(f"    |LHS - RHS| = {abs(lhs - rhs):.3e}")
-    assert abs(lhs - rhs) < 1e-6, (lhs, rhs)
-    print("  PASS -- the finite-mixture KL chain rule is unaffected by replacing the")
-    print("         transport with parallel transport along a curve. (P_gamma)_# q_j is a")
-    print("         pushforward of a probability law by a measurable bijection, hence")
-    print("         normalized, so the identity of the closed theorem holds verbatim.")
+
+def run_checks() -> dict[str, object]:
+    return {
+        "schema_version": "u1-two-path-witness/v2",
+        "check1_record_separation": check1(),
+        "check2_gauge_invariance": check2(),
+        "check3_controls": check3(),
+        "check4_elbo_identity": check4(),
+        "scope": {
+            "base": "S1",
+            "group": "U(1)",
+            "curvature_tested": False,
+            "bundle_topology_tested": False,
+            "connection_identified_from_records": False,
+            "live_source_law": False,
+        },
+    }
 
 
-def main():
-    check1()
-    check2()
-    check3()
-    check4()
-    print()
-    print("=" * 74)
-    print("CONCLUSION")
-    print("=" * 74)
-    print("""
-  With the connection entering through curve-mediated transport, distinct holonomies
-  induce DISTINCT observation-record laws on a finite design (CHECK 1), the separating
-  statistic is gauge invariant and separates the holonomy up to Theta <-> -Theta (CHECK 2),
-  the effect is caused by the connection rather than by the two-path construction (CHECK 3),
-  and the exact tied-replica ELBO identity is undisturbed (CHECK 4).
-
-  SCOPE -- what this does NOT show. (a) The base is 1-dimensional, so F = dA vanishes
-  identically and every principal U(1) bundle over S^1 is trivial; B4's CURVATURE and
-  BUNDLE-TOPOLOGY clauses are untested here and need C = T^2 or S^2. (b) The record law is
-  reproduced EXACTLY (total variation 0) by a flat, zero-connection model that declares the
-  two rotations as ordinary kernel parameters, on which this statistic still returns Theta
-  while the holonomy is 0 -- so what the record identifies is a declared group-valued kernel
-  parameter, and its identification with a bundle holonomy is imposed by the modeller.
-  Breaking that confound needs >= 3 base points with a cocycle constraint. (c) The source
-  law q_j is frozen as exogenous; a live q_j would make the kernel recognition-dependent.
-
-  This is the separating tuple that appendix_claim_ledger.tex:242-256 requested and that
-  B4 ruled out for the DECLARED model. It does not contradict B4: B4's hypothesis is
-  that the connection is not an argument of any generative kernel, and wave2-01:709
-  states "Change either and the theorem is unavailable." Curve-mediated transport
-  changes exactly that.
-
-  SCOPE. This is a witness, not a theorem. It establishes existence for one bundle,
-  one connection family, one fiber, one statistic. It does not establish that holonomy
-  is recoverable in general, nor identifiability of the connection from records, nor
-  anything about non-abelian G, where the statistic must be a conjugacy-class invariant.
-""")
+def main() -> None:
+    result = run_checks()
+    print("\n" + "=" * 78)
+    print("RESULT JSON")
+    print("=" * 78)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    print("\nCONCLUSION")
+    print("  Exact record moments distinguish the selected monodromies within the declared")
+    print("  curve-transport model. Exact gauges establish periodic, mirror, and coboundary")
+    print("  equivalences. The executable flat-twist control shows that records do not identify")
+    print("  the connection origin across broader generative presentations. No claim is made")
+    print("  about curvature, bundle topology, nonabelian groups, or live recognition sources.")
 
 
 if __name__ == "__main__":

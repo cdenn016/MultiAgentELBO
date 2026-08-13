@@ -117,12 +117,14 @@ D_{\rm KL}(q_a\Vert p_a)
 \end{aligned}}
 \]
 
-Define (\mathcal F_{\rm PIFB2,h}^{\rm lag,1}) as the same display with the mutual-information term
-removed. Then
+Define the **joint-typed lagged unit-coefficient two-channel scalar**
+(\mathcal F_{\mathrm{JT},h}^{\mathrm{lag},1}) as the same display with the mutual-information
+term removed. In particular, its observation contribution remains the well-typed joint-private
+expectation (-\mathbb E_{\zeta_a}\log\ell_a(o_a\mid K_a,M_a)). Then
 
 \[
 \mathcal F_h^{n+1}
-=\mathcal F_{\rm PIFB2,h}^{\rm lag,1}
+=\mathcal F_{\mathrm{JT},h}^{\mathrm{lag},1}
 +\sum_{a\in A}I_{\zeta_a}(K_a;M_a).
 \]
 
@@ -130,13 +132,14 @@ Under the state-model mean-field restriction (\zeta_a=q_a\otimes s_a),
 
 \[
 \mathcal F_h^{n+1}
-=\mathcal F_{\rm PIFB2,h}^{\rm lag,1}.
+=\mathcal F_{\mathrm{JT},h}^{\mathrm{lag},1}.
 \]
 
 This equality has unit state-self, model-self, peer-energy, and categorical-KL coefficients. It uses
-counting measure on the finite index set. It includes the normalized observation factor once. It is
-an exact negative ELBO on the enlarged tied-replica inventory, not on the original single-copy
-inventory.
+counting measure on the finite index set. It includes the normalized joint-private observation
+factor once. It is an exact negative ELBO on the enlarged tied-replica inventory, not on the
+original single-copy inventory. No equality to the literal PIFB2 observation display is asserted;
+that separate source-comparison claim remains unresolved in `pifb2-crosswalk.md`.
 
 Finally, because (P_h^n) is normalized and has positive finite evidence,
 

@@ -10,8 +10,8 @@ D_{\rm KL}(\zeta\Vert p\otimes r)
 =I_\zeta(K;M)=\log2.
 \]
 
-Therefore the naive PIFB2 private decomposition is not exact for correlated state-model
-recognition. The mutual-information correction is necessary.
+Therefore any private decomposition containing only the two marginal self KL terms is not exact for
+correlated state-model recognition. The mutual-information correction is necessary.
 
 ## Single-latent product of experts
 
@@ -31,10 +31,9 @@ D_{\rm KL}(q\Vert p)+\sum_j\beta_jD_{\rm KL}(q\Vert u_j)
 \end{aligned}
 \]
 
-The additive PIFB2 self-plus-peer expression therefore is not the ordinary ELBO KL of this
-single-latent normalized product-of-experts model unless the entropy and partition corrections are
-retained. The tied-replica construction avoids this hidden normalization by using distinct latent
-blocks.
+The additive self-plus-peer expression therefore is not the ordinary ELBO KL of this single-latent
+normalized product-of-experts model unless the entropy and partition corrections are retained. The
+tied-replica construction avoids this hidden normalization by using distinct latent blocks.
 
 ## Nonunit attention temperature
 
@@ -44,10 +43,11 @@ The joint label-copy KL gives
 D_{\rm KL}(\beta\Vert\pi)+\sum_j\beta_jD_{\rm KL}(q\Vert u_j).
 \]
 
-PIFB2 instead writes (\tau D_{\rm KL}(\beta\Vert\pi)) plus the same edge energies. Their difference
-is ((\tau-1)D_{\rm KL}(\beta\Vert\pi)), nonzero whenever (\tau\ne1) and (\beta\ne\pi). A
-nonunit-temperature theorem needs a separately normalized tempered model and every source-dependent
-normalizer.
+Replacing its categorical coefficient by (\tau) produces
+(\tau D_{\rm KL}(\beta\Vert\pi)) plus the same edge energies. The difference is
+((\tau-1)D_{\rm KL}(\beta\Vert\pi)), nonzero whenever (\tau\ne1) and
+(\beta\ne\pi). A nonunit-temperature theorem needs a separately normalized tempered model and
+every source-dependent normalizer.
 
 ## Arbitrary model-self and state-self weights
 
@@ -61,7 +61,7 @@ generalized construction and its normalizers. The same applies to adaptive state
 ## Base quadrature weights
 
 The negative ELBO of the finite product law is a counting-measure sum. Multiplying a site term by a
-cell volume (w_x\) changes its probabilistic meaning unless the generative law is changed by
+cell volume (w_x) changes its probabilistic meaning unless the generative law is changed by
 replication, tempering, or an explicitly normalized weighted model. Such weights are appropriate in
 a deterministic action approximation, but do not remain an exact finite-law ELBO by notation alone.
 
@@ -71,6 +71,23 @@ Replacing (q_b^n,s_b^n) in the generative kernel by the current optimization var
 (q_b^{n+1},s_b^{n+1}) makes the purported fixed joint depend on its recognition law. The one-step
 ELBO proof then fails. A simultaneous theory needs a fixed configuration law, a genuine coupled
 sample-level joint, or an empirical-measure large-deviation construction.
+
+## Literal observation-display typing
+
+The joint-typed scalar contains (-\mathbb E_{\zeta_i}\log p(o_i\mid k_i,m_i)). The current
+literal PIFB2 display instead places a likelihood depending on (k_i,m_i) under an expectation over
+(q_i) alone while leaving (m_i) unbound, or omits (m_i) in its pointwise version. Without a declared
+model-variable convention there is no well-typed equality to prove. Under a predictive-marginal
+reading, write (\zeta(dk,dm)=q(dk)t_k(dm)). The joint-minus-predictive negative-log-likelihood
+difference is
+
+\[
+\mathbb E_q\!\left[D_{\rm KL}(t_k\Vert s^{(o,k)})-D_{\rm KL}(t_k\Vert s)\right],
+\]
+
+when the disintegration and absolute-continuity terms exist. It is sign-indefinite in general.
+Only under (t_k=s), including (\zeta=q\otimes s), does it reduce to the nonnegative posterior-
+KL gap (\mathbb E_qD_{\rm KL}(s\Vert s^{(o,k)})).
 
 ## Empty sources and hard support
 

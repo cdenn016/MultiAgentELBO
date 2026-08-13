@@ -15,7 +15,7 @@ relating PIFB2's engineered action to the exact ELBO?
 
 | Run | Location | Terminal status | What it established |
 |---|---|---|---|
-| Exact two-channel finite ELBO | `docs/derivations/2026-08-12-exact-two-channel-finite-elbo/` | **COMPLETE_AFFIRMATIVE** | Tied-replica normalized joint whose exact negative ELBO equals the lagged unit-temperature two-channel PIFB2 scalar plus \(\sum_a I_{\zeta_a}(K_a;M_a)\) |
+| Exact two-channel finite ELBO | `docs/derivations/2026-08-12-exact-two-channel-finite-elbo/` | **COMPLETE_AFFIRMATIVE** | Tied-replica normalized joint whose exact negative ELBO equals the joint-typed lagged unit-coefficient two-channel scalar \(\mathcal F_{\rm JT,h}^{\rm lag,1}\) plus \(\sum_a I_{\zeta_a}(K_a;M_a)\); equality to the literal PIFB2 observation sector remains open |
 | ELBO → effective section action | `docs/derivations/2026-08-12-elbo-to-effective-section-action/` | INCONCLUSIVE | Exact finite-lattice KL contraction; \(S_h^{\rm exact}=S_h^{\rm PIFB}+\varepsilon_h+c_h\); residual uncontrolled |
 | ELBO–PIFB2 fast/slow program | `docs/derivations/2026-08-12-elbo-pifb2-fast-slow-program/` | INCONCLUSIVE | Lagged transported-peer KL identity, exact fast-state profiling identity, compact-subgroup reduction |
 
@@ -29,19 +29,23 @@ label-copy block \((J_a^s,Y_a)\) with law \(\pi^s_{a\ell}v^n_{a\ell}\),
 \(Q_a^{n+1}=\zeta_a(dk,dm)\,\beta_{aj}q_a(dx)\,\gamma_{a\ell}s_a(dy)\):
 
 $$
-\mathcal F_h^{n+1}=\sum_{a\in A}\Big[
+\begin{aligned}
+\mathcal F_h^{n+1}=\sum_{a\in A}\Big[&
 D_{\rm KL}(q_a\|p_a)+D_{\rm KL}(s_a\|r_a)+I_{\zeta_a}(K_a;M_a)
--\mathbb E_{\zeta_a}\log\ell_a(o_a\mid K_a,M_a)
-$$
-$$
-+D_{\rm KL}(\beta_a\|\pi_a^q)+\sum_b\beta_{ab}D_{\rm KL}(q_a\|u^n_{ab})
-+D_{\rm KL}(\gamma_a\|\pi_a^s)+\sum_b\gamma_{ab}D_{\rm KL}(s_a\|v^n_{ab})\Big]
-$$
-$$
-=\;\mathcal F_{\rm PIFB2,h}^{\rm lag,1}+\sum_{a\in A}I_{\zeta_a}(K_a;M_a).
+-\mathbb E_{\zeta_a}\log\ell_a(o_a\mid K_a,M_a)\\
+&+D_{\rm KL}(\beta_a\|\pi_a^q)+\sum_b\beta_{ab}D_{\rm KL}(q_a\|u^n_{ab})\\
+&+D_{\rm KL}(\gamma_a\|\pi_a^s)+\sum_b\gamma_{ab}D_{\rm KL}(s_a\|v^n_{ab})\Big]\\
+&=\mathcal F_{\rm JT,h}^{\rm lag,1}+\sum_{a\in A}I_{\zeta_a}(K_a;M_a).
+\end{aligned}
 $$
 
-Under \(\zeta_a=q_a\otimes s_a\) the correction vanishes and equality is **exact**.
+Under \(\zeta_a=q_a\otimes s_a\) the correction vanishes and equality to the declared
+joint-typed scalar is **exact**. This does not prove equality to the observation term printed in
+literal `Theory/PIFB2.tex`: its pointwise form omits the model expectation, while its displayed
+full functional leaves the model variable unbound. Under a normalized predictive reading and state-model mean field, the joint-minus-predictive
+observation objective is a nonnegative posterior KL. For correlated \(\zeta\) it is instead a
+sign-indefinite difference of two conditional KLs. The literal
+PIFB2 crosswalk therefore remains **INCONCLUSIVE** until that source is repaired and reverified.
 
 **Typing (settled).** \(q_i\) = fast recognition density over hidden states \(k_i\);
 \(s_i\) = slow generative-model section, realized as a law over model parameters \(m_i\);
@@ -601,107 +605,85 @@ The construction needs a curve-selection rule. Options, with costs:
 
 (b) is the option consistent with the horn already chosen and should be tried first.
 
-### 3d.8 THE U(1) TWO-PATH WITNESS — COMPUTED, ALL CHECKS PASS
+### 3d.8 THE U(1) TWO-PATH WITNESS — EXACT MOMENT CERTIFICATE AND CONTROLS
 
-Script: `docs/verification/u1_two_path_holonomy_witness.py`. Deterministic; run it.
+Script: `docs/verification/u1_two_path_holonomy_witness.py`. Derivation:
+`docs/derivations/2026-08-13-u1-record-moment-derivation.md`. Focused tests:
+`tests/test_u1_two_path_holonomy_witness.py`.
 
-**Setup.** \(\mathcal C=S^1\); \(G=U(1)\) with connection \(A=(\Theta/2\pi)\,d\varphi\), full-loop
-holonomy \(\Theta\); fiber = 2-D Gaussians with \(U(1)\) acting by pushforward under rotation
-(a genuine statistical isometry, per `Theory/05c:59`). Agent \(j\) at \(\varphi=0\), agent \(i\) at
-\(\varphi_0=\pi/2\); path \(\gamma\) the direct arc, \(\gamma'\) the other way round, so the two
-transports differ by exactly \(\Theta\). Generative model: source label \(J\in\{\gamma,\gamma'\}\)
-with prior \(\pi_J\), relational copy \(X\sim u_J=(\mathrm P_J)_\#q_j\), observation
-\(o\mid X\sim\mathcal N(X,\sigma_o^2I)\).
+**Setup.** \(\mathcal C=S^1\); \(G=U(1)\) with connection
+\(A=(\Theta/2\pi)\,d\varphi\), full-loop monodromy \(e^{i\Theta}\); fiber = 2-D
+Gaussians with \(U(1)\) acting by pushforward under rotation. Agent \(j\) is at
+\(\varphi=0\), agent \(i\) at \(\varphi_0=\pi/2\); the direct and long paths have
+transport angles \(a_1,a_2\) with \(a_1-a_2=\Theta\). The normalized generative model
+uses a path label \(J\), relational copy \(X\sim(\mathrm P_J)_\#q_j\), and observation
+\(O\mid X\sim\mathcal N(X,\sigma_o^2I)\).
 
-**Correction made during the computation.** The raw record law is **not** gauge invariant — a gauge
-rotation at \(c_i\) rotates every mixture component in common, so \(p(\cdot\mid\Theta)\) transforms
-*covariantly*. Comparing raw record laws conflates gauge-variant overall rotation with genuine
-holonomy content. The correct gauge-invariant separation is the distance between **gauge orbits**,
-\(d([p_a],[p_b])=\min_{g\in U(1)}\mathrm{TV}((R_g)_\#p_a,\;p_b)\). All results below use it.
+**Correction to the previous numerical argument.** A minimum over a finite gauge grid is only an
+upper bound on the gauge-orbit infimum and cannot prove separation. The load-bearing observable is
+instead the marginalized record moment
 
-| \(\Theta\) | raw TV (gauge-variant) | **orbit distance** | statistic (rad) |
-|---|---|---|---|
-| 0 | 0.0000000000 | 0.0000000000 | 0.000000 |
-| \(\pi/8\) | 0.0722670605 | 0.0374350525 | 0.392699 |
-| \(\pi/4\) | 0.1560546769 | 0.1302672342 | 0.785398 |
-| \(\pi/2\) | 0.3278284444 | **0.3190849227** | 1.570796 |
-| \(\pi\) | 0.5540257212 | 0.3974578354 | 3.141593 |
-| \(3\pi/2\) | 0.6705317582 | 0.3190849227 | 1.570796 |
-| \(2\pi\) | 0.6963750163 | **8.02e-17** | 0.000000 |
+\[
+S(\Theta):=\|\mathbb E[O\mid\Theta]\|^2
+=\|\mu\|^2\frac{1+\cos\Theta}{2}.
+\]
 
-**CHECK 1 — separation. PASS.** Orbit distance at \(\Theta=\pi/2\) is \(0.319>0\): the record laws
-are **not gauge-equivalent**, so holonomy is detected on a finite design. At \(\Theta=2\pi\) the
-orbit distance returns to \(8\times10^{-17}\), so the record depends only on the holonomy **element**
-\(e^{i\Theta}\), not on the connection representative. (The raw TV at \(2\pi\) is large purely
-because the whole configuration is rotated — pure gauge, correctly quotiented out.)
+It is gauge invariant because a passive endpoint change rotates the mean without changing its norm.
+For the declared \(\|\mu\|=1\), \(S(0)=1\) and \(S(\pi/2)=1/2\), proving that these selected record
+laws are not gauge-equivalent without observing the latent path label.
 
-**CHECK 2 — gauge invariance. PASS.** Over 200 random \(g(c_i),g(c_j)\in U(1)\): max drift of the
-separating statistic \(1.1\times10^{-15}\); max drift of the relational KL terms
-\(3.1\times10^{-15}\). Both are \(\mathrm{Aut}_G(P)\)-invariant, and for abelian \(U(1)\) the
-statistic *is* the holonomy (conjugacy class = element).
+| \(\Theta\) | \(S(\Theta)=\|\mathbb E O\|^2\) | \(\operatorname{tr}\operatorname{Cov}(O)\) |
+|---|---:|---:|
+| 0 | 1.0000000000 | 0.9450000000 |
+| \(\pi/8\) | 0.9619397663 | 0.9830602337 |
+| \(\pi/4\) | 0.8535533906 | 1.0914466094 |
+| \(\pi/2\) | **0.5000000000** | 1.4450000000 |
+| \(\pi\) | 0.0000000000 | 1.9450000000 |
+| \(3\pi/2\) | 0.5000000000 | 1.4450000000 |
+| \(2\pi\) | 1.0000000000 | 0.9450000000 |
 
-> **CORRECTION 2026-08-13 — the last clause is false as implemented.** The statistic at
-> `u1_two_path_holonomy_witness.py:149-154` is \(\arccos(\cos\Theta)\) (verified to
-> \(4.4\times10^{-16}\)), which determines only the **unordered pair**
-> \(\{e^{i\Theta},e^{-i\Theta}\}\). It is nonetheless the *complete gauge-orbit invariant of this
-> design*: the \(\Theta\) and \(2\pi-\Theta\) **record laws** are exactly gauge-equivalent under
-> \(g^*=\pi/2+\Theta/2\) plus a label swap (orbit distance \(1.06\times10^{-16}\) at
-> \(\Theta=\pi/2\); component mismatch \(\le1.7\times10^{-16}\) analytically, for every \(\Theta\)).
-> **Consequence for the table below: the \(3\pi/2\) row is the \(\pi/2\) row mirrored and is not
-> independent evidence.** The root cause is the equal-weight path prior at `:78`, not the statistic —
-> so adding an oriented observable *alone cannot work*; the design must break symmetry first
-> (\(\pi_J=(0.7,0.3)\) gives orbit distance \(0.235>0\)), after which a signed invariant
-> \(\mathrm{atan2}(m_2\times m_1,\ m_1\cdot m_2)\) orients it (gauge drift \(8.9\times10^{-16}\)).
-> The separation of \(\Theta=0\) from \(\Theta=\pi/2\) — the existence claim — is **unaffected**.
+**CHECK 1 — exact separation and equivalences. PASS.** The exact separator gap is
+\(S(0)-S(\pi/2)=0.5\). Periodicity is checked componentwise with the exact common gauge
+\(g=-k\varphi_0\), giving maximum mismatch \(2.45\times10^{-16}\). The equal-weight mirror
+equivalence \(\Theta\leftrightarrow2\pi-\Theta\) is checked with
+\(g=\pi/2+\Theta/2\) plus label interchange, giving mismatch \(2.22\times10^{-16}\). Raw total
+variation \(0.3278284444\) for \(0\) versus \(\pi/2\) is retained only as a quadrature diagnostic.
 
-**CHECK 3 — flat-coboundary control. PASS.** With PIFB2's declared transport
-\(\Omega_{ij}=e^{i\varphi_i}e^{-i\varphi_j}\), the angle depends only on the endpoints, the loop
-product is identically 0, and the record law is **exactly** \(\Theta\)-independent (TV \(=0\) to
-machine zero at every \(\Theta\) tested). B4's negative is reproduced under the declared transport.
-**The separation in CHECK 1 is therefore caused by the connection, not by the two-path construction
-per se.**
+**CHECK 2 — passive gauge invariance. PASS.** Over 200 deterministic random endpoint frame changes,
+the maximum drift of \(S\) is \(5.55\times10^{-16}\) and the maximum drift of the relational KL
+terms is \(3.11\times10^{-15}\).
 
-**CHECK 4 — the ELBO identity survives \(\Omega\to\mathrm P_\gamma\). PASS.** Direct quadrature on
-the joint label-copy space against the closed-form right-hand side:
-LHS \(=2.4495355549\), RHS \(=2.4495355549\), \(|{\rm LHS}-{\rm RHS}|=5.5\times10^{-13}\).
-\((\mathrm P_\gamma)_\#q_j\) is a pushforward of a probability law by a measurable bijection, hence
-normalized, so the finite-mixture KL chain rule of the closed theorem holds verbatim. **Obligation 1
-of §3d.7 is discharged.**
+**CHECK 3 — exact coboundary and presentation controls. PASS.** For
+\(A=d\lambda_\Theta\), \(\lambda_\Theta(\varphi)=\Theta\sin\varphi/(2\pi)\), both routes have the
+same endpoint angle \(\alpha\); the exact gauge \(g=-\alpha\) maps every tested law to the
+\(\Theta=0\) representative with component error \(0\). Thus the raw record law is not
+\(\Theta\)-independent; the exact statement is that all these laws lie in one gauge orbit.
 
-**What this establishes.** The separating tuple that `appendix_claim_ledger.tex:242-256` requested —
-a named bundle and connection, an assigned base loop, a gauge-invariant record statistic, and two
-connection data with distinct holonomy conjugacy classes whose induced record laws differ — **exists**
-under curve-mediated transport. This does not contradict B4: B4's hypothesis is that the connection
-is not an argument of any generative kernel, and `wave2-01:709` states "Change either and the theorem
-is unavailable." Curve-mediated transport changes exactly that.
+The executable counterpresentation sets the connection to zero and supplies the same two group
+twists as ordinary label-conditional kernel parameters. Its components match the curve-mediated
+components exactly (error \(0\)). Therefore this record identifies a relative group twist within
+the selected family, not its connection origin across broader model classes.
 
-**Scope — this is a witness, not a theorem.** It establishes existence for one bundle, one connection
-family, one fiber, one statistic, one design. It does **not** establish that holonomy is recoverable
-in general, nor identifiability of the connection from records, nor anything about non-abelian \(G\)
-where the statistic must be a conjugacy-class invariant rather than an element. Obligation 2 of
-§3d.7 is discharged **as an existence witness only**; obligations 3 and 4 remain.
+**CHECK 4 — finite-mixture KL identity. PASS.** Direct quadrature gives
+LHS \(=2.4495355549129756\), RHS \(=2.4495355549129770\), residual
+\(1.3322676295501878\times10^{-15}\). The finite-mixture KL chain rule itself is analytic; this
+number is numerical corroboration.
+
+**What this establishes.** The normalized curve-mediated construction has selected monodromy
+parameters that change an observable gauge-invariant record moment, and its label-copy ELBO identity
+survives. This is a one-family existence witness, not connection identifiability. Curvature, bundle
+topology, nonabelian groups, live recognition sources, and presentation-invariant physicalization
+remain open. A multi-point cocycle-constrained comparison is a proposed discriminator, not a proved
+necessary or sufficient repair.
 
 ### 3d.7 Status and obligations
 
-**Status (UPDATED 2026-08-13): WITNESSED — existence, abelian \(G\), flat monodromy.** Obligations 1
-and 2 are discharged by the §3d.8 witness; obligation 3 is discharged **for abelian \(G\)** by CHECK 2;
-obligations 3 (non-abelian, needing a conjugacy-class invariant rather than a group element) and 4
-remain open. *(The previous header read "CONJECTURE … not that a separating pair of connections
-exists", which contradicted the witness reported directly below it. Note also that §3d.8 is presented
-after this list; read them in the order 3d.8 then 3d.7.)* The original obligations, for the record:
-1. Verify the modified source law \((\mathrm P_\gamma)_\#q_j\) still yields a **normalized**
-   generative kernel (it does, being a pushforward of a probability law by a measurable bijection) and
-   that the tied-replica ELBO identity of (E1) survives verbatim with \(\Omega\to\mathrm P_\gamma\).
-   *Expected easy.*
-2. Exhibit the separating tuple B4 requires: a named bundle and connection, an assigned loop, a
-   gauge-invariant record statistic, and two connection data with distinct holonomy conjugacy classes
-   whose induced record laws **differ**. Natural first witness: \(G=U(1)\), \(\mathcal C=S^1\) or
-   \(T^2\), Gaussian fiber, two agents, two paths. *This is the decisive computation.*
-3. Check gauge-invariance of the proposed statistic under \(\mathrm{Aut}_G(P)\), and that it depends
-   on the conjugacy class only.
-4. Determine whether curve-mediated coupling breaks `hyp:gen-design-product` (it does — the source at
-   \(c_j\) enters the kernel at \(c_i\)) and therefore whether it is the *same* relaxation as §3c or
-   a strictly larger one.
+**Status (UPDATED 2026-08-13): WITNESSED WITHIN A CONSTRAINED PRESENTATION.** The observable moment
+and exact gauges close the finite \(S^1,U(1)\) existence calculation. The flat-twist control prevents
+an ontological reading: the same record law has a zero-connection presentation. Remaining obligations
+are to define the admitted presentation-equivalence relation, show that a proposed physical readout
+descends to its quotient or derive a canonical agentization, extend any separator to nonabelian
+conjugacy classes, and separately treat curvature/topology on a higher-dimensional base.
 
 ---
 
