@@ -369,12 +369,100 @@ def fisher_pencil():
     print("         the edge weight is the Fisher metric rather than a scalar.")
 
 
+def support_boundary():
+    """CLAIM 7 (added 2026-08-13, discharging obligation O4).
+
+    A support boundary -- an agent leaving the active set A(c) -- is a genuinely
+    different wall from a gap closing IN THE BARE OPERATOR: as the departing agent's
+    couplings vanish, its diagonal block tends to zero and it injects K spurious zero
+    modes that descend into the kernel, so the bottom-of-spectrum gap closes in BOTH
+    the flat and the frustrated regime.
+
+    The self-anchoring repair proposed in O4 (a strictly positive self-weight
+    beta_ii surviving departure, L_ii -> beta_ii I) does NOT work: a uniform diagonal
+    shift is L -> L + aI, which translates the whole spectrum and leaves every gap
+    identical. Verified to 3.6e-15.
+
+    What does work is the term the programme's free energy already carries. The prior
+    sector chi_i D_KL(q_i || p_i) contributes alpha_i Lambda_{p,i} on the diagonal,
+    and because the prior precisions are agent-specific and generically distinct, the
+    departing agent's block tends to its OWN prior rather than to zero. No mode
+    reaches the kernel, nothing collides, and the departure becomes a smooth limit.
+
+    Consequence: the correct operator for the extent question is the Hessian of the
+    FULL free energy, coupling plus prior, not the bare connection Laplacian.
+    """
+    print()
+    print("=" * 74)
+    print("CLAIM 7 -- support boundaries, and why the prior sector removes the wall")
+    print("=" * 74)
+    K, n = 3, 5
+    core = [(1, 0), (2, 1), (0, 2)]
+    edges = core + [(3, 0), (4, 3)]          # agent 4 departs
+    rp = np.random.default_rng(SEED)
+
+    def spd(s=0.5):
+        A = expm(rp.normal(size=(K, K)) * s)
+        return A @ A.T
+
+    def assemble(Th, w, prior=None, alpha=0.0):
+        L = np.zeros((n * K, n * K))
+        for e in edges:
+            i, j = e
+            T, We = Th[e], w[e] * np.eye(K)
+            L[i * K:(i + 1) * K, i * K:(i + 1) * K] += We
+            L[j * K:(j + 1) * K, j * K:(j + 1) * K] += T.T @ We @ T
+            L[i * K:(i + 1) * K, j * K:(j + 1) * K] -= We @ T
+            L[j * K:(j + 1) * K, i * K:(i + 1) * K] -= T.T @ We
+        if prior is not None:
+            for i in range(n):
+                L[i * K:(i + 1) * K, i * K:(i + 1) * K] += alpha * prior[i]
+        return L
+
+    prior = {i: spd() for i in range(n)}
+    for label, scale in [("flat", 0.0), ("frustrated", 0.8)]:
+        rr = np.random.default_rng(SEED + 7)
+        Th = {e: so3(rr.normal(size=3) * scale) for e in edges}
+        w = {e: 1.0 for e in core}
+        w[(3, 0)] = 1.0
+        bare, withprior = {}, {}
+        for wout in (1.0, 0.01, 0.0):
+            w[(4, 3)] = wout
+            bare[wout] = np.linalg.eigvalsh(assemble(Th, w))
+            withprior[wout] = np.linalg.eigvalsh(assemble(Th, w, prior, alpha=0.25))
+        print(f"  {label:11s} bare      lambda_0 at w_out=1.00 / 0.01 / 0.00 : "
+              f"{bare[1.0][0]:8.5f} {bare[0.01][0]:8.5f} {bare[0.0][0]:8.5f}")
+        print(f"  {label:11s} bare      # modes below 1e-8 at w_out=0        : "
+              f"{int(np.sum(bare[0.0] < 1e-8))}  (K spurious zeros injected)")
+        print(f"  {label:11s} +prior    lambda_0 at w_out=1.00 / 0.01 / 0.00 : "
+              f"{withprior[1.0][0]:8.5f} {withprior[0.01][0]:8.5f} {withprior[0.0][0]:8.5f}")
+        assert np.sum(bare[0.0] < 1e-8) >= K          # bare: kernel swallows the agent
+        assert withprior[0.0][0] > 1e-2               # prior: nothing reaches zero
+        print()
+
+    # uniform anchoring is a pure translation
+    rr = np.random.default_rng(SEED + 7)
+    Th = {e: so3(rr.normal(size=3) * 0.8) for e in edges}
+    w = {e: 1.0 for e in core}
+    w[(3, 0)] = 1.0
+    w[(4, 3)] = 0.01
+    ev0 = np.linalg.eigvalsh(assemble(Th, w))
+    evA = np.linalg.eigvalsh(assemble(Th, w, {i: np.eye(K) for i in range(n)}, alpha=0.15))
+    dg = np.max(np.abs(np.diff(evA) - np.diff(ev0)))
+    print(f"  uniform self-anchor: max |gap change| = {dg:.2e}  <- pure translation, useless")
+    assert dg < 1e-10, dg
+    print("\n  PASS -- the support boundary IS a distinct wall in the bare operator, the")
+    print("         O4 self-anchoring repair does nothing, and the prior sector the free")
+    print("         energy already carries removes the wall entirely.")
+
+
 def main():
     claim_1_and_2()
     claim_3()
     claim_4()
     regime_table()
     fisher_pencil()
+    support_boundary()
     print()
     print("=" * 74)
     print("SCOPE -- what this does NOT establish")

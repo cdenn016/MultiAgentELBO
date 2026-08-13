@@ -902,6 +902,34 @@ self-adjointness.
 > it is already the metric the programme declares on the belief fiber. What remains genuinely open in
 > O16 is only the \(c\)-dependence and the model channel.
 
+> **O4 DISCHARGED 2026-08-13, negatively for the proposed repair and positively for the programme's
+> own free energy.** CLAIM 7 settles §3f.1 disagreement 2. In the **bare** connection Laplacian a
+> support boundary is a genuinely distinct wall: as the departing agent's couplings vanish its
+> diagonal block tends to \(0\), injecting \(K\) spurious zero modes that descend into the kernel, so
+> the bottom-of-spectrum gap closes in **both** regimes (measured: 6 modes below \(10^{-8}\) at
+> \(w_{m out}=0\) in the flat case, 4 in the frustrated case, against 3 and 1 before departure).
+> O4's predicted split — frustrated giving an avoided crossing, flat an exact meeting at the kernel —
+> is **not** what happens; both collapse to the kernel.
+>
+> **The O4 self-anchoring repair does nothing.** A uniform self-weight makes \(L\mapsto L+a\mathbb 1\),
+> a pure translation: every gap is unchanged to \(4.4	imes10^{-15}\). It removes the zero crossing
+> and leaves the degeneracy exactly where it was.
+>
+> **What removes the wall is the prior sector the free energy already carries.** The term
+> \(\chi_iD_{m KL}(q_i\|p_i)\) contributes \(lpha_i\Lambda_{p,i}\) on the diagonal, and because
+> prior precisions are agent-specific and generically distinct, the departing agent's block tends to
+> **its own prior** rather than to zero. Nothing reaches the kernel and the departure becomes a smooth
+> limit: \(\lambda_0\) runs \(0.134	o0.100	o0.090\) (flat) and \(0.355	o0.100	o0.090\)
+> (frustrated) as \(w_{m out}	o0\), bounded away from \(0\) throughout.
+>
+> **Consequence, and it is a correction to this whole section.** The right operator for the extent
+> question is the Hessian of the **full** free energy — coupling **plus** prior — not the bare
+> connection Laplacian. §3e and §3f both used the bare form. With the prior sector included there is
+> no kernel at all, so "\(\lambda_1\) as order parameter" has to be restated relative to the prior
+> floor, which is consistent with the panel's independent finding that \(\lambda_1\) carries a
+> state-independent floor. The two wall types **do** unify, but through \(\Lambda_{p,i}\), not through
+> an ad-hoc self-weight.
+
 **(R2) §3e.2(ii)'s novelty claim is downgraded. [Established elsewhere in this manuscript]** The
 tree-free repair for `Theory/07b`'s compressed meta-state is **already proved in this repository** at
 two tiers: `Theory/06_general_coarsegraining.tex:561` (`thm:cg-holonomy-kl-marginal`, a path-, root-
