@@ -1,101 +1,139 @@
 # Programme status — punchlist
 
-*Rebuilt 2026-08-13. Read `overview.md` for the theory, the worklog for the derivation front, and this
-file for where everything actually stands. Every entry cites the artifact that settles it.*
+*Rebuilt 2026-08-13 (second pass, after worklog §3g–§3k). Read `overview.md` for the theory, the
+worklog for the derivation front, `docs/research-plans/2026-08-13-tier0-decisions.md` for the six
+declarations awaiting an answer, and this file for where everything stands.*
 
 Status markers: **P** proven · **D** derived under stated hypotheses · **C** computed on an instance ·
-**S** suggested/structural · **O** open · **R** refuted or retracted.
+**S** suggested · **O** open · **R** refuted or retracted.
 
 ---
 
-## 1. Solid — build on these
+## 1. The standing decision, and what it bought
+
+**The link group is restricted to a compact subgroup.** That single declaration resolved six separate
+open items, all of which had the same cause (worklog §3i.1): Yang–Mills non-definiteness, the
+coercivity lemma, the invariant-versus-bounded dilemma for the plaquette density, `λ₀`'s
+gauge-dependence, the infinite Haar measure, and the ELBO-derivability of the curvature term.
+
+It also made the curvature term **derived rather than engineered** (§3i.2). With a Gibbs law on links
+against Haar, the `U(1)` case is exactly von Mises with `Z = e^{−β}I₀(β)` in closed form; the
+variational bound saturates at `−2.2e-16` on the true law and is strictly positive otherwise. The
+noncompact control diverges (`1.7, 15.8, 8.7e3, 6.2e31, inf`). Compactness is what makes the evidence
+exist.
+
+Cost: the SPD sector stops being gauge. Under `O(K)` congruence preserves eigenvalues, so transports
+rotate uncertainty but cannot rescale it. The reduction `GL(K)/O(K)` makes SPD **matter** rather than
+gauge — but see §3j, that argument is Gaussian-specific.
+
+---
+
+## 2. Solid
 
 | Result | Status | Where |
 |---|---|---|
-| Exact two-channel finite ELBO on a tied-replica inventory | **P** | `docs/derivations/2026-08-12-exact-two-channel-finite-elbo/`, `COMPLETE_AFFIRMATIVE` |
-| `KL(ζ‖p⊗r) = KL(q‖p) + KL(s‖r) + I_ζ(K;M)` | **P** | median residual 1.1e-16, max 2.7e-15 over 2×10⁵ instances |
-| Total-correlation chain + pseudo-ELBO sign proposition | **P** | `Theory/05_elbo.tex:39-50`, `:95-113` (ESTABLISHED) |
-| Exact finite-site KL contraction | **D** | conditional on four hypotheses — see §5 arrow table |
-| Gauge-covariant informational pullback + exact defect cocycle | **P** | `Theory/05c` `thm:pb-fisher-defect-cocycle`, `thm:pb-base-defect-cocycle` |
-| Kernel–holonomy isomorphism `ker L_I ≅ Fix(Hol_r)` | **P** | `Theory/09:379,447` `eq:cg-fixed-rank` |
-| Tree-free coarse score (path-, root-, gauge-independent) | **P** | `Theory/06_general_coarsegraining.tex:561` |
-| Agent-network RG *equations* | **D** | `Theory/07b` `thm:rg-fixed-point-equations` — equations only, see §3 |
-| Exact fast-state profiling; compact-subgroup Haar reduction | **P** | `overview.md` §6 |
-
-### New this session
-
-| Result | Status | Where |
-|---|---|---|
-| Belief alignment ⟹ graph holonomy ∈ `Stab(q)`, **not** `= I` | **C** | `meta_agent_coherence_witness.py` C1 — `‖H−I‖=0.0895`, `‖Hq−q‖=1.6e-16` |
-| That condition is what makes compression tree-independent | **C** | C2 — two trees agree to 2.0e-16; break one edge → 0.975 |
-| Fisher pencil `(L^Ω, ⊕Σ_i^{-1})` is **exactly `GL(K,ℝ)`-invariant** | **C** | C6 — drift 1.0e-15 vs 1.499 for scalar weights; gauge acts by congruence on both halves |
-| The prior sector removes the support-boundary wall | **C** | C7 — `λ₀` bounded away from 0 throughout departure |
-| Shared latent generates PIFB2's KL form exactly, at rank one | **C** | `shared_latent_coupling_witness.py` C2 — `β_ab = c v_a v_b` to 2.2e-16 |
-| Shared latent induces an invertible transport when `d ≥ K` | **C** | C5 — `Ω_ab = Λ_a M Λ_bᵀ S_b^{-1}` |
-| That transport is **never a cocycle** for `N ≥ 2` | **P** | C6 — requires `F = T^{-1}/(1−N)`, negative definite while `F ⪰ 0` |
+| Exact two-channel finite ELBO, tied-replica | **P** | `docs/derivations/.../exact-two-channel-finite-elbo/` |
+| Total-correlation chain; pseudo-ELBO sign proposition | **P** | `Theory/05_elbo.tex:39-50`, `:95-113` |
+| Exact finite-site KL contraction | **D** | conditional on §5's four hypotheses |
+| Pullback geometry + exact defect cocycle | **P** | `Theory/05c` |
+| Kernel–holonomy isomorphism `ker L_I ≅ Fix(Hol)` | **P** | `Theory/09:379,447` |
+| Tree-free coarse score | **P** | `Theory/06_general_coarsegraining.tex:561` |
+| Agent-network RG **equations** | **D** | `Theory/07b` — equations only; no interacting fixed point exists |
+| Alignment ⟹ holonomy ∈ `Stab(q)`, not `= I` | **C** | §3e.2(i) |
+| Fisher pencil is exactly `GL(K,ℝ)`-invariant | **C** | §3e/O5 — drift `1.0e-15` vs `1.499` scalar |
+| Prior sector removes the support-boundary wall | **C** | O4 — uniform self-anchoring is a pure translation, does nothing |
+| Shared latent gives genuine coupling, PIFB2's form at rank one | **C** | §3g.2 |
+| `λ₀ = c·Σ‖F‖²`, linear, exponent 1.006 | **C** | §3h.3 — **compact `G` only** |
+| Plaquette action is an exact negative-ELBO component | **C** | §3i.2 — compact `G` only |
 
 ---
 
-## 2. Refuted, retracted, or closed negatively — stop working on these
+## 3. Refuted, retracted, or closed negatively
 
-| Item | Verdict | Where |
-|---|---|---|
-| Adiabatic extent criterion `‖Q D^ω P‖ ≪ gap` | **R** — not scale-invariant, hence vacuous; also unnecessary, Kato gives the projector from the gap alone | worklog §3f.0, §3f.2 |
-| Bare connection Laplacian `D⊗𝟙 − W^Ω` | **R** — non-self-adjoint under row-simplex `β`; indefinite off `O(K)` | §3f.0 R1; scoped by C5 of the coherence witness |
-| Self-anchoring repair for support boundaries | **R** — a uniform diagonal is a pure translation, gaps unchanged to 4.4e-15 | C7 |
-| `ε` as an RG scale / dendrogram | **R** — partitions *refine* as `ε` grows; monotonicity fails | §3f |
-| `H¹` of the sheaf measures frustration | **R** — `dim H⁰ − dim H¹ = χ·K` identically | §3f.4 |
-| Berry curvature for a real rank-1 block | **R** — projected connection is flat with `Z/2` holonomy | §3f |
-| §4.7 Amari–Chentsov over-unification | **R** — refuted by a Poisson-fibre `d=2` run, `T_skew > 0` everywhere | worklog §4.7 |
-| "Every Ad-invariant form on `gl(K,ℝ)` is indefinite" | **R** — `(tr X)(tr Y)` is invariant and nonnegative; the real no-go is positive-definiteness | `overview.md` §7 |
-| B4's holonomy clause "defeated" | **R** — "unavailable"; record law reproduced to `TV = 0` by a flat connection with a declared twist | `overview.md` §7, §8 |
-| `κ_A` derivable by calibration | **closed negatively** — no calibration of a *linear* conversion is ever a derivation | `overview.md` §2.3 |
-| A smallest nonzero update | **closed negatively** — `inf KL = 0` on both declared tiers | `overview.md` §2.3 |
-| `S_phys/ℏ = f(I_nat)` as stated | **R** — log-base invariance forces `f` constant; needs `f(I/I₀)` | `overview.md` §2.3 |
-| `GL(K,ℝ)` scope restriction on the extent criterion (O16) | **R** — an artifact of scalar weights; the Fisher weight restores full invariance | C6 |
+| Item | Verdict |
+|---|---|
+| Adiabatic extent criterion `‖Q D^ω P‖ ≪ gap` | **R** — not scale-invariant, and unnecessary given `‖dP‖ ≤ ‖dL‖/gap` |
+| Bare connection Laplacian `D⊗𝟙 − W^Ω` | **R** — non-self-adjoint under row-simplex `β`; use the `Theory/09` energy form |
+| Self-anchoring repair for support boundaries | **R** — a uniform diagonal only translates the spectrum |
+| `ε` as an RG scale / dendrogram | **R** — partitions refine as `ε` grows |
+| `H¹` of the sheaf measures frustration | **R** — `dim H⁰ − dim H¹ = χ·K` identically |
+| **Compactness rescue via `Stab(q)`** (§3h.4) | **R** — gauge acts by *conjugation*; `‖H−I‖_F` runs `0.836 → 227.8` with `tr H` fixed to 10 digits |
+| Shared latent induces a frame coboundary | **R** — fails the self-edge identity; never a cocycle for `N ≥ 2` (sign contradiction) |
+| Gauge structure generic over exponential families | **R** — needs a *homogeneous* fiber; Gamma/Beta have non-constant curvature |
+| `κ_A` derivable by calibration; smallest nonzero update | **closed negatively** |
+| `GL(K,ℝ)` scope restriction on the extent criterion | **R** — artifact of scalar weights |
 
 ---
 
-## 3. Open — the real gaps, in dependency order
+## 4. Open, in dependency order
 
-### Tier 0 — declarations, not derivations. One sitting. Gate everything below.
-Full pricing in `docs/research-plans/2026-08-13-tier0-decisions.md` (1328 lines, options costed, checked).
+**Tier 0 — six declarations awaiting an answer.** Priced in
+`docs/research-plans/2026-08-13-tier0-decisions.md` (1328 lines). D1 (`Ω_ij` typing) is largely
+settled by §3h.1: free edge variables already exist as Regime II in `Theory/02`
+`def:geo-graph-links`, with the coboundary an *optional* hypothesis. D3 (representation channel) now
+couples to "which compact subgroup" and should be answered with it.
 
-- **D1** what `Ω_ij` denotes — same-point frame comparison, interaction-complex link `Θ_e`, or base transport. Recommendation: the link variable, coboundary retained as a named specialization. **§3g.5 is new evidence for this**: a genuinely coupled law induces free edge data, not a cocycle. Contradiction to resolve: `appendix_notation.tex:498-504` and `Theory/09:346-350` say link variable; `PIFB2.tex:208` says Čech transition function with non-coboundary data out of scope.
-- **D3** which representation carries the coherent block (`μ`, `Sym²`, model channel) — they demonstrably disagree for `SO(3)`.
-- **D2** operator and metric — largely settled by C6; adopt the `Theory/09` energy form with the Fisher pencil.
-- **D5** `β` generative-side or recognition-side. Within the closed theorem's scope both `β` and `γ` are recognition rows, which breaks H2 — see below.
-- **D4** normalization lift from eigen-ray to a law. May dissolve: the finite variational object is the mean tie with free covariance.
-- **D6** observation-term typing, `PIFB2.tex:689` — `m_i` unbound and not among the declared arguments at `:684`. Joint typing must be adopted by fiat, since the two repairs pull opposite ways.
+**Tier 1 — structural.**
+- **O** No interacting fixed point in `07b`. Every exhibited fixed sector is trivial.
+- **O** Cross-agent coupling of the *declared form*. A shared latent gives coupling but not PIFB2's
+  form: rank-limited in the scalar case, never a cocycle in the fiber case.
+- **O** The coarse map is recognition-dependent, breaking H2 of the exact contraction theorem.
+- **O** Meta-agent extent. No criterion survived; the gap criterion provably cannot bound extent for
+  `dim C ≥ 3`.
 
-### Tier 1 — structural blockers
-- **O** No interacting fixed point exists in `07b`. Every exhibited fixed sector is trivial (identity channel, one-point coarse space, or constant likelihood forcing the Hoeffding interaction coordinate to vanish). The linearization is stated at a hypothetical `(H_*, ρ_*)` never shown to exist. **The RG has no content at the interaction tier until one is exhibited.**
-- **O** Cross-agent coupling of the *declared form*. A shared latent supplies genuine coupling but not PIFB2's form: rank-limited in the scalar case (§3g.3), never a cocycle in the fiber case (§3g.5). Ledger claim `genuine-coupling-before-continuum` stands, now with a sharper diagnosis.
-- **O** The coarse map is recognition-dependent, breaking H2 of `Theory/09`'s exact contraction. The meta-agent is therefore not an ELBO object via the spectral route. Surviving route: the excess-VFE decomposition `G(P) = G_tie + G_fact`.
-- **O** Meta-agent extent. No criterion survived the panel. The gap criterion provably *cannot* bound extent for `dim C ≥ 3`, since crossings there cannot disconnect the base.
+**Tier 2 — expensive.** Γ-convergence for manifold-valued graph Dirichlet energies with a connection.
+**Not** retired by lattice gauge theory: LGT's continuum limit is a limit of measures with a running
+coupling, not Γ-convergence of a deterministic functional at fixed coupling.
 
-### Tier 2 — expensive, correctly scheduled last
-- **O** Γ-convergence for manifold-valued graph Dirichlet energies carrying a gauge connection: equicoercivity, liminf, recovery sequences, interpolation topology, gauge compactness. `rm-06:277` prices it as the most expensive item in the roadmap. García Trillos–Slepčev covers only scalar/`ℝⁿ`. Nothing exists.
+**Tier 3 — physicalization.** `Phys_α` is correctly typed but substantively empty. In `dim ≥ 2` the
+base geometry is entirely connection-generated (rank-≤1 floor).
 
-### Tier 3 — physicalization
-- **O** `Phys_α` is correctly typed but substantively empty: no connection, causal cone, signature, operator content, or action coefficient derived.
-- **O** In `dim ≥ 2` the base geometry is entirely connection-generated — the connection-independent floor of `h^ω` has rank ≤ 1 for the declared Gaussian fiber, so some `ω` makes `det h ≡ 0` for every section. "Geometry from information" has no content there without a principled connection selection.
-- **O** Cross-agent aggregation theorem — `overview.md` §2.2 currently declines it.
-
----
-
-## 4. Verification and hygiene
-
-- **Validated ledger is stale.** `.verification/ledger.json` is pinned to `d892374`; HEAD is many commits past it. Eight claims, **seven at high severity, none verified** — all `INCONCLUSIVE` or `LLM_SUPPORTED`. Re-running the closure is the single most overdue task.
-- **Witness scripts** (seeded, assert in-script): `u1_two_path_holonomy_witness.py` (4 checks + `tests/`), `kl_expansion_check.py`, `meta_agent_coherence_witness.py` (7 claims), `shared_latent_coupling_witness.py` (6 claims).
-- **Test suite**: 21 failed / 1092 passed / 15 skipped. 19 failures bind to a `.codex` path outside the repo; 2 are a `render_figures` contradiction between the launchers and their tests. None are numerical.
-- **`Theory/` is read-only** except `PIFB2.tex` and `references.bib`, recorded as post-snapshot additions in `docs/theory-provenance.md`. The live PIFB2 authority is `Desktop/Research/manuscripts/PIFB2.tex`, byte-identical.
-- **Provenance caution.** `wave2-*`, `rm-0*` and `panel*` are this programme's own multi-agent audit returns, not external review. Panel B returns had no adversarial pass.
+**Reading, not construction — do these before building more.**
+- Which statistical families are homogeneous. Shima on homogeneous Hessian manifolds; Vinberg on
+  homogeneous convex cones; Koecher–Vinberg classifies the symmetric ones by Euclidean Jordan
+  algebras, a finite list. This is the honest answer to "what is the right general fiber class".
+- Gauged nonlinear sigma models with symmetric-space targets (§3i.4).
+- Wilson kinematics must be cited: `def:geo-graph-links` is Wilson 1974 §II; the spanning-tree
+  trivialization is maximal-tree gauge fixing.
 
 ---
 
-## 5. Standing claim discipline
+## 5. Deferred by decision
 
-Say: PIFB2 is a gauge-motivated **effective action**; selected sectors admit **exact ELBO realizations**; the grid code is a discretization *candidate*; the base is a **context** manifold; connection-relative Fisher pullbacks give gauge-invariant positive-semidefinite **semi**geometries.
+**Lossy communication (§3k).** Requiring `Ω_ij` to be a Fisher isometry *is* the assumption that
+communication is lossless — and of 20000 random Markov kernels, zero had a Markov inverse, so lossless
+means relabelling and nothing else. Dropping it costs the group (hence all of §3e–§3j) and buys two
+things the programme lacks: a second independent obstruction to meta-agent formation, and an arrow of
+time from the monotone Fisher defect. Recorded, not adopted. `Theory/05c`
+`thm:pb-pullback-fisher-defect` already carries `Δ_F ⪰ 0` and is unconnected to the gauge story.
 
-Do not say: that the complete action has been derived from the exact ELBO; that `C` is space; that a Fisher pullback is automatically nondegenerate or Lorentzian; that one bit equals `ℏ`; that any construction is **first** or **novel** without a literature check citing Dennis (2025) and Sengupta et al. (2016); or that an internal audit return is external refereeing.
+---
+
+## 6. Verification and hygiene
+
+- **Validated ledger is stale.** `.verification/ledger.json` pinned to `d892374`, many commits behind.
+  Eight claims, **seven high severity, none verified**. Re-running the closure is the oldest
+  outstanding task.
+- **Witnesses** (seeded, assert in-script): `meta_agent_coherence_witness.py` (7 claims),
+  `shared_latent_coupling_witness.py` (6), `u1_two_path_holonomy_witness.py` (4, plus `tests/`),
+  `kl_expansion_check.py`.
+- **Test suite**: 21 failed / 1092 passed / 15 skipped — 19 bind to a `.codex` path outside the repo,
+  2 are a `render_figures` contradiction. None numerical.
+- **Provenance.** `wave2-*`, `rm-0*`, `panel*` are this programme's own agent audit returns, not
+  external review.
+- Numbers in §3f live in session scratchpads and remain uncitable (obligation O3). §3g–§3k numbers are
+  in committed witnesses.
+
+---
+
+## 7. Standing claim discipline
+
+Say: PIFB2 is a gauge-motivated **effective action**; selected sectors admit **exact ELBO
+realizations**; the base is a **context** manifold; pullbacks give positive-semidefinite
+**semi**geometries. The gauge apparatus requires a **homogeneous** fiber and a **compact** link group.
+
+Do not say: that the complete action has been derived from the exact ELBO; that `C` is space; that a
+Fisher pullback is automatically nondegenerate or Lorentzian; that one bit equals `ℏ`; that the gauge
+structure survives the generalization to arbitrary exponential families; that any construction is
+**first** or **novel** without a literature check citing Dennis (2025), Sengupta et al. (2016), Wilson
+(1974), Shima, and Vinberg; or that an internal audit return is external refereeing.
