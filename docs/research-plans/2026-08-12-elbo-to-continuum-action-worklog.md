@@ -1660,7 +1660,39 @@ Same-sign loadings are necessary: flipping one sign gives \(\beta_{01}=-0.512\),
 residual diagonal need not be a valid prior precision — one entry came out at \(-0.129\), an improper
 induced prior. Both must be declared rather than assumed.
 
-### 3g.5 What is open
+### 3g.5 The fiber-valued case: a transport IS induced, but it is never a connection [COMPUTED + PROVEN]
+
+Extending to \(K\)-dimensional fibers, \(k_a\mid z\sim N(\Lambda_az,S_a)\), Woodbury gives the
+off-diagonal block \(-B_a\Lambda_aM\Lambda_b^{\mathsf T}B_b\) with
+\(M=(T^{-1}+\sum_b\Lambda_b^{\mathsf T}S_b^{-1}\Lambda_b)^{-1}\). Reading it against the
+transported-KL form with the Fisher weight \(W_{ab}=S_a^{-1}\) (per O5) gives, up to scale,
+\[
+\Omega_{ab}=\Lambda_aM\Lambda_b^{\mathsf T}S_b^{-1},
+\]
+invertible iff \(d\ge K\). So a **nontrivial transport is induced** — answering §3g.5's own next
+question affirmatively. Woodbury verified to \(2.4\times10^{-15}\), \(\operatorname{rank}\Omega=K\).
+
+**But it is never a cocycle, and this is a no-go rather than a genericity statement.**
+\(\Omega_{ab}\Omega_{bc}=\Omega_{ac}\) requires \(F_bM=\mathbb 1\) for every \(b\), where
+\(F_b=\Lambda_b^{\mathsf T}S_b^{-1}\Lambda_b\succeq0\). Since \(M^{-1}=T^{-1}+\sum_bF_b\), that forces
+all \(F_b\) equal to a common \(F\) with \(F(1-N)=T^{-1}\), i.e.
+\[
+F=\frac{T^{-1}}{1-N},
+\]
+**negative definite for every \(N\ge2\)** while \(F\) is PSD by construction. Contradiction. No choice
+of loadings, private covariances, or latent prior repairs it. Measured mismatches \(0.87\)–\(2.17\)
+on random data; with *identical* agents (so the "all \(F_b\) equal" half is free) the deviation is
+still \(1.065\) at \(N=2\) rising to \(1.531\) at \(N=8\), and the improper-prior limit
+\(T\to\infty\) tends to \(\|\mathbb 1/N-\mathbb 1\|\ne0\).
+
+**Two independent obstructions, then.** In the scalar case the mechanism is rank-limited (§3g.3); in
+the fiber case the induced transport is not a connection. Both say the same thing in different
+coordinates: a shared latent supplies genuine coupling, but not coupling of PIFB2's *declared form*.
+This bears directly on decision **D1** — a genuinely coupled generative law induces **free edge data**,
+not a cocycle and a fortiori not a coboundary, which is evidence for D1 option (c) and against the
+`PIFB2.tex:208` reading that puts non-coboundary transport data out of scope.
+
+### 3g.6 What is open
 
 The witness is scalar (\(K=1\)), centred Gaussian, one base point, so the transport is the identity
 and \(\beta_{ab}(k_a-k_b)^2\) is the **flat** case of the transported KL. Whether a shared latent can

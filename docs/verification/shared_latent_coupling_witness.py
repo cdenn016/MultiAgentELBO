@@ -177,10 +177,111 @@ def claim_4(pi):
     print("\n  PASS -- both side conditions are live and must be declared, not assumed.")
 
 
+def claim_5_and_6():
+    """The fiber-valued case: what transport does a shared latent induce, and is it
+    a connection?
+
+    CLAIM 5  With K-dimensional fibers and a d-dimensional shared latent,
+             k_a | z ~ N(Lambda_a z, S_a), Woodbury gives the off-diagonal block of
+             the effective action as -B_a Lambda_a M Lambda_b^T B_b with
+             M = (T^-1 + sum_b Lambda_b^T S_b^-1 Lambda_b)^-1. Reading it against the
+             transported-KL form beta_ab (k_a - Omega_ab k_b)^T W_ab (...) with the
+             Fisher weight W_ab = S_a^-1 gives, up to scale,
+
+                 Omega_ab  =  Lambda_a M Lambda_b^T S_b^-1 ,
+
+             which is invertible iff d >= K. So a NONTRIVIAL transport is induced.
+
+    CLAIM 6  But it is never a connection. Omega_ab Omega_bc = Omega_ac requires
+             F_b M = I for every b, with F_b = Lambda_b^T S_b^-1 Lambda_b >= 0. Since
+             M^-1 = T^-1 + sum_b F_b, that forces all F_b equal to some F with
+             F(1 - N) = T^-1, i.e. F = T^-1/(1 - N), which is NEGATIVE DEFINITE for
+             every N >= 2 while F is PSD by construction. The cocycle condition is
+             therefore UNSATISFIABLE for two or more agents, not merely generic.
+    """
+    print()
+    print("=" * 74)
+    print("CLAIM 5 -- the fiber-valued case induces a nontrivial transport")
+    print("=" * 74)
+    rng = np.random.default_rng(SEED)
+    N, K, d = 4, 3, 4
+    Lam = {a: rng.normal(size=(K, d)) * 0.8 for a in range(N)}
+    S = {}
+    for a in range(N):
+        A = np.eye(K) + 0.3 * rng.normal(size=(K, K))
+        S[a] = A @ A.T
+    T = np.eye(d) * 0.9
+
+    B = np.zeros((N * K, N * K))
+    L = np.zeros((N * K, d))
+    Sig = np.zeros((N * K, N * K))
+    for a in range(N):
+        B[a * K:(a + 1) * K, a * K:(a + 1) * K] = np.linalg.inv(S[a])
+        L[a * K:(a + 1) * K, :] = Lam[a]
+        Sig[a * K:(a + 1) * K, a * K:(a + 1) * K] = S[a]
+    Sig = Sig + L @ T @ L.T
+    P = np.linalg.inv(Sig)
+    M = np.linalg.inv(np.linalg.inv(T) + L.T @ B @ L)
+    wood = np.linalg.norm(P - (B - B @ L @ M @ L.T @ B))
+    print(f"  Woodbury  ||Sigma^-1 - (B - B L M L^T B)|| = {wood:.2e}")
+    assert wood < 1e-10
+
+    Om = {}
+    for a in range(N):
+        for b in range(N):
+            if a != b:
+                Om[(a, b)] = S[a] @ (-P[a * K:(a + 1) * K, b * K:(b + 1) * K])
+    rk = np.linalg.matrix_rank(Om[(0, 1)], tol=1e-9)
+    print(f"  Omega_ab = Lambda_a M Lambda_b^T S_b^-1 ;  rank(Omega_01) = {rk}  "
+          f"(K={K}, d={d}: invertible iff d >= K)")
+    assert rk == K
+
+    print()
+    print("=" * 74)
+    print("CLAIM 6 -- but the induced transport is NEVER a cocycle, for N >= 2")
+    print("=" * 74)
+
+    def nrm(X):
+        return X / np.abs(np.linalg.det(X)) ** (1.0 / K)
+
+    worst = 0.0
+    for (a, b, c) in [(0, 1, 2), (0, 1, 3), (1, 2, 3), (0, 2, 3)]:
+        lhs, rhs = nrm(Om[(a, c)]), nrm(Om[(a, b)] @ Om[(b, c)])
+        rel = min(np.linalg.norm(lhs - rhs), np.linalg.norm(lhs + rhs)) / np.linalg.norm(lhs)
+        worst = max(worst, rel)
+        print(f"    Omega_{a}{c} vs Omega_{a}{b} Omega_{b}{c} : relative mismatch {rel:.4f}")
+    print(f"  worst = {worst:.4f}  -> cocycle FAILS")
+    assert worst > 0.1
+
+    print("\n  and the failure is STRUCTURAL, not generic. The condition is F_b M = I")
+    print("  for every b, with F_b = Lambda_b^T S_b^-1 Lambda_b >= 0 and")
+    print("  M^-1 = T^-1 + sum_b F_b. That forces F(1-N) = T^-1, i.e.")
+    print("  F = T^-1/(1-N), NEGATIVE DEFINITE for every N >= 2 while F is PSD.")
+    print("\n  identical-agent check (maximal symmetry, so the 'all F_b equal' half is free):")
+    K2, d2 = 3, 3
+    for Nn in (2, 3, 4, 8):
+        r2 = np.random.default_rng(5)
+        A = np.eye(K2) + 0.2 * r2.normal(size=(K2, K2))
+        Ss = A @ A.T
+        Lm = r2.normal(size=(K2, d2)) * 0.8
+        Tt = np.eye(d2) * 0.9
+        F = Lm.T @ np.linalg.inv(Ss) @ Lm
+        Mm = np.linalg.inv(np.linalg.inv(Tt) + Nn * F)
+        dev = np.linalg.norm(F @ Mm - np.eye(d2))
+        implied = np.linalg.eigvalsh(np.linalg.inv(Tt) / (1 - Nn))
+        print(f"    N={Nn}: ||F M - I|| = {dev:.4f}   implied F eigenvalues "
+              f"{np.round(implied, 3)}  (must be >= 0)")
+        assert dev > 0.1 and implied.max() < 0
+    print("\n  PASS -- a shared latent induces an invertible transport when d >= K, but")
+    print("         never a cocycle for N >= 2. The obstruction is a sign contradiction,")
+    print("         so no choice of loadings, private covariances or latent prior fixes it.")
+
+
 def main():
     pi = claim_1_and_2()
     claim_3()
     claim_4(pi)
+    claim_5_and_6()
     print()
     print("=" * 74)
     print("SCOPE -- what this does NOT establish")
