@@ -1715,6 +1715,90 @@ same-sign loadings at \(R\ge2\), not that no \(R\ge2\) loading matrix yields an 
 
 ---
 
+## 3h. CURVATURE AND META-AGENT FORMATION - 2-cells from attention, and the order parameter
+
+*Opened 2026-08-13. All results COMPUTED on instances; none proved in general. Scope fence at 3h.5.*
+
+### 3h.1 Free edge variables already exist in the corpus
+
+`Theory/02_geometry.tex` `def:geo-graph-links` (`sec:geo-regime-two`) already declares free
+\(\Theta_e^b,\Theta_e^m\in G\) on a finite interaction **multigraph** declared independently of
+\(\mathcal C\), with \(\Theta_{\bar e}=\Theta_e^{-1}\) and vertex gauge \(\Theta'_e=(a_i)^{-1}\Theta_ea_j\).
+`hyp:geo-flat-links` (`:645-656`) is the *optional* coboundary specialization
+\(\Theta_e=U_iU_j^{-1}\), tagged `\status{HYPOTHESIS}`, whose own text says it excludes represented
+graph holonomy in either channel. **Non-flat edge variables are therefore not new construction - they
+are Regime II, already declared, and D1 is only asking which is default.**
+
+Frames alone buy flatness at every level: \(\Theta_{ij}=g_ig_j^{-1}\) telescopes around every loop
+(self-edge \(2.4\times10^{-16}\), cocycle \(3.1\times10^{-16}\), holonomy \(4.8\times10^{-16}\)), and a
+frame field on the base gives \(A=g^{-1}dg\) with curvature \(2.2\times10^{-11}\).
+
+### 3h.2 Attention triangles as 2-cells [COMPUTED]
+
+A cycle is not automatically a 2-cell; one *declares* which cycles bound. Declaring every attention
+triangle with \(\beta_{ij}\beta_{jk}\beta_{ki}>0\) to be a face gives the clique complex. Computed
+\(\operatorname{rank}H_1\) at \(n=8\):
+
+| attention support | E | T | cycles | rank H1 | holonomy content |
+|---|---|---|---|---|---|
+| dense / causal mask | 28 | 56 | 21 | **0** | curvature only |
+| window \(w=2\) | 13 | 6 | 6 | **0** | curvature only |
+| random sparse \(p=0.35\) | 12 | 6 | 5 | **0** | curvature only |
+| ring (\(S^1\)) | 8 | 0 | 1 | **1** | curvature + one monodromy loop |
+
+For every realistic attention pattern, filling attention triangles converts **all** holonomy into
+local per-plaquette curvature with no residual topological monodromy - the right structure for a field
+theory. The lone exception is the ring, which is exactly the topology of 3d's \(U(1)\) two-path
+witness; its holonomy is therefore **monodromy, not curvature**, independently confirming why that
+witness cannot test B4's curvature clause.
+
+### 3h.3 Curvature controls the coherence order parameter [COMPUTED] - the main result
+
+Writing \(\Theta_e=g_ig_j^{-1}\exp(s\,p_e)\), a coboundary times a genuine edge perturbation, holding
+the gauge fixed and varying \(s\):
+
+| \(s\) | plaquette action | \(\lambda_0\) | ratio |
+|---|---|---|---|
+| 0.00 | 0.000000 | \(-0.0\times10^{-8}\) | - |
+| 0.01 | 0.040567 | 0.00028589 | 0.00705 |
+| 0.05 | 1.018643 | 0.00727783 | 0.00714 |
+| 0.20 | 16.436154 | 0.12133323 | 0.00738 |
+| 0.40 | 65.108484 | 0.48025678 | 0.00738 |
+
+Fitted exponent \(1.006\). \(\lambda_0\) vanishes **exactly** at zero curvature and grows **linearly**
+in the plaquette action, ratio \(\to0.00705\) as \(s\to0\), so
+\(\lambda_0=c\sum_{\rm plaq}\|F\|^2+O(F^4)\). The coherence order parameter of 3e is controlled by the
+curvature.
+
+### 3h.4 What that means for meta-agent formation
+
+Curvature is the **obstruction** to a meta-agent, not its cause: \(\lambda_0=0\) iff flat iff a
+parallel section exists iff a consistent meta-belief exists. The intuition that curvature drives
+agents into meta-agents is correct only in the **dynamical** reading. If \(\Theta\) carries its own
+plaquette action, minimizing it drives \(F\to0\), and by 3h.3 that is *identically* driving
+\(\lambda_0\to0\). **Curvature is the free-energy cost of not being a meta-agent; descending it is what
+forms one.** Curvature is the potential, not the force.
+
+The compactness obstruction does not bite. Yang-Mills non-definiteness forbids a coercive
+\(\|F\|^2\) for noncompact \(G\), but for an **aligned** block the holonomy lies in
+\(\mathrm{Stab}(q)=O(K-1)\) (3e.2(i),(vi)), which is compact, so \(-\operatorname{tr}(XY)\) is
+available on the holonomy algebra. The curvature term is definite exactly on the blocks near being
+meta-agents, degenerating only where the block is far from coherent - where the construction claims
+nothing anyway.
+
+### 3h.5 Scope, and what is not established
+
+\(K=3\), \(G=SO(3)\), \(n=6\)-\(8\), one base point, unit edge weights, dense graph for 3h.3. The
+linear law is fitted on instances, not proved; the constant \(c=0.00705\) is graph- and
+weight-dependent and its dependence is unmeasured. \(\lambda_0\) here is the bottom of the **bare**
+energy form, and O4 established that the operator carrying the prior sector has no kernel, so the
+statement must be restated relative to the prior floor before it is used for extent. No claim is made
+that a plaquette action is ELBO-derived; whether \(\|F\|^2\) has an exact negative-ELBO reading is
+open and is the obvious next question. Both **declared** and **dynamical** \(\Theta\) are to be built
+out; only the declared case is exercised above.
+
+---
+
 ## 4. RESULTS — PENDING / RESUME HERE
 
 > **RESOLVED 2026-08-13.** Both panels were recovered from `journal.jsonl`. Results are in **§4b**;
