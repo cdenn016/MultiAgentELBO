@@ -1805,6 +1805,81 @@ available on the holonomy algebra. The curvature term is definite exactly on the
 meta-agents, degenerating only where the block is far from coherent - where the construction claims
 nothing anyway.
 
+### 3h.4a CORRECTION 2026-08-13 - the compactness rescue in 3h.4 is REFUTED
+
+3h.4 argued that Yang-Mills non-definiteness does not bite because an aligned block's holonomy lies in
+\(\mathrm{Stab}(q)=O(K-1)\), which is compact. **That is wrong, and the error is instructive.** The
+gauge acts by **conjugation**, and the Frobenius norm is invariant only under *orthogonal*
+conjugation. Where the holonomy *sits* is irrelevant; what matters is the conjugating element.
+
+Executed with \(H\) a rotation by \(0.6\) pinned **inside \(SO(3)\)**, conjugated by
+\(g=\exp\mathrm{diag}(s,-s,0)\in GL(3,\mathbb R)\):
+
+| \(\|\log g\|\) | \(\operatorname{tr}(gHg^{-1})\) | \(\|gHg^{-1}-\mathbb 1\|_F\) |
+|---|---|---|
+| 0.000 | 2.6506712298 | 0.836 |
+| 0.849 | 2.6506712298 | 1.899 |
+| 2.121 | 2.6506712298 | 11.344 |
+| 4.243 | 2.6506712298 | **227.79** |
+
+The trace is conserved **exactly** to ten digits - it is a conjugacy invariant - while the Frobenius
+norm runs over two and a half orders of magnitude on a single gauge orbit. Independently measured by
+the panel: \(\lambda_0\) relative deviation \(9.3\times10^{-1}\) under a \(GL^+\) gauge versus
+\(1.4\times10^{-12}\) under \(SO(2)\), with \(\lambda_0\) driven from \(3.06\times10^{-4}\) to
+\(1.16\times10^{-10}\) by a boost alone.
+
+**Consequence for 3h.3.** The law \(\lambda_0=c\sum\|F\|^2\) was computed at \(G=SO(3)\), where both
+sides are orthogonally invariant, so it is correct there and **does not transfer to
+\(GL(K,\mathbb R)\)** - where \(\lambda_0\) is not even gauge-invariant and therefore is not an order
+parameter at all.
+
+**The real obstruction, and it is the old one wearing a new hat.** For noncompact \(G\) the plaquette
+density can be gauge-invariant or smooth at flatness, not both:
+
+- \(\|W-\mathbb 1\|_F^2\): nonnegative and smooth at \(W=\mathbb 1\), **not** conjugation-invariant.
+- \(1-\tfrac1N\operatorname{Re}\operatorname{tr}W\): conjugation-invariant, but **unbounded below** on
+  noncompact \(G\) (panel: \(-73.2\) for an \(SL(2,\mathbb R)\) boost of rapidity 5).
+- the class-function spectral density: conjugation-invariant, but its gradient needs **distinct**
+  eigenvalues, and at \(W\approx\mathbb 1\) all \(K\) eigenvalues coalesce - degenerate exactly at the
+  configuration the term is meant to drive toward.
+
+This is §7's Yang-Mills row in a third guise: invariance and coercivity are in tension for noncompact
+\(G\), and here the tension shows up as invariance versus differentiability at the target.
+
+**LIVE DEFECT.** `MAgent_Model-main/gauge_agent/lattice_gauge.py:314` implements
+`yang_mills_action` with `action_form='frobenius'` as the **default**, wired at
+`full_vfe.py:2233-2239` with `lambda_ym` defaulting to \(0.1\) (`full_vfe.py:381`) and set to \(0.1\)
+in shipped configs (`runs/minimal/config.json:23`, `runs/hamiltonian_oscillator/config.json:23`). So a
+**gauge-non-invariant** curvature penalty is on by default in shipped runs. The file's own docstring
+already records the trade-off and offers `action_form='spectral'` as the conjugation-invariant
+alternative, together with its gradient degeneracy at \(W\approx\mathbb 1\). Neither branch is
+correct as it stands for \(GL^+(K)\); the honest options are to restrict the link group to a compact
+subgroup, or to build the density from conjugacy invariants that stay differentiable at the identity.
+
+### 3h.4b The lattice-gauge identification, settled
+
+**Kinematics: Wilson's, term for term, and must be cited.** Group-valued links on oriented edges with
+reversal-inverse, the vertex gauge law, ordered-product path transport, plaquette holonomy on declared
+2-cells, and trace/determinant conjugacy invariants - i.e. Wilson loops. `Theory/02` `def:geo-graph-links`
+is Wilson 1974 §II kinematics; `prop:geo-trivializing-criterion` and `trivialization_via_spanning_tree`
+are flat-bundle classification over a graph plus maximal-tree gauge fixing (Kobayashi-Nomizu I Ch. II
+§9; Creutz 1983). Present these as standard.
+
+**Dynamics: not lattice gauge theory, and nothing on the roadmap's OPEN list is retired by it.** LGT
+is a probability measure on link configurations, requiring a normalizable Haar measure (fails: \(GL^+\)
+is unimodular but its Haar measure is infinite, so \(Z\) diverges before any action is chosen), a
+lattice spacing, and a volume limit. A finite declared multigraph has neither parameter, so there is no
+area law, no string tension, no continuum limit to inherit. The matter sector is also not standard: LGT
+matter is a vector in a linear representation with a fixed invariant inner product, whereas here it is a
+probability law coupled by an asymmetric divergence with a state-dependent fiber metric - a gauged
+lattice sigma model with an information divergence, which is not a named model in that literature.
+
+Also retired as standard, not as results: 3h.3's *qualitative* claim that \(\lambda_0\) vanishes exactly
+at zero curvature is textbook \(O(d)\) synchronization (Bandeira-Singer-Spielman, SIAM J. Matrix Anal.
+Appl. 34(4):1611-1630, 2013); and 3h.2's square-2-cell homology is the ordinary cell structure of the
+square lattice with the ordinary \(H_1\) of the torus. What survives as this programme's own is the
+*linear* law with its constant, and only at compact \(G\).
+
 ### 3h.5 Scope, and what is not established
 
 \(K=3\), \(G=SO(3)\), \(n=6\)-\(8\), one base point, unit edge weights, dense graph for 3h.3. The
