@@ -2,6 +2,9 @@
 
 This directory binds the executable reproduction of the repaired finite U(1) two-path witness.
 
+`manifest.json` pins the source, tests, derivation, outputs, commands, and runtime to Git revision
+`52ba348f6a0fb88e2de9745bbf166e1fdb4f59f0`.
+
 - `results.json` records the witness SHA-256, Python and NumPy versions, exact returned values,
   scope flags, and captured stdout.
 - `pytest.xml` records the five focused implementation checks and their machine-readable totals.

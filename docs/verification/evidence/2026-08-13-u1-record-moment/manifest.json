@@ -1,0 +1,33 @@
+{
+  "schema_version": "u1-record-moment-manifest/v1",
+  "source_revision": "52ba348f6a0fb88e2de9745bbf166e1fdb4f59f0",
+  "repository": "MultiAgentELBO",
+  "runtime": {
+    "python": "3.14.4",
+    "numpy": "2.4.4",
+    "device": "CPU"
+  },
+  "commands": [
+    "C:\\Python314\\python.exe -m pytest tests\\test_u1_two_path_holonomy_witness.py -q --junitxml=docs\\verification\\evidence\\2026-08-13-u1-record-moment\\pytest.xml",
+    "C:\\Python314\\python.exe docs\\verification\\u1_two_path_holonomy_witness.py"
+  ],
+  "artifacts_sha256": {
+    "docs/verification/u1_two_path_holonomy_witness.py": "0e2b940655dd9812bd4b8c2e04e49f70527309683423ceaca5c9540fcbc6e460",
+    "tests/test_u1_two_path_holonomy_witness.py": "097148a90dc8384103eff1d2cb2449cecfdd26d29516cf0c807949a1fa160b9d",
+    "docs/derivations/2026-08-13-u1-record-moment-derivation.md": "172ba9e02dce1db327bbadf4226fb57c1732252df7eb80073facc372ea68edb7",
+    "docs/verification/evidence/2026-08-13-u1-record-moment/results.json": "fc6015ab956ea3099776b5a0aabea3e7b4edbcab779df54a1fa3d4b5869c5687",
+    "docs/verification/evidence/2026-08-13-u1-record-moment/pytest.xml": "c68d99a1c8b53e7cbf668ec47dcdb3c110bc94d985776ac55fef8fbe46f7bab9"
+  },
+  "result": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "scope": {
+    "mathematical_certificate": "docs/derivations/2026-08-13-u1-record-moment-derivation.md",
+    "mechanical_evidence_is_not_a_proof": true,
+    "connection_identified_from_records": false,
+    "curvature_or_bundle_topology_tested": false
+  }
+}
