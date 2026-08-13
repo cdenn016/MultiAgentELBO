@@ -1893,6 +1893,85 @@ out; only the declared case is exercised above.
 
 ---
 
+## 3i. COMPACT G DECLARED - what it resolves, and the plaquette action as an exact ELBO term
+
+*Opened 2026-08-13, following the decision to restrict the link group to a compact subgroup rather
+than pursue the full noncompact case. This section records what that buys and what it costs.*
+
+### 3i.1 What compactness resolves, in one list
+
+Each of these was a separate open item; all have the same cause and the same fix.
+
+| Item | Status under compact G |
+|---|---|
+| Yang-Mills non-definiteness (overview 7) | **resolved** - a compact algebra carries the positive-definite -tr(XY) |
+| Coercivity lemma (rm-02 3.3) | **does not apply** - it is a statement about *noncompact* orbits |
+| Plaquette density: invariant vs bounded (3h.4a) | **resolved** - 1 - Re tr(U_p)/N is both, since abs(tr U) <= N |
+| lambda_0 gauge-dependence (3h.4a) | **resolved** - Frobenius is invariant under orthogonal conjugation, so 3h.3's law holds |
+| Haar measure infinite, Z divergent (3h.4b) | **resolved** - Haar on a compact group is a probability measure |
+| Plaquette term ELBO-derivable? (3h.5) | **resolved, affirmatively** - see 3i.2 |
+
+### 3i.2 The Wilson plaquette action is an exact negative-ELBO component [COMPUTED, exact]
+
+Declare the generative law on link configurations to be Gibbs, p(Theta) proportional to
+exp(-beta sum_p S(U_p)) against Haar. For compact G the normalizer converges, so this is a genuine
+normalized law and -log Z is a genuine log-evidence.
+
+For U(1) with the Wilson density S = 1 - cos(theta_p) the law is exactly **von Mises**, with
+Z(beta) = exp(-beta) I_0(beta) in closed form - verified against quadrature to 4.4e-16 across
+beta in {0.5, 1, 2, 5, 20}. The variational bound F[q] = E_q[S] + E_q[log q] >= -log Z then behaves
+exactly as an ELBO must:
+
+| q | F[q] | gap |
+|---|---|---|
+| Haar (uniform) | 2.000000000 | 8.24e-01 |
+| **von Mises, exact p** | **1.176006459** | **-2.2e-16** |
+| von Mises, wrong kappa = 0.6 beta | 1.257793647 | 8.18e-02 |
+| von Mises, wrong kappa = 1.7 beta | 1.255300226 | 7.93e-02 |
+| wrapped normal sigma = 0.8 | 1.190280415 | 1.43e-02 |
+
+Saturated **exactly** at the true law and strictly positive otherwise. **So the curvature term is
+DERIVED, not engineered:** the Wilson plaquette action is the negative log-density of a normalized law
+on the holonomy, and it enters the free energy as an exact negative-ELBO component. For general
+compact G the analogue is the heat kernel, whose Weyl character expansion converges by compactness -
+the Villain form.
+
+**Noncompact control.** The identical construction on SL(2,R) boosts has S = 1 - tr(U_p)/2 tending to
+minus infinity, so exp(-beta S) diverges: 1.7, 15.8, 8.7e3, 6.2e31, inf at rapidity 1, 2, 3, 5, 8. No
+normalized law, hence no ELBO reading. The compactness requirement is not fastidiousness; it is what
+makes the evidence exist.
+
+### 3i.3 The consequence for 3h, now earned rather than assumed
+
+3h.4 argued that minimizing a curvature term drives lambda_0 to zero and so forms meta-agents, but
+treated the curvature term as an engineered addition. With 3i.2 that chain closes: the plaquette term
+is an exact ELBO component, and lambda_0 = c sum ||F||^2 holds and is gauge-invariant at compact G, so
+**free-energy descent drives meta-agent formation as a derived consequence, not a modelling choice.**
+The retraction in 3h.4a stands for the noncompact case and is void under the compact declaration.
+
+### 3i.4 What compactness costs, and the natural resolution
+
+The price is the SPD sector. Under G = O(K) the congruence Sigma -> g Sigma g^T preserves eigenvalues,
+so transports can **rotate** uncertainty but never **rescale** it - and overview.md open decision 7
+explicitly hoped the GL(K) SPD sector would encode complexity.
+
+The standard resolution is to reduce rather than discard. Every GL(K) bundle reduces to O(K) (a choice
+of fiber metric), and the quotient GL(K)/O(K) is the symmetric space of SPD matrices. So the SPD
+directions do not vanish - they **stop being gauge and become matter**, a field valued in SPD(K). The
+theory that results is a compact gauge field on the interaction graph plus matter valued in a
+symmetric space, which is a gauged nonlinear sigma model. That is a named object with a literature,
+and it must be checked against it before anything is claimed new. Note the belief covariance Sigma_i
+*is* an SPD field, so this reclassification is not an invention: it says Sigma was always matter.
+
+### 3i.5 Open
+
+Which compact subgroup - O(K), SO(K), or a smaller one fixed by the representation channel (decision
+D3). Whether the reduction to O(K) is compatible with the Fisher pencil of O5, which was proved
+GL(K,R)-invariant and is therefore available but not required by a compact theory. Whether the
+SPD-as-matter reading has an exact ELBO term of its own, or only the gauge sector does. And the
+prior-art check on gauged sigma models with symmetric-space targets, which must precede any novelty
+claim.
+
 ## 4. RESULTS — PENDING / RESUME HERE
 
 > **RESOLVED 2026-08-13.** Both panels were recovered from `journal.jsonl`. Results are in **§4b**;
