@@ -2053,6 +2053,85 @@ the section varies, which is the sharper statement and is not computed here. No 
 which are not exponential families and were also named in the standing position; the mixture case is
 open and is the obvious next computation.
 
+### 3j.6 Confirmation in any dimension, and the class this points to
+
+The 2-D constant-curvature criterion of 3j.2 is exact only in two dimensions. The criterion valid in
+any dimension is that a transitive isometry group forces **constant scalar curvature**. Recomputed:
+
+| family | scalar curvature R | |
+|---|---|---|
+| Gaussian (mu, sigma) | -1 | **constant** |
+| Gaussian, fixed Sigma, K = 2 | 0 | **constant** (flat) |
+| Gamma (shape a, rate b) | -0.807981, -0.971713, -0.998840 at a = 0.5, 2, 10 | **not constant** |
+
+Same verdict, on a criterion that does not depend on the fiber being two-dimensional.
+
+**The class this points to.** For an exponential family the Fisher metric is the Hessian of the
+log-partition, so the fiber is a Hessian manifold and homogeneity is a condition on that Hessian
+structure. Shima's theory of homogeneous Hessian manifolds and Vinberg's theory of homogeneous convex
+cones are the relevant frameworks, and in the symmetric case the Koecher-Vinberg correspondence
+classifies the cones by Euclidean Jordan algebras - a FINITE list of families, of which the PSD cone
+(the Gaussian covariance sector) is the canonical one. That is a real classification, and it says the
+fibers carrying full gauge structure are far scarcer than "exponential families". Establishing which
+statistical families land on that list is a literature question, not a research one, and it must
+precede any claim of generality. NOT DONE HERE.
+
+## 3k. LOSSY COMMUNICATION - recorded, DEFERRED, not adopted
+
+*Raised 2026-08-13 from the observation that communicating a belief to another agent is in practice a
+lossy process. The observation is correct and the consequences are sharp; the programme is
+nonetheless continuing with the lossless theory by decision. This section exists so the option is not
+silently lost.*
+
+### 3k.1 What the lossless assumption actually assumes
+
+Requiring Omega_ij to be a Fisher isometry is exactly the assumption that inter-agent communication is
+lossless. Computed on the categorical fiber, with the Fisher defect Delta = g^F - K* g^F (Chentsov
+monotonicity / data processing; `Theory/05c` `thm:pb-pullback-fisher-defect` already carries
+Delta_F >= 0):
+
+| transport | tr(Delta) |
+|---|---|
+| permutation (relabelling) | **0.0000** |
+| noisy channel eps = 0.02 | 25.28 |
+| noisy channel eps = 0.30 | 118.59 |
+| total erasure | 140.58 |
+
+And of 20000 random Markov kernels, **zero** had a Markov inverse. The invertible Markov maps are
+exactly the permutations, so *lossless communication is relabelling and nothing else*. The isometry
+requirement is not a mild idealization - it says agents may only permute one another's outcome labels.
+
+### 3k.2 What dropping it would cost, and what it would buy
+
+**Cost.** Markov kernels form a monoid, not a group. No gauge group, no principal bundle, no holonomy
+in the standard sense. A loop of lossy channels does not return rotated, it returns **contracted** -
+singular values 1.006, 0.516, 0.496, 0.461 on a four-channel loop, with accumulated Fisher defect
+131.6. Everything in 3e-3j is built on invertibility and would not survive as stated.
+
+**Buy.** Two things the programme currently lacks.
+
+1. **A second, independent obstruction to meta-agent formation.** Coherence would be limited both by
+   rotational frustration (holonomy escaping Stab(q), which is what 3e-3h compute) *and* by
+   accumulated dissipation. Two agents could be perfectly aligned rotationally and still fail to merge
+   because the channel between them is too noisy. That is closer to the phenomenon the observation was
+   drawn from.
+2. **An arrow of time, for free.** overview 2.1 concedes that VFE supplies an oriented orbit only after
+   a metric or mobility is declared, and that Fisher length measures information duration rather than
+   physical time. The Fisher defect is >= 0 by data processing and accumulates monotonically around any
+   loop, so irreversibility would be a *consequence* of communication being lossy rather than something
+   inserted. This is the programme's oldest open item and this is a candidate answer to it.
+
+### 3k.3 The natural split, if it is ever taken up
+
+A transport deviates from the identity in two independent ways: a **relabelling** part - invertible,
+isometric, group-valued, carrying all of the gauge structure - and a **contraction** part -
+non-invertible, Fisher-decreasing, monoid-valued, i.e. dissipation. The lossless theory is the first
+factor. Nothing computed in 3e-3j is wrong under the lossy reading; it is the gauge sector of a larger
+structure, and the dissipative sector is simply not modelled.
+
+**Status: DEFERRED by decision. Do not build on it, and do not quietly assume the lossless transports
+are physically realistic - they are a modelling choice with a name.**
+
 ## 4. RESULTS — PENDING / RESUME HERE
 
 > **RESOLVED 2026-08-13.** Both panels were recovered from `journal.jsonl`. Results are in **§4b**;
