@@ -417,6 +417,32 @@ def test_public_api_call_signatures_are_exact():
         assert _call_signature(getattr(witness, name)) == parameters
 
 
+@pytest.mark.parametrize(
+    ("selector", "node_order", "eta"),
+    (
+        pytest.param("direct", ("R", "O"), None, id="direct"),
+        pytest.param("split", ("R", "E", "O"), None, id="split"),
+        pytest.param(
+            "null", ("R", "E", "N", "O"), CONTROL_ETA, id="null"
+        ),
+    ),
+)
+def test_every_selector_returns_declared_signature_and_experiment_schemas(
+    selector, node_order, eta
+):
+    witness = _load_witness()
+    arguments = {"a": CONTROL_A, "b": CONTROL_B}
+    if eta is not None:
+        arguments["eta"] = eta
+
+    signature = witness.contextual_response_signature(
+        selector, **arguments, context=()
+    )
+    experiment = witness.response_image(selector, **arguments)
+    _assert_contextual_signature_schema(signature, node_order)
+    _assert_reduced_experiment_schema(experiment, node_order)
+
+
 def test_bsc_context_composition_and_validation_are_exact():
     witness = _load_witness()
 

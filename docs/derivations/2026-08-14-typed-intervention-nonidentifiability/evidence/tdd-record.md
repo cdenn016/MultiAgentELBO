@@ -29,13 +29,13 @@ Process exit status: `1`.
 
 Machine-derived JUnit totals:
 
-- tests: 14
-- failures: 14
+- tests: 17
+- failures: 17
 - errors: 0
 - skipped: 0
-- time: 0.281 seconds
+- time: 0.323 seconds
 
-All 14 `<failure>` nodes contain the declared absent-witness assertion.
+All 17 `<failure>` nodes contain the declared absent-witness assertion.
 
 ## Contract-review correction
 
@@ -47,9 +47,14 @@ This RED supersedes the narrower Task 1 record in commit `bff35ede271270cdd7e784
 - presentation-specific absent-node rejection through each relevant direct public context entry point; and
 - literal deterministic `control` and `null_control` inner schemas, each compared to an independently recomputed native record containing the specified passive laws, nine boundary responses, mediator pair and total variation, complete null signatures, split/null reduced experiments, and forget-`N` isomorphism checks.
 
+A follow-up selector-matrix correction after commit `65c106bba378a16e72004d35fd6ca177df743321` exercises valid `contextual_response_signature` and `response_image` returns for every declared selector. The matrix binds `direct` to node order `R,O`, `split` to `R,E,O`, and `null` to `R,E,N,O`, and applies the same exact nested tuple, partition, multiplication, and response-law schema checks to all three.
+
 ## Failing tests
 
 - `tests.test_typed_intervention_semantics_witness::test_public_api_call_signatures_are_exact`
+- `tests.test_typed_intervention_semantics_witness::test_every_selector_returns_declared_signature_and_experiment_schemas[direct]`
+- `tests.test_typed_intervention_semantics_witness::test_every_selector_returns_declared_signature_and_experiment_schemas[split]`
+- `tests.test_typed_intervention_semantics_witness::test_every_selector_returns_declared_signature_and_experiment_schemas[null]`
 - `tests.test_typed_intervention_semantics_witness::test_bsc_context_composition_and_validation_are_exact`
 - `tests.test_typed_intervention_semantics_witness::test_joint_and_retained_laws_use_frozen_lexicographic_order`
 - `tests.test_typed_intervention_semantics_witness::test_all_nine_shared_boundary_intervention_tables_are_literal`
@@ -76,9 +81,9 @@ The RED XML was decoded as UTF-8, every CRLF or bare CR was changed to LF, space
 
 | Artifact | Filesystem SHA-256 | Filtered Git blob | Bytes | CR bytes | UTF-8 BOM |
 | --- | --- | --- | ---: | ---: | --- |
-| `evidence/red-junit.xml` | `781d64bcb3930932480370f9a68d28e93ef2ceda888d820ae5fc9a27f42fc8ba` | `a46fa3443da5c0c48ab3d6c3028934c2cc06f96e` | 21012 | 0 | no |
-| `tests/test_typed_intervention_semantics_witness.py` | `93066eb5d06c66d891039d74694dc342f4924de515aee1c28717b85dbc9c1bc3` | `b2667e23b9d44d4be304463ff066a822dc84b2a9` | 35450 | 0 | no |
-| `evidence/test_typed_intervention_semantics_witness.snapshot.py` | `93066eb5d06c66d891039d74694dc342f4924de515aee1c28717b85dbc9c1bc3` | `b2667e23b9d44d4be304463ff066a822dc84b2a9` | 35450 | 0 | no |
+| `evidence/red-junit.xml` | `247465efed34b8ac12a2b0dc103b1004d290fee321715a5b64df155ae71ff1de` | `5cf02cee3ded86ff69c89ba6df6093d1126d07f6` | 26893 | 0 | no |
+| `tests/test_typed_intervention_semantics_witness.py` | `3690bc2747cb49240dd62f291134fd8d86ecf4382950cb603e2c8ba23bbbe407` | `96e103dbd4ad5f363bcd1055b993b8cefa300d1b` | 36293 | 0 | no |
+| `evidence/test_typed_intervention_semantics_witness.snapshot.py` | `3690bc2747cb49240dd62f291134fd8d86ecf4382950cb603e2c8ba23bbbe407` | `96e103dbd4ad5f363bcd1055b993b8cefa300d1b` | 36293 | 0 | no |
 
 The live test and package snapshot are byte-identical. For all three artifacts, the raw LF bytes and the configured Git-clean-filter bytes describe the same content; the Git blob identifiers above are the repository object identities after the explicit `text eol=lf` rules.
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="14" skipped="0" tests="14" time="0.281" timestamp="2026-08-14T15:05:18.751153-05:00" hostname="DESKTOP-RT15E78"><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_public_api_call_signatures_are_exact" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_public_api_call_signatures_are_exact():
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="17" skipped="0" tests="17" time="0.323" timestamp="2026-08-14T15:21:57.078478-05:00" hostname="DESKTOP-RT15E78"><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_public_api_call_signatures_are_exact" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_public_api_call_signatures_are_exact():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
@@ -12,11 +12,95 @@ E       assert False
 E        +  where False = is_file()
 E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
+tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_every_selector_returns_declared_signature_and_experiment_schemas[direct]" time="0.001"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">selector = 'direct', node_order = ('R', 'O'), eta = None
+
+    @pytest.mark.parametrize(
+        ("selector", "node_order", "eta"),
+        (
+            pytest.param("direct", ("R", "O"), None, id="direct"),
+            pytest.param("split", ("R", "E", "O"), None, id="split"),
+            pytest.param(
+                "null", ("R", "E", "N", "O"), CONTROL_ETA, id="null"
+            ),
+        ),
+    )
+    def test_every_selector_returns_declared_signature_and_experiment_schemas(
+        selector, node_order, eta
+    ):
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_typed_intervention_semantics_witness.py:433:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), RED_MESSAGE
+E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+
+tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_every_selector_returns_declared_signature_and_experiment_schemas[split]" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">selector = 'split', node_order = ('R', 'E', 'O'), eta = None
+
+    @pytest.mark.parametrize(
+        ("selector", "node_order", "eta"),
+        (
+            pytest.param("direct", ("R", "O"), None, id="direct"),
+            pytest.param("split", ("R", "E", "O"), None, id="split"),
+            pytest.param(
+                "null", ("R", "E", "N", "O"), CONTROL_ETA, id="null"
+            ),
+        ),
+    )
+    def test_every_selector_returns_declared_signature_and_experiment_schemas(
+        selector, node_order, eta
+    ):
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_typed_intervention_semantics_witness.py:433:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), RED_MESSAGE
+E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+
+tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_every_selector_returns_declared_signature_and_experiment_schemas[null]" time="0.001"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">selector = 'null', node_order = ('R', 'E', 'N', 'O'), eta = Fraction(2, 5)
+
+    @pytest.mark.parametrize(
+        ("selector", "node_order", "eta"),
+        (
+            pytest.param("direct", ("R", "O"), None, id="direct"),
+            pytest.param("split", ("R", "E", "O"), None, id="split"),
+            pytest.param(
+                "null", ("R", "E", "N", "O"), CONTROL_ETA, id="null"
+            ),
+        ),
+    )
+    def test_every_selector_returns_declared_signature_and_experiment_schemas(
+        selector, node_order, eta
+    ):
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_typed_intervention_semantics_witness.py:433:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), RED_MESSAGE
+E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+
 tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_bsc_context_composition_and_validation_are_exact" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_bsc_context_composition_and_validation_are_exact():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:421:
+tests\test_typed_intervention_semantics_witness.py:447:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -30,7 +114,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:525:
+tests\test_typed_intervention_semantics_witness.py:551:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -44,7 +128,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:556:
+tests\test_typed_intervention_semantics_witness.py:582:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -58,7 +142,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:576:
+tests\test_typed_intervention_semantics_witness.py:602:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -72,7 +156,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:590:
+tests\test_typed_intervention_semantics_witness.py:616:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -86,7 +170,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:609:
+tests\test_typed_intervention_semantics_witness.py:635:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -100,7 +184,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:679:
+tests\test_typed_intervention_semantics_witness.py:705:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -114,7 +198,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:724:
+tests\test_typed_intervention_semantics_witness.py:750:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -128,7 +212,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:763:
+tests\test_typed_intervention_semantics_witness.py:789:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -142,7 +226,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:779:
+tests\test_typed_intervention_semantics_witness.py:805:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -156,7 +240,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:799:
+tests\test_typed_intervention_semantics_witness.py:825:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -170,7 +254,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:816:
+tests\test_typed_intervention_semantics_witness.py:842:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -184,7 +268,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:937:
+tests\test_typed_intervention_semantics_witness.py:963:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
