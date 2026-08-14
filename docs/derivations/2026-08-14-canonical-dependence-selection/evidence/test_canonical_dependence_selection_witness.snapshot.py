@@ -9,6 +9,7 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import re
 from contextlib import redirect_stdout
 from fractions import Fraction
 from pathlib import Path
@@ -122,6 +123,39 @@ def test_dependence_fisher_is_computed_exactly_on_two_controls():
     assert witness.dependence_fisher(Fraction(1, 2)) == Fraction(4, 3)
 
 
+def test_dependence_fisher_consumes_the_atom_derivative_provider(monkeypatch):
+    witness = _load_witness()
+    calls = []
+
+    def doubled_atom_derivatives(rho):
+        calls.append(rho)
+        return (
+            Fraction(1, 2),
+            Fraction(-1, 2),
+            Fraction(-1, 2),
+            Fraction(1, 2),
+        )
+
+    monkeypatch.setattr(
+        witness, "_dependence_atom_derivatives", doubled_atom_derivatives
+    )
+
+    assert witness.dependence_fisher(Fraction(1, 3)) == Fraction(9, 2)
+    assert calls == [Fraction(1, 3)]
+
+
+def test_deterministic_completion_respects_zero_reference_fibers():
+    witness = _load_witness()
+    reference = (Fraction(1, 2), Fraction(1, 2), Fraction(0), Fraction(0))
+    coarse_map = (0, 0, 1, 1)
+
+    assert witness.deterministic_completion(reference, coarse_map, (Fraction(1), Fraction(0))) == reference
+    with pytest.raises(ValueError, match="zero-reference"):
+        witness.deterministic_completion(
+            reference, coarse_map, (Fraction(1, 2), Fraction(1, 2))
+        )
+
+
 def test_deterministic_completion_pushes_forward_and_composes_strictly():
     witness = _load_witness()
     reference = tuple(Fraction(index, 36) for index in range(1, 9))
@@ -196,7 +230,7 @@ def test_completion_conditional_defect_is_exactly_selective():
     assert isinstance(selected_defect, Fraction)
     assert isinstance(candidate_defect, Fraction)
     assert selected_defect == Fraction(0)
-    assert candidate_defect > 0
+    assert candidate_defect == Fraction(625, 11664)
 
 
 def test_reference_relative_selector_inherits_feasible_reference_dependence():
@@ -276,6 +310,21 @@ def test_promoted_parity_retains_seven_joint_directions_but_six_marginal_directi
     assert all(len(row) == 7 for row in full_derivative)
     assert len(singleton_derivative) == 6
     assert all(len(row) == 7 for row in singleton_derivative)
+    assert full_derivative[0] == (Fraction(-1, 32),) * 6 + (
+        Fraction(1, 4096),
+    )
+    assert full_derivative[1] == (
+        Fraction(-1, 32),
+        Fraction(-1, 32),
+        Fraction(-1, 32),
+        Fraction(-1, 32),
+        Fraction(-1, 32),
+        Fraction(1, 32),
+        Fraction(-1, 4096),
+    )
+    assert full_derivative[-1] == (Fraction(1, 32),) * 6 + (
+        Fraction(1, 4096),
+    )
     assert control["full_joint_derivative_rank"] == 7
     assert control["singleton_derivative_rank"] == 6
     assert witness.matrix_rank(full_derivative) == 7
@@ -294,6 +343,32 @@ def test_promoted_parity_retains_seven_joint_directions_but_six_marginal_directi
 def test_main_emits_one_byte_stable_json_document():
     witness = _load_witness()
 
+    forbidden_key_fragments = (
+        "clock",
+        "date",
+        "environment",
+        "host",
+        "path",
+        "random",
+        "seed",
+        "time",
+    )
+    rational_pattern = re.compile(r"^-?\d+(?:/[1-9]\d*)?$")
+
+    def validate_payload(value):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                assert isinstance(key, str)
+                assert not any(fragment in key.lower() for fragment in forbidden_key_fragments)
+                validate_payload(item)
+        elif isinstance(value, list):
+            for item in value:
+                validate_payload(item)
+        else:
+            assert isinstance(value, bool) or (
+                isinstance(value, str) and rational_pattern.fullmatch(value)
+            )
+
     def invoke():
         stream = io.StringIO()
         with redirect_stdout(stream):
@@ -305,6 +380,7 @@ def test_main_emits_one_byte_stable_json_document():
         payload = json.loads(output)
         assert isinstance(payload, dict)
         assert payload
+        validate_payload(payload)
         return output.encode("utf-8"), payload
 
     first_bytes, first_payload = invoke()

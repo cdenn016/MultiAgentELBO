@@ -117,15 +117,23 @@ def faithful_quasi_inverse_counterexample(
     }
 
 
-def dependence_fisher(rho: Fraction) -> Fraction:
-    """Compute dependence Fisher information from categorical atom scores."""
-    law = q_rho(rho)
-    derivatives = (
+def _dependence_atom_derivatives(
+    rho: Fraction,
+) -> tuple[Fraction, Fraction, Fraction, Fraction]:
+    """Return the four atom derivatives for the declared correlation parameter."""
+    _fraction(rho)
+    return (
         Fraction(1, 4),
         Fraction(-1, 4),
         Fraction(-1, 4),
         Fraction(1, 4),
     )
+
+
+def dependence_fisher(rho: Fraction) -> Fraction:
+    """Compute dependence Fisher information from categorical atom scores."""
+    law = q_rho(rho)
+    derivatives = _dependence_atom_derivatives(rho)
     if sum(derivatives, Fraction(0)) != 0:
         raise AssertionError("categorical atom derivatives must sum to zero")
     return sum(
@@ -340,6 +348,10 @@ def promoted_parity_rank() -> dict[str, object]:
 def _jsonable(value: object) -> object:
     if isinstance(value, Fraction):
         return str(value.numerator) if value.denominator == 1 else f"{value.numerator}/{value.denominator}"
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int):
+        return str(value)
     if isinstance(value, dict):
         return {str(key): _jsonable(item) for key, item in value.items()}
     if isinstance(value, (tuple, list)):

@@ -6,7 +6,7 @@
 - Target digest: `b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb`
 - Test source: `tests/test_canonical_dependence_selection_witness.py`
 - Intended production source: `evidence/exact_selection_witness.py`
-- Production source state during this record: absent by design
+- Production source state during the RED run: absent by design
 
 ## RED command
 
@@ -69,14 +69,14 @@ Process exit status: `0`.
 
 Machine-derived JUnit totals:
 
-- tests: 11
+- tests: 13
 - failures: 0
 - errors: 0
 - skipped: 0
-- time: 0.056 seconds
-- LF JUnit SHA-256: `1bf8f8fb0d9dc5e260b2566bd06cc9fbbdd19964ca50e7a996e6d6e0886fa98a`
+- time: 0.065 seconds
+- LF JUnit SHA-256: `280412a91ddc6bb930069b9bcb23b8bcd07f9289ba9947badbe16d7148fd50e5`
 
-The exact witness SHA-256 is `6dac3d00abf6eb7703d60b400c84d64b134df7db117387da1019e197cf9f2513`. The LF source snapshot SHA-256 is `81fe1f80c5244643952bad43a509e57c0be227844c37be39be0fef466c0ad8c4`.
+The exact witness SHA-256 is `2518612bb7fc9055843efda16b296595dec7e88d115ae2f4438486cf38360e45`. The LF source snapshot SHA-256 is `132181dfa9f5f581eaa5d0e25d840e9589e11a1b7e311ee52bed75e0f61d2ac4`.
 
 ## Exactness boundary
 
@@ -90,19 +90,31 @@ It is zero for the selected posterior completion and strictly positive for the d
 
 ## Mutation evidence
 
-Two reversible source mutations were applied separately, tested, and reversed. Before and after each mutation, the exact witness SHA-256 was the same `6dac3d00abf6eb7703d60b400c84d64b134df7db117387da1019e197cf9f2513`.
+Two initial reversible source mutations were applied separately, tested, and reversed. Before and after each mutation, the exact witness SHA-256 was the same `6dac3d00abf6eb7703d60b400c84d64b134df7db117387da1019e197cf9f2513`.
 
 1. One negative categorical atom derivative in `dependence_fisher` was changed to positive. The run exited `1` with 11 tests, 2 failures, 0 errors, and 0 skips. The direct Fisher test and deterministic-JSON test failed because the categorical derivative vector no longer had zero total. This catches a sign mutation that a bare sum of squares would otherwise hide.
 2. The promoted-parity `kappa` derivative column was replaced by zero. The run exited `1` with 11 tests, 1 failure, 0 errors, and 0 skips. The promoted-parity rank test reported rank 6 instead of the required rank 7.
 
 The mutation JUnit files were scratch diagnostics under `C:\tmp`; they are not closure evidence and are not referenced as durable artifacts.
 
+### Reviewer-fix mutation cycle
+
+The tightened 13-test contract was first run RED against the pre-fix implementation: 13 tests, 2 failures, 0 errors, and 0 skips. The missing derivative-provider seam and numeric JSON rank leaves caused the expected failures. After the minimal production changes, all 13 tests passed.
+
+Five additional reversible mutations each failed its focused test with 1 test, 1 failure, 0 errors, and 0 skips. Each reversal restored witness SHA-256 `2518612bb7fc9055843efda16b296595dec7e88d115ae2f4438486cf38360e45` exactly.
+
+1. Removing the positive-charge rejection on a zero-reference coarse cell failed the zero-reference-fiber test.
+2. Doubling every squared conditional cross product failed the exact `625/11664` defect assertion.
+3. Doubling the promoted-parity `theta` derivative entries preserved rank seven but failed the independent `+/-1/32` atom-entry assertions.
+4. Returning JSON rank integers rather than rational strings failed the recursive leaf-schema check.
+5. Bypassing `_dependence_atom_derivatives` with an inlined tuple failed the monkeypatched dependency test, proving that `dependence_fisher` consumes the provider rather than returning only the closed form.
+
 ## Portability controls
 
 All three durable evidence artifacts have zero carriage-return bytes:
 
-- `exact_selection_witness.py`: 14,456 bytes, raw Git blob `a3e124efd00f281de5b0499ba5f9373066637eb1`, filtered Git blob `a3e124efd00f281de5b0499ba5f9373066637eb1`;
-- `green-junit.xml`: 1,992 bytes, raw Git blob `b1a6b7a03841256f91a6a192a2be15c7e39cb0f4`, filtered Git blob `b1a6b7a03841256f91a6a192a2be15c7e39cb0f4`;
-- `test_canonical_dependence_selection_witness.snapshot.py`: 10,277 bytes, raw Git blob `8283a4c4b6c7b2240c0d47932f05ceda4f33bae2`, filtered Git blob `8283a4c4b6c7b2240c0d47932f05ceda4f33bae2`.
+- `exact_selection_witness.py`: 14,820 bytes, raw Git blob `e2a3a18ee2eaee39bde7cb822b4f99869241de52`, filtered Git blob `e2a3a18ee2eaee39bde7cb822b4f99869241de52`;
+- `green-junit.xml`: 2,302 bytes, raw Git blob `5506430d2a990132e4ccef6e1e9698f7c77c22fb`, filtered Git blob `5506430d2a990132e4ccef6e1e9698f7c77c22fb`;
+- `test_canonical_dependence_selection_witness.snapshot.py`: 12,586 bytes, raw Git blob `a1e9bf468199918928bdd79bf0572eea1643e400`, filtered Git blob `a1e9bf468199918928bdd79bf0572eea1643e400`.
 
-The live test file is an `text=auto` Windows checkout with CRLF working bytes. Its Git-filtered blob is `8283a4c4b6c7b2240c0d47932f05ceda4f33bae2`, exactly equal to both the raw and filtered snapshot blob. Therefore the evidence snapshot is byte-identical to the portable committed test source rather than to platform-specific checkout newlines.
+The live test file is an `text=auto` Windows checkout with CRLF working bytes. Its Git-filtered blob is `a1e9bf468199918928bdd79bf0572eea1643e400`, exactly equal to both the raw and filtered snapshot blob. Therefore the evidence snapshot is byte-identical to the portable committed test source rather than to platform-specific checkout newlines.
