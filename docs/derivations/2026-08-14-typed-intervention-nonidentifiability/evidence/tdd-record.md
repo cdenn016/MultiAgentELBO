@@ -84,7 +84,7 @@ The RED XML was decoded as UTF-8, every CRLF or bare CR was changed to LF, space
 
 | Artifact | Filesystem SHA-256 | Filtered Git blob | Bytes | CR bytes | UTF-8 BOM |
 | --- | --- | --- | ---: | ---: | --- |
-| `evidence/red-junit.xml` | `f37ad52fb126a0a7e7ce235b5275542ff286adcee959e993477d44dee0a0e9ab` | `055857141c069d3481c09203a9c8c2f7617457cd` | 26329 | 0 | no |
+| `evidence/red-junit.xml` | `74a7a13b29da5bf5c926822ecd9de487401a9373ef6e8d910190fe4778c76698` | `aeeba3c6f250362ce3ca17d2cdb11d106483944b` | 26330 | 0 | no |
 | `tests/test_typed_intervention_semantics_witness.py` | `0df74569948a70df5100f3d006b6d7b6d97da1f7a11a6cdd028e662a489ce73e` | `a1148f6309d6240434d576d9c47a3171675e71d9` | 39241 | 0 | no |
 | `evidence/test_typed_intervention_semantics_witness.snapshot.py` | `0df74569948a70df5100f3d006b6d7b6d97da1f7a11a6cdd028e662a489ce73e` | `a1148f6309d6240434d576d9c47a3171675e71d9` | 39241 | 0 | no |
 
@@ -130,17 +130,17 @@ Nine reversible mutants were applied separately to the final source. Every run u
 
 | Mutant | Mutant SHA-256 | Failures | JUnit SHA-256 |
 | --- | --- | ---: | --- |
-| wrong channel composition | `db24dfb9b853805ac9bc6762bc5e5559291d41eace5ecf041481a5ee095dd84b` | 5 | `9b8a67cc0f0c4da324e58dbf0ba5cacc92d4c1bd74808297884125871d222551` |
-| ignored `b` | `9e329bbf74b211ed678ee7bbd06cd74b5562c628920754f7b897a943f35ead37` | 9 | `4516cafe6bec2836759eff889bf109c89921e5a5487709ae69580166303361a3` |
-| omitted left/right context composition | `6e266140812bb8e052a30826befcbc4cfac5790720d788539f03db8a3f870983` | 2 | `3f7c2fecbde225c1934af5575efd69f2b9d71ed30330f70167bac391913f0eda` |
-| altered response-image entry | `8f5666cdb4e02e98d03485be3fb7e6bd728e7cdaec92a15e037e7e2346e69729` | 2 | `9140f3fa54bb24ff81408e4e0cd76c3b3f34e2cfc32d1a79ba7785a40bfec241` |
-| collapsed class multiplication | `7e3125519bc9d64088f5bb1e51bfa8b8e4581ceb9e3cec2ab393d451309e1690` | 6 | `4a62f404cb6bcd8530951c50ab416d2a09a0660f7381cff346c36d9608349d65` |
-| equalized diagnostic contrasts | `c82958c6623855861febf42eafdff4cd49da87fe9705760a3f98c03cb9e7946c` | 1 | `ae0899b8266290dfdb87c648a74c662d71b885315447ae0e9397689cd17b858b` |
-| unsorted nested JSON | `c97edcc1eff22642afb171584768165fee2b2b1e9dcefbcbdd778cda6da6d19f` | 1 | `0daeb88fb744ae6b658825862af6c841b2977d8b24765dec12659d0725b13111` |
-| direct response semantics | `3388a07264bd55afaba06c2aeb7cf47b26490f5191624757ea885498d0e38ad4` | 2 | `046c19d7c287dc894df313af2932a86783ba75b093b607bcd58993ff3bd28a5f` |
-| direct/null raw invariants | `4bc41723bb9a101ed37bbd328982e75aaf9717145ce4432fb4521a3136822e7a` | 2 | `957f5b8a58706191c769ee57e32b2a47f641eaf6d610e22753ec07712f0cb19f` |
+| wrong channel composition | `db24dfb9b853805ac9bc6762bc5e5559291d41eace5ecf041481a5ee095dd84b` | 5 | `ac617c4142bbd5d2cf978be7b5335befcda258c9fd29b8fc502701739ba3a8f7` |
+| ignored `b` | `9e329bbf74b211ed678ee7bbd06cd74b5562c628920754f7b897a943f35ead37` | 9 | `d906e7fb0bb576123ab846f34e1ab4c50e437ef8c4a90b20aa1407d840cac7d5` |
+| omitted left/right context composition | `6e266140812bb8e052a30826befcbc4cfac5790720d788539f03db8a3f870983` | 2 | `b0f4b2c131925c3d4bce3a54d04393a23ff3d37c39f65c15c7670f1b19386a9c` |
+| altered response-image entry | `8f5666cdb4e02e98d03485be3fb7e6bd728e7cdaec92a15e037e7e2346e69729` | 2 | `5ec05a97913217aeb9b66e4194253816418c0d18f2c0c4bc442211c4e445cd84` |
+| collapsed class multiplication | `7e3125519bc9d64088f5bb1e51bfa8b8e4581ceb9e3cec2ab393d451309e1690` | 6 | `1d0618d5ff319d2fc74df8c39afbca9eecf78928e3c3a58ff2f65d3f3bc94395` |
+| equalized diagnostic contrasts | `c82958c6623855861febf42eafdff4cd49da87fe9705760a3f98c03cb9e7946c` | 1 | `608dadf18420e7ac10f117ea64897b2e43affb5b4cfd002965fdb6ca341c8fc0` |
+| unsorted nested JSON | `c97edcc1eff22642afb171584768165fee2b2b1e9dcefbcbdd778cda6da6d19f` | 1 | `b822bad78384660c1e392e4f90a8706897533ddb2e92e4f192f4b3a728f35758` |
+| direct response semantics | `3388a07264bd55afaba06c2aeb7cf47b26490f5191624757ea885498d0e38ad4` | 2 | `6d7c3a0a8b45ddf12ed81c83006c927af4b07603c5c02925381cb43eb1ad92ba` |
+| direct/null raw invariants | `4bc41723bb9a101ed37bbd328982e75aaf9717145ce4432fb4521a3136822e7a` | 2 | `0a84bae2e332c8e32044db9782ee477bf4715f2dce144e3a3eb80f8205b7f225` |
 
-`evidence/mutations/mutation-record.json` records each exact command, semantic edit, process exit, machine-derived totals, failing test identifiers, JUnit location and SHA-256, and pre/mutant/post source hashes. Its SHA-256 is `e03fccd021e623deb40e0013590a0f8a376f73f44126db4541495fd2689dd1fc`, its filtered Git blob is `1fdfa2562ae6a339426c64c76f5117e02ef52501`, and all nine recorded bindings passed an independent standard-library parser check.
+`evidence/mutations/mutation-record.json` records each exact command, semantic edit, process exit, machine-derived totals, failing test identifiers, JUnit location and SHA-256, and pre/mutant/post source hashes. Its SHA-256 is `4cda28f3358b4d41bac788103249ee4c59f023540d7243eb246a259a16c3d01f`, its filtered Git blob is `79016722af3a8cd0a9920d8edc1e70b51abab0a7`, and all nine recorded bindings passed an independent standard-library parser check.
 
 The JSON mutant disables both recursive dictionary ordering and `json.dumps` key sorting. Disabling only the serializer sort remains behaviorally sorted because the witness independently sorts nested dictionaries before serialization; the combined mutant removes both safeguards and is killed by the canonical-byte test.
 

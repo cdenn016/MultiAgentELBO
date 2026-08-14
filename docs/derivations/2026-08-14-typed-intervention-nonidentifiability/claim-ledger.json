@@ -123,7 +123,7 @@
       "scope": "Machine-readable RED record: all eighteen tests failed only at the declared absent-witness boundary before implementation.",
       "side_conditions": ["Disposable mirror omitted the witness by design.", "No collection, import, or environmental error."],
       "artifact_path": "evidence/red-junit.xml",
-      "artifact_sha256": "f37ad52fb126a0a7e7ce235b5275542ff286adcee959e993477d44dee0a0e9ab"
+      "artifact_sha256": "74a7a13b29da5bf5c926822ecd9de487401a9373ef6e8d910190fe4778c76698"
     },
     {
       "id": "EV-TEST-SNAPSHOT",
@@ -141,7 +141,7 @@
       "scope": "Durable commands, machine-derived RED and GREEN totals, source identities, mutation summary, and evidence limitations.",
       "side_conditions": ["RED precedes production implementation.", "GREEN and mutation runs use the bound source bytes."],
       "artifact_path": "evidence/tdd-record.md",
-      "artifact_sha256": "5b86720cb5ef264af127b142b7c7ce909f7c3e86dc73dca111569e6530821f8b"
+      "artifact_sha256": "677520f14010b4caf7eceee3434f9beb0f7de6fb5f12271e70869ecc289e6d8a"
     },
     {
       "id": "EV-MUTATION-RECORD",
@@ -150,7 +150,7 @@
       "scope": "Nine reversible mutation commands, pre/mutant/post hashes, failing tests, machine totals, and JUnit bindings.",
       "side_conditions": ["Every mutant was killed.", "Production source was restored byte-identically between mutants."],
       "artifact_path": "evidence/mutations/mutation-record.json",
-      "artifact_sha256": "e03fccd021e623deb40e0013590a0f8a376f73f44126db4541495fd2689dd1fc"
+      "artifact_sha256": "4cda28f3358b4d41bac788103249ee4c59f023540d7243eb246a259a16c3d01f"
     },
     {
       "id": "EV-MUT-WRONG-COMPOSITION",
@@ -159,7 +159,7 @@
       "scope": "JUnit record killing the wrong BSC composition mutant.",
       "side_conditions": ["Five focused tests failed; zero errors and skips."],
       "artifact_path": "evidence/mutations/wrong-channel-composition-junit.xml",
-      "artifact_sha256": "9b8a67cc0f0c4da324e58dbf0ba5cacc92d4c1bd74808297884125871d222551"
+      "artifact_sha256": "ac617c4142bbd5d2cf978be7b5335befcda258c9fd29b8fc502701739ba3a8f7"
     },
     {
       "id": "EV-MUT-IGNORED-B",
@@ -168,7 +168,7 @@
       "scope": "JUnit record killing the ignored mediator-to-output parameter mutant.",
       "side_conditions": ["Nine focused tests failed; zero errors and skips."],
       "artifact_path": "evidence/mutations/ignored-b-junit.xml",
-      "artifact_sha256": "4516cafe6bec2836759eff889bf109c89921e5a5487709ae69580166303361a3"
+      "artifact_sha256": "d906e7fb0bb576123ab846f34e1ab4c50e437ef8c4a90b20aa1407d840cac7d5"
     },
     {
       "id": "EV-MUT-OMITTED-CONTEXT",
@@ -177,7 +177,7 @@
       "scope": "JUnit record killing omission of left and right contextual composition.",
       "side_conditions": ["Two focused tests failed; zero errors and skips."],
       "artifact_path": "evidence/mutations/omitted-two-sided-context-junit.xml",
-      "artifact_sha256": "3f7c2fecbde225c1934af5575efd69f2b9d71ed30330f70167bac391913f0eda"
+      "artifact_sha256": "b0f4b2c131925c3d4bce3a54d04393a23ff3d37c39f65c15c7670f1b19386a9c"
     },
     {
       "id": "EV-MUT-ALTERED-RESPONSE",
@@ -186,7 +186,7 @@
       "scope": "JUnit record killing an altered reduced response-image entry.",
       "side_conditions": ["Two focused tests failed; zero errors and skips."],
       "artifact_path": "evidence/mutations/altered-response-image-entry-junit.xml",
-      "artifact_sha256": "9140f3fa54bb24ff81408e4e0cd76c3b3f34e2cfc32d1a79ba7785a40bfec241"
+      "artifact_sha256": "5ec05a97913217aeb9b66e4194253816418c0d18f2c0c4bc442211c4e445cd84"
     },
     {
       "id": "EV-MUT-COLLAPSED-MULTIPLICATION",
@@ -195,7 +195,7 @@
       "scope": "JUnit record killing collapse of quotient multiplication to the identity class.",
       "side_conditions": ["Six focused tests failed; zero errors and skips."],
       "artifact_path": "evidence/mutations/collapsed-class-multiplication-junit.xml",
-      "artifact_sha256": "4a62f404cb6bcd8530951c50ab416d2a09a0660f7381cff346c36d9608349d65"
+      "artifact_sha256": "1d0618d5ff319d2fc74df8c39afbca9eecf78928e3c3a58ff2f65d3f3bc94395"
     },
     {
       "id": "EV-MUT-EQUALIZED-DIAGNOSTIC",
@@ -204,7 +204,7 @@
       "scope": "JUnit record killing an equalized diagnostic total-variation contrast.",
       "side_conditions": ["One focused test failed; zero errors and skips.", "The diagnostic remains non-load-bearing."],
       "artifact_path": "evidence/mutations/equalized-diagnostic-contrasts-junit.xml",
-      "artifact_sha256": "ae0899b8266290dfdb87c648a74c662d71b885315447ae0e9397689cd17b858b"
+      "artifact_sha256": "608dadf18420e7ac10f117ea64897b2e43affb5b4cfd002965fdb6ca341c8fc0"
     },
     {
       "id": "EV-MUT-UNSORTED-JSON",
@@ -213,7 +213,7 @@
       "scope": "JUnit record killing noncanonical nested JSON ordering.",
       "side_conditions": ["One focused test failed; zero errors and skips."],
       "artifact_path": "evidence/mutations/unsorted-nested-json-junit.xml",
-      "artifact_sha256": "0daeb88fb744ae6b658825862af6c841b2977d8b24765dec12659d0725b13111"
+      "artifact_sha256": "b822bad78384660c1e392e4f90a8706897533ddb2e92e4f192f4b3a728f35758"
     },
     {
       "id": "EV-MUT-DIRECT-SEMANTICS",
@@ -222,7 +222,7 @@
       "scope": "JUnit record killing direct-selector use of an uncomposed channel.",
       "side_conditions": ["Two focused tests failed; zero errors and skips."],
       "artifact_path": "evidence/mutations/direct-response-semantics-junit.xml",
-      "artifact_sha256": "046c19d7c287dc894df313af2932a86783ba75b093b607bcd58993ff3bd28a5f"
+      "artifact_sha256": "6d7c3a0a8b45ddf12ed81c83006c927af4b07603c5c02925381cb43eb1ad92ba"
     },
     {
       "id": "EV-MUT-RAW-INVARIANTS",
@@ -231,7 +231,7 @@
       "scope": "JUnit record killing corruption of direct and null raw invariant records.",
       "side_conditions": ["Two focused tests failed; zero errors and skips."],
       "artifact_path": "evidence/mutations/corrupt-direct-null-raw-invariants-junit.xml",
-      "artifact_sha256": "957f5b8a58706191c769ee57e32b2a47f641eaf6d610e22753ec07712f0cb19f"
+      "artifact_sha256": "0a84bae2e332c8e32044db9782ee477bf4715f2dce144e3a3eb80f8205b7f225"
     }
   ],
   "claims": [
