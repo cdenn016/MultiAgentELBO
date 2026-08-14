@@ -497,23 +497,23 @@ outside marginals do not define the same fixed objective. \status{ESTABLISHED}
 \definitionheading{Three-agent parity lift}{def:hist-three-agent-parity-lift}
 Let
 \begin{equation}
-I_6=\{1,2,3\}\times\{b,m\},
+\mathcal I_6=\{1,2,3\}\times\{b,m\},
 \qquad
-x=(x_j)_{j\in I_6}\in\{0,1\}^{I_6},
+x=(x_j)_{j\in\mathcal I_6}\in\{0,1\}^{\mathcal I_6},
 \qquad
-\theta=(\theta_j)_{j\in I_6}\in(0,1)^{I_6}.
+\theta=(\theta_j)_{j\in\mathcal I_6}\in(0,1)^{\mathcal I_6}.
 \label{eq:hist-parity-indexing}
 \end{equation}
 The channel label in a typed agent permutation is preserved.  Define
 \begin{align}
 p_0(x;\theta)
-&=\prod_{j\in I_6}\theta_j^{x_j}(1-\theta_j)^{1-x_j},
+&=\prod_{j\in\mathcal I_6}\theta_j^{x_j}(1-\theta_j)^{1-x_j},
 &
 D(\theta)
-&=\prod_{j\in I_6}\theta_j(1-\theta_j),
+&=\prod_{j\in\mathcal I_6}\theta_j(1-\theta_j),
 \label{eq:hist-parity-product-and-amplitude}\\
 \chi(x)
-&=(-1)^{\sum_{j\in I_6}x_j},
+&=(-1)^{\sum_{j\in\mathcal I_6}x_j},
 &
 p_\kappa(x;\theta)
 &=p_0(x;\theta)+\kappa\chi(x)D(\theta),
@@ -563,7 +563,7 @@ For each atom,
 Hence
 \(p_\kappa\geq p_0-|\kappa|D>(1-|\kappa|)D>0\).
 Normalization follows from
-\(\sum_x\chi(x)=\prod_{j\in I_6}(1-1)=0\).  If a marginal sums out at
+\(\sum_x\chi(x)=\prod_{j\in\mathcal I_6}(1-1)=0\).  If a marginal sums out at
 least one coordinate, its parity term contains the same zero factor, so the
 entire perturbation cancels and the remaining law is the product marginal.
 Writing \(\pi\) for extraction of the one-bit success probabilities gives
@@ -688,7 +688,7 @@ Expanding \(K=\E[(L-\sum_iL_i)(L-\sum_iL_i)^\top]\) therefore gives
 For the family in \Cref{def:hist-three-agent-parity-lift}, every pair of bits
 is independent, so \(C=0\).  With unit marginal weights,
 \begin{equation}
-G_J-\sum_{j\in I_6}G_j=K\succ0
+G_J-\sum_{j\in\mathcal I_6}G_j=K\succ0
 \qquad\text{when }\kappa\ne0.
 \label{eq:hist-parity-positive-fisher-residual}
 \end{equation}
@@ -696,13 +696,13 @@ At \(\theta_j=1/2\) for all \(j\), set \(c=\kappa/64\).  Then
 \begin{equation}
 G_J=\frac{4}{1-c^2}I_6,
 \qquad
-G_J-\sum_{j\in I_6}G_j
+G_J-\sum_{j\in\mathcal I_6}G_j
 =\frac{4c^2}{1-c^2}I_6.
 \label{eq:hist-parity-center-fisher}
 \end{equation}
 In particular, \(\kappa=1/2\) gives the residual
 \begin{equation}
-G_J-\sum_{j\in I_6}G_j=\frac{4}{16383}I_6.
+G_J-\sum_{j\in\mathcal I_6}G_j=\frac{4}{16383}I_6.
 \label{eq:hist-parity-half-fisher-residual}
 \end{equation}
 \status{ESTABLISHED}
@@ -744,7 +744,7 @@ At the parity center, the six unit-coordinate marginal tensors are
 six-dimensional tangent space holds exactly when
 \begin{equation}
 w_j=\frac{1}{1-c^2}
-\qquad\text{for every }j\in I_6.
+\qquad\text{for every }j\in\mathcal I_6.
 \label{eq:hist-parity-center-weight-equality}
 \end{equation}
 For unit weights this holds exactly when \(c=0\), equivalently
@@ -811,23 +811,367 @@ No within-pair belief--model swap is used as a universal typed symmetry.
 \status{NOT-CLAIMED}
 
 The finite group action above supplies no principal \(\GL(K)\) action, Lie
-algebra, connection, parallel transport, or holonomy.  Promoting \(\kappa\)
-from fixed relational data to a variable would require typing it as an
-interaction state and then proving identifiability and the rank of the
-augmented statistical model.  Those structures do not follow from the parity
-formula.  \status{NOT-CLAIMED}
+algebra, connection, parallel transport, or holonomy.  The promoted-family
+rank calculation in \Cref{cor:hist-promoted-parity-rank} identifies \(\kappa\)
+as a full-joint direction invisible to singleton retention, but rank alone
+does not make that direction an agent or intervention variable.
+\status{NOT-CLAIMED}
 
 \openproblemheading{Scope beyond the finite parity witness}{open:hist-parity-lift-scope}
 \Cref{thm:hist-three-agent-parity-lift} closes one finite categorical
-right-inverse instance.  Existence for arbitrary paired-joint marginal
-families, canonical lift selection, preservation by coarse graining,
-equivariance under independent odd relabelings or a \(\GL(K)\) action, an
-intervention identity, a continuum or section-space lift, physical geometry,
-physical time, units, and renormalization remain open.  Closing any one of
-these requires a construction in its declared category and proof of the
-corresponding normalization, compatibility, and regularity conditions; the
-one-dimensional parity line inside one finite Frechet fiber supplies none of
-those general results.  \status{OPEN}
+right-inverse instance.  Arbitrary-family existence on a separately declared
+restricted morphism class, coarse-preserving nonproduct selection,
+\(\GL(K)\)-equivariance, agency, a continuum or section-space lift, physical
+geometry, physical time, units, and renormalization remain open.  The absolute
+single-valued selector on the admitted split class is not open: it is refuted
+by \Cref{thm:hist-correlated-refinement-nogo}.  \status{OPEN}
+
+\section{Canonical dependence selection: exact finite boundary}
+\label{sec:hist-canonical-dependence-selection}
+
+The following finite results are bound to the released certificate with
+target digest
+\texttt{8112f0083a554a4d}\allowbreak%
+\texttt{f3b5de3875174d0b}\allowbreak%
+\texttt{0cbfeee36a7bc2ea}\allowbreak%
+\texttt{20e78c8cf9da6b39}.
+They distinguish an absolute selector, a reference-relative selector, and a
+retained Fisher quotient.  None supplies autonomous agency, continuum
+dynamics, or physical units.
+
+\definitionheading{Finite marginal selection problem}{def:hist-finite-marginal-selection}
+For a finite nonempty typed list \(X=(X_i)_{i=1}^n\), set
+\begin{equation}
+\mathcal J_X=\Delta\!\left(\prod_iX_i\right),
+\qquad
+\mathcal M_X=\prod_i\Delta(X_i),
+\qquad
+m_X:\mathcal J_X\longrightarrow\mathcal M_X,
+\label{eq:hist-cds-marginalization}
+\end{equation}
+where \(m_X\) extracts the singleton marginals.  A law-valued section is a
+map \(S_X:\mathcal M_X\to\mathcal J_X\) with \(m_XS_X=\operatorname{id}\).  A fixed-arity
+local morphism is an independently tensored finite Markov kernel
+\(K=\bigotimes_iK_i\).  An admitted arity-changing kernel
+\(K:\prod_iX_i\rightsquigarrow\prod_jY_j\) is marginal compatible when a
+specified \(\bar K:\mathcal M_X\to\mathcal M_Y\) satisfies
+\begin{equation}
+m_YK_\#=\bar K m_X.
+\label{eq:hist-cds-marginal-compatibility}
+\end{equation}
+Naturality on a declared morphism class means
+\(K_\#S_X=S_Y\bar K\) for every morphism in that class.  This definition does
+not admit all finite stochastic kernels silently.  \status{DEFINITION}
+
+\theoremheading{Tensor-local naturality uniquely selects product law}{thm:hist-local-markov-product-uniqueness}
+If \((S_X)_X\) is natural under every fixed-arity coordinatewise finite
+Markov kernel with independently tensored randomness, then
+\begin{equation}
+S_X(\mu_1,\ldots,\mu_n)=\bigotimes_{i=1}^n\mu_i.
+\label{eq:hist-cds-product-selector}
+\end{equation}
+This conclusion is throughout the declared local morphism class, not all of
+\(\mathrm{FinStoch}\).  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+For each \(i\), let the preparation kernel from a singleton typed space send
+its unique point to \(\mu_i\).  Their tensor product sends the unique law on
+the singleton product to \(\bigotimes_i\mu_i\), while the induced marginal
+map sends the unique marginal tuple to \((\mu_i)_i\).  Naturality forces
+\eqref{eq:hist-cds-product-selector}.  \(\square\)
+
+\corollaryheading{Maximal product-preserving category}{cor:hist-maximal-product-preserving-category}
+Among wide marginal-compatible categories on the frozen typed objects that
+contain every fixed-arity local kernel, a natural section exists exactly when
+every added kernel preserves product laws.  When it exists it is uniquely the
+product section, so the product-preserving marginal-compatible kernels form
+the maximal such morphism class.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+The preceding theorem forces the product section.  Its naturality for an
+added kernel is precisely the assertion that the kernel sends each product
+law to the product of its pushed singleton marginals.  \(\square\)
+
+\theoremheading{Admitted correlated refinements refute an absolute selector}{thm:hist-correlated-refinement-nogo}
+For a typed source bit and typed target bits \((Y,Z)\), explicitly admit both
+split kernels
+\begin{equation}
+R_\rho(y,z\mid x)
+=\mathbf1_{\{y=x\}}\begin{cases}
+(1+\rho)/2,&z=x,\\
+(1-\rho)/2,&z\ne x,
+\end{cases}
+\qquad \rho\in\{1/3,1/2\}.
+\label{eq:hist-cds-split-kernel}
+\end{equation}
+Both are normalized and marginal compatible; admitting them is a declaration.  No
+single-valued marginal section can be natural under both.  This no-go uses
+single-valuedness and the admission of both displayed splits, but it uses no
+local-naturality premise.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Push the fair source law through the two splits.  Both descended target data
+are the same fair/fair marginal pair, while the joint atom multisets are
+\begin{equation}
+\{1/3,1/3,1/6,1/6\}
+\quad\text{and}\quad
+\{3/8,3/8,1/8,1/8\}.
+\label{eq:hist-cds-split-multisets}
+\end{equation}
+Naturality would require one value of the target section at that marginal
+pair to equal both laws.  Their atom multisets are unequal even after any
+sample relabeling, a contradiction.  \(\square\)
+
+\corollaryheading{No faithful marginal recovery of every joint law}{cor:hist-faithful-marginal-recovery-nogo}
+Marginalization is noninjective even on strictly positive binary laws.
+Consequently no marginal section can also satisfy
+\(S_X(m_XQ)=Q\) for every compatible positive full joint law.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+The two positive split-output laws in
+\eqref{eq:hist-cds-split-multisets} have the same singleton marginals and are
+distinct.  A function of their common marginal datum cannot return both.
+\(\square\)
+
+\propositionheading{Singleton marginals do not determine full VFE}{prop:hist-marginal-vfe-nonfactorization}
+There is no function of only the recognition singleton tuple, posterior
+singleton tuple, and positive evidence \(z\) that equals
+\(-\log z+\KL(Q\Vert P)\) for every compatible full recognition law \(Q\)
+and positive posterior law \(P\).  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+On two fair bits take \(P\) to be the uniform product law, first take
+\(Q_0=P\), and then take the positive \(\rho=1/2\) split-output law \(Q_1\).
+Both recognition inputs have the same singleton marginals and the posterior
+and evidence inputs are unchanged.  Nevertheless
+\(\KL(Q_0\Vert P)=0\) while \(\KL(Q_1\Vert P)>0\) by strictness of finite KL.
+\(\square\)
+
+\propositionheading{Singleton families do not determine full Fisher tensor}{prop:hist-marginal-fisher-nonfactorization}
+For \(\theta\in(0,1)^6\), write
+\begin{equation}
+P_\theta(x)=\prod_{i=1}^6\theta_i^{x_i}(1-\theta_i)^{1-x_i},
+\qquad
+Q_{\theta,\kappa}(x)
+=P_\theta(x)\bigl[1+\kappa\chi(x)P_\theta(\bar x)\bigr],
+\label{eq:hist-cds-promoted-parity-law}
+\end{equation}
+where \(\chi(x)=(-1)^{\sum_i x_i}\) and \(|\kappa|<1\).  The fixed
+families \(\kappa=0\) and \(\kappa=1/2\) have identical singleton-family
+maps, but at \(\theta_i=1/2\) their full-joint Fisher tensors are
+\begin{equation}
+4I_6
+\quad\text{and}\quad
+\frac{65536}{16383}I_6.
+\label{eq:hist-cds-parity-fisher-witness}
+\end{equation}
+Thus no rule of only the complete singleton-family map recovers every
+full-joint Fisher tensor.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Since \(P_\theta(x)P_\theta(\bar x)=\prod_i\theta_i(1-\theta_i)\), the
+bracket in \eqref{eq:hist-cds-promoted-parity-law} is positive.  Summing over
+any missing bit cancels the parity term, so every proper marginal, and hence
+every singleton-family map, is independent of \(\kappa\).  Direct finite
+score summation at the symmetric point gives
+\eqref{eq:hist-cds-parity-fisher-witness}.  \(\square\)
+
+\openproblemheading{Unconditional typed-intervention recovery}{open:hist-typed-intervention-recovery}
+Whether one marginal-to-enrichment reconstruction can recover every
+compatible enriched presentation up to type-preserving intervention
+isomorphism is \emph{inconclusive} here.  The ambient typed intervention
+category, admission of the proposed witnesses, and their internal
+nonisomorphism have not been formalized.  Observational equality alone does
+not close those obligations.  \status{OPEN}
+
+\propositionheading{Conditional intervention-recovery no-go}{prop:hist-conditional-intervention-recovery-nogo}
+Let \(U:\mathcal E\to\mathcal B\) be a declared forgetful functor.  If two
+admitted enriched objects \(E_0,E_1\) over one observational datum satisfy
+\(U(E_0)=U(E_1)\) but are not type-preservingly intervention-isomorphic, then
+there is no reconstruction \(R:\mathcal B\to\mathcal E\) with
+\begin{equation}
+R\,U(E)\cong E
+\quad\text{for every compatible }E.
+\label{eq:hist-cds-two-sided-intervention-recovery}
+\end{equation}
+Conditional on their admission and nonisomorphism, the direct, latent, and
+null-extended binary-symmetric-channel presentations supply such a witness.
+A conventional right-inverse choosing one representative per observational
+fiber is not excluded.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Equation \eqref{eq:hist-cds-two-sided-intervention-recovery} would make both
+\(E_0\) and \(E_1\) isomorphic to \(R(U(E_0))=R(U(E_1))\), hence isomorphic
+to each other, contradicting the hypothesis.  \(\square\)
+
+\theoremheading{Finite reference-relative I-projection}{thm:hist-reference-relative-iprojection}
+Let \(A\) be finite, let \(p\in\Delta(A)\), let
+\(T:A\to\R^d\), and prescribe \(m\in\R^d\).  A finite-KL feasible law with
+\(\E_qT=m\) exists, and the minimizer of \(\KL(q\Vert p)\) exists, exactly
+when
+\begin{equation}
+m\in\operatorname{conv}T(\operatorname{supp}p).
+\label{eq:hist-cds-iprojection-feasibility}
+\end{equation}
+The minimizing law \(q_{p,m}\) is unique relative to \((p,T,m)\).  Its support is the inverse image
+in \(\operatorname{supp}p\) of the minimal face containing \(m\), and every
+finite-KL feasible \(q\) satisfies
+\begin{equation}
+\KL(q\Vert p)
+=\KL(q\Vert q_{p,m})+\KL(q_{p,m}\Vert p).
+\label{eq:hist-cds-iprojection-pythagorean}
+\end{equation}
+After removing affine redundancies, the exponential multiplier is unique and
+the selected law is analytic on each fixed relative-interior face stratum.
+Equivariance requires coherent transport of the reference and the complete
+constraint diagram.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Condition \eqref{eq:hist-cds-iprojection-feasibility} is exactly finite
+convex feasibility on \(\operatorname{supp}p\).  Restriction to the minimal
+face gives a compact feasible simplex; lower semicontinuity gives attainment
+and strict convexity gives uniqueness of the law.  The finite exponential
+family calculation on that face gives
+\eqref{eq:hist-cds-iprojection-pythagorean} and the stated stratum
+regularity.  \(\square\)
+
+\theoremheading{Deterministic reference completion}{thm:hist-deterministic-reference-completion}
+Let \(f:A\to B\) be deterministic, let \(p\in\Delta(A)\), and let
+\(r\ll f_\#p\).  The unique KL-minimizing completion with \(f_\#q=r\) is
+\begin{equation}
+L_f^p(r)(x)=
+\begin{cases}
+r(f(x))p(x)/(f_\#p)(f(x)),&(f_\#p)(f(x))>0,\\
+0,&(f_\#p)(f(x))=0.
+\end{cases}
+\label{eq:hist-cds-deterministic-completion}
+\end{equation}
+For another deterministic map \(g:B\to C\) and
+\(s\ll(g\circ f)_\#p\), completion composes strictly when the intermediate
+stage uses the pushed reference:
+\begin{equation}
+L_f^p\!\left(L_g^{f_\#p}(s)\right)=L_{g\circ f}^p(s).
+\label{eq:hist-cds-completion-composition}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+The finite conditional KL chain rule separates the divergence into the
+fixed coarse divergence plus a nonnegative conditional term, which vanishes
+only when the conditional law within each positive-reference fiber equals
+that of \(p\).  This gives \eqref{eq:hist-cds-deterministic-completion};
+substitution proves \eqref{eq:hist-cds-completion-composition}.  \(\square\)
+
+\corollaryheading{Qualified retained VFE selection and descent}{cor:hist-retained-vfe-selection-descent}
+Under the complete retained-joint and retained-conditioning equivalence,
+positive evidence, common feasible retained constraints, and the support
+condition in \Cref{thm:hist-reference-relative-iprojection}, the unique
+retained optimizer and optimized VFE value descend.  Deterministic posterior
+completion minimizes the full auxiliary VFE, but the presentation-specific
+auxiliary law need not descend.  The retained envelope differential descends
+only for a positive \(C^1\) parameterized family with a common locally fixed
+feasible set and support stratum and a unique \(C^1\) optimizer.
+\status{ESTABLISHED}
+
+\theoremheading{Retained Fisher radical and quotient}{thm:hist-retained-fisher-quotient}
+For a smooth retained-law map \(\rho:\Theta\to N\), a positive-semidefinite
+target tensor \(g\), and \(h=\rho^*g\),
+\begin{equation}
+\operatorname{rad}h_\theta
+=(d\rho_\theta)^{-1}(\operatorname{rad}g_{\rho(\theta)}).
+\label{eq:hist-cds-fisher-radical}
+\end{equation}
+Hence \(\operatorname{rad}h_\theta=\ker d\rho_\theta\) exactly when
+\(\operatorname{im}d\rho_\theta\cap\operatorname{rad}g_{\rho(\theta)}
+=\{0\}\).  On a stratum where the radical has locally constant rank,
+\(T\Theta/\operatorname{rad}h\) is a smooth positive-definite quotient
+bundle.  A global quotient manifold additionally requires a simple Hausdorff
+null-leaf quotient.  Under the preceding transversality equality
+\(\operatorname{rad}h=\ker d\rho\) and a regular connected-leaf quotient, the
+specific pullback \(h\) is basic because \(\rho\) factors through that
+quotient; basicness remains extra for arbitrary tensors and declared block
+projectors.
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+For every \(v\in T_\theta\Theta\), positivity and Cauchy--Schwarz for the
+semidefinite form give
+\(h_\theta(v,\cdot)=0\) exactly when
+\(d\rho_\theta v\in\operatorname{rad}g\), proving
+\eqref{eq:hist-cds-fisher-radical}.  The remaining statements are the
+constant-rank quotient construction and the separate regular-leaf-space
+hypothesis.  \(\square\)
+
+\propositionheading{Declared-block quotient boundary}{prop:hist-declared-block-quotient-boundary}
+Assume the transversality case
+\(K=\ker d\rho=\operatorname{rad}h\) on a constant-rank stratum and declare
+a smooth splitting \(T\Theta=\bigoplus_aB_a\).  The following are equivalent:
+the quotient images of the \(B_a\) form a direct sum, their retained images
+form a direct sum, \(K=\bigoplus_a(K\cap B_a)\), and every quotient tangent
+has a unique block decomposition.  Additive Fisher energy further requires
+pairwise Fisher orthogonality.  With \(D_a=B_a+K\), local block-distribution
+projectability is
+\begin{equation}
+[\Gamma(K),\Gamma(D_a)]\subseteq\Gamma(D_a),
+\label{eq:hist-cds-block-projectability}
+\end{equation}
+and invariance across disconnected components of a retained fiber is an
+additional global requirement.  Smooth pointwise directness and
+orthogonality alone do not imply descent.  \status{ESTABLISHED}
+
+\propositionheading{Law and Fisher geometry do not canonically agentize blocks}{prop:hist-law-fisher-agentization-nogo}
+At the uniform seven-outcome law, no rule depending only on the unlabeled law
+and its Fisher metric and natural under every outcome relabeling can select
+an unordered decomposition of the six-dimensional tangent space into three
+two-dimensional blocks.  Declared typing or other symmetry-breaking data can
+supply blocks, but the law and Fisher tensor alone do not.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Such a rule would induce a homomorphism \(S_7\to S_3\).  Its restriction to
+the perfect group \(A_7\) is trivial.  The sum-zero six-dimensional
+\(A_7\)-representation is irreducible: an equivariant endomorphism extends by
+zero on the invariant \(\R\mathbf1\) line, and the resulting permutation
+commutant calculation makes it scalar.  No invariant rank-two summand can
+therefore exist.  \(\square\)
+
+\corollaryheading{Promoted parity has one hidden retained direction}{cor:hist-promoted-parity-rank}
+For the seven-parameter family
+\((\theta,\kappa)\mapsto Q_{\theta,\kappa}\) in
+\eqref{eq:hist-cds-promoted-parity-law}, the full-joint derivative has rank
+seven everywhere on \((0,1)^6\times(-1,1)\).  The singleton-retained map has
+rank six and
+\begin{equation}
+\ker d(mQ)=\operatorname{span}\{\partial_\kappa\}.
+\label{eq:hist-cds-promoted-parity-kernel}
+\end{equation}
+Thus \(\kappa\) is identifiable from the full law and invisible to singleton
+retention; this does not agentize it.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+The singleton means are exactly \(\theta_i\), so a zero full-law derivative
+first has zero \(\theta\)-components.  The remaining derivative is a scalar
+multiple of \(\partial_\kappa Q=\chi\prod_i\theta_i(1-\theta_i)\), which is
+nonzero in the open domain; hence the full derivative is injective.  The same
+singleton identity gives rank six and
+\eqref{eq:hist-cds-promoted-parity-kernel}.  \(\square\)
+
+Local Markov naturality therefore selects the product law uniquely, while
+under the declared full naturality and canonicity requirements, selecting
+nonproduct dependence requires either restricting the admitted morphism class
+or adding declared relational, constraint, or reference data.
+A positive reference supplies a unique relative selector only under the
+feasibility and support hypotheses above, and the retained Fisher quotient
+identifies only directions visible at the declared retained scope.  The
+absolute split-selector target depends only on
+\Cref{thm:hist-correlated-refinement-nogo}; none of the positive replacements
+is a premise.  Arbitrary-family coarse-preserving nonproduct selection,
+autonomous agency, continuum and renormalization limits, physical geometry,
+units, and time remain open.  Unconditional typed-intervention recovery
+instead remains \emph{inconclusive} for the reasons stated in
+\Cref{open:hist-typed-intervention-recovery}.
+
+\section{Natural-gradient selection of an oriented orbit}
+\label{sec:hist-natural-gradient-oriented-orbit}
 
 The Fisher natural gradient is characterized by
 \begin{equation}

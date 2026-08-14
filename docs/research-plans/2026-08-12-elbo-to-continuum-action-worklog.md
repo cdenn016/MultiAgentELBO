@@ -2942,3 +2942,165 @@ preservation under coarse graining, independent odd relabeling without a pseudos
 coordinate, \(GL(K)\) covariance, interventions, autonomous agency, a section-space or continuum
 law, physical geometry, physical time, units, and renormalization. The finite parity witness supplies
 none of those closures.
+
+---
+
+## 7. 2026-08-14 governing correction -- canonical dependence selection
+
+This section preserves the earlier investigation chronologically and supersedes its status language
+only in the finite scope proved by
+`docs/derivations/2026-08-14-canonical-dependence-selection/`. The certificate contract digest is
+`8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39`.
+The frozen absolute law-valued selector target is **COMPLETE_NEGATIVE**. The negative result, the
+reference-relative replacements, and the retained-Fisher results have independent proof paths.
+
+### 7.1 Local uniqueness, maximality, and the absolute-selector no-go
+
+For a finite list \(X=(X_i)_i\), let \(m_X\) send a joint law on
+\(\prod_iX_i\) to its tuple of singleton marginals. If a section \(S_X\) of \(m_X\) is natural under
+all coordinatewise Markov kernels whose randomness is independently tensored, then preparations
+from singleton lists force
+
+\[
+S_X(\mu_1,\ldots,\mu_n)=\bigotimes_i\mu_i.
+\]
+
+This is a local product-kernel theorem, not a theorem of naturality under generic
+all-\(\mathrm{FinStoch}\) arrows. Preparations force uniqueness within the local class. More
+generally, in any wide marginal-compatible category containing that full fixed-arity local class,
+a natural section exists if and only if every additional arrow preserves product laws.
+Consequently the product-preserving arrows form the maximal such morphism class, and the product
+section is unique for that class.
+
+The absolute target fails in a separately declared morphism class. For a fair source bit, the two
+explicitly admitted refinements \(R_{1/3}\) and \(R_{1/2}\) both have fair/fair singleton output
+marginals, but the required joint outputs have atom multisets
+
+\[
+\{1/3,1/3,1/6,1/6\},
+\qquad
+\{3/8,3/8,1/8,1/8\}.
+\]
+
+No sample relabeling identifies these multisets. If both refinements are admitted and the section is
+single valued, naturality forces its value on the one fair/fair marginal tuple to equal both joint
+outputs, a contradiction. Both split admissions and single-valuedness are hypotheses of this
+scope-matched no-go. Without local-kernel naturality the proof uses both splits; it does not assert
+nonexistence in a morphism class that omits one of them.
+
+### 7.2 Full-joint recovery does not factor through singleton marginals
+
+The full-VFE and full-Fisher obstructions are independent. A product law and a strictly positive
+correlated law can have the same singleton marginals while their KL divergences against one fixed
+positive product posterior are respectively zero and strictly positive. Therefore neither that
+full-joint KL term nor a VFE containing it factors through singleton retention.
+
+For the positive six-bit parity family, fixing \(\kappa=0\) or \(\kappa=1/2\) leaves the same
+singleton-marginal family map on \((0,1)^6\). At the symmetric point the full-joint Fisher tensors
+are nevertheless
+
+\[
+G_{\kappa=0}=4I_6,
+\qquad
+G_{\kappa=1/2}=\frac{65536}{16383}I_6.
+\]
+
+Thus singleton retention also does not determine the full-joint Fisher tensor.
+
+The broad typed-intervention recovery claim remains **INCONCLUSIVE**. Its closure would require a
+formal ambient typed category and proof that the August 13 direct, latent, and null-extended BSC
+presentations are nonisomorphic objects in one forgetful fiber. Conditional on that nonisomorphism,
+universal two-sided recovery from the retained object is impossible. The conditional no-go does not
+forbid a conventional right inverse that chooses one presentation.
+
+### 7.3 Reference-relative I-projection and deterministic completion
+
+Let \(p\) be a finite reference law, \(T\) a declared statistic, and \(m\) a target moment. A
+finite-KL minimizer of \(D(q\Vert p)\) subject to \(\mathbb E_qT=m\) exists exactly when
+
+\[
+m\in\operatorname{conv}T(\operatorname{supp}p).
+\]
+
+When it exists it is unique as a law relative to \((p,T,m)\), and its support is the inverse image
+inside \(\operatorname{supp}p\) of the minimal face containing \(m\). After statistic
+minimalization its exponential multiplier is unique; before minimalization multiplier
+nonuniqueness remains along affine redundancies. Every finite-KL feasible \(q\) obeys the oriented
+identity
+
+\[
+D(q\Vert p)=D(q\Vert q_{p,m})+D(q_{p,m}\Vert p).
+\]
+
+For a deterministic coarse map \(f:X\to Y\), a reference \(p\), and
+\(r\ll f_\#p\), the unique forward-KL minimizing completion is
+
+\[
+L_f^p(r)(x)=
+\begin{cases}
+r(f(x))p(x)/(f_\#p)(f(x)),&(f_\#p)(f(x))>0,\\
+0,&(f_\#p)(f(x))=0.
+\end{cases}
+\]
+
+These completions compose strictly along nested deterministic coarse maps when every stage uses
+the pushed reference. For this stated composition identity, feasibility, reference support,
+deterministic coarse maps, and pushed references are the declared sufficient hypotheses. This
+theorem supplies a reference-relative convention, not an absolute or reference-free dependence
+selector.
+
+### 7.4 Retained Fisher quotient, declared blocks, and promoted parity rank
+
+For a smooth retained-law map \(\rho:\Theta\to N\) and a positive-semidefinite target tensor \(g\),
+
+\[
+\operatorname{rad}(\rho^*g)=d\rho^{-1}(\operatorname{rad}g).
+\]
+
+This radical equals \(\ker d\rho\) if and only if
+\(\operatorname{im}d\rho\cap\operatorname{rad}g=\{0\}\). Under that gate and constant rank,
+\(T\Theta/\ker d\rho\cong\operatorname{im}d\rho\) is a smooth positive-definite vector-bundle
+quotient. A global quotient manifold still requires a simple Hausdorff null-leaf quotient.
+Under that transversality equality and a regular connected-leaf quotient, the specific pullback
+\(\rho^*g\) is basic because \(\rho\) factors through that quotient. This does not make arbitrary
+tensors or declared block projectors automatically basic.
+
+Familywise commuting presentation maps induce quotient isometries only under their stated
+diffeomorphism and Fisher-isometric-immersion hypotheses.
+
+For a declared tangent splitting, direct quotient blocks require the kernel to split blockwise.
+Additive Fisher energy further requires pairwise Fisher orthogonality. Descent of block distributions
+requires the vertical bracket/projectability condition, and presentation invariance requires the
+declared type-preserving transport plus a global condition across disconnected retained-law fibers.
+Pointwise rank, directness, and orthogonality alone do not meet these conditions.
+
+Promoting the parity coordinate gives the seven-parameter family
+\((\theta,\kappa)\mapsto Q_{\theta,\kappa}\). Its full-joint differential has rank seven everywhere,
+whereas singleton retention has rank six and
+
+\[
+\ker d\rho=\operatorname{span}\{\partial_\kappa\}.
+\]
+
+This calculation supersedes the earlier augmented-rank obligation only for the promoted parity
+family. It does not agentize the law: at the uniform seven-outcome law, permutation naturality
+forbids a law/Fisher-only decomposition into three rank-two agent blocks. Rank identifies a retained
+null direction relative to \(\rho\); it supplies neither block types nor agency.
+
+### 7.5 Exact supersession boundary and retained open obligations
+
+The earlier phrase "canonical selection remains open" is superseded only as follows: the frozen
+absolute selector is refuted under both admitted splits and single-valuedness, local product
+naturality has a unique product section, and a finite reference-relative selector is available under
+its feasibility and support hypotheses. It remains open to construct a nonproduct selector for an
+arbitrary admitted family that is preserved by the desired coarse maps. Likewise, the earlier
+statement that identifiability and rank checks remain is superseded only by the exact rank-seven
+versus rank-six parity calculation; general interaction-state identifiability and agent typing do
+not follow.
+
+The retained **OPEN** obligations are arbitrary-family lift existence, coarse-preserving nonproduct
+selection, independent odd relabeling without a pseudoscalar interaction coordinate, \(GL(K)\)
+covariance, autonomous agency, a section-space or continuum law, a global Hausdorff quotient and
+block projectability absent their stated conditions, physical geometry, physical time, dimensional
+units, and renormalization. The broad typed-intervention claim remains **INCONCLUSIVE**, not open by
+omission and not closed by the conditional BSC no-go.

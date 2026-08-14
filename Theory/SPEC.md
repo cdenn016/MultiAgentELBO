@@ -632,8 +632,65 @@ w_i = 1/(1-c^2), and unit weights agree only at kappa = 0. Do not generalize thi
 older two-bit lift has a signed, indefinite joint-minus-product Fisher difference. The symmetric
 posterior is realized by the supplied hyperedge record K_hyp(1|x) = (1+c chi(x))/2; it is engineered
 generative data, not a consequence of pairwise locality or conditional independence. The
-arbitrary-family, canonical-selection, coarse-preservation, continuum, physicalization, time, units,
+arbitrary-family, coarse-preservation, continuum, physicalization, time, units,
 and renormalization obligations remain open.
+
+**Governing canonical-dependence-selection correction (2026-08-14).** The selection question is now
+split by quantifier. For finite typed lists, naturality under
+fixed-arity coordinatewise finite Markov kernels whose channel randomness is independently tensored
+uniquely forces the product section; preparation arrows already determine it. This is not a theorem
+about arbitrary kernels in `FinStoch`. If that local class is enlarged to a wide
+marginal-compatible category, a natural section exists if and only if every added morphism preserves
+product laws, and the section is then uniquely the product section. Thus the product-preserving
+marginal-compatible kernels form the maximal such wide category.
+
+The frozen selector contract separately declares the two arity-increasing split kernels
+`R_rho(y,z|x) = 1[y=x]((1+rho)/2 if z=x, else (1-rho)/2)` at `rho=1/3` and
+`rho=1/2`. On a fair source bit both descend to the same fair/fair marginal datum, but their
+pushforward atom multisets are respectively `{1/3,1/3,1/6,1/6}` and
+`{3/8,3/8,1/8,1/8}`. A single-valued target section natural under both declared splits would have
+to return both unequal laws, even modulo sample relabeling. The declaration of both splits and the
+single-valuedness requirement are load-bearing. Hence an absolute selector with those quantifiers is
+**REFUTED**, rather than open. Under the declared full naturality and canonicity requirements, one
+must either restrict the admitted morphism class or add declared relational, constraint, or reference
+data to select nonproduct dependence.
+
+One bounded relative replacement is exact in the finite setting. Given a declared reference law
+`p`, statistic `T`, and target moment `m`, a finite-KL minimizer of `D(q||p)` subject to
+`E_q T=m` exists exactly when
+`m in conv T(supp p)` and is then unique as a law, with support
+`{x in supp p : T(x) in F_m}`, where `F_m` is the minimal face of `conv T(supp p)` containing `m`.
+Its equivariance requires coherent transport of the reference and the
+complete constraint diagram. For a deterministic coarse map `f:X->Y` and `r << f_#p`, the unique
+conditional-KL completion is `L_f^p(r)(x)=r(f(x))p(x)/(f_#p)(f(x))` on positive reference fibers and
+zero otherwise. Such completions compose strictly along nested deterministic coarse maps when each
+stage uses the pushed reference. Descent of the retained optimizer and optimum VFE additionally
+requires the declared complete retained-law/conditioning equivalence and one common feasible retained
+problem; envelope differentials need the stronger positive `C^1`, fixed-support-stratum, and unique
+`C^1`-optimizer hypotheses.
+
+For a smooth retained-law map `rho:Theta->N` and positive-semidefinite target tensor `g`,
+`rad(rho^*g)=d rho^{-1}(rad g)`, and this equals `ker d rho` exactly when
+`im d rho` meets `rad g` trivially. Constant rank then gives a positive-definite quotient vector
+bundle, not automatically a global quotient manifold; the latter still needs a simple Hausdorff
+null-leaf quotient. Under that transversality equality and a regular connected-leaf quotient, the
+specific pullback `rho^*g` is basic because `rho` factors through that quotient. This does not make
+arbitrary tensors, declared block projectors, or the `05c` connection-relative covariant jet
+automatically basic. Declared block directness also requires blockwise kernel splitting, energy
+additivity requires Fisher orthogonality, and block descent requires projectable/basic image data.
+
+The recovery statements remain independently typed. Full-joint VFE and full-joint Fisher tensors do
+not factor through singleton marginal data. The unconditional typed-intervention no-go is
+**INCONCLUSIVE** until the ambient typed category, witness admission, and internal nonisomorphism are
+formalized. Conditional on the direct, latent, and null-extended BSC presentations being
+nonisomorphic objects in one declared forgetful fiber, universal two-sided recovery is impossible;
+a conventional right inverse may still choose one representative. Finally, when `kappa` is promoted
+in the six-bit parity family, the full-joint map has rank seven everywhere, whereas singleton
+retention has rank six with kernel exactly `span{partial_kappa}`. This identifies `kappa` only as a
+full-joint interaction direction lost by singleton retention; rank does not type or agentize it.
+Arbitrary-family and coarse-preserving lifts, autonomous agency and its intervention structure,
+continuum extension, physical geometry, physical time, dimensional units, and renormalization remain
+**OPEN**.
 
 **Emergent duration is Fisher length on an already selected orbit.** The oriented inference orbit
 inherits the Fisher line element, and integration from a chosen origin defines an agent-relative

@@ -67,13 +67,53 @@ closure in which some or all of that scaffolding is reconstructed from the inter
 the agents is an open target. Likewise, the exact observation–interaction equivalence supplies an operational environment-node
 presentation, but does not by itself prove autonomy or agency for every boundary node. Randomization
 and subsequent marginalization can give distinct presentations of the same scoped retained record law.
-The certified finite presentation-descent theorem now gives the exact quotient boundary: collapsed
+The certified finite presentation-descent theorem now gives the exact retained boundary: collapsed
 retained-variable VFE and, for strictly positive \(C^2\) retained families that agree parameterwise,
-the retained Fisher tensor and every common \(C^1\) pullback descend. Arbitrary uncompleted full-latent
-VFE, full-joint Fisher tensors, node inventories, and typed intervention structures do not generally
-descend. On the tier \(Q_R\ll P_R(\cdot\mid o)\), posterior completion, or minimization over auxiliary
-lifts at fixed \(Q_R\), removes the expected conditional-KL defect. These are finite informational
-invariants; they do not canonically agentize an environment node, and autonomous agency remains open.
+the retained Fisher tensor and every common \(C^1\) pullback descend. Arbitrary uncompleted
+full-latent VFE and full-joint Fisher tensors do not factor through those retained data. Node
+inventories likewise do not descend under the certified observational equivalence. For typed
+intervention structure, however, the unconditional recovery no-go is **INCONCLUSIVE**: the ambient
+typed category, admission of the witness objects, and their internal nonisomorphism have not been
+formalized. What is proved is conditional. If the direct, latent, and null-extended BSC
+presentations are admitted nonisomorphic objects in one declared forgetful fiber, then no universal
+two-sided recovery can reconstruct every enrichment. A conventional right inverse may still select
+one representative from that fiber. On the tier \(Q_R\ll P_R(\cdot\mid o)\), posterior completion,
+or minimization over auxiliary lifts at fixed \(Q_R\), removes the expected conditional-KL defect.
+These are finite informational invariants; they do not canonically agentize an environment node, and
+autonomous agency remains open.
+
+The finite selector boundary is sharper. Under fixed-arity coordinatewise finite Markov kernels
+whose channel randomness is independently tensored, preparation maps uniquely force the product
+section. This is not a claim about all kernels in \(\mathsf{FinStoch}\). A wide
+marginal-compatible enlargement containing that local class admits a natural section exactly when
+every added morphism preserves product laws, so the product-preserving kernels form the maximal such
+category. The frozen contract separately declares both split refinements \(R_{1/3}\) and
+\(R_{1/2}\). From one fair source, each has fair/fair target marginals, but their joint atom
+multisets are respectively
+\(\{1/3,1/3,1/6,1/6\}\) and
+\(\{3/8,3/8,1/8,1/8\}\). Naturality under both declared splits would require one single-valued
+selector to return both unequal laws, even after relabeling. The admission of both splits and
+single-valuedness are load-bearing. Thus the absolute selector with those quantifiers is
+**REFUTED**, not merely open.
+
+Under the declared full naturality and canonicity requirements, selecting nonproduct dependence
+requires either restricting the admitted morphism class or adding declared relational, constraint,
+or reference data. For a declared finite reference \(p\), statistic \(T\), and target moment \(m\), a
+finite-KL minimizer of \(D(q\Vert p)\) subject to \(\mathbb E_qT=m\) exists exactly when
+\(m\in\operatorname{conv}T(\operatorname{supp}p)\) and is then unique as a law. For a deterministic
+coarse map \(f:X\to Y\), conditional-KL completion is defined for \(r\ll f_\#p\) and composes
+strictly along nested maps when every stage uses the pushed reference. These are relative
+selectors, not marginal-only or agency-producing constructions.
+
+The retained Fisher quotient is likewise conditional. For retained-law map \(\rho\) and
+positive-semidefinite target tensor \(g\),
+\(\operatorname{rad}(\rho^*g)=d\rho^{-1}(\operatorname{rad}g)\); it equals
+\(\ker d\rho\) only under the stated transversality. Constant rank then gives a positive-definite
+quotient vector bundle, while a global quotient manifold still needs a simple Hausdorff leaf space.
+Under that transversality equality and a regular connected-leaf quotient, the specific pullback
+\(\rho^*g\) is basic because \(\rho\) factors through that quotient. Basicness is not automatic for
+arbitrary tensors, declared block projectors, or the connection-relative covariant jet in
+Theory/05c.
 
 "State-bearing" needs an operational criterion or the thesis is unfalsifiable, since any candidate
 counterexample can be reclassified as scaffolding. Take the checkable one: an object is state-bearing
@@ -132,15 +172,19 @@ binary agents, write the six bits as \(x\), take
 corresponding product marginal. It is therefore a smooth marginal right inverse and immersion. For
 each fixed marginal tuple, however, it explores only one parity line in the 57-dimensional Frechet
 fiber. This supersedes any reading of the preceding historical paragraph as saying that no concrete
-correlated right inverse exists; it does not supply arbitrary-family existence or canonical
-selection.
+correlated right inverse exists. It does not supply arbitrary-family or coarse-preserving existence,
+and it cannot be the absolute canonical selector refuted above; it is a nonproduct lift relative to
+the declared parity interaction data.
 
 The lift is exactly equivariant under simultaneous complement of both channels of an agent and under
 typed agent permutations. An odd single-channel complement sends \(\kappa\) to \(-\kappa\), so
 independent odd relabelings require a pseudoscalar interaction coordinate. The construction uses no
 within-pair belief--model swap and yields no \(GL(K)\) action, Lie connection, intervention identity,
-or autonomous agency. Here \(\kappa\) is fixed relational or nomological data; promoting it requires
-typing it as interaction state and checking identifiability and augmented-model rank.
+or autonomous agency. If \(\kappa\) is promoted to a parameter, the full-joint map has rank seven
+everywhere, while singleton retention has rank six with kernel exactly
+\(\operatorname{span}\{\partial_\kappa\}\). Thus \(\kappa\) is an identifiable full-joint
+interaction direction that singleton retention erases. This rank statement does not type or
+agentize \(\kappa\); typing and any autonomous-agency interpretation remain declared input or open.
 
 The exact general score identity is
 \(G_J-G_w=K-C+\sum_i(1-w_i)G_i\), with \(K=\mathbb E[RR^T]\) and signed
@@ -158,8 +202,10 @@ exactly \(p_\kappa\). Its posterior VFE is the tight value \(\log2\); the produc
 \(-\tfrac12\log(1-c^2)\). This is a declared three-agent hyperedge kernel, not a derivation from
 pairwise locality, conditional independence, or canonical agency. Fixed-outside updates of any one
 two-channel agent block obey both the exact local--global VFE difference identity and its
-differential. Canonical lift selection, coarse-graining preservation, continuum extension, physical
-geometry, physical time, units, and renormalization remain open.
+differential. Absolute canonical lift selection under the declared two-split contract is refuted,
+while the reference-relative selectors above retain their stated conditions. Arbitrary-family lift
+existence, coarse-graining preservation, continuum extension, physical geometry, physical time,
+units, and renormalization remain open.
 The ultimate continuum target would place a proper probability law on a standard-Borel or Polish
 space of admissible paired sections, but that section-space measure, its tightness, and its
 finite-to-continuum derivation remain open.
@@ -589,11 +635,17 @@ return and not yet reproduced in `Theory/`."
 ## 9. Open decisions
 
 1. **Agent-only closure after finite presentation descent.** Collapsed retained-variable VFE and
-   strictly positive \(C^2\) parameterwise retained Fisher tensors descend, whereas arbitrary
-   uncompleted full-latent VFE, full-joint Fisher tensors, node inventories, and typed intervention
-   structures do not generally descend. What equivalence-enriched rule, if any, canonically agentizes operational environment
-   nodes? Which of \(\mathcal C,P,G,\omega\), incidence, and interaction kernels must be reconstructed
-   from the agents themselves?
+   strictly positive \(C^2\) parameterwise retained Fisher tensors descend. Arbitrary uncompleted
+   full-latent VFE and full-joint Fisher tensors do not factor through the retained data, and node
+   inventories do not descend under the certified observational equivalence. Universal recovery of
+   typed intervention structures is **INCONCLUSIVE**. Conditional on the direct, latent, and
+   null-extended BSC presentations being admitted nonisomorphic objects in one declared forgetful
+   fiber, no universal two-sided recovery exists; a conventional right inverse may still select one
+   representative. The absolute marginal selector under the declared two-split contract is
+   separately refuted, while reference-relative selectors require added data and do not agentize a
+   node. What equivalence-enriched rule, if any, canonically agentizes operational environment nodes?
+   Which of \(\mathcal C,P,G,\omega\), incidence, and interaction kernels must be reconstructed from
+   the agents themselves?
 2. **Physicalization rule.** Which individual or collective joint-law section, connection, quotient,
    channel combination, and cross-agent aggregation define a shared candidate geometry? What supplies
    nondegeneracy, Lorentzian signature, causal cones, and operational rods and clocks?
@@ -632,16 +684,21 @@ Say this, and not more:
 > each agent's primitive kinematics is a pair of general normalized-law sections; Gaussian families
 > are computational realizations. At the certified finite observational quotient, collapsed
 > retained-variable VFE and strictly positive \(C^2\), parameterwise retained-family Fisher tensors descend;
-> arbitrary uncompleted full-latent VFE, full-joint Fisher tensors, node inventories, and typed
-> intervention structures do not generally descend. On the support-qualified tier, posterior
-> completion or minimization over auxiliary lifts removes the conditional-KL defect. This identifies
-> finite informational invariants, not canonical agency or ontological identity. Connection-relative
-> Fisher pullbacks supply gauge-invariant positive-semidefinite informational semigeometries. Their
-> identification with shared physical geometry, units, constants, causal structure, or physical time
-> requires additional bridge theorems. \(P\), \(G\), \(\omega\), the interaction incidence, and the
-> record kernels are presently **declared inputs**, not derived from the agents; §1's stronger
-> reconstruction and canonical-agentization targets remain open, and the connection is state-bearing
-> wherever §8's curve construction or PIFB2's Regime II is in force.
+> arbitrary uncompleted full-latent VFE and full-joint Fisher tensors do not factor through those
+> retained data, and node inventories do not descend under the certified observational equivalence.
+> Universal recovery of typed intervention structure is **INCONCLUSIVE**. Conditional on the direct,
+> latent, and null-extended BSC presentations being admitted nonisomorphic objects in one declared
+> forgetful fiber, no universal two-sided recovery exists; a conventional right inverse may still
+> select one representative. On the support-qualified tier, posterior completion or minimization over
+> auxiliary lifts removes the conditional-KL defect. This identifies finite informational invariants,
+> not canonical agency or ontological identity. Connection-relative Fisher pullbacks supply
+> gauge-invariant positive-semidefinite informational semigeometries. Their identification with shared
+> physical geometry, units, constants, causal structure, or physical time requires additional bridge
+> theorems. \(P\), \(G\), \(\omega\), the interaction incidence, and the record kernels are presently
+> **declared inputs**, not derived from the agents. The absolute marginal selector under the declared
+> two-split contract is **REFUTED**, while reference-relative selection exists only with added data.
+> Reconstruction of autonomous agency and reclassification of \(\omega\) remain open, and the
+> connection is state-bearing wherever §8's curve construction or PIFB2's Regime II is in force.
 
 Do **not** say: that the complete PIFB2/MAgent action has been derived from the exact ELBO; that
 \(\mathcal C\) is space; that every physical property is literally a pullback; that a Fisher pullback
