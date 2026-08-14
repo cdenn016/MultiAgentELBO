@@ -76,29 +76,46 @@ It equals \(\ker d\rho\) if and only if
 \(\operatorname{im}d\rho\cap\operatorname{rad}g=\{0\}\). Constant rank then
 gives a smooth positive-definite vector-bundle quotient
 \(T\Theta/\ker d\rho\cong\operatorname{im}d\rho\). A global quotient manifold
-still requires a simple regular null foliation and basic tensors.
+still requires a simple Hausdorff null-leaf quotient. For the specific
+\(h=\rho^*g\), basicness is automatic once that connected-leaf quotient
+exists, because \(\rho\) factors through it; basicness remains extra only
+for arbitrary tensors and declared block projectors. The punctured-plane
+projection \(\rho(x,y)=y\) gives a line with doubled origin, so constant rank
+does not supply the required Hausdorff leaf space even though \(h=dy^2\) is
+basic.
 
 A familywise commuting presentation diagram
-\(\rho_BF=J\rho_A\), with \(F\) a diffeomorphism (or the proved
-surjective-submersion redundant-presentation variant) and \(J\) a Fisher
-isometric immersion, transports the kernels and induces a quotient isometry.
-Generic Markov contraction or equality at one parameter is insufficient.
+\(\rho_BF=J\rho_A\), with \(F\) a diffeomorphism and \(J\) a Fisher
+isometric immersion, induces pointwise quotient-space isometries without a
+constant-rank assumption. On constant-rank strata they assemble into a smooth
+bundle isomorphism covering \(F\). For a surjective-submersion redundant
+presentation, the bundle statement is \(Q_A\cong F^*Q_B\) over
+\(\Theta_A\), not injectivity into the total space of \(Q_B\). The control
+\(F(t)=t^2\) shows why a rank drop blocks either conclusion. Generic Markov
+contraction or equality at one parameter is insufficient.
 
 For a declared smooth splitting \(T\Theta=\bigoplus_aB_a\), the following are
 equivalent on a constant-rank stratum: the quotient block images form a direct
 sum, their retained images form a direct sum, the kernel splits blockwise, and
 each quotient tangent has a unique linear block decomposition. Additive Fisher
-energy additionally requires pairwise Fisher orthogonality. Descent along
-retained-law fibers requires the block images/projectors to be basic, and
-presentation invariance additionally requires natural transport by a declared
-type-preserving permutation. A rotating-block example proves that pointwise
-smooth directness and orthogonality do not imply basicness.
+energy additionally requires pairwise Fisher orthogonality. Locally, with
+\(D_a=B_a+K\), block-distribution projectability is exactly
+\([\Gamma(K),\Gamma(D_a)]\subseteq\Gamma(D_a)\), while an individual field
+\(X\) is projectable exactly when \([Z,X]\in\Gamma(K)\) for every vertical
+\(Z\). Invariance across disconnected components of one retained-law fiber
+is an additional global requirement. Presentation invariance also requires
+natural transport by a declared type-preserving permutation. A rotating-block
+example violates the bracket condition and proves that pointwise smooth
+directness and orthogonality do not imply projectability.
 
 At the uniform seven-outcome law, permutation naturality would make any
 law/Fisher-only decomposition into three rank-two blocks define
 \(S_7\to S_3\). Its restriction to the perfect group \(A_7\) is trivial, while
-the six-dimensional sum-zero representation has scalar commutant and is
-irreducible. Hence no such natural block decomposition exists without typing
+every equivariant endomorphism of the six-dimensional sum-zero
+representation extends by zero on the invariant \(\mathbb R\mathbf1\) line;
+the resulting \(\mathbb R^7\) commutant calculation makes the endomorphism
+scalar, proving irreducibility. Hence no such natural block decomposition
+exists without typing
 or other symmetry-breaking data. Finally, the promoted parity family
 \((\theta,\kappa)\mapsto Q_{\theta,\kappa}\) has full-joint rank seven
 everywhere, whereas singleton retention has rank six and kernel exactly

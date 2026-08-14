@@ -96,12 +96,36 @@ manifold \(\bar U\) and a surjective submersion
 \(q:U\to\bar U\) whose connected fibers are exactly the null leaves and for
 which \(\ker dq=K\). Equivalently, the null foliation must be simple and its
 leaf space regular; involutivity is necessary but does not ensure Hausdorffness
-or a manifold leaf space. A tensor on \(U\) descends further only when it is
-basic: for every vertical field \(Z\in\Gamma(K)\), contraction vanishes and
-\(\mathcal L_Zh=0\). The contraction condition follows from radicality, but
-leafwise invariance is additional. Thus a constant-rank local rank statement
-cannot be promoted to a global quotient-geometry claim without the leaf-space
-and basicness hypotheses.
+or a manifold leaf space.
+
+For the specific tensor in (1), basicness is automatic once
+\(K=\ker d\rho\) and such a \(q\) exists. Because \(d\rho\) vanishes on
+\(K\), \(\rho\) is constant on each connected \(q\)-fiber. Surjective-
+submersion descent gives a unique smooth map
+\(\bar\rho:\bar U\to N\) with \(\rho=\bar\rho\circ q\). Therefore
+
+\[
+h=\rho^*g=q^*(\bar\rho^*g).
+\]
+
+Thus \(h\) is already horizontal and leafwise invariant:
+\(\iota_Zh=0\) and \(\mathcal L_Zh=0\) for every
+\(Z\in\Gamma(K)\). Basicness remains an extra hypothesis for an arbitrary
+tensor on \(U\) whose radical happens to be \(K\), and for declared block
+projectors or image subbundles. It is not an additional hypothesis for this
+pullback \(h\). The simple/Hausdorff quotient requirement remains genuinely
+extra.
+
+A scope-matched failure is the punctured plane
+\(U=\mathbb R^2\setminus\{0\}\), with
+\(\rho(x,y)=y\), \(g=dy^2\), and hence \(h=dy^2\) and
+\(K=\operatorname{span}\{\partial_x\}\). For \(y\ne0\), a null leaf is
+the entire horizontal line. At \(y=0\), the puncture splits the fiber into
+the two leaves \(x<0\) and \(x>0\). The connected-leaf space is a line
+with doubled origin and is non-Hausdorff. Here \(h\) is manifestly the
+pullback of \(dy^2\) and is basic, yet no smooth Hausdorff leaf-space
+quotient realizes \(TU/K\) globally. This isolates the topology obstruction
+without falsely attributing it to basicness.
 
 ## 3. Familywise presentation isometry
 
@@ -134,36 +158,70 @@ d\rho_B\,dF=dJ\,d\rho_A.
 \tag{8}
 \]
 
-Because \(dJ\) is injective, (8) implies
-\(dF(\ker d\rho_A)=\ker d\rho_B\). Hence
+At each \(\theta\in\Theta_A\), injectivity of \(dJ\) and invertibility of
+\(dF_\theta\) imply
 
 \[
-\bar F:T\Theta_A/\ker d\rho_A
-\longrightarrow T\Theta_B/\ker d\rho_B,
-\qquad [v]\longmapsto[dF(v)]
+dF_\theta(K_{A,\theta})=K_{B,F(\theta)}.
+\]
+
+No constant-rank hypothesis is needed for the pointwise quotient-vector-space
+isometry
+
+\[
+\bar F_\theta:
+T_\theta\Theta_A/K_{A,\theta}
+\longrightarrow
+T_{F(\theta)}\Theta_B/K_{B,F(\theta)},
+\qquad [v]\longmapsto[dF_\theta(v)].
 \tag{9}
 \]
 
-is a vector-bundle isomorphism. Equations (7)--(8) give
+Indeed,
 
 \[
 h_B(dFv,dFw)=g_B(dJd\rho_Av,dJd\rho_Aw)
-=g_A(d\rho_Av,d\rho_Aw)=h_A(v,w),
+=g_A(d\rho_Av,d\rho_Aw)=h_A(v,w).
 \tag{10}
 \]
 
-so (9) is an isometry of the retained Fisher quotient bundles.
+On open strata where both retained maps have constant rank, the quotient
+spaces assemble into smooth bundles and the maps (9) assemble into a smooth
+bundle isomorphism \(Q_A\to Q_B\) covering \(F\). Without constant rank,
+(9) remains a pointwise statement only.
 
-There is a useful redundant-presentation variant. If \(F\) is instead a
-surjective submersion, \(J\) remains an isometric immersion, and (6) holds,
-then (8) maps \(K_A=\ker d\rho_A\) onto
-\(K_B=\ker d\rho_B\). For surjectivity, lift \(w\in K_B\) to
-\(v\) with \(dFv=w\); then \(dJd\rho_Av=0\), so injectivity of \(dJ\)
-gives \(v\in K_A\). The induced map
-\(T\Theta_A/K_A\to T\Theta_B/K_B\) is both injective and surjective and is
-again an isometry by (10). This is the precise sense in which redundant
-presentation coordinates can disappear while the retained Fisher tangent is
-preserved.
+There is a useful redundant-presentation variant. Suppose \(F\) is instead
+a surjective submersion, \(J\) remains an isometric immersion, and (6)
+holds. At every \(\theta\), (8) maps \(K_{A,\theta}\) onto
+\(K_{B,F(\theta)}\). To prove surjectivity, lift
+\(w\in K_{B,F(\theta)}\) to \(v\) with \(dF_\theta v=w\); then
+\(dJd\rho_Av=0\), so injectivity of \(dJ\) gives
+\(v\in K_{A,\theta}\). Hence the induced map (9) is again a pointwise linear isometry.
+On constant-rank strata, the correct global statement is the smooth
+fiberwise isometry
+
+\[
+Q_A\cong F^*Q_B
+\quad\text{over }\Theta_A,
+\qquad
+[v]_\theta\longmapsto
+\bigl(\theta,[dF_\theta v]_{F(\theta)}\bigr).
+\]
+
+It is not a claim that the induced map from the total space of \(Q_A\) into
+the total space of \(Q_B\) is injective: distinct points of one
+\(F\)-fiber remain distinct base points in \(F^*Q_B\).
+
+The rank qualifications are load-bearing. For
+\(\Theta_A=\Theta_B=N_A=N_B=\mathbb R\), take
+\(F(t)=t^2\), \(J=\operatorname{id}\),
+\(\rho_A(t)=t^2\), and \(\rho_B(s)=s\). The diagram (6) commutes, but
+\(F\) is not a submersion at zero. At \(t=0\),
+\(T_0\Theta_A/K_{A,0}=0\), whereas
+\(T_0\Theta_B/K_{B,0}\cong\mathbb R\); away from zero, both quotients are
+one-dimensional. Thus a commuting diagram alone supplies neither a pointwise
+isomorphism at the rank drop nor a smooth quotient-bundle isomorphism across
+it.
 
 A generic Markov pushforward does not meet these hypotheses. Data processing
 gives Fisher contraction, not an isometry, and a lossy channel can create new
@@ -250,12 +308,27 @@ d\rho(B_a)_\theta=(C_a)_{\rho(\theta)}
 \tag{14}
 \]
 
-This is the basicness or projectability requirement: after the canonical
-identification, the block image must be constant along each retained-law
-fiber. Equivalently, the quotient block projectors must be basic; locally,
-bracketing a projectable block field with a vertical field may change it only
-by a vertical field in the same quotient block. Smoothness and pointwise
-orthogonality do not imply (14).
+This is the basicness or projectability requirement. Put
+\(D_a=B_a+K\). On a local quotient by the connected \(K\)-leaves,
+projectability of the quotient distribution is exactly the bracket condition
+
+\[
+[\Gamma(K),\Gamma(D_a)]\subseteq\Gamma(D_a).
+\]
+
+This distribution condition must not be confused with projectability of one
+vector field: an individual field \(X\) is projectable precisely when
+
+\[
+[Z,X]\in\Gamma(K)
+\quad\text{for every }Z\in\Gamma(K).
+\]
+
+The bracket tests are local and propagate data only along connected leaves.
+If a retained-law fiber is disconnected and the intended base identifies all
+of its components, equality of the projected block subspaces across those
+components is an additional global invariance condition.
+Smoothness and pointwise orthogonality do not imply (14) or the distribution bracket condition.
 
 Across two presentations satisfying (6), a descended node attribution is
 natural only if the quotient isometry (9) also carries block classes by a
@@ -298,8 +371,16 @@ Pointwise, \(T\Theta=B_1\oplus B_2\),
 one-dimensional and Fisher-orthogonal. Nevertheless, over the same retained
 point \((x,y)\), the first image is the \(x\)-axis at \(z=0\) and the
 \(y\)-axis at \(z=\pi/2\). Hence no subbundle \(C_1\subset TN\) can satisfy
-(14). The pointwise split and its block energies do not descend. This directly
-separates smooth directness and orthogonality from fiberwise basicness.
+(14). The local bracket obstruction is explicit:
+
+\[
+[\partial_z,e_1]=e_2\notin\Gamma(B_1+K),
+\qquad
+[\partial_z,e_2]=-e_1\notin\Gamma(B_2+K).
+\]
+
+The pointwise split and its block energies do not descend. This directly
+separates smooth directness and orthogonality from fiberwise projectability.
 
 ## 6. Seven-outcome law/Fisher-only agentization no-go
 
@@ -344,15 +425,28 @@ It remains to show that the real six-dimensional representation (17) is
 irreducible under \(A_7\). The action of \(A_7\) on ordered pairs of distinct
 outcomes is transitive: after mapping one ordered pair to another, the parity
 can be corrected by swapping two of the five unused outcomes. Hence any
-matrix on \(\mathbb R^7\) commuting with \(A_7\) has one common diagonal
-entry and one common off-diagonal entry, so it is
-\(\alpha I+\beta\mathbf1\mathbf1^{\mathsf T}\). On \(V\), the second term
-vanishes, and the commutant is scalar. If \(V\) had a nonzero proper invariant
-subspace, the orthogonal projection onto it would commute with \(A_7\),
-because the permutation representation is orthogonal. That projection would
-be a nonscalar element of the commutant, a contradiction. Thus \(V\) is
-irreducible, while every \(B_a\) in (18) is nonzero and proper. The assumed
-natural decomposition cannot exist.
+endomorphism of \(\mathbb R^7\) commuting with \(A_7\) has one common
+diagonal entry and one common off-diagonal entry, so it is
+\(\alpha I+\beta\mathbf1\mathbf1^{\mathsf T}\).
+
+To transfer this commutant calculation to \(V\), let
+\(T\in\operatorname{End}_{A_7}(V)\). Use the invariant orthogonal
+decomposition \(\mathbb R^7=\mathbb R\mathbf1\oplus V\) and extend \(T\)
+by zero on \(\mathbb R\mathbf1\):
+
+\[
+\widetilde T(c\mathbf1+v)=T(v).
+\]
+
+The extension commutes with \(A_7\), so
+\(\widetilde T=\alpha I+\beta\mathbf1\mathbf1^{\mathsf T}\). Its
+vanishing on \(\mathbf1\) gives \(\alpha+7\beta=0\), while restriction to
+\(V\) gives \(T=\alpha I_V\). Thus the commutant of \(V\) is scalar. If
+\(V\) had a nonzero proper invariant subspace, its orthogonal complement
+would also be invariant and the orthogonal projection onto it would be a
+nonscalar \(A_7\)-equivariant endomorphism of \(V\), a contradiction. Thus
+\(V\) is irreducible, while every \(B_a\) in (18) is nonzero and proper. The
+assumed natural decomposition cannot exist.
 
 The conclusion is exactly scoped: an unlabeled seven-outcome law and its
 Fisher metric cannot naturally manufacture three two-dimensional node blocks.
