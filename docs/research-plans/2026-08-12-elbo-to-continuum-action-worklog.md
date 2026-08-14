@@ -907,23 +907,20 @@ self-adjointness.
 > support boundary is a genuinely distinct wall: as the departing agent's couplings vanish its
 > diagonal block tends to \(0\), injecting \(K\) spurious zero modes that descend into the kernel, so
 > the bottom-of-spectrum gap closes in **both** regimes (measured: 6 modes below \(10^{-8}\) at
-> \(w_{
-m out}=0\) in the flat case, 4 in the frustrated case, against 3 and 1 before departure).
+> \(w_{\rm out}=0\) in the flat case, 4 in the frustrated case, against 3 and 1 before departure).
 > O4's predicted split — frustrated giving an avoided crossing, flat an exact meeting at the kernel —
 > is **not** what happens; both collapse to the kernel.
 >
 > **The O4 self-anchoring repair does nothing.** A uniform self-weight makes \(L\mapsto L+a\mathbb 1\),
-> a pure translation: every gap is unchanged to \(4.4	imes10^{-15}\). It removes the zero crossing
+> a pure translation: every gap is unchanged to \(4.4\times10^{-15}\). It removes the zero crossing
 > and leaves the degeneracy exactly where it was.
 >
 > **What removes the wall is the prior sector the free energy already carries.** The term
-> \(\chi_iD_{
-m KL}(q_i\|p_i)\) contributes \(lpha_i\Lambda_{p,i}\) on the diagonal, and because
+> \(\chi_iD_{\rm KL}(q_i\|p_i)\) contributes \(\alpha_i\Lambda_{p,i}\) on the diagonal, and because
 > prior precisions are agent-specific and generically distinct, the departing agent's block tends to
 > **its own prior** rather than to zero. Nothing reaches the kernel and the departure becomes a smooth
-> limit: \(\lambda_0\) runs \(0.134	o0.100	o0.090\) (flat) and \(0.355	o0.100	o0.090\)
-> (frustrated) as \(w_{
-m out}	o0\), bounded away from \(0\) throughout.
+> limit: \(\lambda_0\) runs \(0.134\to0.100\to0.090\) (flat) and \(0.355\to0.100\to0.090\)
+> (frustrated) as \(w_{\rm out}\to0\), bounded away from \(0\) throughout.
 >
 > **Consequence, and it is a correction to this whole section.** The right operator for the extent
 > question is the Hessian of the **full** free energy — coupling **plus** prior — not the bare
@@ -2713,3 +2710,128 @@ programme most wants to export. Applying the gate result by result:
 Blocked results belong in a distinct synthesis manuscript, or require a deliberate author revision of
 the SPEC. *(Raised as Finding 7 of the interim referee review; the review's blanket "keep it outside
 `Theory/`" over-reaches, since it quotes `SPEC.md:17` without `:20-25`.)*
+
+---
+
+
+---
+
+## 2026-08-13 correction after independent audit and witness remediation
+
+This section is the governing correction to conflicting conclusions in §§3e–3k and the later
+interim-review discussion. The earlier entries remain a chronological research record. Individual
+corrected claims are implemented in collected witness tests, but final revision-bound repository
+verification and the final aggregate suite total are pending.
+
+### 5.1 Shared latent: exact rank statement, positive controls, and transport identifiability
+
+For positive-definite private covariance \(D\) and latent covariance \(T\), Woodbury gives a
+correction
+
+\[
+C=D^{-1}\Lambda(T^{-1}+\Lambda^T D^{-1}\Lambda)^{-1}\Lambda^T D^{-1}
+\]
+
+with
+
+\[
+\operatorname{rank}(C)=\operatorname{rank}(\Lambda)\le R.
+\]
+
+Equality with the declared latent width \(R\) requires full column rank of \(\Lambda\). The earlier
+use of “number of latents = correction rank” without that hypothesis is withdrawn. Latent width also
+does not decide the signs of a graph-Laplacian split: the repaired witness contains an exact rank-two
+control with all edge weights positive and a proper residual prior, plus a dependent-column control
+with rank strictly below \(R\). Thus positive KL weights and a proper residual prior can coexist for
+declared \(R\ge2\): the exact control proves \(R=2\), and unused latent directions preserve it for
+larger declared widths. A separate rank-one example shows that residual-prior propriety is a live,
+independent side condition.
+
+The fiber cross-block determines the product
+
+\[
+-P_{ab}=\beta_{ab}W_{ab}\Omega_{ab},
+\]
+
+not \(\Omega_{ab}\) alone. The previous cocycle contradiction incorrectly tested the weighted
+coefficient as if it were a bare transport. After declared positive \(\beta\) and invertible \(W\) are
+divided out, the repaired \(N=3,\;K=d=2\) rotation control has an exact nontrivial cocycle, exact
+precision reconstruction, and a proper residual prior. Thus the universal cocycle no-go is
+withdrawn. For a general induced \(K\times K\) coefficient, \(d\ge K\) is only necessary;
+invertibility holds exactly when the relevant product
+\(\Lambda_b M\Lambda_a^T\) has rank \(K\) (invertible private-covariance factors do not alter rank).
+
+The useful rank-one result is retained under its actual name: an exact flat, symmetric,
+unnormalized scalar mean-alignment skeleton. It is not the complete directed, row-normalized,
+two-channel PIFB2 functional, so the earlier “exactly PIFB2” label remains withdrawn.
+
+### 5.2 Support, forward-KL geometry, and the retired operator
+
+The prior contribution at agent \(i\) is
+\(\chi_i\alpha_i\Lambda_{p,i}\), not an unscaled positive diagonal. Therefore there is no
+prior-generated positive spectral floor at literal support departure: the prior and incident terms
+vanish with the declared support factor. For every \(\chi_i>0\), a common receiver-presence factor
+cancels from the normalized attention row; at \(\chi_i=0\) the row is \(0/0\). Edge dropout with the
+agent still present, prescribed fixed-ambient zero extension, and active-set deletion are three
+different operations. Exact departure needs an explicit extension or deletion convention; it does
+not follow as a smooth limit of the canonical normalized row.
+
+For directed \((i,j)\) meaning sender \(j\to i\), the fixed-covariance, frozen-\(\beta\) mean Hessian
+of the declared forward divergence is
+
+\[
+W_{ij}=\beta_{ij}(\Theta_{ij}\Sigma_j\Theta_{ij}^T)^{-1}.
+\]
+
+This is the transported sender-covariance slot; reverse KL is a separate directed edge. The
+direct-sum local metric \(M=\bigoplus_i\Sigma_i^{-1}\) is retained only as an interim reading metric.
+The normalized-row response, generalized-eigenvalue threshold, and extent criterion remain open.
+
+The repaired four-regime table proves only one universal identity: orthogonal reciprocal links with
+symmetric weights make the retired non-energy operator equal the energy-form connection Laplacian.
+The other seeded cells are diagnostics, not universal implications. Explicit countercontrols show
+that merely leaving \(O(K)\) need not create a negative-real-part spectrum, and a symmetric
+row-stochastic system need not become asymmetric.
+
+### 5.3 Holonomy and topology boundaries
+
+On each connected component \(I_\alpha\), assuming invertible represented transports with inverse
+reverse transports and positive-definite represented edge weights, the exact theorem is
+
+\[
+\ker L_{I_\alpha}\cong\operatorname{Fix}(\operatorname{Hol}_{r_\alpha}),
+\qquad
+\ker L_I\cong\bigoplus_\alpha\operatorname{Fix}(\operatorname{Hol}_{r_\alpha}).
+\]
+
+not “\(\lambda_0=0\) iff flat” and not “flat iff a meta-agent exists.” Nonidentity holonomy can fix a
+subspace, while flat global monodromies can lack a common fixed vector. Any threshold based on
+\(\lambda_1\) remains a finite-control diagnostic until a universal extent theorem is proved.
+
+Agent-graph transports, base-connection parallel transport, and bundle topology are distinct typed
+objects. An identification requires node-to-base anchors, assigned base curves or cells, and an
+explicit equality between graph links and those parallel transports. Without that bridge, a graph
+loop cannot establish base curvature, base holonomy, or a topological class.
+
+### 5.4 Conditional model constructions and general fibers
+
+The compact-group Gibbs-Haar calculation remains exact only after declaring a new random-link
+generative law. Its variational free energy includes the inverse-temperature coefficient multiplying
+the expected plaquette action and the recognition entropy term. This conditional result is not a
+derivation from the current fixed-link ELBO and does not establish current-model curvature dynamics.
+
+Homogeneity is sufficient for transitive reach across an entire statistical fiber, not necessary for
+every gauge sector. Nonhomogeneous manifolds may carry nontransitive continuous or discrete
+isometries. Conversely, a homogeneous space \(G/H\) need not be symmetric; symmetry requires an
+additional involution or symmetric-pair bracket condition. The symmetric-space conclusion is secure
+for the SPD covariance sector \(GL(K)/O(K)\), and elsewhere only when those extra hypotheses are
+proved.
+
+### 5.5 Verification status
+
+The old ledger revision and old suite totals elsewhere in this worklog are historical, not current
+closure evidence. The repaired witnesses have collected positive and mutation-resistant negative
+controls. A new tracked-Markdown hygiene test also rejects forbidden C0 bytes; the corrupt
+`\beta`, `\times`, `\alpha`, `\to`, `D_{\rm KL}`, and `w_{\rm out}` sequences in the affected
+records were repaired. Do not publish a new HEAD, ledger status, or aggregate test count until the
+final source revision is fixed and the machine-readable verification pass is rerun against it.

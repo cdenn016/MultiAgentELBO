@@ -1,5 +1,13 @@
 # Scientific Integrity Remediation Wave B Implementation Plan
 
+> **Binding 2026-08-13 gate-execution supersession.** Any older path-return
+> resolver command preserved below records the historical review context only and
+> is not executable guidance. Current gate actions must validate the snapshot and
+> explicit `.codex` root and execute retained bytes in one safe invocation:
+> `C:\Python314\python.exe -B tools\remediation_evidence.py run-verification-gate --snapshot SNAPSHOT --root ROOT -- start ARGS` or
+> `C:\Python314\python.exe -B tools\remediation_evidence.py run-verification-gate --snapshot SNAPSHOT --root ROOT -- validate ARGS`.
+> Never assign or execute a resolved `$gate` path. Historical JUnit and evidence
+> records remain revision-bound history and are not rewritten by this correction.
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Close `AUD-01`, `AUD-02`, `AUD-04`, `AUD-05`, `AUD-10`, `AUD-11`, and `AUD-12` with byte-bound run bundles, factory-derived metric decisions, candidate-only producer states, immutable RNG provenance, canonical output roots, transactional figure generations, legacy observation without promotion, and exact-revision machine-readable evidence.
@@ -30,12 +38,14 @@
 
 - [ ] **Blocking Wave 0 verifier dependency:** require the merged Wave 0
   snapshot `docs/verification/remediation/verification-contract-v1.json` and
-  generic resolver CLI `tools/remediation_evidence.py
-  resolve-verification-gate --snapshot PATH --root DIR`. Wave B passes the
+  generic retained-byte runner `tools/remediation_evidence.py
+  run-verification-gate --snapshot PATH --root DIR -- <start|validate> ARGS`.
+  Wave B passes the
   active root `C:\Users\chris and christine\.codex\skills\verification`; the
-  resolver validates the snapshot-pinned `SKILL.md`, contract, all five
-  criteria documents, ledger schema, and gate bytes before returning the gate
-  path. There is no `.claude` fallback and Wave B defines no second resolver.
+  runner validates the snapshot-pinned `SKILL.md`, contract, all five criteria
+  documents, ledger schema, and gate bytes, then executes the requested action
+  from retained bytes. It never returns a gate path. There is no `.claude`
+  fallback and Wave B defines no second runner.
   If the snapshot or CLI is absent at the merged Wave 0 revision, or any byte
   differs, this plan is blocked before Task 1 rather than guessing an
   invocation.
@@ -54,11 +64,7 @@ $waveBBase = (git rev-parse HEAD).Trim()
 ```powershell
 $verificationSnapshot = 'docs/verification/remediation/verification-contract-v1.json'
 $verificationRoot = 'C:\Users\chris and christine\.codex\skills\verification'
-$gate = (& 'C:\Python314\python.exe' -B tools\remediation_evidence.py resolve-verification-gate --snapshot $verificationSnapshot --root $verificationRoot).Trim()
-if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $gate -PathType Leaf)) {
-  throw 'Wave 0 verifier snapshot resolution/precheck failed'
-}
-& 'C:\Python314\python.exe' $gate validate --cwd . .verification\wave-a\final-ledger.json
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $verificationSnapshot --root $verificationRoot -- validate --cwd . .verification\wave-a\final-ledger.json
 C:\Python314\python.exe -B -m pytest tests\test_remediation_contracts.py tests\test_remediation_evidence.py -q -p no:cacheprovider --basetemp=.pytest-wave-b-start-contracts
 git diff --check
 ```
@@ -3976,12 +3982,13 @@ git commit -m "fix: unify publication and discovery roots"
   `tools/build_wave0_evidence.py` as the criterion-key authority. Wave B may
   bind controls and fixed scores to those keys but may not rename or relabel
   them.
-- Consume Wave 0's generic `resolve-verification-gate --snapshot PATH --root
-  DIR` CLI unchanged with snapshot
+- Consume Wave 0's generic `run-verification-gate --snapshot PATH --root
+  DIR -- <start|validate> ARGS` CLI unchanged with snapshot
   `docs/verification/remediation/verification-contract-v1.json` and active
   root `C:\Users\chris and christine\.codex\skills\verification`; Task 10
-  tests require byte drift or a different root to fail and the snapshot-bound
-  active Codex gate to be returned. Do not add a local resolver or fallback.
+  tests require byte drift or a different root to fail and require each action
+  to execute retained snapshot-bound bytes. Do not add a path-return command,
+  local resolver, or fallback.
 - Expose exactly `build --stage {candidate,closure} --tested-head SHA
   --implementation-parent SHA --raw-dir PATH --output-dir PATH`,
   `review-context-sha --tested-head SHA --implementation-parent SHA --raw-dir
@@ -5975,22 +5982,18 @@ for the public closure set.
 ```powershell
 $verificationSnapshot = 'docs/verification/remediation/verification-contract-v1.json'
 $verificationRoot = 'C:\Users\chris and christine\.codex\skills\verification'
-$gate = (& 'C:\Python314\python.exe' -B tools\remediation_evidence.py resolve-verification-gate --snapshot $verificationSnapshot --root $verificationRoot).Trim()
-if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $gate -PathType Leaf)) {
-  throw 'Wave 0 verifier snapshot resolution/precheck failed'
-}
 $ledger = '.verification/wave-b/final-ledger.json'
 if (Test-Path -LiteralPath '.verification/active.json') { throw 'verification gate is already active' }
 if (Test-Path -LiteralPath $ledger) { throw 'Wave B ledger already exists' }
 
-& 'C:\Python314\python.exe' $gate start --cwd . --mode closure --ledger $ledger
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $verificationSnapshot --root $verificationRoot -- start --cwd . --mode closure --ledger $ledger
 if ($LASTEXITCODE -ne 0) { throw 'verification gate start failed' }
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledger
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $verificationSnapshot --root $verificationRoot -- validate --cwd . $ledger
 if ($LASTEXITCODE -eq 0) { throw 'empty start template unexpectedly validated' }
 
 C:\Python314\python.exe -B tools\build_wave_b_evidence.py populate-ledger --ledger $ledger --closure-index "$closureDir/index.json"
 if ($LASTEXITCODE -ne 0) { throw 'explicit Wave B ledger population failed' }
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledger
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $verificationSnapshot --root $verificationRoot -- validate --cwd . $ledger
 if ($LASTEXITCODE -ne 0) { throw 'populated Wave B ledger failed validation' }
 
 $defectClaims = @(

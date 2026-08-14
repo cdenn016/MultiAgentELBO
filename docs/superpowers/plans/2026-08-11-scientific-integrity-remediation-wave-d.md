@@ -1,5 +1,13 @@
 # Scientific Integrity Remediation Wave D Implementation Plan
 
+> **Binding 2026-08-13 gate-execution supersession.** Any older path-return
+> resolver command preserved below records the historical review context only and
+> is not executable guidance. Current gate actions must validate the snapshot and
+> explicit `.codex` root and execute retained bytes in one safe invocation:
+> `C:\Python314\python.exe -B tools\remediation_evidence.py run-verification-gate --snapshot SNAPSHOT --root ROOT -- start ARGS` or
+> `C:\Python314\python.exe -B tools\remediation_evidence.py run-verification-gate --snapshot SNAPSHOT --root ROOT -- validate ARGS`.
+> Never assign or execute a resolved `$gate` path. Historical JUnit and evidence
+> records remain revision-bound history and are not rewritten by this correction.
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Attribute the counterexample-suite and fixed-ray CUDA costs with revision-bound component timings, then apply only the optimizations whose preregistered trigger fires without changing scientific outputs or execution guarantees.
@@ -21,7 +29,7 @@
 - Preserve gate expiry, identity digests, device/determinism/TF32 enforcement, immutable request/response records, one outer-job retry, crash-resume, and H holdout boundaries.
 - Scientific outputs must be byte-semantically identical under canonical JSON/per-array hashing; performance changes never promote attraction, equivalence, or universality claims.
 - Persisted producer verification states remain exactly `CANDIDATE`.
-- Resolve the installed gate only through `tools/remediation_evidence.py resolve-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root 'C:\Users\chris and christine\.codex\skills\verification'`. The explicit canonical `.codex` root is mandatory; there is no `.claude`, PATH, home, registry, copied-script, or environment fallback.
+- Execute the installed gate only through `tools/remediation_evidence.py run-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root 'C:\Users\chris and christine\.codex\skills\verification' -- <start|validate> ARGS`. The explicit canonical `.codex` root is mandatory; there is no `.claude`, PATH, home, registry, copied-script, path-return command, or environment fallback.
 - Treat the reviewed Wave 0, A, B, C, and D plans, their last-touch commits, the Wave 0 verification snapshot, and the complete terminal Wave 0/A/B/C ledger/index/closure exports as exact inputs. Wave E's reviewed plan is a verifier-pattern reference only: its Research revision is not a MultiAgentELBO upstream dependency or aggregate-ledger member.
 - The three CUDA scopes are independent and nontransitive: exact-E0 D0 attribution, exact-E1 D1 v3/v4 comparison, and the optional exact-E1 five-job v4 operational sentinel. Each needs its own fresh idle gate, process record, displayed digest, and explicit user acceptance. Acceptance of one scope never authorizes either other scope.
 - No 40-job confirmatory sweep is part of Wave D. No command, projection, authorization, sentinel, or comparator in this plan may be interpreted as permission to start it.
@@ -208,16 +216,12 @@ foreach ($wave in $upstreamRoots.Keys) {
     throw "binding PASS plan hash mismatch: $wave"
   }
   $snapshot = Join-Path $root 'docs\verification\remediation\verification-contract-v1.json'
-  $gate = (& 'C:\Python314\python.exe' -B (Join-Path $root 'tools\remediation_evidence.py') resolve-verification-gate --snapshot $snapshot --root $verificationRoot).Trim()
-  if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $gate -PathType Leaf)) {
-    throw "verification snapshot/gate mismatch: $wave"
-  }
   $snapshotHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $snapshot).Hash.ToLowerInvariant()
   if ($snapshotHash -ne [string]$terminal.verification_snapshot_sha256) {
     throw "repository verification snapshot drift: $wave"
   }
   $ledger = Join-Path $root ([string]$terminal.ledger)
-  & 'C:\Python314\python.exe' $gate validate --cwd $root $ledger
+  & 'C:\Python314\python.exe' -B (Join-Path $root 'tools\remediation_evidence.py') run-verification-gate --snapshot $snapshot --root $verificationRoot -- validate --cwd $root $ledger
   if ($LASTEXITCODE -ne 0) { throw "terminal ledger invalid: $wave" }
   $genericIndex = Join-Path $root ([string]$terminal.generic_index)
   & 'C:\Python314\python.exe' -B (Join-Path $root 'tools\remediation_evidence.py') validate $genericIndex --cwd $root
@@ -2090,14 +2094,13 @@ C:\Python314\python.exe -B tools\remediation_evidence.py validate "$closure\inde
 if ($LASTEXITCODE -ne 0) { throw 'Wave D0 closure base index failed' }
 C:\Python314\python.exe -B tools\build_wave_d_evidence.py validate-domain --bundle-dir $closure
 if ($LASTEXITCODE -ne 0) { throw 'Wave D0 closure domain/worktree validation failed' }
-$gate = (& C:\Python314\python.exe -B tools\remediation_evidence.py resolve-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root 'C:\Users\chris and christine\.codex\skills\verification').Trim()
 $ledger = '.verification\wave-d0\final-ledger.json'
 $active = '.verification\active.json'
 if (Test-Path -LiteralPath $active) { throw 'preexisting verification gate is active' }
 if (Test-Path -LiteralPath $ledger) { throw 'preexisting D0 ledger exists' }
-& 'C:\Python314\python.exe' $gate start --cwd . --mode closure --ledger $ledger
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root 'C:\Users\chris and christine\.codex\skills\verification' -- start --cwd . --mode closure --ledger $ledger
 if ($LASTEXITCODE -ne 0) { throw 'Wave D0 gate start failed' }
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledger
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root 'C:\Users\chris and christine\.codex\skills\verification' -- validate --cwd . $ledger
 if ($LASTEXITCODE -eq 0) { throw 'empty Wave D0 template unexpectedly validated' }
 C:\Python314\python.exe -B tools\build_wave_d_evidence.py populate-ledger --program d0 --ledger $ledger --closure-index "$closure\index.json"
 if ($LASTEXITCODE -ne 0) { throw 'Wave D0 ledger population failed' }
@@ -2118,9 +2121,8 @@ measurement-only polarity section; no defect or remediation claim is projected.
 
 ```powershell
 $ErrorActionPreference = 'Stop'
-$gate = (& C:\Python314\python.exe -B tools\remediation_evidence.py resolve-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root 'C:\Users\chris and christine\.codex\skills\verification').Trim()
 $ledger = '.verification\wave-d0\final-ledger.json'
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledger
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root 'C:\Users\chris and christine\.codex\skills\verification' -- validate --cwd . $ledger
 if ($LASTEXITCODE -ne 0) { throw 'Wave D0 ledger validation failed' }
 ```
 
@@ -2753,14 +2755,13 @@ C:\Python314\python.exe -B tools\remediation_evidence.py validate "$closure\inde
 if ($LASTEXITCODE -ne 0) { throw 'Wave D1 closure base index failed' }
 C:\Python314\python.exe -B tools\build_wave_d_evidence.py validate-domain --bundle-dir $closure
 if ($LASTEXITCODE -ne 0) { throw 'Wave D1 closure domain/worktree validation failed' }
-$gate = (& C:\Python314\python.exe -B tools\remediation_evidence.py resolve-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root 'C:\Users\chris and christine\.codex\skills\verification').Trim()
 $ledger = '.verification\wave-d1\final-ledger.json'
 $active = '.verification\active.json'
 if (Test-Path -LiteralPath $active) { throw 'preexisting verification gate is active' }
 if (Test-Path -LiteralPath $ledger) { throw 'preexisting D1 ledger exists' }
-& 'C:\Python314\python.exe' $gate start --cwd . --mode closure --ledger $ledger
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root 'C:\Users\chris and christine\.codex\skills\verification' -- start --cwd . --mode closure --ledger $ledger
 if ($LASTEXITCODE -ne 0) { throw 'Wave D1 gate start failed' }
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledger
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root 'C:\Users\chris and christine\.codex\skills\verification' -- validate --cwd . $ledger
 if ($LASTEXITCODE -eq 0) { throw 'empty Wave D1 template unexpectedly validated' }
 C:\Python314\python.exe -B tools\build_wave_d_evidence.py populate-ledger --program d1 --ledger $ledger --closure-index "$closure\index.json"
 if ($LASTEXITCODE -ne 0) { throw 'Wave D1 ledger population failed' }
@@ -2779,9 +2780,8 @@ defect state or success state from implementation presence alone.
 
 ```powershell
 $ErrorActionPreference = 'Stop'
-$gate = (& C:\Python314\python.exe -B tools\remediation_evidence.py resolve-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root 'C:\Users\chris and christine\.codex\skills\verification').Trim()
 $ledger = '.verification\wave-d1\final-ledger.json'
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledger
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root 'C:\Users\chris and christine\.codex\skills\verification' -- validate --cwd . $ledger
 if ($LASTEXITCODE -ne 0) { throw 'Wave D1 ledger validation failed' }
 ```
 

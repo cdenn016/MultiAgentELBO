@@ -1,0 +1,65 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-c68f474d3e7991fa78a557b86bd645dc1c01a4272b2a75d53a52e17ad29176b2",
+  "target_digest": "c68f474d3e7991fa78a557b86bd645dc1c01a4272b2a75d53a52e17ad29176b2",
+  "attacks": [
+    {
+      "id": "attack-full-dependency-closure",
+      "claim_ids": [
+        "target",
+        "collapsed-vfe-descent",
+        "conditional-kl-completion",
+        "full-latent-nondescend",
+        "retained-fisher-descent",
+        "binary-dilation-boundary",
+        "paired-marginal-noncanonicity",
+        "smooth-right-inverse-lifts",
+        "vfe-lift-dependence",
+        "fisher-lift-dependence"
+      ],
+      "attack": "An isolated falsifier sought satisfying finite counterexamples to every universal dependency, recomputed every existential construction, attacked support and null-set boundaries, challenged parameterwise Fisher typing and pullback regularity, and attempted to expose circular use of the desired ontology or descent conclusion.",
+      "response": "All mathematical attacks are rejected under the final explicit hypotheses. The singular-recognition, one-point-Fisher, null-node, and intervention examples remain sharp scope controls. Draft C1 pullback typing and an ambiguous Fisher quantifier were repaired. The initial placeholder-hash packaging objection was resolved by final artifact bindings and release-mode validation.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "bce835f9350dbe4f865905cb3d47de484da80bfcb296f2964836ba30fbef52d6",
+      "disposition": "REJECTED"
+    }
+  ],
+  "independent_reconstruction": {
+    "claim_ids": [
+      "target",
+      "collapsed-vfe-descent",
+      "conditional-kl-completion",
+      "full-latent-nondescend",
+      "retained-fisher-descent",
+      "binary-dilation-boundary",
+      "paired-marginal-noncanonicity",
+      "smooth-right-inverse-lifts",
+      "vfe-lift-dependence",
+      "fisher-lift-dependence"
+    ],
+    "method": "Contract-only reconstruction before opening the construction or evidence derivations, including a second direct-versus-latent binary presentation family independent of the run's XOR witness.",
+    "result": "PASS",
+    "conclusion": "Every target dependency was independently reconstructed with the same support boundary, KL defect, retained Fisher theorem, and joint-lift noncanonicity; the independent binary witness reproduced the same descent boundary by a different mechanism.",
+    "artifact_path": "evidence/independent-reconstruction.md",
+    "artifact_sha256": "76fa985f51850078a2e729d2522349d15a0039ad52b60e94e256a9e0069b480e"
+  },
+  "oracle_erasure": {
+    "claim_ids": [
+      "target",
+      "collapsed-vfe-descent",
+      "conditional-kl-completion",
+      "full-latent-nondescend",
+      "retained-fisher-descent",
+      "binary-dilation-boundary",
+      "paired-marginal-noncanonicity",
+      "smooth-right-inverse-lifts",
+      "vfe-lift-dependence",
+      "fisher-lift-dependence"
+    ],
+    "method": "Removed the affirmative search prior, all prior status assertions, every ontological or physical interpretation, every preferred-lift premise, and the contract's redundant right-inverse premise, then reconstructed the dependency closure from finite typed laws and explicit formulas.",
+    "result": "PASS",
+    "conclusion": "The complete mathematical dependency closure survives erasure. The redundant right-inverse premise is not load-bearing because positivity, normalization, marginal preservation, and smoothness are derived directly.",
+    "artifact_path": "evidence/oracle-erasure.md",
+    "artifact_sha256": "ac6889f4641950975cdc41db7a79d1c3c9f1acef2a9023349847d1f5b9f47c68"
+  }
+}

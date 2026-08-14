@@ -9,14 +9,17 @@ D_{\rm KL}\!\left(q_i\middle\|(\Omega_{ij})_\#q_j\right).
 It is a transported recognition-field interaction. Zero divergence is transported agreement, but
 the interaction plus other terms need not produce global consensus.
 
-For fixed positive source weights (pi_{ij},eta_{ij}), define at update (n+1)
+Let \(\pi_i=(\pi_{ij})_j\) and \(\beta_i=(\beta_{ij})_j\) be strictly positive probability rows
+satisfying \(\sum_j\pi_{ij}=\sum_j\beta_{ij}=1\). Assume that \(q_i^{n+1}\) and every
+transported state law \((\Omega_{ij}^n)_\#q_j^n\) are normalized and satisfy the stated
+common-domination convention. Define at update \(n+1\)
 
-[
-P_i^n(j,dx)=pi_{ij}(Omega_{ij}^n)_\#q_j^n(dx),qquad
-Q_i^{n+1}(j,dx)=eta_{ij}q_i^{n+1}(dx).
-]
+\[
+P_i^n(j,dx)=\pi_{ij}(\Omega_{ij}^n)_\#q_j^n(dx),\qquad
+Q_i^{n+1}(j,dx)=\beta_{ij}q_i^{n+1}(dx).
+\]
 
-Direct expansion gives
+Both are normalized laws. Direct expansion gives
 
 [
 \begin{aligned}

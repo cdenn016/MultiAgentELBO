@@ -221,6 +221,177 @@ class PreparedEvidenceBundle:
     files: tuple[PreparedEvidenceFile, ...]
 
 
+@dataclass(frozen=True, slots=True)
+class VerifiedVerificationGate:
+    path: Path
+    source_bytes: bytes
+
+
+_GATE_CHILD_SCHEMA = "verified-verification-gate-child-v1"
+_GATE_CHILD_INPUT_MAGIC = b"MAELBO_VERIFIED_GATE_INPUT_V1\0"
+_GATE_CHILD_OUTPUT_MAGIC = b"MAELBO_VERIFIED_GATE_OUTPUT_V1\0"
+_GATE_CHILD_BOOTSTRAP = r'''
+import contextlib
+import io
+import json
+import pathlib
+import sys
+
+SCHEMA = "verified-verification-gate-child-v1"
+INPUT_MAGIC = b"MAELBO_VERIFIED_GATE_INPUT_V1\0"
+OUTPUT_MAGIC = b"MAELBO_VERIFIED_GATE_OUTPUT_V1\0"
+
+
+def canonical(payload):
+    return (json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n").encode("utf-8")
+
+
+def emit(payload):
+    data = canonical(payload)
+    sys.stdout.buffer.write(OUTPUT_MAGIC + len(data).to_bytes(8, "big") + data)
+    sys.stdout.buffer.flush()
+
+
+def require_request(raw):
+    if not raw.startswith(INPUT_MAGIC):
+        raise ValueError("input frame magic mismatch")
+    offset = len(INPUT_MAGIC)
+    if len(raw) < offset + 8:
+        raise ValueError("input frame is truncated")
+    request_size = int.from_bytes(raw[offset : offset + 8], "big")
+    offset += 8
+    request_end = offset + request_size
+    if request_size <= 0 or request_end >= len(raw):
+        raise ValueError("input frame lengths are invalid")
+    request_bytes = raw[offset:request_end]
+    source = raw[request_end:]
+    request = json.loads(request_bytes)
+    if canonical(request) != request_bytes:
+        raise ValueError("request is not canonical JSON")
+    if not isinstance(request, dict) or request.get("schema_version") != SCHEMA:
+        raise ValueError("request schema mismatch")
+    return request, source
+
+
+def load_gate(source):
+    namespace = {
+        "__file__": "<verified-verification-gate>",
+        "__name__": "_verified_verification_gate",
+        "__package__": None,
+    }
+    code = compile(
+        source,
+        "<verified-verification-gate>",
+        "exec",
+        dont_inherit=True,
+    )
+    exec(code, namespace)
+    return namespace
+
+
+def run_main(namespace, request):
+    if set(request) != {"schema_version", "operation", "argv"}:
+        raise ValueError("gate-main request fields mismatch")
+    argv = request["argv"]
+    if (
+        not isinstance(argv, list)
+        or not argv
+        or not all(isinstance(item, str) for item in argv)
+        or argv[0] not in {"start", "validate"}
+    ):
+        raise ValueError("gate-main operation is not allowlisted")
+    main = namespace.get("main")
+    if not callable(main):
+        raise ValueError("verified gate lacks callable main")
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    original_argv = sys.argv
+    try:
+        sys.argv = ["<verified-verification-gate>", *argv]
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            try:
+                returncode = main()
+            except SystemExit as error:
+                returncode = error.code
+    finally:
+        sys.argv = original_argv
+    if returncode is None:
+        returncode = 0
+    if (
+        isinstance(returncode, bool)
+        or not isinstance(returncode, int)
+        or not 0 <= returncode <= 255
+    ):
+        raise ValueError("verified gate main returned an invalid exit code")
+    return {
+        "schema_version": SCHEMA,
+        "status": "ok",
+        "operation": "main",
+        "returncode": returncode,
+        "stdout": stdout.getvalue(),
+        "stderr": stderr.getvalue(),
+    }
+
+
+def capture_revision(namespace, request):
+    if set(request) != {
+        "schema_version",
+        "operation",
+        "cwd",
+        "excluded_paths",
+    }:
+        raise ValueError("artifact-revision request fields mismatch")
+    cwd = request["cwd"]
+    excluded = request["excluded_paths"]
+    if (
+        not isinstance(cwd, str)
+        or not cwd
+        or not isinstance(excluded, list)
+        or not all(isinstance(item, str) and item for item in excluded)
+    ):
+        raise ValueError("artifact-revision request values mismatch")
+    capture = namespace.get("capture_artifact_revision")
+    if not callable(capture):
+        raise ValueError("verified gate lacks artifact revision capture")
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+        revision = capture(
+            pathlib.Path(cwd),
+            excluded_paths=frozenset(pathlib.Path(item) for item in excluded),
+        )
+    if stdout.getvalue() or stderr.getvalue():
+        raise ValueError("artifact revision capture produced console output")
+    if not isinstance(revision, str) or not revision:
+        raise ValueError("artifact revision capture returned an invalid value")
+    return {
+        "schema_version": SCHEMA,
+        "status": "ok",
+        "operation": "capture_artifact_revision",
+        "revision": revision,
+    }
+
+
+try:
+    request, source = require_request(sys.stdin.buffer.read())
+    namespace = load_gate(source)
+    operation = request.get("operation")
+    if operation == "main":
+        response = run_main(namespace, request)
+    elif operation == "capture_artifact_revision":
+        response = capture_revision(namespace, request)
+    else:
+        raise ValueError("child operation is not allowlisted")
+except BaseException as error:
+    response = {
+        "schema_version": SCHEMA,
+        "status": "error",
+        "error_type": type(error).__name__,
+        "error": str(error),
+    }
+emit(response)
+'''
+
 def canonical_json_bytes(payload: object) -> bytes:
     return (
         json.dumps(
@@ -300,6 +471,32 @@ def _path_is_reparse(path: Path) -> bool:
     except (AttributeError, OSError):
         return False
     return bool(attributes & 0x400)
+
+
+def _lexical_absolute_path(path: Path | str) -> Path:
+    return Path(os.path.abspath(os.fspath(path)))
+
+
+def _paths_identical(left: Path, right: Path) -> bool:
+    return os.path.normcase(os.path.normpath(str(left))) == os.path.normcase(
+        os.path.normpath(str(right))
+    )
+
+
+def _reject_reparse_ancestors(path: Path, *, label: str) -> None:
+    for ancestor in path.parents:
+        if _path_is_reparse(ancestor):
+            raise ValueError(f"{label} has a reparse ancestor: {ancestor}")
+
+
+def _require_direct_directory_chain(path: Path, *, label: str) -> None:
+    if not path.is_dir():
+        raise ValueError(f"{label} must be an existing directory: {path}")
+    for component in (path, *path.parents):
+        if _path_is_reparse(component):
+            raise ValueError(
+                f"{label} must not contain a reparse component: {component}"
+            )
 
 
 def _require_regular_unlinked_file(path: Path, *, label: str) -> bytes:
@@ -1503,11 +1700,11 @@ def _validate_snapshot_payload(snapshot: object) -> list[dict[str, object]]:
     return files
 
 
-def resolve_verification_gate(
+def resolve_verified_verification_gate(
     snapshot: Mapping[str, object] | Path | str,
     *,
     root: Path | str,
-) -> Path:
+) -> VerifiedVerificationGate:
     if isinstance(snapshot, (str, Path)):
         snapshot_data = _require_regular_unlinked_file(
             Path(snapshot), label="verification snapshot"
@@ -1519,24 +1716,59 @@ def resolve_verification_gate(
     else:
         snapshot_payload = copy.deepcopy(snapshot)
     files = _validate_snapshot_payload(snapshot_payload)
-    verification_root = Path(root).resolve(strict=True)
-    if not verification_root.is_dir() or _path_is_reparse(verification_root):
-        raise ValueError("verification root must be an existing non-reparse directory")
-    parts = tuple(part.casefold() for part in verification_root.parts[-3:])
+    lexical_root = _lexical_absolute_path(root)
+    parts = tuple(part.casefold() for part in lexical_root.parts[-3:])
     if parts != (".codex", "skills", "verification"):
-        raise ValueError("root is not the canonical .codex verification root")
+        raise ValueError(
+            "root is not the lexical canonical .codex verification root"
+        )
+    _reject_reparse_ancestors(lexical_root, label="verification root")
+    if not lexical_root.is_dir():
+        raise ValueError("verification root must be an existing directory")
+    terminal_reparse = _path_is_reparse(lexical_root)
+    if terminal_reparse:
+        if lexical_root.is_symlink():
+            raise ValueError("verification root must not be a terminal symlink")
+        if os.name != "nt" or not lexical_root.is_junction():
+            raise ValueError(
+                "verification root terminal reparse must be a Windows "
+                "directory junction"
+            )
+    physical_root = lexical_root.resolve(strict=True)
+    if terminal_reparse:
+        approved_target = (
+            lexical_root.parents[2] / ".claude" / "skills" / "verification"
+        )
+        if not _paths_identical(physical_root, approved_target):
+            raise ValueError(
+                "verification junction must target the same-profile "
+                ".claude sibling"
+            )
+        _require_direct_directory_chain(
+            approved_target, label="approved verification junction target"
+        )
+    elif not _paths_identical(physical_root, lexical_root):
+        raise ValueError("direct verification root resolved to another path")
+    if not physical_root.is_dir() or _path_is_reparse(physical_root):
+        raise ValueError(
+            "physical verification root must be an existing non-reparse directory"
+        )
+    for path in physical_root.rglob("*"):
+        if _path_is_reparse(path):
+            raise ValueError(f"verification active path is reparse: {path}")
     expected_paths = {item["path"] for item in files}
     observed_active: set[str] = set()
+    gate_source: bytes | None = None
     for subdirectory in ("references", "schemas", "scripts"):
-        directory = verification_root / subdirectory
+        directory = physical_root / subdirectory
         if not directory.is_dir() or _path_is_reparse(directory):
             raise ValueError(f"missing active verification directory: {subdirectory}")
         for path in directory.rglob("*"):
+            if _path_is_reparse(path):
+                raise ValueError(f"verification active path is reparse: {path}")
             if path.is_dir():
-                if _path_is_reparse(path):
-                    raise ValueError(f"verification active path is reparse: {path}")
                 continue
-            relative = path.relative_to(verification_root).as_posix()
+            relative = path.relative_to(physical_root).as_posix()
             if "__pycache__" in path.parts or path.suffix == ".pyc":
                 continue
             observed_active.add(relative)
@@ -1550,12 +1782,202 @@ def resolve_verification_gate(
     for record in files:
         relative = str(record["path"])
         data = _require_regular_unlinked_file(
-            verification_root / relative, label="active verification file"
+            physical_root / relative, label="active verification file"
         )
         if len(data) != record["size_bytes"] or _sha256(data) != record["sha256"]:
             raise ValueError(f"verification active-file mismatch: {relative}")
-    gate = verification_root / "scripts/verification_gate.py"
-    return gate.resolve(strict=True)
+        if relative == "scripts/verification_gate.py":
+            gate_source = data
+    if gate_source is None:
+        raise ValueError("verification gate is missing from validated inventory")
+    return VerifiedVerificationGate(
+        path=physical_root / "scripts/verification_gate.py",
+        source_bytes=gate_source,
+    )
+
+
+def _gate_child_input(
+    verified_gate: VerifiedVerificationGate,
+    request: Mapping[str, object],
+) -> bytes:
+    request_bytes = canonical_json_bytes(dict(request))
+    return (
+        _GATE_CHILD_INPUT_MAGIC
+        + len(request_bytes).to_bytes(8, "big")
+        + request_bytes
+        + verified_gate.source_bytes
+    )
+
+
+def _isolated_gate_environment() -> dict[str, str]:
+    return {
+        key: value
+        for key, value in os.environ.items()
+        if not key.upper().startswith("PYTHON")
+    }
+
+
+def _parse_gate_child_output(
+    result: subprocess.CompletedProcess[bytes],
+) -> dict[str, object]:
+    if result.returncode != 0:
+        raise ValueError(
+            "isolated verification gate child exited outside its framed protocol"
+        )
+    if result.stderr:
+        raise ValueError("isolated verification gate child wrote unframed stderr")
+    data = result.stdout
+    if not data.startswith(_GATE_CHILD_OUTPUT_MAGIC):
+        raise ValueError("isolated verification gate child emitted invalid framed output")
+    offset = len(_GATE_CHILD_OUTPUT_MAGIC)
+    if len(data) < offset + 8:
+        raise ValueError("isolated verification gate child emitted truncated framed output")
+    payload_size = int.from_bytes(data[offset : offset + 8], "big")
+    offset += 8
+    if payload_size <= 0 or len(data) != offset + payload_size:
+        raise ValueError("isolated verification gate child emitted invalid framed output")
+    payload_bytes = data[offset:]
+    try:
+        payload = json.loads(payload_bytes)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(
+            "isolated verification gate child emitted invalid framed output"
+        ) from error
+    if canonical_json_bytes(payload) != payload_bytes:
+        raise ValueError(
+            "isolated verification gate child emitted noncanonical framed output"
+        )
+    if not isinstance(payload, dict):
+        raise ValueError("isolated verification gate child payload must be an object")
+    status = payload.get("status")
+    if status == "error":
+        _require_closed_fields(
+            payload,
+            {"schema_version", "status", "error_type", "error"},
+            label="isolated verification gate error",
+        )
+        if payload["schema_version"] != _GATE_CHILD_SCHEMA:
+            raise ValueError("isolated verification gate child schema mismatch")
+        if not all(
+            isinstance(payload[field], str) and payload[field]
+            for field in ("error_type", "error")
+        ):
+            raise ValueError("isolated verification gate child error is malformed")
+        raise ValueError(
+            "isolated verification gate child failed: "
+            f"{payload['error_type']}: {payload['error']}"
+        )
+    if status != "ok" or payload.get("schema_version") != _GATE_CHILD_SCHEMA:
+        raise ValueError("isolated verification gate child response mismatch")
+    return payload
+
+
+def _invoke_verified_gate_child(
+    verified_gate: VerifiedVerificationGate,
+    request: Mapping[str, object],
+) -> dict[str, object]:
+    with tempfile.TemporaryDirectory(prefix="maelbo-verified-gate-") as directory:
+        result = subprocess.run(
+            [
+                str(CPU_PYTHON),
+                "-I",
+                "-S",
+                "-B",
+                "-c",
+                _GATE_CHILD_BOOTSTRAP,
+            ],
+            cwd=directory,
+            env=_isolated_gate_environment(),
+            input=_gate_child_input(verified_gate, request),
+            shell=False,
+            check=False,
+            capture_output=True,
+        )
+    return _parse_gate_child_output(result)
+
+
+def run_verified_verification_gate(
+    verified_gate: VerifiedVerificationGate,
+    argv: Sequence[str],
+) -> subprocess.CompletedProcess[str]:
+    gate_argv = tuple(argv)
+    if (
+        not gate_argv
+        or not all(isinstance(item, str) for item in gate_argv)
+        or gate_argv[0] not in {"start", "validate"}
+    ):
+        raise ValueError("verified verification gate allows only start or validate")
+    payload = _invoke_verified_gate_child(
+        verified_gate,
+        {
+            "schema_version": _GATE_CHILD_SCHEMA,
+            "operation": "main",
+            "argv": list(gate_argv),
+        },
+    )
+    _require_closed_fields(
+        payload,
+        {
+            "schema_version",
+            "status",
+            "operation",
+            "returncode",
+            "stdout",
+            "stderr",
+        },
+        label="isolated verification gate main response",
+    )
+    returncode = payload["returncode"]
+    if (
+        payload["operation"] != "main"
+        or isinstance(returncode, bool)
+        or not isinstance(returncode, int)
+        or not 0 <= returncode <= 255
+        or not isinstance(payload["stdout"], str)
+        or not isinstance(payload["stderr"], str)
+    ):
+        raise ValueError("isolated verification gate main response is malformed")
+    return subprocess.CompletedProcess(
+        args=("<verified-verification-gate>", *gate_argv),
+        returncode=returncode,
+        stdout=payload["stdout"],
+        stderr=payload["stderr"],
+    )
+
+
+def capture_verified_artifact_revision(
+    verified_gate: VerifiedVerificationGate,
+    *,
+    cwd: Path | str,
+    excluded_paths: frozenset[Path] | None = None,
+) -> str:
+    root = Path(cwd).resolve(strict=True)
+    exclusions = sorted(
+        (str(Path(path).resolve(strict=False)) for path in (excluded_paths or ())),
+        key=str.casefold,
+    )
+    payload = _invoke_verified_gate_child(
+        verified_gate,
+        {
+            "schema_version": _GATE_CHILD_SCHEMA,
+            "operation": "capture_artifact_revision",
+            "cwd": str(root),
+            "excluded_paths": exclusions,
+        },
+    )
+    _require_closed_fields(
+        payload,
+        {"schema_version", "status", "operation", "revision"},
+        label="isolated artifact revision response",
+    )
+    revision = payload["revision"]
+    if (
+        payload["operation"] != "capture_artifact_revision"
+        or not isinstance(revision, str)
+        or not revision
+    ):
+        raise ValueError("isolated artifact revision response is malformed")
+    return revision
 
 
 def _validate_head_relationship(
@@ -2997,9 +3419,10 @@ def create_parser() -> argparse.ArgumentParser:
     validate = subparsers.add_parser("validate")
     validate.add_argument("index")
     validate.add_argument("--cwd", default=".")
-    resolve = subparsers.add_parser("resolve-verification-gate")
-    resolve.add_argument("--snapshot", required=True)
-    resolve.add_argument("--root", required=True)
+    gate = subparsers.add_parser("run-verification-gate")
+    gate.add_argument("--snapshot", required=True)
+    gate.add_argument("--root", required=True)
+    gate.add_argument("argv", nargs=argparse.REMAINDER)
     return parser
 
 
@@ -3035,10 +3458,22 @@ def _main(argv: Sequence[str] | None = None) -> int:
             payload, repo_root=repo_root, actual_head=_git_head(repo_root)
         )
         return 0
-    if arguments.command == "resolve-verification-gate":
-        gate = resolve_verification_gate(arguments.snapshot, root=arguments.root)
-        print(gate)
-        return 0
+    if arguments.command == "run-verification-gate":
+        if not arguments.argv or arguments.argv[0] != "--":
+            raise ValueError(
+                "run-verification-gate requires the literal '--' argv separator"
+            )
+        verified_gate = resolve_verified_verification_gate(
+            arguments.snapshot,
+            root=arguments.root,
+        )
+        result = run_verified_verification_gate(
+            verified_gate,
+            arguments.argv[1:],
+        )
+        sys.stdout.write(result.stdout)
+        sys.stderr.write(result.stderr)
+        return result.returncode
     raise AssertionError(f"unhandled command: {arguments.command}")
 
 

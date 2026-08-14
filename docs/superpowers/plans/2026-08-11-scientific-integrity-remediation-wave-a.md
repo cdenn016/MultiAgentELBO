@@ -1,5 +1,13 @@
 # Scientific Integrity Remediation Wave A Implementation Plan
 
+> **Binding 2026-08-13 gate-execution supersession.** Any older path-return
+> resolver command preserved below records the historical review context only and
+> is not executable guidance. Current gate actions must validate the snapshot and
+> explicit `.codex` root and execute retained bytes in one safe invocation:
+> `C:\Python314\python.exe -B tools\remediation_evidence.py run-verification-gate --snapshot SNAPSHOT --root ROOT -- start ARGS` or
+> `C:\Python314\python.exe -B tools\remediation_evidence.py run-verification-gate --snapshot SNAPSHOT --root ROOT -- validate ARGS`.
+> Never assign or execute a resolved `$gate` path. Historical JUnit and evidence
+> records remain revision-bound history and are not rewritten by this correction.
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Close `AUD-03`, `AUD-13`, `AUD-14`, `AUD-15`, `AUD-16`, `AUD-17`, and `AUD-18` by making probability, KL, symmetric-matrix, Fisher-quotient, recovery, and Fisher-provenance invariants explicit and mechanically enforced.
@@ -152,9 +160,6 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Wave 0 parent gate failed' }
     $snapshot = 'docs/verification/remediation/verification-contract-v1.json'
     $verificationRoot = 'C:\Users\chris and christine\.codex\skills\verification'
-    $gate = (& 'C:\Python314\python.exe' -B tools\remediation_evidence.py resolve-verification-gate --snapshot $snapshot --root $verificationRoot).Trim()
-    if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $gate -PathType Leaf)) { throw 'pinned verification gate resolution failed' }
-    if ($gate -notlike '*\.codex\skills\verification\scripts\verification_gate.py') { throw 'verification gate escaped the pinned .codex root' }
 } finally {
     Pop-Location
 }
@@ -2955,22 +2960,19 @@ publisher writes the union once, and no closure byte changes afterward.
 ```powershell
 $snapshot = 'docs/verification/remediation/verification-contract-v1.json'
 $verificationRoot = 'C:\Users\chris and christine\.codex\skills\verification'
-$gate = (& 'C:\Python314\python.exe' -B tools\remediation_evidence.py resolve-verification-gate --snapshot $snapshot --root $verificationRoot).Trim()
-if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $gate -PathType Leaf)) { throw 'pinned verification gate resolution failed' }
-if ($gate -notlike '*\.codex\skills\verification\scripts\verification_gate.py') { throw 'verification gate escaped pinned .codex root' }
 $ledgerPath = '.verification\wave-a\final-ledger.json'
 if (Test-Path -LiteralPath '.verification\active.json') { throw 'verification gate is already active' }
 if (Test-Path -LiteralPath $ledgerPath) { throw 'Wave A ledger already exists' }
 
-& 'C:\Python314\python.exe' $gate start --cwd . --mode closure --ledger $ledgerPath
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $snapshot --root $verificationRoot -- start --cwd . --mode closure --ledger $ledgerPath
 if ($LASTEXITCODE -ne 0) { throw 'verification gate start failed' }
 
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledgerPath
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $snapshot --root $verificationRoot -- validate --cwd . $ledgerPath
 if ($LASTEXITCODE -eq 0) { throw 'empty gate template unexpectedly validated' }
 
 C:\Python314\python.exe -B tools\wave_a_evidence.py populate-ledger --ledger $ledgerPath --closure-index "$closureDir\index.json" --domain-index "$closureDir\domain-evidence.json"
 if ($LASTEXITCODE -ne 0) { throw 'Wave A ledger population failed' }
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledgerPath
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $snapshot --root $verificationRoot -- validate --cwd . $ledgerPath
 if ($LASTEXITCODE -ne 0) { throw 'verification gate validation failed' }
 $ledger = Get-Content -Raw -LiteralPath $ledgerPath | ConvertFrom-Json
 if (@($ledger.claims).Count -ne 14) { throw 'ledger does not contain exactly 14 claims' }
@@ -3014,7 +3016,7 @@ current CUDA claim.
 $branch = 'codex/scientific-integrity-remediation-wave-a-20260811'
 $liveRepo = 'C:\Users\chris and christine\Desktop\MultiAgentELBO'
 $evidenceSha = (git rev-parse HEAD).Trim()
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledgerPath
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $snapshot --root $verificationRoot -- validate --cwd . $ledgerPath
 if ($LASTEXITCODE -ne 0) { throw 'pre-publication gate failed' }
 git fetch origin
 $remoteBefore = (git rev-parse origin/main).Trim()
@@ -3066,7 +3068,7 @@ $after = @($wipPaths | ForEach-Object {
     } else { [ordered]@{path=$_;size_bytes=$null;sha256=$null} }
 }) | ConvertTo-Json -Depth 4 -Compress
 if ($after -cne $before) { throw 'live WIP bytes changed during fast-forward' }
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledgerPath
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $snapshot --root $verificationRoot -- validate --cwd . $ledgerPath
 if ($LASTEXITCODE -ne 0) { throw 'post-publication gate validation failed' }
 ```
 

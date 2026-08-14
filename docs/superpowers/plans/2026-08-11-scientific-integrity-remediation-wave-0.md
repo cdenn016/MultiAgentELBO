@@ -656,18 +656,25 @@ The sorted `files` array is exactly:
 ]
 ```
 
-Freeze generic CLI
-`tools/remediation_evidence.py resolve-verification-gate --snapshot PATH --root DIR`.
+**Binding 2026-08-13 security correction.** Freeze generic CLI
+`tools/remediation_evidence.py run-verification-gate --snapshot PATH --root DIR -- <start|validate> ARGS`.
 `--root` is mandatory and must resolve to an existing non-reparse directory
 whose final normalized path components are exactly
 `.codex/skills/verification`. There is no home-directory discovery, PATH
 discovery, registry lookup, environment override, or `.claude` fallback.
 The command validates the snapshot's closed schema, the exact nine sorted active
 paths, every size/hash, and absence of unexpected active files in `references/`,
-`schemas/`, and `scripts/` other than `__pycache__`/`*.pyc`. It then prints only
-the absolute validated `scripts/verification_gate.py` path and exits nonzero
-before output on any mismatch. `evals/` is explicitly outside the runtime-active
-path policy.
+`schemas/`, and `scripts/` other than `__pycache__`/`*.pyc`. It never returns an
+executable path. It retains the validated gate source bytes and passes those
+bytes on standard input to one fixed bootstrap in a fresh
+`C:\Python314\python.exe -I -S -B -c` child. The child runs from a fresh neutral
+directory with all `PYTHON*` environment variables removed, compiles the gate
+under a non-`__main__` name, and exposes only gate `start`/`validate` plus the
+internal `capture_artifact_revision` operation used by the checked-in Wave 0
+builder. Requests and responses use strict canonical framed JSON; unframed,
+malformed, extra-field, unsupported-operation, or nonzero-bootstrap output fails
+closed. The parent never imports or executes gate bytes and never reopens the
+validated path. `evals/` is explicitly outside the runtime-active path policy.
 
 The repository snapshot itself is selected by the tested-input resolver, appears
 in `source_config_bindings`, and is the third exact dependency input after
@@ -883,7 +890,7 @@ present in the detached map.
 - Produces `validate_evidence_index(payload, *, repo_root, actual_head) -> None`.
 - Produces `parse_junit(path) -> dict[str, object]` using XML testcase IDs, not console text.
 - Produces frozen `PreparedEvidenceFile(path: PurePosixPath, data: bytes)` and `PreparedEvidenceBundle(output_dir: PurePosixPath, files: tuple[PreparedEvidenceFile, ...])`; `prepare_evidence_bundle(...)` validates all bytes in memory and `publish_evidence_bundle(...)` is the only writer.
-- Freezes generic CLI `tools/remediation_evidence.py run-junit --record PATH --junit PATH -- ARGV`, `tools/remediation_evidence.py validate INDEX --cwd ROOT`, and `tools/remediation_evidence.py resolve-verification-gate --snapshot PATH --root DIR`; there is deliberately no generic build CLI.
+- Freezes generic CLI `tools/remediation_evidence.py run-junit --record PATH --junit PATH -- ARGV`, `tools/remediation_evidence.py validate INDEX --cwd ROOT`, and `tools/remediation_evidence.py run-verification-gate --snapshot PATH --root DIR -- <start|validate> ARGS`; there is deliberately no generic build CLI and no path-return gate command.
 - Freezes executable wrapper `tools/build_wave0_evidence.py build --stage STAGE --tested-head SHA --implementation-parent SHA --raw-dir PATH --output-dir PATH`, `review-context-sha --tested-head SHA --implementation-parent SHA --raw-dir PATH`, `review-target --tested-head SHA --implementation-parent SHA --raw-dir PATH`, `validate-reviews --tested-head SHA --implementation-parent SHA --raw-dir PATH`, and `populate-ledger --ledger PATH --closure-index PATH`; later waves own analogous wrappers and import the generic builder.
 - Candidate rule: `tested_git_head == implementation_parent_git_head == actual_head`.
 - Closure rule: `tested_git_head == actual_head`, `git rev-parse actual_head^ == implementation_parent_git_head`, and every parent-to-child diff path starts with `f"docs/verification/evidence/{payload['wave']}/"`.
@@ -1344,10 +1351,11 @@ def test_wrapper_exposes_only_frozen_commands():
     assert wave0_parser().parse_args(["populate-ledger", "--ledger",
         ".verification/wave-0/final-ledger.json", "--closure-index",
         "verification-evidence/wave-0/bbbbbbbbbbbb/index.json"]).command == "populate-ledger"
-    assert remediation_parser().parse_args(["resolve-verification-gate",
+    assert remediation_parser().parse_args(["run-verification-gate",
         "--snapshot", "docs/verification/remediation/verification-contract-v1.json",
-        "--root", r"C:\Users\example\.codex\skills\verification"]).command == (
-            "resolve-verification-gate"
+        "--root", r"C:\Users\example\.codex\skills\verification",
+        "--", "start"]).command == (
+            "run-verification-gate"
         )
     assert wave0_parser().parse_args(["review-context-sha",
         "--tested-head", "b" * 40, "--implementation-parent", "a" * 40,
@@ -1380,11 +1388,13 @@ def test_verification_snapshot_and_explicit_root_are_exact(snapshot, skill_root)
     )
     assert observed == EXPECTED_VERIFICATION_FILES
     assert snapshot["canonical_relative_root"] == ".codex/skills/verification"
-    assert resolve_verification_gate(snapshot, root=skill_root) == (
+    verified = resolve_verified_verification_gate(snapshot, root=skill_root)
+    assert verified.path == (
         skill_root / "scripts/verification_gate.py"
     )
+    assert verified.source_bytes == (skill_root / "scripts/verification_gate.py").read_bytes()
     with pytest.raises(ValueError, match="canonical .codex verification root"):
-        resolve_verification_gate(
+        resolve_verified_verification_gate(
             snapshot, root=skill_root.parents[2] / ".claude/skills/verification"
         )
 ```
@@ -1508,9 +1518,10 @@ validate = subparsers.add_parser("validate")
 validate.add_argument("index")
 validate.add_argument("--cwd", default=".")
 
-resolve = subparsers.add_parser("resolve-verification-gate")
-resolve.add_argument("--snapshot", required=True)
-resolve.add_argument("--root", required=True)
+gate = subparsers.add_parser("run-verification-gate")
+gate.add_argument("--snapshot", required=True)
+gate.add_argument("--root", required=True)
+gate.add_argument("argv", nargs=argparse.REMAINDER)
 ```
 
 `run-junit` requires the first remainder token to be `--`, strips only that separator, requires exact interpreter token `C:\Python314\python.exe`, requires an exact `--junitxml=<raw path>` token, rejects a preexisting record/JUnit, verifies the CPU environment policy before execution, calls `subprocess.run(argv, cwd=repo_root, shell=False, check=False)`, and atomically writes the command record only after exit. Its record has exactly `schema_version="remediation-command-record-v1"`, `id`, `argv`, `cwd_rel="."`, interpreter path/version/size/SHA, the six-key environment allowlist, UTC start/end strings, exit code, and raw JUnit path/size/SHA. It returns the pytest exit code and never derives totals from stdout.
@@ -1929,27 +1940,27 @@ current domain-eligible evidence plus structured adjudication does.
 
 - [ ] **Step 4: Start the real gate, populate its template explicitly, and validate**
 
-The installed gate implements only `start`, `validate`, and `hook`. `start` writes an empty candidate template; therefore the plan explicitly invokes the checked-in Wave 0 population wrapper between `start` and `validate`:
+The safe repository wrapper exposes only installed-gate `start` and `validate`.
+`start` writes an empty candidate template; therefore the plan explicitly invokes
+the checked-in Wave 0 population wrapper between `start` and `validate`:
 
 ```powershell
 $verificationRoot = 'C:\Users\chris and christine\.codex\skills\verification'
 $snapshot = 'docs/verification/remediation/verification-contract-v1.json'
-$gate = (& 'C:\Python314\python.exe' -B tools\remediation_evidence.py resolve-verification-gate --snapshot $snapshot --root $verificationRoot).Trim()
-if ($LASTEXITCODE -ne 0 -or -not [System.IO.Path]::IsPathFullyQualified($gate)) { throw "verification gate resolution failed" }
 $ledger = '.verification/wave-0/final-ledger.json'
 if (Test-Path -LiteralPath '.verification/active.json') { throw "verification gate is already active" }
 if (Test-Path -LiteralPath $ledger) { throw "Wave 0 ledger already exists" }
 
-& 'C:\Python314\python.exe' $gate start --cwd . --mode closure --ledger $ledger
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $snapshot --root $verificationRoot -- start --cwd . --mode closure --ledger $ledger
 if ($LASTEXITCODE -ne 0) { throw "verification gate start failed" }
 
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledger
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $snapshot --root $verificationRoot -- validate --cwd . $ledger
 if ($LASTEXITCODE -eq 0) { throw "empty start template unexpectedly validated" }
 
 C:\Python314\python.exe -B tools\build_wave0_evidence.py populate-ledger --ledger $ledger --closure-index "$closureDir/index.json"
 if ($LASTEXITCODE -ne 0) { throw "explicit Wave 0 ledger population failed" }
 
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledger
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $snapshot --root $verificationRoot -- validate --cwd . $ledger
 if ($LASTEXITCODE -ne 0) { throw "populated Wave 0 ledger failed validation" }
 
 $ledgerJson = Get-Content -LiteralPath $ledger -Raw | ConvertFrom-Json

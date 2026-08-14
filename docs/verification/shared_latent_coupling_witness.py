@@ -1,42 +1,45 @@
-"""Shared-latent coupling witness: can a genuinely coupled generative law produce
-PIFB2's transported-KL interaction, and at what rank?
+"""Shared-latent coupling witness for finite Gaussian mean-alignment sectors.
 
-Addresses the validated-ledger claim `genuine-coupling-before-continuum` (HIGH,
-INCONCLUSIVE), which states that tied product replicas alone cannot generate the
-required cross-agent interaction family. The tied-replica law is blockwise-product
-by construction, P_h^n = (x)_a P_a^n, so its total correlation is identically zero
-and it cannot carry a multi-body operator. The minimal repair is a SHARED LATENT.
+The tied-replica product law has zero total correlation and cannot carry a
+cross-agent operator. This witness studies the minimal shared-latent extension
 
-Gaussian instance, closed form throughout:
+    z ~ N(0, T),   k | z ~ N(Lambda z, D),
 
-    z ~ N(0, T),   k_a | z ~ N((Lambda z)_a, sigma_a^2),   a = 1..N
+whose marginal covariance is Sigma = D + Lambda T Lambda^T. For positive-definite
+D and T, Woodbury gives
 
-so marginally Sigma = D + Lambda T Lambda^T with D = diag(sigma_a^2). Integrating
-out z gives the effective action -log p(k) = (1/2) k^T Sigma^{-1} k, and by
-Sherman-Morrison Sigma^{-1} = D^{-1} - (rank-R correction).
+    Sigma^-1 = D^-1 - C,
+    C = D^-1 Lambda (T^-1 + Lambda^T D^-1 Lambda)^-1 Lambda^T D^-1,
+
+and rank(C) = rank(Lambda) <= R. Equality with the declared latent width R needs
+Lambda to have full column rank.
 
 CLAIM 1  A shared latent supplies genuine cross-agent dependence that the product
          law cannot: TC = 0 exactly for the product law, TC > 0 for the latent law.
 
-CLAIM 2  With ONE latent and same-sign loadings, the induced effective action is
-         EXACTLY a positive-weight transported-KL coupling plus a prior,
+CLAIM 2  One scalar latent with same-sign loadings gives an exact flat scalar
+         mean-alignment skeleton plus a residual diagonal:
 
-             (1/2) k^T Sigma^{-1} k
-                 = sum_{a<b} beta_ab (k_a - k_b)^2 / 2  +  sum_a pi_a k_a^2 / 2 ,
+             (1/2) k^T Sigma^-1 k
+                 = sum_{a<b} beta_ab (k_a - k_b)^2 / 2
+                   + sum_a pi_a k_a^2 / 2.
 
-         with rank-one weights beta_ab = c v_a v_b, v = D^{-1} lambda. This is the
-         functional form PIFB2 declares, obtained from a genuinely coupled law.
+CLAIM 3  Latent width does not decide positivity. An exact rank-two loading has
+         strictly positive edge weights and a proper residual prior, while a
+         dependent-column loading has correction rank strictly below its width.
+         Seeded rank tables are numerical instances, not general theorems.
 
-CLAIM 3  The construction is rank-limited, and that is a real obstruction. The
-         number of shared latents equals the rank of the induced coupling; but for
-         R >= 2 the weights are no longer all positive, so the coupling stops being
-         a sum of KLs. A shared-latent law can deliver EITHER the transported-KL
-         form (R = 1, rank-one attention) OR higher-rank attention, not both.
+CLAIM 4  In the rank-one skeleton, flipping one loading sign makes some edge
+         weights negative. The residual diagonal can also be improper.
 
-CLAIM 4  Two side conditions. Same-sign loadings are necessary: flipping one sign
-         makes a weight negative (repulsive), which no KL sum can represent. And the
-         residual diagonal need not be a valid prior precision -- entries can be
-         negative, i.e. the induced "prior" can be improper.
+CLAIM 5  A fiber cross-block identifies the product beta_ab W_ab Omega_ab, not
+         Omega_ab alone. Edge strength and metric must be divided out before a
+         transport cocycle is tested.
+
+CLAIM 6  A three-agent, two-dimensional rotation construction has beta = 1/4,
+         W = I, an exact transport cocycle, exact precision reconstruction, and
+         residual prior I/4. For general loadings, d >= K is necessary but not
+         sufficient for an induced K-by-K coefficient to be invertible.
 
 Run:  python docs/verification/shared_latent_coupling_witness.py
 Requires: numpy.
@@ -48,7 +51,7 @@ SEED = 20260813
 
 
 def total_correlation(S):
-    """TC of a centred Gaussian with covariance S."""
+    """TC of a centered Gaussian with covariance S."""
     return 0.5 * (np.sum(np.log(np.diag(S))) - np.linalg.slogdet(S)[1])
 
 
@@ -63,6 +66,137 @@ def laplacian_split(P):
     L = np.diag(beta.sum(1)) - beta
     pi = np.diag(P - L)
     return beta, pi, L
+
+
+def woodbury_correction(private_covariance, loading, latent_covariance):
+    """Return D^-1 - (D + Lambda T Lambda^T)^-1 in Woodbury form."""
+    private_precision = np.linalg.inv(private_covariance)
+    middle = np.linalg.inv(
+        np.linalg.inv(latent_covariance)
+        + loading.T @ private_precision @ loading
+    )
+    return private_precision @ loading @ middle @ loading.T @ private_precision
+
+
+def correction_rank(private_covariance, loading, latent_covariance, tol=1e-10):
+    """Rank of the Woodbury correction for positive-definite D and T."""
+    correction = woodbury_correction(private_covariance, loading, latent_covariance)
+    return int(np.linalg.matrix_rank(correction, tol=tol))
+
+
+def rank_two_positive_split_example():
+    """Exact-data rank-two control with positive edges and a proper prior."""
+    private_covariance = np.eye(4)
+    latent_covariance = np.eye(2)
+    loading = np.array(
+        [
+            [1.0, 0.1],
+            [1.0, 0.2],
+            [1.0, 0.3],
+            [1.0, 0.4],
+        ]
+    )
+    private_precision = np.linalg.inv(private_covariance)
+    correction = woodbury_correction(
+        private_covariance, loading, latent_covariance
+    )
+    precision = private_precision - correction
+    beta, prior, laplacian = laplacian_split(precision)
+    return {
+        "loading": loading,
+        "precision": precision,
+        "beta": beta,
+        "prior": prior,
+        "laplacian": laplacian,
+        "correction_rank": int(np.linalg.matrix_rank(correction, tol=1e-12)),
+        "split_residual": float(
+            np.linalg.norm(precision - laplacian - np.diag(prior))
+        ),
+    }
+
+
+def rank_one_improper_prior_example():
+    """Exact-data rank-one control with positive edges and an improper prior."""
+    loading = np.array([10.0, 1.0, 1.0, 1.0])
+    normalizer = 1.0 + loading @ loading
+    correction = np.outer(loading, loading) / normalizer
+    precision = np.eye(4) - correction
+    beta, prior, laplacian = laplacian_split(precision)
+    return {
+        "loading": loading,
+        "precision": precision,
+        "beta": beta,
+        "prior": prior,
+        "laplacian": laplacian,
+        "correction_rank": int(np.linalg.matrix_rank(correction, tol=1e-12)),
+        "split_residual": float(
+            np.linalg.norm(precision - laplacian - np.diag(prior))
+        ),
+    }
+
+
+def recover_transport(cross_precision_block, beta, weight):
+    """Recover Omega from P_ab = -beta W Omega after beta and W are declared."""
+    if beta <= 0:
+        raise ValueError("beta must be strictly positive")
+    return np.linalg.solve(weight, -cross_precision_block) / beta
+
+
+def induced_transport_coefficient(loading_a, middle, loading_b, private_covariance_b):
+    """Return Lambda_a M Lambda_b^T S_b^-1 before choosing beta and W."""
+    return loading_a @ middle @ loading_b.T @ np.linalg.inv(private_covariance_b)
+
+
+def induced_block_rank(loading_a, middle, loading_b, private_covariance_b, tol=1e-10):
+    """Rank entering the exact invertibility condition for the induced block."""
+    coefficient = induced_transport_coefficient(
+        loading_a, middle, loading_b, private_covariance_b
+    )
+    return int(np.linalg.matrix_rank(coefficient, tol=tol))
+
+
+def weighted_rotation_cocycle_example():
+    """Return an exact N=3, K=d=2 weighted rotation-cocycle construction."""
+    rotations = {
+        0: np.eye(2),
+        1: np.array([[0.0, -1.0], [1.0, 0.0]]),
+        2: -np.eye(2),
+    }
+    beta = 1 / 4
+    loading = np.vstack([rotations[a] for a in range(3)])
+    precision = np.eye(6) - loading @ (np.eye(2) / 4) @ loading.T
+    transports = {
+        (a, b): rotations[a] @ rotations[b].T
+        for a in range(3)
+        for b in range(3)
+    }
+
+    reconstructed = np.zeros_like(precision)
+    for a in range(3):
+        a_slice = slice(2 * a, 2 * a + 2)
+        for b in range(a + 1, 3):
+            b_slice = slice(2 * b, 2 * b + 2)
+            omega_ab = transports[(a, b)]
+            reconstructed[a_slice, a_slice] += beta * np.eye(2)
+            reconstructed[b_slice, b_slice] += beta * omega_ab.T @ omega_ab
+            reconstructed[a_slice, b_slice] -= beta * omega_ab
+            reconstructed[b_slice, a_slice] -= beta * omega_ab.T
+
+    residual_priors = {}
+    for a in range(3):
+        a_slice = slice(2 * a, 2 * a + 2)
+        residual_priors[a] = (
+            precision[a_slice, a_slice] - reconstructed[a_slice, a_slice]
+        )
+        reconstructed[a_slice, a_slice] += residual_priors[a]
+
+    return {
+        "beta": beta,
+        "precision": precision,
+        "transports": transports,
+        "residual_priors": residual_priors,
+        "reconstructed_precision": reconstructed,
+    }
 
 
 def claim_1_and_2():
@@ -84,7 +218,7 @@ def claim_1_and_2():
 
     print()
     print("=" * 74)
-    print("CLAIM 2 -- one latent gives EXACTLY the transported-KL form plus a prior")
+    print("CLAIM 2 -- an exact flat scalar mean-alignment skeleton plus a prior")
     print("=" * 74)
     Di = np.linalg.inv(D)
     P = np.linalg.inv(Sig_lat)
@@ -112,46 +246,86 @@ def claim_1_and_2():
     print(f"    residual                            = {E_full - E_kl - E_pri:+.2e}")
     assert abs(E_full - E_kl - E_pri) < 1e-12
     assert np.all(beta[iu] > 0)
-    print("\n  PASS -- the induced interaction IS PIFB2's transported-KL form, obtained")
+    print("\n  PASS -- this exact flat scalar mean-alignment skeleton is obtained")
     print("         from a law with strictly positive total correlation.")
+    print("         It is narrower than the complete directed two-channel PIFB2 action.")
     return pi
 
 
 def claim_3():
     print()
     print("=" * 74)
-    print("CLAIM 3 -- the construction is rank-limited: KL form OR high-rank, not both")
+    print("CLAIM 3 -- correction rank follows loading rank; positivity is separate")
     print("=" * 74)
     rng = np.random.default_rng(SEED)
     N = 6
     sig2 = rng.uniform(0.3, 0.9, N)
     D = np.diag(sig2)
     Di = np.linalg.inv(D)
-    print("   R    rank(D^-1 - Sigma^-1)    all beta_ab > 0    min beta_ab")
-    ok_at_1 = None
+    print(
+        "   R    rank(Lambda)    rank(D^-1 - Sigma^-1)    all beta > 0    min beta"
+    )
+    print("  Seeded numerical instances only; this table is not a general theorem.")
     for R in (1, 2, 3, 5):
         Lam = np.abs(rng.normal(size=(N, R))) * 0.9      # same-sign loadings
         T = np.diag(rng.uniform(0.4, 1.0, R))
-        Sig = D + Lam @ T @ Lam.T
-        P = np.linalg.inv(Sig)
+        correction = woodbury_correction(D, Lam, T)
+        P = Di - correction
         beta, _, _ = laplacian_split(P)
         iu = np.triu_indices(N, 1)
-        rank = np.linalg.matrix_rank(Di - P, tol=1e-9)
+        loading_rank = int(np.linalg.matrix_rank(Lam, tol=1e-9))
+        rank = int(np.linalg.matrix_rank(correction, tol=1e-9))
         allpos = bool(np.all(beta[iu] > 0))
-        print(f"   {R}    {rank:^21d}    {str(allpos):^15s}    {beta[iu].min():+.4f}")
-        assert rank == R
+        print(
+            f"   {R}    {loading_rank:^12d}    {rank:^25d}    "
+            f"{str(allpos):^12s}    {beta[iu].min():+.4f}"
+        )
+        assert rank == loading_rank
+        assert rank <= R
         if R == 1:
-            ok_at_1 = allpos
-        if R >= 2:
-            assert not allpos, R
-    assert ok_at_1
-    print("\n  PASS -- #latents = rank of the induced coupling, but positivity fails for")
-    print("         R >= 2. A single latent buys rank-one attention with a genuine KL")
-    print("         form; PIFB2's general row-stochastic beta needs rank up to N-1, and")
-    print("         at that rank the coupling is no longer a sum of KLs.")
+            assert allpos
+    print("\n  DESCRIPTIVE ONLY -- higher-rank rows above are one seeded sample each.")
+    print("  Their signs cannot support a universal positivity or nonpositivity claim.")
+
+    exact = rank_two_positive_split_example()
+    exact_off = exact["beta"][np.triu_indices(4, 1)]
+    assert exact["correction_rank"] == 2
+    assert np.all(exact_off > 0)
+    assert np.all(exact["prior"] > 0)
+    assert exact["split_residual"] < 1e-12
+    print("\n  Exact rank-two all-positive control:")
+    print(f"    min beta = {exact_off.min():.12f}; min prior = {exact['prior'].min():.12f}")
+
+    base_column = np.arange(1.0, 5.0)
+    dependent = np.column_stack([base_column, 2.0 * base_column])
+    dependent_D = np.eye(4)
+    dependent_T = np.eye(2)
+    dependent_rank = correction_rank(
+        dependent_D, dependent, dependent_T, tol=1e-12
+    )
+    assert np.linalg.matrix_rank(dependent, tol=1e-12) == 1
+    assert dependent_rank == 1
+    assert dependent_rank < dependent.shape[1]
+    print("\n  Dependent-column control:")
+    print(f"    declared R = 2; rank(Lambda) = rank(correction) = {dependent_rank}")
+
+    print("\n  PASS -- for SPD D and T, rank(correction) = rank(Lambda) <= R.")
+    print("         Equality with R requires full column rank of Lambda.")
+    print("         The exact rank-two control shows rank alone does not obstruct positivity.")
 
 
-def claim_4(pi):
+def claim_4(pi=None):
+    exact = rank_one_improper_prior_example()
+    exact_beta = exact["beta"][np.triu_indices(4, 1)]
+    assert exact["correction_rank"] == 1
+    assert exact["split_residual"] < 1e-12
+    assert np.all(exact_beta > 0)
+    if pi is None:
+        pi = exact["prior"]
+    pi = np.asarray(pi, dtype=float)
+    if not np.min(pi) < 0:
+        raise AssertionError("Claim 4 requires a negative residual prior entry")
+
     print()
     print("=" * 74)
     print("CLAIM 4 -- two side conditions on the R = 1 result")
@@ -166,11 +340,15 @@ def claim_4(pi):
     lam2[0] *= -1.0
     P2 = np.linalg.inv(D + tau2 * np.outer(lam2, lam2))
     b01 = -P2[0, 1]
-    print(f"  (a) same-sign loadings are NECESSARY.")
+    print("  (a) same-sign loadings are necessary for this rank-one positive split.")
     print(f"      flip one loading's sign -> beta_01 = {b01:+.4f}  (repulsive; no KL sum")
     print(f"      can represent a negative weight, since each term is >= 0)")
     assert b01 < 0
     print(f"\n  (b) the residual diagonal need not be a valid prior precision.")
+    print(
+        f"      exact control: rank = {exact['correction_rank']}; "
+        f"split residual = {exact['split_residual']:.2e}; min beta = {exact_beta.min():.5f}"
+    )
     print(f"      pi = {np.round(pi, 5)}")
     print(f"      all entries positive? {bool(np.all(pi > 0))}   min = {pi.min():+.5f}")
     print(f"      a negative entry is an IMPROPER induced prior for that agent.")
@@ -178,30 +356,19 @@ def claim_4(pi):
 
 
 def claim_5_and_6():
-    """The fiber-valued case: what transport does a shared latent induce, and is it
-    a connection?
+    """Separate weighted cross-block coefficients from transport geometry.
 
-    CLAIM 5  With K-dimensional fibers and a d-dimensional shared latent,
-             k_a | z ~ N(Lambda_a z, S_a), Woodbury gives the off-diagonal block of
-             the effective action as -B_a Lambda_a M Lambda_b^T B_b with
-             M = (T^-1 + sum_b Lambda_b^T S_b^-1 Lambda_b)^-1. Reading it against the
-             transported-KL form beta_ab (k_a - Omega_ab k_b)^T W_ab (...) with the
-             Fisher weight W_ab = S_a^-1 gives, up to scale,
+    Woodbury gives P_ab = -B_a Lambda_a M Lambda_b^T B_b. A quadratic
+    edge identifies -P_ab = beta_ab W_ab Omega_ab; beta_ab and W_ab must be
+    declared before Omega_ab can be recovered or tested as a cocycle.
 
-                 Omega_ab  =  Lambda_a M Lambda_b^T S_b^-1 ,
-
-             which is invertible iff d >= K. So a NONTRIVIAL transport is induced.
-
-    CLAIM 6  But it is never a connection. Omega_ab Omega_bc = Omega_ac requires
-             F_b M = I for every b, with F_b = Lambda_b^T S_b^-1 Lambda_b >= 0. Since
-             M^-1 = T^-1 + sum_b F_b, that forces all F_b equal to some F with
-             F(1 - N) = T^-1, i.e. F = T^-1/(1 - N), which is NEGATIVE DEFINITE for
-             every N >= 2 while F is PSD by construction. The cocycle condition is
-             therefore UNSATISFIABLE for two or more agents, not merely generic.
+    The induced coefficient is invertible exactly when its matrix rank is K.
+    Consequently d >= K is necessary but not sufficient. The exact weighted
+    rotation construction below refutes the universal cocycle obstruction.
     """
     print()
     print("=" * 74)
-    print("CLAIM 5 -- the fiber-valued case induces a nontrivial transport")
+    print("CLAIM 5 -- cross-blocks identify beta W Omega, not Omega alone")
     print("=" * 74)
     rng = np.random.default_rng(SEED)
     N, K, d = 4, 3, 4
@@ -226,89 +393,135 @@ def claim_5_and_6():
     print(f"  Woodbury  ||Sigma^-1 - (B - B L M L^T B)|| = {wood:.2e}")
     assert wood < 1e-10
 
-    Om = {}
-    for a in range(N):
-        for b in range(N):
-            if a != b:
-                Om[(a, b)] = S[a] @ (-P[a * K:(a + 1) * K, b * K:(b + 1) * K])
-    rk = np.linalg.matrix_rank(Om[(0, 1)], tol=1e-9)
-    print(f"  Omega_ab = Lambda_a M Lambda_b^T S_b^-1 ;  rank(Omega_01) = {rk}  "
-          f"(K={K}, d={d}: invertible iff d >= K)")
-    assert rk == K
+    coefficient = induced_transport_coefficient(Lam[0], M, Lam[1], S[1])
+    precision_coefficient = S[0] @ (
+        -P[0:K, K:2 * K]
+    )
+    coefficient_residual = float(np.linalg.norm(coefficient - precision_coefficient))
+    rk = induced_block_rank(Lam[0], M, Lam[1], S[1], tol=1e-9)
+    rank_upper = min(
+        np.linalg.matrix_rank(Lam[0], tol=1e-9),
+        np.linalg.matrix_rank(Lam[1], tol=1e-9),
+        np.linalg.matrix_rank(M, tol=1e-9),
+        K,
+    )
+    print(
+        f"  sampled rank(Lambda_0 M Lambda_1^T S_1^-1) = {rk}; "
+        f"upper bound = {rank_upper}; coefficient residual = {coefficient_residual:.2e}"
+    )
+    print("  Exact condition: the K-by-K coefficient is invertible iff its rank is K.")
+    assert coefficient_residual < 1e-10
+    assert rk <= rank_upper
+
+    dependent = np.array([[1.0, 0.0], [0.0, 0.0]])
+    singular = induced_transport_coefficient(
+        dependent, np.eye(2), dependent, np.eye(2)
+    )
+    singular_rank = int(np.linalg.matrix_rank(singular, tol=1e-12))
+    assert dependent.shape == (2, 2)
+    assert singular_rank == 1
+    print(f"  d = K = 2 dependent-loading control: rank = {singular_rank}, det = 0")
+    print("  Therefore d >= K is necessary only; loading/middle-factor rank is decisive.")
 
     print()
     print("=" * 74)
-    print("CLAIM 6 -- but the induced transport is NEVER a cocycle, for N >= 2")
+    print("CLAIM 6 -- a weighted rotation transport is an exact cocycle")
     print("=" * 74)
+    example = weighted_rotation_cocycle_example()
+    beta = example["beta"]
+    precision = example["precision"]
+    transports = example["transports"]
+    cross_residual = 0.0
+    cocycle_residual = 0.0
+    self_residual = 0.0
+    for a in range(3):
+        a_slice = slice(2 * a, 2 * a + 2)
+        self_residual = max(
+            self_residual, float(np.linalg.norm(transports[(a, a)] - np.eye(2)))
+        )
+        for b in range(3):
+            omega_ab = transports[(a, b)]
+            if a != b:
+                b_slice = slice(2 * b, 2 * b + 2)
+                block = precision[a_slice, b_slice]
+                recovered = recover_transport(block, beta, np.eye(2))
+                cross_residual = max(
+                    cross_residual,
+                    float(np.linalg.norm(block + beta * omega_ab)),
+                    float(np.linalg.norm(recovered - omega_ab)),
+                )
+            for c in range(3):
+                cocycle_residual = max(
+                    cocycle_residual,
+                    float(
+                        np.linalg.norm(
+                            omega_ab @ transports[(b, c)] - transports[(a, c)]
+                        )
+                    ),
+                )
 
-    def nrm(X):
-        return X / np.abs(np.linalg.det(X)) ** (1.0 / K)
+    reconstruction_residual = float(
+        np.linalg.norm(example["reconstructed_precision"] - precision)
+    )
+    prior_residual = max(
+        float(np.linalg.norm(prior - np.eye(2) / 4))
+        for prior in example["residual_priors"].values()
+    )
+    min_prior = min(
+        float(np.linalg.eigvalsh(prior).min())
+        for prior in example["residual_priors"].values()
+    )
+    print(f"  beta = {beta:.2f}, W = I; remove both before testing Omega")
+    print(f"  max cross-block/recovery residual = {cross_residual:.2e}")
+    print(f"  max self-edge residual = {self_residual:.2e}")
+    print(f"  max cocycle residual = {cocycle_residual:.2e}")
+    print(f"  full precision reconstruction residual = {reconstruction_residual:.2e}")
+    print(f"  residual prior error from I/4 = {prior_residual:.2e}")
+    assert beta == 1 / 4
+    assert max(
+        cross_residual, self_residual, cocycle_residual, reconstruction_residual,
+        prior_residual,
+    ) < 1e-12
+    assert min_prior > 0
 
-    worst = 0.0
-    for (a, b, c) in [(0, 1, 2), (0, 1, 3), (1, 2, 3), (0, 2, 3)]:
-        lhs, rhs = nrm(Om[(a, c)]), nrm(Om[(a, b)] @ Om[(b, c)])
-        rel = min(np.linalg.norm(lhs - rhs), np.linalg.norm(lhs + rhs)) / np.linalg.norm(lhs)
-        worst = max(worst, rel)
-        print(f"    Omega_{a}{c} vs Omega_{a}{b} Omega_{b}{c} : relative mismatch {rel:.4f}")
-    print(f"  worst = {worst:.4f}  -> cocycle FAILS")
-    assert worst > 0.1
-
-    print("\n  and the failure is STRUCTURAL, not generic. The condition is F_b M = I")
-    print("  for every b, with F_b = Lambda_b^T S_b^-1 Lambda_b >= 0 and")
-    print("  M^-1 = T^-1 + sum_b F_b. That forces F(1-N) = T^-1, i.e.")
-    print("  F = T^-1/(1-N), NEGATIVE DEFINITE for every N >= 2 while F is PSD.")
-    print("\n  identical-agent check (maximal symmetry, so the 'all F_b equal' half is free):")
-    K2, d2 = 3, 3
-    for Nn in (2, 3, 4, 8):
-        r2 = np.random.default_rng(5)
-        A = np.eye(K2) + 0.2 * r2.normal(size=(K2, K2))
-        Ss = A @ A.T
-        Lm = r2.normal(size=(K2, d2)) * 0.8
-        Tt = np.eye(d2) * 0.9
-        F = Lm.T @ np.linalg.inv(Ss) @ Lm
-        Mm = np.linalg.inv(np.linalg.inv(Tt) + Nn * F)
-        dev = np.linalg.norm(F @ Mm - np.eye(d2))
-        implied = np.linalg.eigvalsh(np.linalg.inv(Tt) / (1 - Nn))
-        print(f"    N={Nn}: ||F M - I|| = {dev:.4f}   implied F eigenvalues "
-              f"{np.round(implied, 3)}  (must be >= 0)")
-        assert dev > 0.1 and implied.max() < 0
-    print("\n  PASS -- a shared latent induces an invertible transport when d >= K, but")
-    print("         never a cocycle for N >= 2. The obstruction is a sign contradiction,")
-    print("         so no choice of loadings, private covariances or latent prior fixes it.")
+    print("\n  PASS -- the exact weighted cross-blocks reconstruct a proper cocycle model.")
+    print("         The off-diagonal precision identifies beta W Omega, not Omega alone.")
+    print("         The former universal cocycle obstruction is therefore refuted.")
 
 
 def main():
-    pi = claim_1_and_2()
+    claim_1_and_2()
     claim_3()
-    claim_4(pi)
+    claim_4()
     claim_5_and_6()
     print()
     print("=" * 74)
-    print("SCOPE -- what this does NOT establish")
+    print("SCOPE -- exact finite skeletons and explicit open boundaries")
     print("=" * 74)
     print("""
-  (a) Scalar states (K = 1 per agent), centred Gaussians, one base point. The
-      fiber-valued case with transports Omega_ij is NOT covered: here the "transport"
-      is the identity, so beta_ab (k_a - k_b)^2 is the FLAT case of the transported
-      KL. Whether a shared latent can generate beta_ab ||k_a - Omega_ab k_b||^2 with
-      a nontrivial Omega is open, and is the obvious next witness.
+  ESTABLISHED -- an exact flat scalar mean-alignment skeleton can have a rank-two
+  positive edge split and a proper residual prior.
 
-  (b) Nothing here shows the shared-latent law is in Theory/04's declared generative
-      class. Adding a latent z is a modification of that class, exactly as the
-      label-copy block (J_a, X_a) was; the cost is a declaration.
+  ESTABLISHED -- after beta and W are separated, the N=3, K=d=2 construction has
+  beta=1/4, W=I, an exact rotation cocycle, residual prior I/4, and exact recovery.
 
-  (c) The recognition side is untouched. If Q factorizes as q(z) (x) prod_a Q_a there
-      is a mean-field gap to price, and if it does not, the tied-replica machinery
-      does not apply verbatim.
+  OPEN -- directed row-simplex attention
+      The symmetric complete-graph coefficients here are not an arbitrary row law.
 
-  (d) CLAIM 3's negative is for same-sign loadings drawn at random. It shows
-      positivity FAILS generically at R >= 2; it does not prove no R >= 2 loading
-      matrix yields an all-positive beta. Whether the set of such matrices is
-      nonempty, and how restrictive it is, is open.
+  OPEN -- categorical entropy
+      No source-label entropy or row-prior term is represented by this quadratic.
 
-  (e) No claim about the h -> 0 limit, the effective action's residual eps_h, or
-      Gamma-convergence. This addresses only whether cross-agent coupling of the
-      declared FORM can exist at all at fixed finite N.
+  OPEN -- two transported law channels
+      Only one Gaussian mean-alignment channel is constructed.
+
+  OPEN -- full-law representability
+      No complete PIFB2 generative/recognition law or mean-field closure is proved.
+
+  The shared latent is an explicit extension of the declared generative inventory;
+  Theory/04 membership is not automatic. Recognition-side gaps remain unpriced.
+
+  No h -> 0 limit, residual eps_h bound, or Gamma-convergence statement
+  is established by these fixed-finite-N witnesses.
 """)
 
 

@@ -5,6 +5,8 @@ docs/superpowers/plans/*.md text eol=lf
 
 # Theory evidence packages use byte-level SHA-256 bindings.
 docs/derivations/2026-08-12-exact-two-channel-finite-elbo/** text eol=lf
+docs/derivations/2026-08-12-elbo-pifb2-fast-slow-program/** text eol=lf
+docs/derivations/2026-08-13-finite-presentation-descent-joint-fisher/** text eol=lf
 
 # The supplied Windows snapshot must retain its checked-out line endings.
 Theory/** text eol=crlf

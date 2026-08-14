@@ -137,3 +137,32 @@ Fisher pullback is automatically nondegenerate or Lorentzian; that one bit equal
 structure survives the generalization to arbitrary exponential families; that any construction is
 **first** or **novel** without a literature check citing Dennis (2025), Sengupta et al. (2016), Wilson
 (1974), Shima, and Vinberg; or that an internal audit return is external refereeing.
+
+---
+
+## 8. 2026-08-13 remediation correction — current authority
+
+This section supersedes every conflicting claim above while preserving the earlier sections as a
+dated record of the investigation. It incorporates the independent audit and the repaired
+`shared_latent_coupling_witness.py` and `meta_agent_coherence_witness.py`. The remediation branch has
+collected regression coverage for those witnesses, but its final revision-bound verification ledger
+and final full-suite aggregate are still pending. Consequently, neither the old ledger pin nor the
+old `21 failed / 1092 passed / 15 skipped` total in §6 is current evidence.
+
+| Topic | Corrected status and boundary |
+|---|---|
+| Shared-latent rank | **P/D.** For positive-definite private and latent covariances, the Woodbury correction satisfies `rank(C) = rank(Lambda) <= R`; equality with the declared width `R` requires full column rank of `Lambda`. Latent width alone neither forces nor forbids positive edge weights. |
+| Positive KL split | **C.** An exact rank-two Gaussian control has strictly positive KL edge weights and a proper residual prior. A separate rank-one control shows that a proper residual prior is an independent side condition. |
+| Induced transports | **C/D.** A cross-block identifies the product `beta_ab W_ab Omega_ab`, not `Omega_ab` alone. After dividing out declared positive `beta` and invertible `W`, an exact `N=3`, `K=d=2` rotation construction has a nontrivial transport cocycle, exact precision reconstruction, and a proper residual prior. The previous universal cocycle no-go is withdrawn. |
+| Invertibility | **P.** `d >= K` is only necessary. The exact condition for the induced `K x K` coefficient is `rank(Lambda_b M Lambda_a^T) = K` (with the appropriate private-covariance factors, which do not change rank when invertible). |
+| Relation to PIFB2 | **D/C.** The rank-one construction is an exact flat, symmetric, unnormalized scalar mean-alignment skeleton. It is not the complete directed, row-normalized, two-channel PIFB2 functional; the phrase “exactly PIFB2” remains withdrawn. |
+| Support departure | **D/C.** There is no prior-generated positive spectral wall at literal departure: the local prior Hessian is `chi_i alpha_i Lambda_{p,i}` and vanishes with `chi_i`. For every positive receiver presence, canonical row normalization cancels its common factor; at exactly `chi_i=0` the row is `0/0`. A fixed-ambient extension or active-set deletion convention is therefore required. Edge dropout with `chi_i=1` is a different operation. |
+| Forward-KL Hessian | **P/C.** For directed `(i,j)` meaning sender `j` to receiver `i`, the fixed-covariance, frozen-`beta` mean Hessian uses `beta_ij (Theta_ij Sigma_j Theta_ij^T)^{-1}`. Reverse KL is a separate directed edge. `M = direct-sum Sigma_i^{-1}` remains only an interim reading metric; normalized-row response, threshold, and extent are open. |
+| Retired four-regime table | **P/C.** The only universal conclusion is the exact identity cell: orthogonal reciprocal links plus symmetric weights make the retired operator equal the energy form. Other seeded cells are diagnostics. Countercontrols show that a nonorthogonal link need not create a negative-real-part spectrum and a symmetric row-stochastic system need not become asymmetric. |
+| Kernel and holonomy | **P.** On each connected component `I_alpha`, assuming invertible represented transports with inverse reverse transports and positive-definite represented edge weights, root evaluation gives `ker L_{I_alpha} ≅ Fix(Hol_{r_alpha})`; hence `ker L_I ≅ direct-sum_alpha Fix(Hol_{r_alpha})`. Neither nontrivial holonomy nor point curvature is equivalent to an empty kernel, and flatness is not equivalent to meta-agent existence. |
+| Graph versus base geometry | **O/typed.** Agent-graph links, base connection holonomy, and bundle topology remain distinct. Identifying them requires declared node-to-base anchors, assigned base curves or cells, and an equality to the corresponding parallel transports. No such identification follows from the graph witness alone. |
+| Gibbs-Haar plaquette term | **D, conditional model only.** It is an exact negative-ELBO component only after declaring a new random compact-link Gibbs-Haar generative model (including the inverse-temperature coefficient and entropy term). It is not derived from the current fixed-link ELBO and does not by itself derive current-model curvature dynamics. |
+| Fiber symmetry | **P/typed.** Homogeneity is sufficient for transitive full-fiber reach, not necessary for every gauge action: nonhomogeneous statistical manifolds can have nontransitive isometry sectors. A homogeneous space need not be symmetric; the symmetric-space conclusion is valid for the SPD covariance sector or where a symmetric-pair hypothesis is separately proved. |
+
+Until the pending revision-bound closure is issued, cite the exact derivations and collected witness
+tests for individual claims and label aggregate repository verification **pending**.

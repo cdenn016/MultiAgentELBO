@@ -397,13 +397,37 @@ def test_attention_launcher_import_is_side_effect_free_and_main_is_click_to_run(
         "collect_diagnostics",
         "render_figures",
     }
+    assert module.OUTPUT["render_figures"] is True
     module.OUTPUT["root"] = str(tmp_path / "owned-artifacts")
     result = module.main()
 
     assert isinstance(result, AttentionExperimentResult)
     assert result.status == "pass"
-    assert result.figure_status == "not_requested"
+    assert result.figure_status == "complete"
+    assert result.figure_dir is not None
+    assert result.figure_dir.is_dir()
+    figure_manifest_path = result.figure_dir / "figure-manifest.json"
+    assert figure_manifest_path.is_file()
+    figure_manifest = json.loads(figure_manifest_path.read_text("utf-8"))
+    assert figure_manifest["status"] == "complete"
+    assert figure_manifest["requested"] == ["attention_composition"]
+    assert figure_manifest["figures"] == [
+        {
+            "name": "attention_composition",
+            "pdf": "attention-composition.pdf",
+            "pdf_sha256": hashlib.sha256(
+                (result.figure_dir / "attention-composition.pdf").read_bytes()
+            ).hexdigest(),
+            "png": "attention-composition.png",
+            "png_dpi": 300,
+            "png_sha256": hashlib.sha256(
+                (result.figure_dir / "attention-composition.png").read_bytes()
+            ).hexdigest(),
+        }
+    ]
+    assert (result.figure_dir / "attention-composition.pdf").is_file()
+    assert (result.figure_dir / "attention-composition.png").is_file()
     output = capsys.readouterr().out
     assert f"run_dir={result.run_dir}" in output
     assert f"status=pass; metrics={len(METRIC_KEYS)}" in output
-    assert "figures=not_requested" in output
+    assert "figures=complete" in output

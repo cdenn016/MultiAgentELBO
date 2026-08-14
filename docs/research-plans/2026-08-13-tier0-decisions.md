@@ -1326,3 +1326,54 @@ other five; can be answered at any point.*
 7. **The Cheeger route** is forfeit under D2's recommended fibre metric. The quantitative half of the
    coherence criterion at worklog `:1030-1032` is lost, not merely unverified, and nothing in the
    corpus replaces it.
+
+---
+
+## 2026-08-13 post-audit correction and decision impact
+
+This addendum supersedes conflicting mathematical premises in the price sheet above; the original
+text remains as the record available at the decision document's authoring revision. It does not fill
+in the six author declarations. The remediation branch is still awaiting final revision-bound
+verification, so no replacement HEAD, ledger state, or aggregate test total is asserted here.
+
+1. **D1 remains a typing decision, but the shared-latent no-go is gone.** A Gaussian cross-block
+   identifies `beta W Omega`. Once positive edge strength and invertible edge metric are declared and
+   divided out, a nontrivial exact transport cocycle can occur. This does not identify an agent-graph
+   link with base parallel transport: that step still requires node-to-base anchors, assigned curves
+   or cells, and an explicit transport-equality hypothesis. Graph-loop holonomy, base-connection
+   holonomy, and bundle topology must remain separate until that bridge is supplied.
+2. **D2's KL-derived edge metric uses the transported sender slot.** For directed `(i,j)` meaning
+   sender `j` to receiver `i`, the fixed-covariance, frozen-`beta` forward-KL mean precision is
+   `beta_ij (Theta_ij Sigma_j Theta_ij^T)^{-1}`. The reverse KL is another directed edge. The
+   direct-sum local Fisher metric remains an interim pencil-reading convention, not a derivation of
+   the edge operator or a settled threshold.
+3. **D4 cannot use “flat iff meta-agent.”** On each connected component `I_alpha`, assuming
+   invertible represented transports with inverse reverse transports and positive-definite represented
+   edge weights, root evaluation gives `ker L_{I_alpha} ≅ Fix(Hol_{r_alpha})`; hence
+   `ker L_I ≅ direct-sum_alpha Fix(Hol_{r_alpha})`. Nonidentity holonomy can retain fixed vectors,
+   while flat global monodromy can have no common fixed vector. A spectral or variational
+   normalization decision therefore still needs a declared stratum and readout; the four-regime
+   witness establishes only its orthogonal, reciprocal, symmetric-weight identity cell.
+4. **D5 must distinguish positive support from exact deletion.** The local prior block is
+   `chi_i alpha_i Lambda_{p,i}`. A common positive receiver-presence factor cancels from a normalized
+   row; at exact zero the canonical row is undefined (`0/0`). Edge dropout, a prescribed
+   fixed-ambient zero extension, and active-set deletion are different operations. The declaration
+   must choose the exact-zero convention rather than infer one from a positive-`chi` limit.
+5. **Model-scope corrections.** The compact-link Gibbs-Haar plaquette construction is exact only for
+   a newly declared random-link generative law; it does not derive dynamics for the current fixed-link
+   ELBO. Likewise, the scalar shared-latent quadratic is an exact flat mean-alignment skeleton, not
+   the complete PIFB2 action.
+6. **General-fiber pricing is narrower.** Homogeneity is sufficient for a transitive action over the
+   whole fiber, but nonhomogeneous fibers can retain nontransitive isometry sectors. Homogeneous does
+   not imply symmetric; the `GL(K)/O(K)` symmetric-space argument applies to the SPD covariance
+   sector unless an additional symmetric-pair theorem is supplied.
+7. **Rank obligations are exact now.** The Woodbury correction obeys
+   `rank(C) = rank(Lambda) <= R`, with equality to `R` only at full column rank. For induced
+   `K x K` transport coefficients, `d >= K` is necessary but not sufficient; full rank of the
+   relevant `Lambda_b M Lambda_a^T` product is the deciding condition. Positive KL edge weights and
+   a proper residual prior coexist in an exact rank-two control, so neither is ruled out by latent
+   rank alone.
+
+The stale-ledger and scratchpad warnings above remain historically accurate for the authoring
+revision, but they must not be projected onto the remediation revision. Replacement verification is
+pending and must be reported from a current machine-readable artifact after the source stops moving.

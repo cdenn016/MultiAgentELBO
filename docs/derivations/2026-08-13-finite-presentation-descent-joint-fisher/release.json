@@ -1,0 +1,11 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-c68f474d3e7991fa78a557b86bd645dc1c01a4272b2a75d53a52e17ad29176b2",
+  "target_digest": "c68f474d3e7991fa78a557b86bd645dc1c01a4272b2a75d53a52e17ad29176b2",
+  "checkpoint": "release",
+  "target_claim": "target",
+  "terminal_status": "COMPLETE_AFFIRMATIVE",
+  "certificate_claim": "target",
+  "strongest_result": "On the supported finite tier, collapsed VFE and parameterwise retained-family Fisher geometry descend through retained-law and conditioning-algebra equivalence; full VFE differs by an exact auxiliary conditional KL and descends only after posterior completion or conditional minimization; paired marginal sections admit explicit smooth lifts with different full-joint VFE and Fisher tensors.",
+  "unresolved_obligations": []
+}

@@ -1,5 +1,13 @@
 # Wave E Connectedness Claim Remediation Implementation Plan
 
+> **Binding 2026-08-13 gate-execution supersession.** Any older path-return
+> resolver command preserved below records the historical review context only and
+> is not executable guidance. Current gate actions must validate the snapshot and
+> explicit `.codex` root and execute retained bytes in one safe invocation:
+> `C:\Python314\python.exe -B tools\remediation_evidence.py run-verification-gate --snapshot SNAPSHOT --root ROOT -- start ARGS` or
+> `C:\Python314\python.exe -B tools\remediation_evidence.py run-verification-gate --snapshot SNAPSHOT --root ROOT -- validate ARGS`.
+> Never assign or execute a resolved `$gate` path. Historical JUnit and evidence
+> records remain revision-bound history and are not rewritten by this correction.
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > `superpowers:subagent-driven-development` (recommended) or
 > `superpowers:executing-plans` to implement this plan task-by-task. Steps use
@@ -101,13 +109,14 @@ No new dependency is permitted.
   describes the superseded pre-correction draft only and is never an acceptance
   literal, because changing this plan necessarily invalidates that old hash and a
   current self-hash inside the file would be circular.
-- Gate selection is likewise owned by Wave 0. Wave E consumes the frozen
-  `verification-contract-v1` and byte-equivalent
-  `resolve-verification-gate` resolver, validates the explicit active
-  `C:\Users\chris and christine\.codex\skills\verification` tree, and binds the
-  snapshot, resolver, SKILL, contract, five criteria, ledger schema, and gate
-  identities as dependency/config inputs. It never defines an independent verifier
-  contract or falls back to `.claude`.
+- Gate execution is likewise owned by Wave 0. Wave E consumes the frozen
+  `verification-contract-v1` and byte-equivalent `run-verification-gate`
+  retained-byte runner. The runner validates the explicit active
+  `C:\Users\chris and christine\.codex\skills\verification` tree and executes
+  the requested action from retained gate bytes in an isolated child. Wave E
+  binds the snapshot, runner, SKILL, contract, five criteria, ledger schema, and
+  gate identities as dependency/config inputs. It never defines an independent
+  verifier contract, returns an executable gate path, or falls back to `.claude`.
 - Every JUnit XML, pytest console stream, TeX build product, claim-language scan,
   equation comparison, source-diff record, and raw review first lands under the exact out-of-repository
   `C:\tmp\magent-wave-e-*-raw` staging roots. Before any tracked candidate byte or
@@ -450,19 +459,9 @@ $planningReleaseBinding = [ordered]@{
 
 $snapshotPath = Join-Path $planningSnapshot $verificationContractPaths[0]
 $resolverPath = Join-Path $planningSnapshot $verificationContractPaths[1]
-$resolverOutput = @(
-    & 'C:\Python314\python.exe' -B $resolverPath `
-        resolve-verification-gate --snapshot $snapshotPath --root $verificationRoot
-)
-if ($LASTEXITCODE -ne 0 -or $resolverOutput.Count -ne 1) {
-    throw 'Frozen Wave 0 verification-gate resolution failed'
-}
-$resolvedGate = $resolverOutput[0].Trim()
-$expectedGate = Join-Path $verificationRoot 'scripts\verification_gate.py'
-if ((Resolve-Path -LiteralPath $resolvedGate).Path -cne
-    (Resolve-Path -LiteralPath $expectedGate).Path) {
-    throw 'Wave 0 resolver did not select the bound active Codex gate'
-}
+# Task 1 records verifier identity only. Gate actions are deferred to Step 9,
+# where run-verification-gate validates this snapshot/root pair and executes
+# retained gate bytes without returning or reopening an executable path.
 $snapshotPayload = Get-Content -Raw -LiteralPath $snapshotPath | ConvertFrom-Json
 $snapshotFiles = @($snapshotPayload.files)
 $requiredContractPaths = @(
@@ -2079,11 +2078,13 @@ Implement the module in this exact order:
    Nonzero exit, preexisting output, env drift, schema drift, duplicate testcase,
    or JUnit mismatch fails closed. Conformance tests compare canonical output bytes
    to the frozen Wave 0 fixture, not merely a compatible-looking Python object.
-   Wave E does not implement `resolve-verification-gate`. Task 1 and every gate use
-   invoke frozen Wave 0 `tools/remediation_evidence.py resolve-verification-gate`
-   directly with the frozen snapshot and explicit Codex root. The Research-local
-   `validate_verification_binding` only rehashes the already resolved, privacy-safe
-   Task 1 binding and requires exact records for `SKILL.md`,
+   Wave E does not implement `run-verification-gate`. Task 1 binds the frozen
+   Wave 0 snapshot, runner, and active verifier inventory. Every gate action
+   invokes frozen Wave 0 `tools/remediation_evidence.py run-verification-gate`
+   directly with that snapshot, the explicit Codex root, and an allowlisted
+   `start` or `validate` operation. The Research-local
+   `validate_verification_binding` only rehashes the identity-safe Task 1 binding
+   and requires exact records for `SKILL.md`,
    `references/contract.md`, `references/criteria-code.md`,
    `references/criteria-evidence.md`, `references/criteria-experiment.md`,
    `references/criteria-general.md`, `references/criteria-math.md`,
@@ -3343,19 +3344,6 @@ $verificationSnapshot = Join-Path $planningSnapshot `
     'docs\verification\remediation\verification-contract-v1.json'
 $wave0Resolver = Join-Path $planningSnapshot 'tools\remediation_evidence.py'
 $verificationRoot = 'C:\Users\chris and christine\.codex\skills\verification'
-$gateOutput = @(
-    & $pythonExe -B $wave0Resolver resolve-verification-gate `
-        --snapshot $verificationSnapshot --root $verificationRoot
-)
-if ($LASTEXITCODE -ne 0 -or $gateOutput.Count -ne 1) {
-    throw 'Closure gate resolution from the frozen Wave 0 contract failed'
-}
-$gate = $gateOutput[0].Trim()
-$expectedGate = Join-Path $verificationRoot 'scripts\verification_gate.py'
-if ((Resolve-Path -LiteralPath $gate).Path -cne
-    (Resolve-Path -LiteralPath $expectedGate).Path) {
-    throw 'Closure resolver did not return the bound Codex gate'
-}
 $ledger = '.verification\wave-e\final-ledger.json'
 if (Test-Path -LiteralPath '.verification\active.json') {
     throw 'A verification gate is already active'
@@ -3364,10 +3352,10 @@ if (Test-Path -LiteralPath $ledger) {
     throw 'Wave E ledger already exists'
 }
 
-& $pythonExe $gate start --cwd . --mode closure --ledger $ledger
+& $pythonExe -B $wave0Resolver run-verification-gate --snapshot $verificationSnapshot --root $verificationRoot -- start --cwd . --mode closure --ledger $ledger
 if ($LASTEXITCODE -ne 0) { throw 'Wave E gate start failed' }
 
-& $pythonExe $gate validate --cwd . $ledger
+& $pythonExe -B $wave0Resolver run-verification-gate --snapshot $verificationSnapshot --root $verificationRoot -- validate --cwd . $ledger
 if ($LASTEXITCODE -eq 0) {
     throw 'Empty Wave E ledger unexpectedly validated'
 }
@@ -3378,7 +3366,7 @@ if ($LASTEXITCODE -eq 0) {
     --views-dir "$closureDir\views"
 if ($LASTEXITCODE -ne 0) { throw 'Wave E ledger population failed' }
 
-& $pythonExe $gate validate --cwd . $ledger
+& $pythonExe -B $wave0Resolver run-verification-gate --snapshot $verificationSnapshot --root $verificationRoot -- validate --cwd . $ledger
 if ($LASTEXITCODE -ne 0) { throw 'Populated Wave E ledger failed validation' }
 & $pythonExe -B $evidenceTool validate-ledger-links `
     --repo-root . --ledger $ledger `
@@ -3511,7 +3499,7 @@ if ((& git status --porcelain=v1 --untracked-files=no).Count -ne 0) {
     --bundle-root $closureDir --tested-head $evidenceHead `
     --implementation-parent $implHead
 if ($LASTEXITCODE -ne 0) { throw 'Frozen Wave E closure no longer validates' }
-& $pythonExe $gate validate --cwd . $ledger
+& $pythonExe -B $wave0Resolver run-verification-gate --snapshot $verificationSnapshot --root $verificationRoot -- validate --cwd . $ledger
 if ($LASTEXITCODE -ne 0) { throw 'Frozen Wave E ledger no longer validates' }
 ```
 
@@ -3849,25 +3837,12 @@ if ($boundVerification.root_alias -cne '$VERIFICATION_ROOT' -or
     $boundVerification.resolved_gate -cne $expectedGateAlias) {
     throw 'Closure-bound Codex verification root/gate alias drifted'
 }
-$gateOutput = @(
-    & $pythonExe -B $wave0Resolver resolve-verification-gate `
-        --snapshot $verificationSnapshot --root $verificationRoot
-)
-if ($LASTEXITCODE -ne 0 -or $gateOutput.Count -ne 1) {
-    throw 'Publication gate resolution from the closure-bound Wave 0 contract failed'
-}
-$gate = $gateOutput[0].Trim()
-$expectedGate = Join-Path $verificationRoot 'scripts\verification_gate.py'
-if ((Resolve-Path -LiteralPath $gate).Path -cne
-    (Resolve-Path -LiteralPath $expectedGate).Path) {
-    throw 'Publication resolver did not return the exact closure-bound Codex gate'
-}
 & $pythonExe -B $wave0Resolver validate $closureBaseIndex --cwd .
 if ($LASTEXITCODE -ne 0) {
     throw 'Frozen Wave 0 validator rejected the prepublication base index'
 }
 
-& $pythonExe $gate validate --cwd . $ledger
+& $pythonExe -B $wave0Resolver run-verification-gate --snapshot $verificationSnapshot --root $verificationRoot -- validate --cwd . $ledger
 if ($LASTEXITCODE -ne 0) { throw 'Pre-publication Wave E ledger is invalid' }
 & $pythonExe -B $evidenceTool validate-ledger-links `
     --repo-root . --ledger $ledger --closure-index $closureIndex

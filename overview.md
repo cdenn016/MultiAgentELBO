@@ -64,13 +64,16 @@ exponential family, and finally a multivariate Gaussian family are successive ad
 mathematical theory has no base, bundle, symmetry, incidence relation, probability kernel, or
 variational rule. Those are presently admitted as relational or nomological structure. A stronger
 closure in which some or all of that scaffolding is reconstructed from the interaction category of
-the agents is an open target. Likewise, the exact observation–interaction equivalence supplies an
-operational environment-node presentation, but does not by itself prove autonomy or agency for every
-boundary node. Randomization and subsequent marginalization can give distinct environment-node presentations
-of the same scoped record law, so an environment node is presently an operational representation
-rather than an ontologically identified autonomous agent. A physicalization rule must either descend to equivalence classes of
-such presentations or be paired with a canonical-agentization theorem; neither result is currently
-established.
+the agents is an open target. Likewise, the exact observation–interaction equivalence supplies an operational environment-node
+presentation, but does not by itself prove autonomy or agency for every boundary node. Randomization
+and subsequent marginalization can give distinct presentations of the same scoped retained record law.
+The certified finite presentation-descent theorem now gives the exact quotient boundary: collapsed
+retained-variable VFE and, for strictly positive \(C^2\) retained families that agree parameterwise,
+the retained Fisher tensor and every common \(C^1\) pullback descend. Arbitrary uncompleted full-latent
+VFE, full-joint Fisher tensors, node inventories, and typed intervention structures do not generally
+descend. On the tier \(Q_R\ll P_R(\cdot\mid o)\), posterior completion, or minimization over auxiliary
+lifts at fixed \(Q_R\), removes the expected conditional-KL defect. These are finite informational
+invariants; they do not canonically agentize an environment node, and autonomous agency remains open.
 
 "State-bearing" needs an operational criterion or the thesis is unfalsifiable, since any candidate
 counterexample can be reclassified as scaffolding. Take the checkable one: an object is state-bearing
@@ -81,10 +84,11 @@ fixed agent sections. The zero-connection explicit-twist control shows that the 
 another presentation and therefore does not identify a connection origin. PIFB2's Regime II instead
 promotes \(A^{(i)}_\mu\) to an independent action-bearing dynamical field with its own curvature term
 and coercivity problem (`Theory/PIFB2.tex:142`); no normalized connection-dependent record kernel has
-yet been supplied there, so the record-law criterion is not established for that regime. The exact
-finite result is therefore an **operationally agent-only presentation** in the Regime-I, frame-derived-
-connection tier. Presentation descent or reclassification of \(\omega\) elsewhere is an open
-obligation of §9 item 1, not a settled ontology.
+yet been supplied there, so the record-law criterion is not established for that regime. The exact finite
+result is therefore an **operationally agent-only presentation** in the Regime-I,
+frame-derived-connection tier. The certified retained objects descend under the finite observational
+quotient; canonical agentization and reclassification of \(\omega\) elsewhere remain open obligations
+of §9 item 1, not a settled ontology.
 
 At the established finite tier, endogenous interaction records are generated once by one normalized
 joint,
@@ -107,7 +111,13 @@ generally nonunique otherwise. When the full target factorizes and its energy is
 marginal variables, `05_elbo.tex` `eq:elbo-total-correlation-signs` gives the exact VFE as the marginal
 section functional plus \(\mathrm{TC}(Q)\), so the product coupling minimizes over that Fréchet class.
 For a coupled likelihood or non-product reference, the expected energy also varies with the coupling;
-the marginals alone imply neither a product extremum nor a one-sided bound. Note that the closed
+the marginals alone imply neither a product extremum nor a one-sided bound. The finite categorical
+certificate makes this noncanonicity explicit: for binary marginals \((a,b)\), both \(\iota_0\) and
+\(\iota_{1/2}\), with \(d_\kappa=\kappa a(1-a)b(1-b)\), are smooth positive right inverses of
+marginalization. At \(a=b=1/2\) they give \((8,8,8,8)/32\) and \((9,7,7,9)/32\); against a uniform
+posterior their full-joint VFEs differ, and their Fisher pullbacks are \(\operatorname{diag}(4,4)\)
+and \(\frac1{63}\begin{pmatrix}256&-32\\-32&256\end{pmatrix}\). Thus even smooth positive lifts
+with the same paired marginals are not canonical. Note that the closed
 theorem of §6 makes a stronger declaration:
 its recognition law is \(\bigotimes_a Q_a\) with \(\zeta_a=q_a\otimes s_a\), so its total correlation
 vanishes identically across agents and across channels. That is the theorem's declared family, not
@@ -540,8 +550,11 @@ return and not yet reproduced in `Theory/`."
 
 ## 9. Open decisions
 
-1. **Agent-only closure.** Which background structures remain irreducible relational or nomological
-   data, and which of \(\mathcal C,P,G,\omega\), incidence, and interaction kernels must be reconstructed
+1. **Agent-only closure after finite presentation descent.** Collapsed retained-variable VFE and
+   strictly positive \(C^2\) parameterwise retained Fisher tensors descend, whereas arbitrary
+   uncompleted full-latent VFE, full-joint Fisher tensors, node inventories, and typed intervention
+   structures do not generally descend. What equivalence-enriched rule, if any, canonically agentizes operational environment
+   nodes? Which of \(\mathcal C,P,G,\omega\), incidence, and interaction kernels must be reconstructed
    from the agents themselves?
 2. **Physicalization rule.** Which individual or collective joint-law section, connection, quotient,
    channel combination, and cross-agent aggregation define a shared candidate geometry? What supplies
@@ -579,12 +592,18 @@ Say this, and not more:
 > the continuum limit closes. The base is a **context** manifold unless a physical interpretation is
 > separately derived. At the intended ontological tier, agents are the only state-bearing relata and
 > each agent's primitive kinematics is a pair of general normalized-law sections; Gaussian families
-> are computational realizations. Connection-relative Fisher pullbacks supply gauge-invariant
-> positive-semidefinite informational semigeometries. Their identification with shared physical
-> geometry, units, constants, causal structure, or physical time requires additional bridge theorems.
-> \(P\), \(G\), \(\omega\), the interaction incidence, and the record kernels are presently **declared
-> inputs**, not derived from the agents; §1's emergence is an aspiration with no result behind it, and
-> the connection is state-bearing wherever §8's curve construction or PIFB2's Regime II is in force.
+> are computational realizations. At the certified finite observational quotient, collapsed
+> retained-variable VFE and strictly positive \(C^2\), parameterwise retained-family Fisher tensors descend;
+> arbitrary uncompleted full-latent VFE, full-joint Fisher tensors, node inventories, and typed
+> intervention structures do not generally descend. On the support-qualified tier, posterior
+> completion or minimization over auxiliary lifts removes the conditional-KL defect. This identifies
+> finite informational invariants, not canonical agency or ontological identity. Connection-relative
+> Fisher pullbacks supply gauge-invariant positive-semidefinite informational semigeometries. Their
+> identification with shared physical geometry, units, constants, causal structure, or physical time
+> requires additional bridge theorems. \(P\), \(G\), \(\omega\), the interaction incidence, and the
+> record kernels are presently **declared inputs**, not derived from the agents; §1's stronger
+> reconstruction and canonical-agentization targets remain open, and the connection is state-bearing
+> wherever §8's curve construction or PIFB2's Regime II is in force.
 
 Do **not** say: that the complete PIFB2/MAgent action has been derived from the exact ELBO; that
 \(\mathcal C\) is space; that every physical property is literally a pullback; that a Fisher pullback

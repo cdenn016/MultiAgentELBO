@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import os
 import socket
@@ -40,9 +39,10 @@ from tools.remediation_evidence import (
     assert_no_literal_absolute_path,
     canonical_json_bytes,
     capture_environment_record,
+    capture_verified_artifact_revision,
     prepare_evidence_bundle as _prepare_generic_evidence_bundle,
     privacy_transform_bytes,
-    resolve_verification_gate,
+    resolve_verified_verification_gate,
     publish_evidence_bundle,
     resolve_tested_input_policy,
     validate_evidence_index,
@@ -1631,27 +1631,17 @@ def _validate_active_gate_binding(
     artifact_revision = ledger_payload["artifact_revision"]
     if marker["artifact_revision"] != artifact_revision:
         raise ValueError("activation marker artifact revision mismatch")
-    gate = resolve_verification_gate(
+    verified_gate = resolve_verified_verification_gate(
         root / SNAPSHOT_PATH,
         root=Path.home() / ".codex/skills/verification",
     )
-    specification = importlib.util.spec_from_file_location(
-        "_wave0_pinned_verification_gate", gate
-    )
-    if (
-        specification is None
-        or specification.loader is None
-        or not hasattr(specification.loader, "exec_module")
-    ):
-        raise ValueError("cannot import pinned verification gate")
-    module = importlib.util.module_from_spec(specification)
-    specification.loader.exec_module(module)
-    capture = getattr(module, "capture_artifact_revision", None)
-    if not callable(capture):
-        raise ValueError("pinned verification gate lacks artifact revision capture")
     try:
-        live_revision = capture(root, excluded_paths=frozenset({ledger}))
-    except RuntimeError as error:
+        live_revision = capture_verified_artifact_revision(
+            verified_gate,
+            cwd=root,
+            excluded_paths=frozenset({ledger}),
+        )
+    except (OSError, ValueError) as error:
         raise ValueError(f"cannot capture live artifact revision: {error}") from error
     if live_revision != artifact_revision:
         raise ValueError("live artifact changed after verification activation")

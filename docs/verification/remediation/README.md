@@ -27,6 +27,43 @@ the approved
 and the source
 [deep-audit report](../../audits/2026-08-11-post-fixed-ray-deep-audit.md).
 
+
+## Verification root policy
+
+The lexical verification root must end in
+`.codex/skills/verification` before any resolution occurs. The resolver accepts
+either that direct, non-reparse directory or one Windows terminal directory
+junction whose physical target is exactly the same user profile's sibling
+`.claude/skills/verification` directory.
+
+Terminal symbolic links and other terminal reparses are rejected. Every lexical
+ancestor and every component of the approved physical target must be a direct
+directory, and nested reparses below the physical verification root are also
+rejected. After resolving the accepted root once, the resolver validates the
+frozen closed inventory, sizes, and SHA-256 values on that physical root and
+retains the validated `scripts/verification_gate.py` source bytes with its
+physical path. No path-return command is exposed. Gate operations use only:
+
+```powershell
+C:\Python314\python.exe -B tools\remediation_evidence.py run-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root "C:\Users\chris and christine\.codex\skills\verification" -- <start|validate> <arguments>
+```
+
+The wrapper supplies the retained source bytes over standard input to a fixed
+bootstrap in a fresh `C:\Python314\python.exe -I -S -B -c` child. The child has
+a fresh neutral working directory, no inherited `PYTHON*` environment entries,
+and no parent `sys.modules`; it compiles the source under a non-`__main__` name.
+Only gate `start`/`validate` and the builder's internal
+`capture_artifact_revision` call are allowlisted. Strict canonical framing is
+required in both directions. Wave 0 neither executes gate bytes in the builder
+process nor reopens the mutable gate path after validation. Path replacement,
+working-directory/PYTHONPATH shadow modules, parent-module poisoning,
+unsupported operations, and malformed child output all fail closed or leave the
+retained-byte result unchanged, as applicable.
+
+The default test suite exercises this policy with deterministic exact-byte
+fixtures. A local live-install smoke may supplement those fixtures, but live
+home-directory state is not a baseline-suite precondition.
+
 ## Status boundaries
 
 For repository-produced records, producer verification_state is exactly CANDIDATE.

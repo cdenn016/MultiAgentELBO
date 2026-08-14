@@ -39,9 +39,9 @@
       "kind": "DERIVATION",
       "supports": true,
       "scope": "Transported peer typing and exact lagged source-label KL identity.",
-      "side_conditions": ["Finite nonempty source set, fixed positive source priors, and common domination."],
+      "side_conditions": ["Finite nonempty source set, strictly positive normalized source and recognition rows, normalized recognition and transported state laws, and common domination."],
       "artifact_path": "evidence/transported-peer-derivations.md",
-      "artifact_sha256": "0475c48244f7ee0703df8831dab015b5f02afe02587ffd38ab8ea8c86946d68f"
+      "artifact_sha256": "1ef7e3840463dd6ae538dc915adff45fd24de1a2d22ae5b93aaff624630d6923"
     },
     {
       "id": "ev-fast-slow",
@@ -117,7 +117,7 @@
     {
       "id": "lagged-peer-identity",
       "statement": "The lagged source-label construction yields categorical KL plus weighted transported peer KL exactly.",
-      "quantifiers": "Every finite nonempty source set with positive normalized rows and dominated transported state laws.",
+      "quantifiers": "Every finite nonempty source set with strictly positive normalized source and recognition rows, normalized recognition and transported state laws, and common domination.",
       "kind": "MATHEMATICAL",
       "target_digest": "2d0dcc778574720991049b56626ca5199bdf4f20351d3dfc1ec11450fc43d908",
       "state": "EVIDENCE_VERIFIED",

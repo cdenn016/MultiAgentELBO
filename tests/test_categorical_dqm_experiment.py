@@ -648,12 +648,36 @@ def test_categorical_dqm_launcher_is_import_safe_and_main_honors_output_override
         "collect_diagnostics",
         "render_figures",
     }
+    assert module.OUTPUT["render_figures"] is True
     module.OUTPUT["root"] = str(tmp_path / "owned-artifacts")
     result = module.main()
 
     assert isinstance(result, CategoricalDqmExperimentResult)
     assert result.status == "pass"
-    assert result.figure_status == "not_requested"
+    assert result.figure_status == "complete"
+    assert result.figure_dir is not None
+    assert result.figure_dir.is_dir()
+    figure_manifest_path = result.figure_dir / "figure-manifest.json"
+    assert figure_manifest_path.is_file()
+    figure_manifest = json.loads(figure_manifest_path.read_text("utf-8"))
+    assert figure_manifest["status"] == "complete"
+    assert figure_manifest["requested"] == ["categorical_dqm"]
+    assert figure_manifest["figures"] == [
+        {
+            "name": "categorical_dqm",
+            "pdf": "categorical-dqm-diagnostic.pdf",
+            "pdf_sha256": hashlib.sha256(
+                (result.figure_dir / "categorical-dqm-diagnostic.pdf").read_bytes()
+            ).hexdigest(),
+            "png": "categorical-dqm-diagnostic.png",
+            "png_dpi": 300,
+            "png_sha256": hashlib.sha256(
+                (result.figure_dir / "categorical-dqm-diagnostic.png").read_bytes()
+            ).hexdigest(),
+        }
+    ]
+    assert (result.figure_dir / "categorical-dqm-diagnostic.pdf").is_file()
+    assert (result.figure_dir / "categorical-dqm-diagnostic.png").is_file()
     np.testing.assert_array_equal(
         result.arrays["theta"], [math.log(2.0), math.log(3.0)]
     )
@@ -663,4 +687,4 @@ def test_categorical_dqm_launcher_is_import_safe_and_main_honors_output_override
     output = capsys.readouterr().out
     assert f"run_dir={result.run_dir}" in output
     assert f"status=pass; metrics={len(result.metrics)}" in output
-    assert "figures=not_requested" in output
+    assert "figures=complete" in output

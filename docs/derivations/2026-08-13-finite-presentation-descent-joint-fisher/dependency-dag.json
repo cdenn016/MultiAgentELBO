@@ -1,0 +1,16 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-c68f474d3e7991fa78a557b86bd645dc1c01a4272b2a75d53a52e17ad29176b2",
+  "target_digest": "c68f474d3e7991fa78a557b86bd645dc1c01a4272b2a75d53a52e17ad29176b2",
+  "edges": [
+    {"from": "target", "to": "collapsed-vfe-descent"},
+    {"from": "target", "to": "conditional-kl-completion"},
+    {"from": "target", "to": "retained-fisher-descent"},
+    {"from": "target", "to": "paired-marginal-noncanonicity"},
+    {"from": "collapsed-vfe-descent", "to": "binary-dilation-boundary"},
+    {"from": "conditional-kl-completion", "to": "full-latent-nondescend"},
+    {"from": "paired-marginal-noncanonicity", "to": "smooth-right-inverse-lifts"},
+    {"from": "paired-marginal-noncanonicity", "to": "vfe-lift-dependence"},
+    {"from": "paired-marginal-noncanonicity", "to": "fisher-lift-dependence"}
+  ]
+}

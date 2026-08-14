@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import builtins
 import copy
 import inspect
 import json
@@ -7,7 +8,10 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
+import textwrap
+import types
 import xml.etree.ElementTree as ET
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
@@ -62,7 +66,7 @@ from tools.remediation_evidence import (
     privacy_transform_bytes,
     publish_evidence_bundle,
     resolve_tested_input_policy,
-    resolve_verification_gate,
+    resolve_verified_verification_gate,
     validate_evidence_index,
     validate_junit_skip_allowlist,
 )
@@ -112,6 +116,405 @@ EXPECTED_JUNIT_FIELDS = {
 }
 
 
+TEST_VERIFICATION_GATE_SOURCE = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    import argparse
+    import hashlib
+    import json
+    import os
+    import subprocess
+    from pathlib import Path, PurePosixPath
+
+
+    def capture_artifact_revision(
+        cwd: Path, *, excluded_paths: frozenset[Path] | None = None
+    ) -> str:
+        root = Path(cwd).resolve(strict=True)
+        head = subprocess.check_output(
+            ["git", "rev-parse", "--verify", "HEAD"], cwd=root
+        ).decode("ascii").strip()
+        excluded = {
+            Path(path).resolve(strict=False)
+            for path in (excluded_paths or frozenset())
+        }
+        digest = hashlib.sha256(b"test-verification-artifact-v1")
+        raw_paths = subprocess.check_output(
+            [
+                "git",
+                "ls-files",
+                "--cached",
+                "--others",
+                "--exclude-standard",
+                "-z",
+            ],
+            cwd=root,
+        )
+        for raw_path in sorted(
+            item for item in raw_paths.split(bytes([0])) if item
+        ):
+            relative = PurePosixPath(os.fsdecode(raw_path))
+            if not relative.parts or relative.parts[0] in {
+                ".git",
+                ".verification",
+            }:
+                continue
+            path = root.joinpath(*relative.parts)
+            if path.resolve(strict=False) in excluded:
+                continue
+            digest.update(relative.as_posix().encode("utf-8"))
+            digest.update(b"|")
+            digest.update(path.read_bytes())
+            digest.update(b"|")
+        return f"git:{head}:sha256:{digest.hexdigest()}"
+
+
+    CLAIM_FIELDS = {
+        "id", "domain", "statement", "severity", "state", "artifact_revision",
+        "criteria", "escalation_triggers", "escalation_target", "views",
+        "evidence", "counterevidence", "verifiers", "open_obligations",
+        "evidence_invalidated",
+    }
+    CRITERION_FIELDS = {"name", "score"}
+    EVIDENCE_FIELDS = {"id", "kind", "location", "artifact_revision"}
+    VERIFIER_FIELDS = {
+        "role", "view_ids", "result", "evidence_ids", "result_location",
+    }
+    VIEW_FIELDS = {
+        "calibration_kind", "unresolved_disagreement", "comparison", "scores",
+    }
+    COMPARISON_FIELDS = {
+        "method", "candidate_count", "candidate_ids", "candidate_descriptions",
+        "pivot_ids", "orders", "matches",
+    }
+    CANDIDATE_DESCRIPTION_FIELDS = {"id", "description"}
+    MATCH_FIELDS = {
+        "left", "right", "view_id", "outcome", "criteria", "result_location",
+    }
+    SCORE_FIELDS = {"view_id", "criteria"}
+    WAVE0_CLAIM_IDS = {
+        "CHK-WAVE0-CONTRACT-COMPLETENESS",
+        "CHK-WAVE0-HISTORICAL-BYTE-PINS",
+    }
+
+
+    def _string_list(value: object, *, nonempty: bool = False) -> bool:
+        return (
+            isinstance(value, list)
+            and (not nonempty or bool(value))
+            and all(isinstance(item, str) and bool(item) for item in value)
+        )
+
+
+    def _valid_criteria(value: object) -> bool:
+        if not isinstance(value, list) or not value:
+            return False
+        names = []
+        for item in value:
+            if not isinstance(item, dict) or set(item) != CRITERION_FIELDS:
+                return False
+            name = item["name"]
+            score = item["score"]
+            if not isinstance(name, str) or not name:
+                return False
+            if isinstance(score, bool) or not isinstance(score, (int, float)):
+                return False
+            if not 0 <= score <= 20:
+                return False
+            names.append(name)
+        return len(names) == len(set(names))
+
+
+    def _valid_evidence(
+        value: object, *, artifact_revision: str, nonempty: bool
+    ) -> bool:
+        if not isinstance(value, list) or (nonempty and not value):
+            return False
+        for item in value:
+            if not isinstance(item, dict) or set(item) != EVIDENCE_FIELDS:
+                return False
+            if not all(
+                isinstance(item[field], str) and bool(item[field])
+                for field in ("id", "kind", "location", "artifact_revision")
+            ):
+                return False
+            if item["artifact_revision"] != artifact_revision:
+                return False
+        return True
+
+
+    def _valid_views(value: object) -> bool:
+        if not isinstance(value, dict) or set(value) != VIEW_FIELDS:
+            return False
+        if value["calibration_kind"] != "independent_pairwise_source_reading_v1":
+            return False
+        if not isinstance(value["unresolved_disagreement"], bool):
+            return False
+        comparison = value["comparison"]
+        if not isinstance(comparison, dict) or set(comparison) != COMPARISON_FIELDS:
+            return False
+        if comparison["method"] != "pairwise":
+            return False
+        candidate_count = comparison["candidate_count"]
+        if isinstance(candidate_count, bool) or candidate_count != 2:
+            return False
+        candidate_ids = comparison["candidate_ids"]
+        descriptions = comparison["candidate_descriptions"]
+        if not _string_list(candidate_ids, nonempty=True) or len(candidate_ids) != 2:
+            return False
+        if not isinstance(descriptions, list) or len(descriptions) != 2:
+            return False
+        for description in descriptions:
+            if (
+                not isinstance(description, dict)
+                or set(description) != CANDIDATE_DESCRIPTION_FIELDS
+                or not all(
+                    isinstance(description[field], str) and bool(description[field])
+                    for field in CANDIDATE_DESCRIPTION_FIELDS
+                )
+            ):
+                return False
+        if [description["id"] for description in descriptions] != candidate_ids:
+            return False
+        if comparison["pivot_ids"] != [] or comparison["orders"] != ["AB", "BA"]:
+            return False
+        matches = comparison["matches"]
+        if not isinstance(matches, list) or len(matches) != 2:
+            return False
+        for match in matches:
+            if not isinstance(match, dict) or set(match) != MATCH_FIELDS:
+                return False
+            if not all(
+                isinstance(match[field], str) and bool(match[field])
+                for field in (
+                    "left", "right", "view_id", "outcome", "result_location",
+                )
+            ) or not _valid_criteria(match["criteria"]):
+                return False
+        scores = value["scores"]
+        if not isinstance(scores, list) or len(scores) not in (2, 4, 8):
+            return False
+        for score in scores:
+            if not isinstance(score, dict) or set(score) != SCORE_FIELDS:
+                return False
+            if not isinstance(score["view_id"], str) or not score["view_id"]:
+                return False
+            if not _valid_criteria(score["criteria"]):
+                return False
+        return True
+
+
+    def _claim_error(claim: object, *, artifact_revision: str) -> str | None:
+        if not isinstance(claim, dict) or set(claim) != CLAIM_FIELDS:
+            return "claim fields mismatch"
+        for field in ("id", "domain", "statement", "severity", "state"):
+            if not isinstance(claim[field], str) or not claim[field]:
+                return f"claim {field} must be a nonempty string"
+        if claim["domain"] not in {"code", "evidence"}:
+            return "claim domain mismatch"
+        if claim["severity"] != "medium":
+            return "claim severity mismatch"
+        if claim["state"] not in {"EVIDENCE_VERIFIED", "INCONCLUSIVE"}:
+            return "claim state mismatch"
+        if claim["artifact_revision"] != artifact_revision:
+            return "claim artifact revision mismatch"
+        if not _valid_criteria(claim["criteria"]):
+            return "claim criteria mismatch"
+        if not _string_list(claim["escalation_triggers"]):
+            return "claim escalation triggers mismatch"
+        if not set(claim["escalation_triggers"]) <= {
+            "criterion_disagreement", "high_dispersion", "small_margin",
+        }:
+            return "claim escalation trigger value mismatch"
+        target = claim["escalation_target"]
+        if isinstance(target, bool) or target not in (2, 4, 8):
+            return "claim escalation target mismatch"
+        if not _valid_views(claim["views"]):
+            return "claim views mismatch"
+        if len(claim["views"]["scores"]) != target:
+            return "claim view count mismatch"
+        criterion_names = [item["name"] for item in claim["criteria"]]
+        nested_criteria = [
+            item["criteria"] for item in claim["views"]["scores"]
+        ] + [
+            item["criteria"]
+            for item in claim["views"]["comparison"]["matches"]
+        ]
+        if any(
+            [item["name"] for item in criteria] != criterion_names
+            for criteria in nested_criteria
+        ):
+            return "claim nested criterion names mismatch"
+        if not _valid_evidence(
+            claim["evidence"],
+            artifact_revision=artifact_revision,
+            nonempty=True,
+        ):
+            return "claim evidence mismatch"
+        if claim["counterevidence"] != []:
+            return "claim counterevidence mismatch"
+        verifiers = claim["verifiers"]
+        if not isinstance(verifiers, list) or len(verifiers) != 1:
+            return "claim verifiers mismatch"
+        verifier = verifiers[0]
+        if not isinstance(verifier, dict) or set(verifier) != VERIFIER_FIELDS:
+            return "claim verifier fields mismatch"
+        if not all(
+            isinstance(verifier[field], str) and bool(verifier[field])
+            for field in ("role", "result", "result_location")
+        ):
+            return "claim verifier string mismatch"
+        if verifier["result"] not in {"support", "abstain"}:
+            return "claim verifier result mismatch"
+        if not (
+            _string_list(verifier["view_ids"], nonempty=True)
+            and _string_list(verifier["evidence_ids"], nonempty=True)
+        ):
+            return "claim verifier arrays mismatch"
+        if verifier["view_ids"] != [
+            item["view_id"] for item in claim["views"]["scores"]
+        ]:
+            return "claim verifier views mismatch"
+        if set(verifier["evidence_ids"]) != {
+            item["id"] for item in claim["evidence"]
+        }:
+            return "claim verifier evidence mismatch"
+        obligations = claim["open_obligations"]
+        if not _string_list(obligations):
+            return "claim open obligations mismatch"
+        if claim["evidence_invalidated"] is not False:
+            return "claim invalidation state mismatch"
+        if claim["state"] == "EVIDENCE_VERIFIED" and (
+            obligations
+            or claim["views"]["unresolved_disagreement"]
+            or verifier["result"] != "support"
+        ):
+            return "verified claim retains an open condition"
+        if claim["state"] == "INCONCLUSIVE" and not obligations:
+            return "inconclusive claim lacks an open obligation"
+        return None
+
+
+    def main() -> int:
+        parser = argparse.ArgumentParser()
+        subparsers = parser.add_subparsers(dest="command", required=True)
+        start = subparsers.add_parser("start")
+        start.add_argument("--cwd", default=".")
+        start.add_argument("--ledger", default=".verification/ledger.json")
+        start.add_argument("--mode", choices=("closure", "triage"), default="triage")
+        validate = subparsers.add_parser("validate")
+        validate.add_argument("ledger")
+        validate.add_argument("--cwd", default=".")
+        arguments = parser.parse_args()
+        root = Path(arguments.cwd).resolve(strict=True)
+        ledger = Path(arguments.ledger)
+        if not ledger.is_absolute():
+            ledger = root / ledger
+        marker = root / ".verification/active.json"
+        if arguments.command == "start":
+            revision = capture_artifact_revision(
+                root, excluded_paths=frozenset({ledger})
+            )
+            ledger.parent.mkdir(parents=True, exist_ok=True)
+            marker.parent.mkdir(parents=True, exist_ok=True)
+            ledger.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "1.0",
+                        "mode": arguments.mode,
+                        "artifact_revision": revision,
+                        "claims": [],
+                    },
+                    indent=2,
+                )
+                + chr(10),
+                encoding="utf-8",
+            )
+            marker.write_text(
+                json.dumps(
+                    {
+                        "ledger": ledger.relative_to(root).as_posix(),
+                        "artifact_revision": revision,
+                    },
+                    indent=2,
+                )
+                + chr(10),
+                encoding="utf-8",
+            )
+            print(ledger.relative_to(root).as_posix())
+            return 0
+        payload = json.loads(ledger.read_text("utf-8"))
+        activation = json.loads(marker.read_text("utf-8"))
+        revision = capture_artifact_revision(
+            root, excluded_paths=frozenset({ledger})
+        )
+        if not isinstance(payload, dict) or set(payload) != {
+            "schema_version", "mode", "artifact_revision", "claims",
+        }:
+            print("ledger: root fields mismatch")
+            return 1
+        if payload["schema_version"] != "1.0":
+            print("ledger: schema version mismatch")
+            return 1
+        if payload["mode"] not in {"closure", "triage"}:
+            print("ledger: mode mismatch")
+            return 1
+        artifact_revision = payload["artifact_revision"]
+        if not isinstance(artifact_revision, str) or not artifact_revision:
+            print("ledger: artifact revision mismatch")
+            return 1
+        claims = payload["claims"]
+        if not isinstance(claims, list):
+            print("ledger: claims must be an array")
+            return 1
+        if not claims:
+            print("ledger: claims must contain at least one claim")
+            return 1
+        if not isinstance(activation, dict) or set(activation) != {
+            "ledger", "artifact_revision",
+        }:
+            print("verification activation binding mismatch")
+            return 1
+        if (
+            activation.get("ledger") != ledger.relative_to(root).as_posix()
+            or activation.get("artifact_revision")
+            != artifact_revision
+            or revision != artifact_revision
+        ):
+            print("verification activation binding mismatch")
+            return 1
+        for index, claim in enumerate(claims):
+            error = _claim_error(claim, artifact_revision=artifact_revision)
+            if error is not None:
+                print(f"ledger: claims[{index}]: {error}")
+                return 1
+        claim_ids = [claim["id"] for claim in claims]
+        if len(claim_ids) != len(set(claim_ids)) or set(claim_ids) != WAVE0_CLAIM_IDS:
+            print("ledger: Wave 0 claim set mismatch")
+            return 1
+        return 0
+
+
+    if __name__ == "__main__":
+        raise SystemExit(main())
+    """
+).encode("utf-8")
+
+
+VERIFICATION_FIXTURE_BYTES = {
+    "SKILL.md": b"verification fixture skill\n",
+    "references/contract.md": b"verification fixture contract\n",
+    "references/criteria-code.md": b"verification fixture code criteria\n",
+    "references/criteria-evidence.md": b"verification fixture evidence criteria\n",
+    "references/criteria-experiment.md": b"verification fixture experiment criteria\n",
+    "references/criteria-general.md": b"verification fixture general criteria\n",
+    "references/criteria-math.md": b"verification fixture math criteria\n",
+    "schemas/claim-ledger.schema.json": b"{\"fixture\":\"claim-ledger\"}\n",
+    "scripts/verification_gate.py": TEST_VERIFICATION_GATE_SOURCE,
+}
+
+
 def _run(*args: str, cwd: Path) -> str:
     return subprocess.run(
         args,
@@ -134,6 +537,73 @@ def _run_direct_script(script: str, *args: str) -> subprocess.CompletedProcess[s
         capture_output=True,
         text=True,
     )
+
+
+def _write_verification_fixture(
+    root: Path,
+    *,
+    files: Mapping[str, bytes] | None = None,
+) -> dict[str, object]:
+    active_files = VERIFICATION_FIXTURE_BYTES if files is None else files
+    assert tuple(sorted(active_files)) == (
+        EXPECTED_VERIFICATION_ACTIVE_PATHS
+    )
+    records = []
+    for relative, data in active_files.items():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        records.append(
+            {
+                "path": relative,
+                "size_bytes": len(data),
+                "sha256": sha256(data).hexdigest(),
+            }
+        )
+    return {
+        "schema_version": "verification-contract-v1",
+        "canonical_relative_root": ".codex/skills/verification",
+        "active_path_policy": (
+            "skill_plus_references_schemas_and_scripts_without_caches"
+        ),
+        "files": sorted(records, key=lambda item: item["path"]),
+    }
+
+
+@contextmanager
+def _windows_junction(link: Path, target: Path) -> Iterator[Path]:
+    if os.name != "nt" or not hasattr(Path, "is_junction"):
+        pytest.skip("capability unavailable: windows_junction")
+    link.parent.mkdir(parents=True, exist_ok=True)
+    result = subprocess.run(
+        ["cmd.exe", "/d", "/c", "mklink", "/J", str(link), str(target)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0 or not link.is_junction():
+        if os.path.lexists(link):
+            link.rmdir()
+        pytest.skip("capability unavailable: windows_junction")
+    try:
+        yield link
+    finally:
+        if os.path.lexists(link):
+            link.rmdir()
+
+
+@contextmanager
+def _directory_symlink(link: Path, target: Path) -> Iterator[Path]:
+    link.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        link.symlink_to(target, target_is_directory=True)
+    except (NotImplementedError, OSError):
+        pytest.skip("capability unavailable: symbolic_link")
+    try:
+        yield link
+    finally:
+        if os.path.lexists(link):
+            link.unlink()
 
 
 def _init_repo(path: Path) -> tuple[str, str]:
@@ -540,13 +1010,15 @@ def _review_validation_repo(
         yield repo, raw, tested, parent
 
 
-def _run_gate(gate: Path, repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [str(CPU_PYTHON), "-B", str(gate), *args],
-        cwd=repo,
-        check=False,
-        capture_output=True,
-        text=True,
+def _run_gate(
+    gate: remediation_evidence.VerifiedVerificationGate,
+    repo: Path,
+    *args: str,
+) -> subprocess.CompletedProcess[str]:
+    del repo
+    return remediation_evidence.run_verified_verification_gate(
+        gate,
+        args,
     )
 
 
@@ -2876,7 +3348,7 @@ def test_detached_domain_extras_require_complete_one_way_inventory(
 @pytest.mark.parametrize(
     ("script", "expected"),
     [
-        ("tools/remediation_evidence.py", "resolve-verification-gate"),
+        ("tools/remediation_evidence.py", "run-verification-gate"),
         ("tools/build_wave0_evidence.py", "review-context-sha"),
     ],
 )
@@ -2924,32 +3396,88 @@ def test_direct_script_validate_reaches_lazy_wrapper_import(tmp_path: Path) -> N
     assert result.stderr.strip() == "error: dependency inputs must be nonempty"
 
 
-def test_direct_script_resolves_installed_verification_gate() -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    verification_root = Path.home() / ".codex/skills/verification"
-    expected = (verification_root / "scripts/verification_gate.py").resolve(strict=True)
+def test_direct_script_runs_deterministic_verification_gate_from_retained_bytes(
+    tmp_path: Path,
+) -> None:
+    verification_root = tmp_path / "profile/.codex/skills/verification"
+    snapshot = _write_verification_fixture(verification_root)
+    snapshot_path = tmp_path / "verification-contract-v1.json"
+    snapshot_path.write_bytes(canonical_json_bytes(snapshot))
+    repo = tmp_path / "repo"
+    _init_repo(repo)
+    ledger_relative = ".verification/wave-0/final-ledger.json"
 
     result = _run_direct_script(
         "tools/remediation_evidence.py",
-        "resolve-verification-gate",
+        "run-verification-gate",
         "--snapshot",
-        str(repo_root / SNAPSHOT_PATH),
+        str(snapshot_path),
         "--root",
         str(verification_root),
+        "--",
+        "start",
+        "--cwd",
+        str(repo),
+        "--ledger",
+        ledger_relative,
+        "--mode",
+        "closure",
     )
 
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == str(expected)
+    assert result.stdout.strip() == ledger_relative
     assert result.stderr == ""
+    assert (repo / ledger_relative).is_file()
+
+
+def test_deterministic_verification_gate_rejects_malformed_nonempty_claim(
+    tmp_path: Path,
+) -> None:
+    verification_root = tmp_path / "profile/.codex/skills/verification"
+    snapshot = _write_verification_fixture(verification_root)
+    gate = resolve_verified_verification_gate(snapshot, root=verification_root)
+    repo = tmp_path / "repo"
+    _init_repo(repo)
+    ledger_relative = ".verification/wave-0/final-ledger.json"
+
+    started = _run_gate(
+        gate,
+        repo,
+        "start",
+        "--cwd",
+        str(repo),
+        "--ledger",
+        ledger_relative,
+        "--mode",
+        "closure",
+    )
+    assert started.returncode == 0, started.stderr
+    ledger = repo / ledger_relative
+    malformed = json.loads(ledger.read_bytes())
+    malformed["claims"] = [{}]
+    ledger.write_bytes(canonical_json_bytes(malformed))
+
+    validated = _run_gate(gate, repo, "validate", ledger_relative, "--cwd", str(repo))
+
+    assert validated.returncode != 0
+    assert "claim fields mismatch" in validated.stdout
 
 
 def test_parsers_expose_only_the_frozen_commands() -> None:
     generic = remediation_parser()
     assert (
         generic.parse_args(
-            ["resolve-verification-gate", "--snapshot", "s", "--root", "r"]
+            [
+                "run-verification-gate",
+                "--snapshot",
+                "s",
+                "--root",
+                "r",
+                "--",
+                "start",
+            ]
         ).command
-        == "resolve-verification-gate"
+        == "run-verification-gate"
     )
     with pytest.raises(SystemExit):
         generic.parse_args(["build"])
@@ -3121,7 +3649,13 @@ def test_validate_reviews_rejects_noncanonical_raw_json_before_closure(
             assert not closure_dir.exists()
 
 
-def test_wave0_candidate_review_closure_and_gate_lifecycle() -> None:
+def test_wave0_candidate_review_closure_and_gate_lifecycle(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    profile = tmp_path / "profile"
+    verification_root = profile / ".codex/skills/verification"
+    fixture_snapshot = _write_verification_fixture(verification_root)
     with _short_task_repo() as repo:
         parent = _run("git", "rev-parse", "HEAD", cwd=repo)
         candidate = _candidate_bundle(repo)
@@ -3446,9 +3980,26 @@ def test_wave0_candidate_review_closure_and_gate_lifecycle() -> None:
         closure_index = json.loads((closure_dir / "index.json").read_bytes())
         validate_evidence_index(closure_index, repo_root=repo, actual_head=tested)
 
-        snapshot = json.loads((repo / SNAPSHOT_PATH).read_bytes())
-        gate = resolve_verification_gate(
-            snapshot, root=Path.home() / ".codex/skills/verification"
+        verified_gate = remediation_evidence.resolve_verified_verification_gate(
+            fixture_snapshot,
+            root=verification_root,
+        )
+        gate = verified_gate
+        monkeypatch.setattr(
+            Path, "home", classmethod(lambda cls: profile)
+        )
+
+        def resolve_lifecycle_gate(
+            snapshot: Mapping[str, object] | Path | str, *, root: Path | str
+        ) -> remediation_evidence.VerifiedVerificationGate:
+            assert Path(snapshot).resolve(strict=True) == repo / SNAPSHOT_PATH
+            assert Path(root) == verification_root
+            return verified_gate
+
+        monkeypatch.setattr(
+            wave0_evidence,
+            "resolve_verified_verification_gate",
+            resolve_lifecycle_gate,
         )
         ledger_relative = ".verification/wave-0/final-ledger.json"
         public_review_path = closure_dir / INITIAL_REVIEW_PATHS[0]
@@ -3606,32 +4157,450 @@ def test_tested_input_resolver_rejects_matching_untracked_file(tmp_path: Path) -
         with pytest.raises(ValueError, match="untracked tested input"):
             resolve_tested_input_policy(repo)
 
+def test_wave0_executes_only_the_gate_bytes_retained_during_validation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    verified_source = textwrap.dedent(
+        """\
+        def capture_artifact_revision(cwd, *, excluded_paths=None):
+            return "verified-revision"
+        """
+    ).encode("utf-8")
+    tampered_source = textwrap.dedent(
+        """\
+        def capture_artifact_revision(cwd, *, excluded_paths=None):
+            return "tampered-revision"
+        """
+    ).encode("utf-8")
+    profile = tmp_path / "profile"
+    verification_root = profile / ".codex/skills/verification"
+    fixture_files = dict(VERIFICATION_FIXTURE_BYTES)
+    fixture_files["scripts/verification_gate.py"] = verified_source
+    snapshot = _write_verification_fixture(
+        verification_root,
+        files=fixture_files,
+    )
+    gate_path = verification_root / "scripts/verification_gate.py"
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    ledger = repo / ".verification/wave-0/final-ledger.json"
+    ledger.parent.mkdir(parents=True)
+    marker = repo / ".verification/active.json"
+    marker.write_bytes(
+        canonical_json_bytes(
+            {
+                "ledger": ".verification/wave-0/final-ledger.json",
+                "artifact_revision": "verified-revision",
+            }
+        )
+    )
+    snapshot_path = repo / SNAPSHOT_PATH
+    snapshot_path.parent.mkdir(parents=True)
+    snapshot_path.write_bytes(canonical_json_bytes(snapshot))
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: profile))
+
+    if hasattr(wave0_evidence, "resolve_verified_verification_gate"):
+        original_snapshot_resolver = (
+            wave0_evidence.resolve_verified_verification_gate
+        )
+
+        def replace_after_snapshot_validation(*args: object, **kwargs: object) -> object:
+            resolved = original_snapshot_resolver(*args, **kwargs)
+            resolved.path.write_bytes(tampered_source)
+            return resolved
+
+        monkeypatch.setattr(
+            wave0_evidence,
+            "resolve_verified_verification_gate",
+            replace_after_snapshot_validation,
+        )
+
+    assert wave0_evidence._validate_active_gate_binding(
+        root=repo,
+        ledger=ledger,
+        ledger_payload={"artifact_revision": "verified-revision"},
+    ) == "verified-revision"
+    assert gate_path.read_bytes() == tampered_source
+
+
 
 def test_verification_snapshot_resolver_is_exact_and_rejects_extras(
     tmp_path: Path,
 ) -> None:
-    root = tmp_path / ".codex/skills/verification"
-    (root / "references").mkdir(parents=True)
-    (root / "schemas").mkdir()
-    (root / "scripts").mkdir()
-    files = []
-    for rel in EXPECTED_VERIFICATION_ACTIVE_PATHS:
-        path = root / rel
-        path.write_text(rel + "\n", encoding="utf-8")
-        data = path.read_bytes()
-        files.append(
-            {"path": rel, "size_bytes": len(data), "sha256": sha256(data).hexdigest()}
-        )
-    snapshot = {
-        "schema_version": "verification-contract-v1",
-        "canonical_relative_root": ".codex/skills/verification",
-        "active_path_policy": "skill_plus_references_schemas_and_scripts_without_caches",
-        "files": sorted(files, key=lambda item: item["path"]),
-    }
+    root = tmp_path / "profile/.codex/skills/verification"
+    snapshot = _write_verification_fixture(root)
     assert (
-        resolve_verification_gate(snapshot, root=root)
+        resolve_verified_verification_gate(snapshot, root=root).path
         == root / "scripts/verification_gate.py"
     )
     (root / "scripts/extra.py").write_text("pass\n", encoding="utf-8")
     with pytest.raises(ValueError, match="unexpected active verification file"):
-        resolve_verification_gate(snapshot, root=root)
+        resolve_verified_verification_gate(snapshot, root=root)
+
+
+def test_verification_snapshot_resolver_accepts_only_the_profile_sibling_junction(
+    tmp_path: Path,
+) -> None:
+    profile = tmp_path / "profile"
+    physical_root = profile / ".claude/skills/verification"
+    snapshot = _write_verification_fixture(physical_root)
+    lexical_root = profile / ".codex/skills/verification"
+
+    with _windows_junction(lexical_root, physical_root):
+        assert (
+            resolve_verified_verification_gate(snapshot, root=lexical_root).path
+            == physical_root / "scripts/verification_gate.py"
+        )
+        (physical_root / "scripts/verification_gate.py").write_bytes(
+            b"tampered fixture\n"
+        )
+        with pytest.raises(ValueError, match="active-file mismatch"):
+            resolve_verified_verification_gate(snapshot, root=lexical_root)
+
+
+def test_verification_snapshot_resolver_rejects_noncanonical_lexical_alias(
+    tmp_path: Path,
+) -> None:
+    physical_root = tmp_path / "profile/.codex/skills/verification"
+    snapshot = _write_verification_fixture(physical_root)
+    alias = tmp_path / "verification-alias"
+
+    with _windows_junction(alias, physical_root):
+        with pytest.raises(ValueError, match="lexical"):
+            resolve_verified_verification_gate(snapshot, root=alias)
+
+
+def test_verification_snapshot_resolver_rejects_same_byte_arbitrary_junction(
+    tmp_path: Path,
+) -> None:
+    physical_root = tmp_path / "attacker/.codex/skills/verification"
+    snapshot = _write_verification_fixture(physical_root)
+    lexical_root = tmp_path / "profile/.codex/skills/verification"
+
+    with _windows_junction(lexical_root, physical_root):
+        with pytest.raises(ValueError, match="sibling"):
+            resolve_verified_verification_gate(snapshot, root=lexical_root)
+
+
+def test_verification_snapshot_resolver_rejects_reparse_ancestor(
+    tmp_path: Path,
+) -> None:
+    redirected_codex = tmp_path / "redirected/profile/.codex"
+    physical_root = redirected_codex / "skills/verification"
+    snapshot = _write_verification_fixture(physical_root)
+    lexical_codex = tmp_path / "profile/.codex"
+    lexical_root = lexical_codex / "skills/verification"
+
+    with _windows_junction(lexical_codex, redirected_codex):
+        with pytest.raises(ValueError, match="reparse ancestor"):
+            resolve_verified_verification_gate(snapshot, root=lexical_root)
+
+
+def test_verification_snapshot_resolver_rejects_terminal_directory_symlink(
+    tmp_path: Path,
+) -> None:
+    physical_root = tmp_path / "attacker/.codex/skills/verification"
+    snapshot = _write_verification_fixture(physical_root)
+    lexical_root = tmp_path / "profile/.codex/skills/verification"
+
+    with _directory_symlink(lexical_root, physical_root):
+        with pytest.raises(ValueError, match="symlink"):
+            resolve_verified_verification_gate(snapshot, root=lexical_root)
+
+
+def test_verification_snapshot_resolver_rejects_nested_junction(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "profile/.codex/skills/verification"
+    snapshot = _write_verification_fixture(root)
+    nested_target = tmp_path / "outside"
+    nested_target.mkdir()
+    nested = root / "references/nested"
+
+    with _windows_junction(nested, nested_target):
+        with pytest.raises(ValueError, match="reparse"):
+            resolve_verified_verification_gate(snapshot, root=root)
+
+
+def test_verified_gate_runner_uses_retained_bytes_after_path_replacement(
+    tmp_path: Path,
+) -> None:
+    verification_root = tmp_path / "profile/.codex/skills/verification"
+    snapshot = _write_verification_fixture(verification_root)
+    verified = remediation_evidence.resolve_verified_verification_gate(
+        snapshot, root=verification_root
+    )
+    tampered_marker = tmp_path / "tampered-gate-executed.txt"
+    verified.path.write_text(
+        "from pathlib import Path\n"
+        f"Path({str(tampered_marker)!r}).write_text('tampered', encoding='utf-8')\n"
+        "def main(): return 91\n",
+        encoding="utf-8",
+    )
+    repo = tmp_path / "repo"
+    _init_repo(repo)
+
+    result = remediation_evidence.run_verified_verification_gate(
+        verified,
+        [
+            "start",
+            "--cwd",
+            str(repo),
+            "--ledger",
+            ".verification/wave-0/final-ledger.json",
+            "--mode",
+            "closure",
+        ],
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert not tampered_marker.exists()
+    assert (repo / ".verification/wave-0/final-ledger.json").is_file()
+
+
+def test_isolated_gate_capture_ignores_cwd_and_pythonpath_poisoning(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    verification_root = tmp_path / "profile/.codex/skills/verification"
+    snapshot = _write_verification_fixture(verification_root)
+    verified = remediation_evidence.resolve_verified_verification_gate(
+        snapshot, root=verification_root
+    )
+    repo = tmp_path / "repo"
+    _, head = _init_repo(repo)
+    poison = tmp_path / "poison"
+    poison.mkdir()
+    marker = tmp_path / "shlex-poisoned.txt"
+    (poison / "shlex.py").write_text(
+        "from pathlib import Path\n"
+        f"Path({str(marker)!r}).write_text('poisoned', encoding='utf-8')\n"
+        "raise RuntimeError('shadow shlex imported')\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(poison)
+    monkeypatch.setenv("PYTHONPATH", str(poison))
+
+    revision = remediation_evidence.capture_verified_artifact_revision(
+        verified, cwd=repo
+    )
+
+    assert revision.startswith(f"git:{head}:sha256:")
+    assert not marker.exists()
+
+
+def test_isolated_gate_capture_ignores_parent_sys_modules_poisoning(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    verification_root = tmp_path / "profile/.codex/skills/verification"
+    snapshot = _write_verification_fixture(verification_root)
+    verified = remediation_evidence.resolve_verified_verification_gate(
+        snapshot, root=verification_root
+    )
+    repo = tmp_path / "repo"
+    _, head = _init_repo(repo)
+    poison = types.ModuleType("argparse")
+
+    def reject_parent_module(_name: str) -> object:
+        raise AssertionError("parent argparse poison reached isolated child")
+
+    poison.__getattr__ = reject_parent_module  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "argparse", poison)
+
+    revision = remediation_evidence.capture_verified_artifact_revision(
+        verified, cwd=repo
+    )
+
+    assert revision.startswith(f"git:{head}:sha256:")
+
+
+def test_isolated_gate_capture_combines_retained_bytes_and_import_isolation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    verification_root = tmp_path / "profile/.codex/skills/verification"
+    snapshot = _write_verification_fixture(verification_root)
+    verified = remediation_evidence.resolve_verified_verification_gate(
+        snapshot, root=verification_root
+    )
+    path_marker = tmp_path / "path-tamper.txt"
+    verified.path.write_text(
+        "from pathlib import Path\n"
+        f"Path({str(path_marker)!r}).write_text('tampered', encoding='utf-8')\n"
+        "def capture_artifact_revision(cwd, *, excluded_paths=None):\n"
+        "    return 'tampered-revision'\n",
+        encoding="utf-8",
+    )
+    repo = tmp_path / "repo"
+    _, head = _init_repo(repo)
+    poison = tmp_path / "poison"
+    poison.mkdir()
+    import_marker = tmp_path / "import-poison.txt"
+    (poison / "shlex.py").write_text(
+        "from pathlib import Path\n"
+        f"Path({str(import_marker)!r}).write_text('poisoned', encoding='utf-8')\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(poison)
+    monkeypatch.setenv("PYTHONPATH", str(poison))
+
+    revision = remediation_evidence.capture_verified_artifact_revision(
+        verified, cwd=repo
+    )
+
+    assert revision.startswith(f"git:{head}:sha256:")
+    assert not path_marker.exists()
+    assert not import_marker.exists()
+
+
+def test_wave0_never_executes_gate_bytes_in_the_builder_process(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    profile = tmp_path / "profile"
+    verification_root = profile / ".codex/skills/verification"
+    snapshot = _write_verification_fixture(verification_root)
+    repo = tmp_path / "repo"
+    _init_repo(repo)
+    snapshot_path = repo / SNAPSHOT_PATH
+    snapshot_path.parent.mkdir(parents=True)
+    snapshot_path.write_bytes(canonical_json_bytes(snapshot))
+    ledger = repo / ".verification/wave-0/final-ledger.json"
+    ledger.parent.mkdir(parents=True)
+    verified = remediation_evidence.resolve_verified_verification_gate(
+        snapshot, root=verification_root
+    )
+    revision = remediation_evidence.capture_verified_artifact_revision(
+        verified, cwd=repo, excluded_paths=frozenset({ledger})
+    )
+    marker = repo / ".verification/active.json"
+    marker.write_bytes(
+        canonical_json_bytes(
+            {
+                "ledger": ".verification/wave-0/final-ledger.json",
+                "artifact_revision": revision,
+            }
+        )
+    )
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: profile))
+
+    def reject_parent_exec(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("verification gate executed in builder process")
+
+    monkeypatch.setattr(builtins, "exec", reject_parent_exec)
+
+    assert wave0_evidence._validate_active_gate_binding(
+        root=repo,
+        ledger=ledger,
+        ledger_payload={"artifact_revision": revision},
+    ) == revision
+
+
+def test_verified_gate_runner_rejects_unsupported_gate_operation(
+    tmp_path: Path,
+) -> None:
+    verification_root = tmp_path / "profile/.codex/skills/verification"
+    snapshot = _write_verification_fixture(verification_root)
+    verified = remediation_evidence.resolve_verified_verification_gate(
+        snapshot, root=verification_root
+    )
+
+    with pytest.raises(ValueError, match="only start or validate"):
+        remediation_evidence.run_verified_verification_gate(
+            verified, ["abandon", "--cwd", str(tmp_path)]
+        )
+
+
+def test_verified_gate_child_output_is_strictly_framed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    verified = remediation_evidence.VerifiedVerificationGate(
+        path=tmp_path / "verification_gate.py",
+        source_bytes=b"def main(): return 0\n",
+    )
+
+    def malformed_child(*args: object, **kwargs: object) -> subprocess.CompletedProcess[bytes]:
+        argv = args[0]
+        assert argv[:5] == [
+            str(CPU_PYTHON),
+            "-I",
+            "-S",
+            "-B",
+            "-c",
+        ]
+        assert kwargs["input"].endswith(verified.source_bytes)
+        return subprocess.CompletedProcess(argv, 0, stdout=b"unframed", stderr=b"")
+
+    monkeypatch.setattr(remediation_evidence.subprocess, "run", malformed_child)
+
+    with pytest.raises(ValueError, match="framed output"):
+        remediation_evidence.run_verified_verification_gate(
+            verified, ["validate", "ledger.json", "--cwd", str(tmp_path)]
+        )
+
+
+def test_governing_wave0_lifecycle_has_no_resolved_path_execution() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    plan = (
+        repo_root
+        / "docs/superpowers/plans/2026-08-11-scientific-integrity-remediation-wave-0.md"
+    ).read_text("utf-8")
+    readme = (
+        repo_root / "docs/verification/remediation/README.md"
+    ).read_text("utf-8")
+
+    assert "resolve-verification-gate" not in plan
+    assert "$gate" not in plan
+    assert "run-verification-gate" in plan
+    assert "resolve-verification-gate" not in readme
+    assert "run-verification-gate" in readme
+
+
+@pytest.mark.parametrize("wave", tuple("abcde"))
+def test_governing_wave_lifecycle_uses_only_retained_byte_runner(wave: str) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    plan = (
+        repo_root
+        / f"docs/superpowers/plans/2026-08-11-scientific-integrity-remediation-wave-{wave}.md"
+    ).read_text("utf-8")
+
+    assert "**Binding 2026-08-13 gate-execution supersession.**" in plan
+    assert "resolve-verification-gate" not in plan
+    assert "run-verification-gate --snapshot" in plan
+    assert re.search(
+        r"run-verification-gate\s+--snapshot\s+\S+\s+--root\s+\S+\s+--\s+(?:start|validate)",
+        plan,
+    )
+    inline_runner_examples = re.findall(
+        r"`([^`]*run-verification-gate[^`]*)`", plan
+    )
+    assert inline_runner_examples
+    assert all(
+        "--snapshot" not in example
+        or re.search(r"--\s+(?:(?:start|validate)\b|<start\|validate>)", example)
+        for example in inline_runner_examples
+    )
+    runner_invocations = re.findall(
+        r"(?m)^\s*&[^\r\n]*run-verification-gate[^\r\n]*$", plan
+    )
+    assert runner_invocations
+    assert all(
+        re.search(r"--\s+(?:start|validate)\b", invocation)
+        for invocation in runner_invocations
+    )
+    assert re.search(
+        r"(?mi)^\s*\$(?:resolverOutput|resolvedGate)\s*=", plan
+    ) is None
+    assert re.search(
+        r"(?i)Resolve-Path\s+-LiteralPath\s+\$(?:gate|resolvedGate)\b", plan
+    ) is None
+    assert re.search(r"(?m)^\s*\$gate\s*=", plan) is None
+    assert re.search(
+        r"(?m)^\s*&[^\r\n]*\$gate\s+(?:start|validate)\b", plan
+    ) is None
+    assert re.search(
+        r"(?m)^\s*&[^\r\n]*resolve-verification-gate\b", plan
+    ) is None

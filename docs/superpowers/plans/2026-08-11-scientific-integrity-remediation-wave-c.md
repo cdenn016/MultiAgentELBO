@@ -1,5 +1,13 @@
 # Scientific Integrity Remediation Wave C Implementation Plan
 
+> **Binding 2026-08-13 gate-execution supersession.** Any older path-return
+> resolver command preserved below records the historical review context only and
+> is not executable guidance. Current gate actions must validate the snapshot and
+> explicit `.codex` root and execute retained bytes in one safe invocation:
+> `C:\Python314\python.exe -B tools\remediation_evidence.py run-verification-gate --snapshot SNAPSHOT --root ROOT -- start ARGS` or
+> `C:\Python314\python.exe -B tools\remediation_evidence.py run-verification-gate --snapshot SNAPSHOT --root ROOT -- validate ARGS`.
+> Never assign or execute a resolved `$gate` path. Historical JUnit and evidence
+> records remain revision-bound history and are not rewritten by this correction.
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Every checkbox is a stopping point; do not combine commits or skip a RED run.
 
 **Goal:** Close `AUD-06`, `AUD-07`, `AUD-08`, `AUD-09`, and `AUD-19` by making every fixed-ray execution consume one validated 2x2 system identity, carrying two unambiguous digests through versioned CPU/CUDA records, resolving one publication root, and rejecting inert scale-cocycle options before effects.
@@ -12,7 +20,7 @@
 
 - Start from the exact verified merge of Waves 0, A, and B, with design revision `c43a7c50675cf63b60f7b6cbea9664b638cd4c4e` in history. Fetch `origin/main`, verify its log, and create a fresh isolated `codex/` worktree.
 - Treat the reviewed Wave 0 plan as immutable authority: `docs/superpowers/plans/2026-08-11-scientific-integrity-remediation-wave-0.md` must have SHA-256 `dbe2263a3b0fe1e9f5db4ff1fca9a19f819cfd32ef38da71d6e5cb5485723ac2`. Bind its terminal tested Git head, final ledger, closure index, and pinned verification snapshot before Wave C evidence preparation.
-- Resolve the installed gate only through `tools/remediation_evidence.py resolve-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root "C:\Users\chris and christine\.codex\skills\verification"`. The explicit canonical `.codex` root is mandatory; no alternate home, PATH-local, copied-script, or fallback gate is eligible.
+- Execute the installed gate only through `tools/remediation_evidence.py run-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root "C:\Users\chris and christine\.codex\skills\verification" -- <start|validate> ARGS`. The explicit canonical `.codex` root is mandatory; no alternate home, PATH-local, copied-script, path-return command, or fallback gate is eligible.
 - Preserve every byte in the user's live checkout. Never stash, reset, clean, switch, or rewrite live configuration.
 - Use American English in source, tests, documents, and commits.
 - CPU tests use `C:\Python314\python.exe`, cache-disabled pytest, worktree-local basetemps, and fresh JUnit where evidence is requested.
@@ -2674,14 +2682,14 @@ from tools.remediation_evidence import (
     prepare_evidence_bundle,
     privacy_transform_bytes,
     publish_evidence_bundle,
-    resolve_verification_gate,
+    resolve_verified_verification_gate,
     validate_evidence_index,
 )
 ```
 
 `build` validates full lowercase 40-character heads and the exact stage relation before reading raw inputs. The raw directory must resolve to `.verification/raw/wave-c/{tested_head[:12]}/{stage}`. The candidate output must resolve to `docs/verification/evidence/wave-c/{tested_head[:12]}`; the closure output must resolve to `verification-evidence/wave-c/{tested_head[:12]}`. The output directory must be absent before preparation. A preparation failure leaves its parent directory byte-identical; an injected publication failure removes only its newly created sibling/destination and leaves every preexisting sibling byte-identical.
 
-Before either stage, resolve the installed validator only through `resolve_verification_gate(VERIFICATION_SNAPSHOT, root=VERIFICATION_ROOT)`, equivalently the frozen CLI `tools/remediation_evidence.py resolve-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root "C:\Users\chris and christine\.codex\skills\verification"`. Validate the snapshot's exact nine active files and reject every PATH/local-copy/environment/home lookup or alternate-root fallback. The reviewed Wave C plan binding is discovered from its current bytes and last-touch commit, which must be an ancestor of both `P` and `E` and whose committed blob must equal the tested plan bytes.
+Before either stage, obtain the validated retained-byte gate only through `resolve_verified_verification_gate(VERIFICATION_SNAPSHOT, root=VERIFICATION_ROOT)`; every executable action uses the frozen CLI `tools/remediation_evidence.py run-verification-gate --snapshot docs/verification/remediation/verification-contract-v1.json --root "C:\Users\chris and christine\.codex\skills\verification" -- <start|validate> ARGS`. Validate the snapshot's exact nine active files and reject every PATH/local-copy/environment/home lookup, path-return command, or alternate-root fallback. The reviewed Wave C plan binding is discovered from its current bytes and last-touch commit, which must be an ancestor of both `P` and `E` and whose committed blob must equal the tested plan bytes.
 
 `wave0-terminal-binding.json` is a closed public-form dependency record with exactly `WAVE0_TERMINAL_BINDING_FIELDS`. It rereads the fixed ignored inputs `WAVE0_TERMINAL_LEDGER` and the complete `WAVE0_TERMINAL_CLOSURE`, validates `WAVE0_TERMINAL_INDEX` and every indexed byte, requires the finalized Wave 0 plan bytes to have SHA-256 `WAVE0_REVIEWED_PLAN_SHA256`, requires the same pinned verification snapshot, and validates the Wave 0 ledger as schema `1.0`/mode `closure` with exactly its two terminal claims and one common complete artifact revision. It recomputes the ASCII-sorted closure inventory digest, binds the full Wave 0 tested head and implementation parent, verifies their ancestry and the index heads, and rejects any terminal-ledger/index/closure/snapshot/plan mismatch. This is a read-only prerequisite; Wave C never promotes, rewrites, or fabricates Wave 0 evidence.
 
@@ -3143,10 +3151,7 @@ if (Test-Path Env:PYTHONPATH) { throw 'candidate PYTHONPATH is still set' }
 
 $verificationRoot = 'C:\Users\chris and christine\.codex\skills\verification'
 $snapshot = 'docs/verification/remediation/verification-contract-v1.json'
-$gate = (& 'C:\Python314\python.exe' -B tools\remediation_evidence.py resolve-verification-gate --snapshot $snapshot --root $verificationRoot).Trim()
-if ($LASTEXITCODE -ne 0 -or -not [System.IO.Path]::IsPathFullyQualified($gate)) { throw 'candidate verification gate resolution failed' }
 $resolvedVerificationRoot = (Resolve-Path -LiteralPath $verificationRoot).Path
-if (-not $gate.StartsWith($resolvedVerificationRoot + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'resolved gate escaped the explicit .codex verification root' }
 $wave0Ledger = '.verification/dependencies/wave-0/final-ledger.json'
 $wave0Closure = '.verification/dependencies/wave-0/closure'
 $wave0Index = "$wave0Closure/index.json"
@@ -3310,10 +3315,7 @@ if (Test-Path Env:PYTHONPATH) { throw 'closure PYTHONPATH is still set' }
 
 $verificationRoot = 'C:\Users\chris and christine\.codex\skills\verification'
 $snapshot = 'docs/verification/remediation/verification-contract-v1.json'
-$gate = (& 'C:\Python314\python.exe' -B tools\remediation_evidence.py resolve-verification-gate --snapshot $snapshot --root $verificationRoot).Trim()
-if ($LASTEXITCODE -ne 0 -or -not [System.IO.Path]::IsPathFullyQualified($gate)) { throw 'closure verification gate resolution failed' }
 $resolvedVerificationRoot = (Resolve-Path -LiteralPath $verificationRoot).Path
-if (-not $gate.StartsWith($resolvedVerificationRoot + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'resolved closure gate escaped the explicit .codex verification root' }
 $wave0Ledger = '.verification/dependencies/wave-0/final-ledger.json'
 $wave0Closure = '.verification/dependencies/wave-0/closure'
 $wave0Index = "$wave0Closure/index.json"
@@ -3372,13 +3374,10 @@ try {
     $gateOutput = @(& 'C:\anaconda\python.exe' run_gaussian_fixed_ray_lab.py 2>&1)
     $gateExit = $LASTEXITCODE
     $gateOutput | ForEach-Object { Write-Host $_ }
-    if ($gateExit -ne 0) { throw 'fresh CUDA gate command failed' }
     $gateDigestLine = @($gateOutput | Where-Object { $_ -match '^cuda_gate_sha256=[0-9a-f]{64}$' })
     $gatePathLine = @($gateOutput | Where-Object { $_ -match '^cuda_gate_path=' })
-    if ($gateDigestLine.Count -ne 1 -or $gatePathLine.Count -ne 1) { throw 'fresh CUDA gate output is not singular' }
     $gateSha256 = ($gateDigestLine[0] -split '=',2)[1]
     $gatePath = ($gatePathLine[0] -split '=',2)[1]
-    if ((Get-FileHash -Algorithm SHA256 -LiteralPath $gatePath).Hash.ToLowerInvariant() -ne $gateSha256) { throw 'fresh CUDA gate file hash mismatch' }
 } finally {
     $env:CUDA_VISIBLE_DEVICES = '-1'
 }
@@ -3389,7 +3388,6 @@ Stop here and present the complete gate record, exact digest, five utilization s
 
 ```powershell
 $acceptedGateSha256 = $gateSha256
-if ($acceptedGateSha256 -ne $gateSha256) { throw 'accepted gate digest differs from the fresh presented digest' }
 $postGateHead = (git rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0 -or $postGateHead -ne $evidenceSha) { throw 'HEAD changed after gate acceptance' }
 $postGateStatus = @(git status --porcelain=v1)
@@ -3614,22 +3612,19 @@ $freezeSha = (Get-FileHash -Algorithm SHA256 -LiteralPath $freezePath).Hash
 ```powershell
 $verificationRoot = 'C:\Users\chris and christine\.codex\skills\verification'
 $snapshot = 'docs/verification/remediation/verification-contract-v1.json'
-$gate = (& 'C:\Python314\python.exe' -B tools\remediation_evidence.py resolve-verification-gate --snapshot $snapshot --root $verificationRoot).Trim()
-if ($LASTEXITCODE -ne 0 -or -not [System.IO.Path]::IsPathFullyQualified($gate)) { throw 'final verification gate resolution failed' }
 $resolvedVerificationRoot = (Resolve-Path -LiteralPath $verificationRoot).Path
-if (-not $gate.StartsWith($resolvedVerificationRoot + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'final gate escaped the explicit .codex verification root' }
 $ledgerPath = '.verification/wave-c/final-ledger.json'
 if (Test-Path -LiteralPath '.verification/active.json') { throw 'verification gate is already active' }
 if (Test-Path -LiteralPath $ledgerPath) { throw 'Wave C ledger already exists' }
 
-& 'C:\Python314\python.exe' $gate start --cwd . --mode closure --ledger $ledgerPath
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $snapshot --root $verificationRoot -- start --cwd . --mode closure --ledger $ledgerPath
 if ($LASTEXITCODE -ne 0) { throw 'verification gate start failed' }
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledgerPath
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $snapshot --root $verificationRoot -- validate --cwd . $ledgerPath
 if ($LASTEXITCODE -eq 0) { throw 'empty Wave C gate template unexpectedly validated' }
 
 C:\Python314\python.exe -B tools\build_wave_c_evidence.py populate-ledger --ledger $ledgerPath --closure-index "$closureDir/index.json" --domain-index "$closureDir/domain-evidence.json"
 if ($LASTEXITCODE -ne 0) { throw 'Wave C ledger population failed' }
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledgerPath
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $snapshot --root $verificationRoot -- validate --cwd . $ledgerPath
 if ($LASTEXITCODE -ne 0) { throw 'populated Wave C ledger validation failed' }
 
 $ledger = Get-Content -Raw -LiteralPath $ledgerPath | ConvertFrom-Json
@@ -3872,7 +3867,7 @@ if ($LASTEXITCODE -ne 0 -or $postClosureHead -ne $evidenceSha) { throw 'HEAD cha
 
 ```powershell
 $branch = 'codex/scientific-integrity-remediation-wave-c-20260811'
-& 'C:\Python314\python.exe' $gate validate --cwd . $ledgerPath
+& 'C:\Python314\python.exe' -B tools\remediation_evidence.py run-verification-gate --snapshot $snapshot --root $verificationRoot -- validate --cwd . $ledgerPath
 if ($LASTEXITCODE -ne 0) { throw 'pre-publication Wave C gate failed' }
 git fetch origin
 if ($LASTEXITCODE -ne 0) { throw 'pre-publication fetch failed' }

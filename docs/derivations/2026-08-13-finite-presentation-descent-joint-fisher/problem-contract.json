@@ -1,0 +1,65 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-c68f474d3e7991fa78a557b86bd645dc1c01a4272b2a75d53a52e17ad29176b2",
+  "target_digest": "c68f474d3e7991fa78a557b86bd645dc1c01a4272b2a75d53a52e17ad29176b2",
+  "target": {
+    "statement": "For finite normalized agent/environment presentations, characterize observational presentation equivalence and prove exactly which variational-free-energy and Fisher-geometric objects descend: (i) the collapsed VFE on retained variables is invariant under every environment-node dilation preserving the retained joint law and conditioning sigma-algebra; (ii) the full-latent VFE differs from the collapsed VFE by an explicit conditional-KL defect and agrees only after conditional-posterior completion or conditional minimization; (iii) a regular retained-joint Fisher pullback descends under parameterwise retained-law equivalence; and (iv) paired marginal agent sections alone do not determine a full-joint VFE or joint Fisher geometry, as witnessed by explicit smooth finite categorical lifts with identical marginals.",
+    "kind": "MATHEMATICAL",
+    "quantifier_class": "MIXED",
+    "quantifiers": "For every pair of finite presentations with common nonempty retained latent space R and record space O that induce the same normalized retained joint law P_RO and the same retained conditioning sigma-algebra, and for every regular observation o and admissible retained recognition law Q_R, conclusions (i) and (ii) hold. For every C2 strictly positive finite categorical family whose presentations induce the same P_RO,theta for every parameter theta, conclusion (iii) holds. There exist explicit binary presentations and smooth lifts satisfying conclusion (iv). Pointwise fixed-observation equalities are asserted only for declared density representatives; otherwise they hold for P_O-almost every o.",
+    "domains": [
+      "Nonempty finite measurable retained latent spaces R and record spaces O with their full sigma-algebras.",
+      "Nonempty finite auxiliary environment spaces E with normalized state laws and normalized Markov kernels.",
+      "Interiors of finite probability simplices and C2 parameter manifolds for Fisher claims.",
+      "Admissible recognition laws Q_R and Q_RE satisfying the stated absolute-continuity and finiteness conditions."
+    ],
+    "codomains": [
+      "Normalized retained joint laws on R x O.",
+      "Extended-real variational free energies in [0,+infinity] plus a finite evidence constant.",
+      "Positive-semidefinite symmetric bilinear forms on the declared parameter or section-configuration tangent space.",
+      "Equivalence classes of finite generative presentations under retained-law equality."
+    ],
+    "regularity": "All kernels are measurable and normalized. Extended-real KL identities use the usual absolute-continuity convention. Classical finite differences require finite logarithmic expectations. Fisher claims are restricted to C2 strictly positive categorical families with square-integrable scores, parameter-independent finite sample spaces, and justified differentiation of finite sums. Smooth lift claims are restricted to open simplex interiors.",
+    "measures": [
+      "Counting measures on every finite sample space.",
+      "Normalized probability laws for retained variables, auxiliary environment variables, and records.",
+      "Positive finite evidence P_O(o) for every selected regular observation.",
+      "A declared common dominating counting measure for every pointwise density comparison."
+    ],
+    "boundary_conditions": [
+      "No spatial boundary is present in the finite theorem.",
+      "Fisher tensors are asserted only on open simplex interiors; boundary laws remain in the extended-real VFE tier.",
+      "Null observation slices are excluded unless pointwise density representatives are declared as model data."
+    ],
+    "symmetries": [
+      "Bimeasurable finite relabelings acting coherently on state, record, recognition, and kernel coordinates.",
+      "Auxiliary-node split, merge, and independent-null-node insertion when the retained joint law and conditioning sigma-algebra are unchanged.",
+      "No physical gauge, base-manifold, or spacetime symmetry is inferred from these finite presentation operations."
+    ],
+    "equivalence": "Two presentations are observationally equivalent when, after the declared identification of R and O, their normalized retained joint laws P_RO agree and their retained conditioning sigma-algebras agree up to completion. In a parameterized family this equality is required for every theta under the same parameter identification. This relation does not identify intervention algebras, autonomous agency, or ontology; those require separate data and are outside the target.",
+    "premises": [
+      "Every presentation is one fixed normalized joint law declared before recognition and conditioning.",
+      "Finite spaces supply regular conditional probabilities; selected observations have positive finite evidence.",
+      "Every admissible Q_RE disintegrates as Q_R(dR) Q_E(dE|R) and obeys the support and finiteness conditions used in the conditional-KL identity.",
+      "For conclusion (iii), presentation equivalence is parameterwise and the retained family is C2 and strictly positive.",
+      "For conclusion (iv), the extraction map returns the displayed marginals and each proposed lift is a smooth right inverse on its declared domain."
+    ],
+    "modeling_postulates": [
+      "Calling an operational environment node an autonomous agent is not part of the mathematical theorem and would require a separate agency criterion.",
+      "Calling a descended informational tensor physical geometry is not part of the mathematical theorem and would require a separate operational bridge."
+    ],
+    "search_priors": [
+      "SEARCH_PRIOR_AFFIRMATIVE: seek the strongest presentation-invariant finite core compatible with an eventual agent-only ontology, without assuming that such an ontology or physicalization follows."
+    ],
+    "permitted_theorems": [
+      "Finite-space disintegration and the relative-entropy chain rule.",
+      "The exact evidence identity F(Q;o) = -log P_O(o) + KL(Q || P(.|o)).",
+      "Data processing and conditional minimization of relative entropy under a fixed marginal.",
+      "Finite-sum score calculus and invariance of Fisher information under parameter-independent bimeasurable relabeling.",
+      "Elementary smoothness, rank, and positivity results for maps between finite simplex interiors."
+    ],
+    "negative_certificate_kind": "COUNTEREXAMPLE",
+    "falsification_criterion": "A single normalized finite counterexample satisfying the frozen hypotheses refutes any universal descent or defect claim. Failure of the explicit binary lifts to be normalized, smooth, right inverses, or to change the claimed VFE/Fisher object refutes the existential noncanonicity conjunct. Any proof that reads recognition inside the generative kernel, changes the retained joint law, changes the conditioning sigma-algebra, or assumes the desired descent is inadmissible.",
+    "literature_policy": "Use the repository's established finite ELBO and pullback theorems as local lemmas only after hypothesis mapping. External reliance is limited to primary monographs or papers in English available by 2026-08-13, with exact statement and hypothesis mapping. No priority or novelty claim is attempted, and a bounded search cannot establish one."
+  }
+}

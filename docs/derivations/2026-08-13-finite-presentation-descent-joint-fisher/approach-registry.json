@@ -1,0 +1,63 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-c68f474d3e7991fa78a557b86bd645dc1c01a4272b2a75d53a52e17ad29176b2",
+  "target_digest": "c68f474d3e7991fa78a557b86bd645dc1c01a4272b2a75d53a52e17ad29176b2",
+  "mechanism_families": [
+    {
+      "family_id": "CONDITIONAL-KL-DISINTEGRATION",
+      "core_mechanism": "Disintegrate each auxiliary presentation over its retained posterior and apply the finite relative-entropy chain rule.",
+      "target_obligation_ids": ["collapsed-vfe-descent", "conditional-kl-completion", "full-latent-nondescend"],
+      "representation": "A normalized finite joint P_REO and recognition Q_RE=Q_R eta(E|R).",
+      "invariant_or_obstruction": "The retained law fixes evidence and posterior; unresolved auxiliary recognition contributes a nonnegative conditional KL.",
+      "obligations": ["Prove the extended-real chain rule.", "State the support boundary for equality and uniqueness.", "Exhibit a strict null-node defect."],
+      "bridge": "Posterior completion or conditional minimization maps the full-latent objective to the retained objective.",
+      "failure_test": "A finite supported counterexample to the chain rule, equality condition, or minimizing joint law rejects the family.",
+      "verified_results": ["Collapsed VFE descent, exact conditional-KL defect, and unique minimizing joint law on the supported finite tier."],
+      "open_gaps": ["Continuum disintegration and section-space probability remain outside this finite result."],
+      "novelty_fingerprint": "retained posterior + auxiliary disintegration + conditional KL + null-node defect",
+      "disposition": "accepted"
+    },
+    {
+      "family_id": "RETAINED-LAW-QUOTIENT",
+      "core_mechanism": "Quotient finite presentations by equality of the retained joint law and completed conditioning algebra.",
+      "target_obligation_ids": ["binary-dilation-boundary", "retained-fisher-descent", "quotient-intervention-obstruction"],
+      "representation": "Direct, latent-chain, and independent-null-node binary XOR presentations on a common parameter manifold.",
+      "invariant_or_obstruction": "Every retained-law functional is constant on quotient fibers; full latent and intervention data need not be.",
+      "obligations": ["Prove the XOR marginal identity.", "Compute retained and full Fisher tensors.", "Separate observational from interventional equivalence."],
+      "bridge": "Parameterwise equality of the retained family identifies retained scores and Fisher pullbacks.",
+      "failure_test": "Failure of normalization, the retained marginal identity, or any exact Fisher value rejects the witness.",
+      "verified_results": ["Retained Fisher descent and exact non-descent of full Fisher, auxiliary intervention structure, and arbitrary full VFE."],
+      "open_gaps": ["No canonical representative or autonomous-agent criterion follows from the quotient alone."],
+      "novelty_fingerprint": "binary XOR dilation + null-node insertion + rank-one retained Fisher + diagonal full Fisher + intervention obstruction",
+      "disposition": "accepted"
+    },
+    {
+      "family_id": "SMOOTH-CATEGORICAL-JOINT-LIFTS",
+      "core_mechanism": "Construct multiple smooth right inverses of paired binary marginalization and compare the induced full-joint VFE and Fisher pullbacks.",
+      "target_obligation_ids": ["smooth-right-inverse-lifts", "vfe-lift-dependence", "fisher-lift-dependence", "paired-marginal-noncanonicity"],
+      "representation": "Two-dimensional open marginal square mapped into the four-outcome simplex interior.",
+      "invariant_or_obstruction": "Marginalization erases dependence derivatives, so identical paired marginals can support inequivalent joint families.",
+      "obligations": ["Prove positivity, normalization, smoothness, and right-inverse identities.", "Compute a strict VFE gap.", "Compute distinct Fisher pullbacks."],
+      "bridge": "A declared lift promotes paired marginal sections to a full joint recognition family.",
+      "failure_test": "A failed positivity/right-inverse identity or equality of both induced objects rejects the witness.",
+      "verified_results": ["Explicit product and correlated lifts with the same marginals but different VFE values and Fisher tensors."],
+      "open_gaps": ["No intrinsic lift-selection principle is supplied."],
+      "novelty_fingerprint": "smooth Frechet-class lift + dependence perturbation + VFE gap + indefinite Fisher residual",
+      "disposition": "accepted"
+    },
+    {
+      "family_id": "ENRICHED-AGENCY-CANONICALIZATION",
+      "core_mechanism": "Augment observational equivalence with intervention data or an independent agency axiom before selecting an agentization.",
+      "target_obligation_ids": ["canonical-agentization"],
+      "representation": "A category of presentations carrying retained laws plus typed intervention kernels and candidate selection rules.",
+      "invariant_or_obstruction": "Observational quotient fibers contain presentations with nonisomorphic intervention structures.",
+      "obligations": ["Declare the enriched equivalence.", "State a naturality or universality criterion.", "Prove existence and uniqueness up to the declared isomorphism."],
+      "bridge": "Additional operational data would be needed to turn an observational node presentation into an agency claim.",
+      "failure_test": "Two enriched-equivalent presentations with different selected agentizations, or no natural selection, defeats a proposed rule.",
+      "verified_results": [],
+      "open_gaps": ["No canonical agentization theorem is proved."],
+      "novelty_fingerprint": "observational quotient + intervention enrichment + natural representative problem",
+      "disposition": "open"
+    }
+  ]
+}
