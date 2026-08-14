@@ -1,22 +1,176 @@
 {
   "schema_version": "rigorous-theory-search/v1",
-  "contract_id": "contract-sha256-b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
-  "target_digest": "b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
-  "attacks": [],
+  "contract_id": "contract-sha256-8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+  "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+  "attacks": [
+    {
+      "id": "ATTACK-PREPARATION-OMITTED",
+      "claim_ids": ["SEL-PRODUCT-UNIQUENESS", "SEL-MAXIMAL-PRODUCT-CATEGORY"],
+      "attack": "If preparation kernels are omitted and only typed bijections remain, nonproduct relabeling-equivariant selectors can exist, so product uniqueness would be overclaimed.",
+      "disposition": "REJECTED",
+      "response": "The released claims quantify over every coordinatewise finite Markov kernel, explicitly including preparations from singleton typed lists. Those arrows compute the product. The bijection-only control is retained as a counterexample to deleting that hypothesis, not to the frozen claim.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "98da265a8a8ef8aa9ffb0cddd5290324760de53e54de490e64265830f16336cc"
+    },
+    {
+      "id": "ATTACK-RELABELING-QUOTIENT",
+      "claim_ids": ["TARGET-ABSOLUTE-CANONICAL-SELECTOR", "SEL-CORRELATED-REFINEMENT-NOGO"],
+      "attack": "The two correlated split outputs might become one law after the declared type-preserving outcome relabelings.",
+      "disposition": "REJECTED",
+      "response": "Relabeling only permutes atom probabilities. The two exact atom multisets are unequal, and bit flips cannot change absolute correlation magnitude one third into one half, so the contradiction survives the frozen equivalence.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "98da265a8a8ef8aa9ffb0cddd5290324760de53e54de490e64265830f16336cc"
+    },
+    {
+      "id": "ATTACK-SET-VALUED-SELECTOR",
+      "claim_ids": ["TARGET-ABSOLUTE-CANONICAL-SELECTOR", "SEL-CORRELATED-REFINEMENT-NOGO", "SEL-FAITHFUL-QUASI-INVERSE-NOGO"],
+      "attack": "Returning the whole marginal fiber contains both split outputs and every compatible joint, apparently restoring naturality and faithfulness.",
+      "disposition": "REJECTED",
+      "response": "That construction is set-valued and changes the frozen codomain from one normalized joint law. It also supplies no selected scalar, family, or enriched object. Noninjectivity still blocks a two-sided law-valued inverse.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "98da265a8a8ef8aa9ffb0cddd5290324760de53e54de490e64265830f16336cc"
+    },
+    {
+      "id": "ATTACK-VFE-COLLAPSE",
+      "claim_ids": ["RECOVERY-FULL-VFE-NOGO"],
+      "attack": "Conditional KL collapse might make full VFE a function of singleton marginals despite the displayed witness.",
+      "disposition": "REJECTED",
+      "response": "The two exact full-joint VFE values differ at one identical frozen function input. KL collapse requires richer retained-joint and conditional-reference data, which the conditional replacement states and the marginal-only signature lacks.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "98da265a8a8ef8aa9ffb0cddd5290324760de53e54de490e64265830f16336cc"
+    },
+    {
+      "id": "ATTACK-SINGULAR-FISHER-TARGET",
+      "claim_ids": ["RECOVERY-FULL-FISHER-NOGO", "FISHER-RETAINED-QUOTIENT"],
+      "attack": "A singular target tensor or boundary statistical family defeats an unqualified kernel identity and can make categorical Fisher scores undefined.",
+      "disposition": "REJECTED",
+      "response": "The released radical is the derivative preimage of the target radical, with an exact transversality criterion for equality to the kernel. The categorical recovery witness stays strictly positive. Boundary and degenerate controls are recorded rather than generalized away.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "98da265a8a8ef8aa9ffb0cddd5290324760de53e54de490e64265830f16336cc"
+    },
+    {
+      "id": "ATTACK-IPROJECTION-SUPPORT-ZERO",
+      "claim_ids": ["SEL-REFERENCE-IPROJECTION"],
+      "attack": "A target outside the reference support convex hull can be feasible only at infinite KL, so an unconditional reference selector fails.",
+      "disposition": "REJECTED",
+      "response": "This is the theorem's necessity control. Existence is asserted exactly on conv T(supp p), and smoothness is restricted to a fixed relative-interior face stratum.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "98da265a8a8ef8aa9ffb0cddd5290324760de53e54de490e64265830f16336cc"
+    },
+    {
+      "id": "ATTACK-STOCHASTIC-COARSE-CHANNEL",
+      "claim_ids": ["SEL-DETERMINISTIC-COMPLETION", "SEL-PRESENTATION-DESCENT"],
+      "attack": "An arbitrary stochastic channel can have a restricted image and no right inverse, so deterministic completion cannot be generalized to it.",
+      "disposition": "REJECTED",
+      "response": "The theorem is explicitly deterministic, uses target absolute continuity, and composes with pushed references. The stochastic counterexample blocks an unasserted extension; retained descent uses deterministic forgetting of auxiliaries.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "98da265a8a8ef8aa9ffb0cddd5290324760de53e54de490e64265830f16336cc"
+    },
+    {
+      "id": "ATTACK-PRESENTATION-RANK-DROP",
+      "claim_ids": ["FISHER-RETAINED-QUOTIENT"],
+      "attack": "A commuting presentation diagram can cross a rank drop and therefore cannot alone provide a pointwise quotient isomorphism or a smooth quotient-bundle isomorphism.",
+      "disposition": "REJECTED",
+      "response": "The corrected theorem requires a diffeomorphism or surjective submersion for its pointwise statement and constant-rank strata for the bundle statement; in the redundant-presentation case the correct bundle is Q_A isomorphic to F^*Q_B. The F(t)=t^2 control violates these hypotheses at zero.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "98da265a8a8ef8aa9ffb0cddd5290324760de53e54de490e64265830f16336cc"
+    },
+    {
+      "id": "ATTACK-NONBASIC-NODE-BLOCKS",
+      "claim_ids": ["FISHER-DECLARED-BLOCK-ATTRIBUTION", "FISHER-RETAINED-QUOTIENT"],
+      "attack": "Smooth pointwise direct and Fisher-orthogonal blocks can rotate along one retained-law fiber and therefore fail to descend.",
+      "disposition": "REJECTED",
+      "response": "The rotating-block example is accepted and is why the released attribution theorem separately requires basic image subbundles/projectors for block descent. Pointwise directness and energy orthogonality are not claimed to imply projectability.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "98da265a8a8ef8aa9ffb0cddd5290324760de53e54de490e64265830f16336cc"
+    },
+    {
+      "id": "ATTACK-INTERVENTION-OVERREACH",
+      "claim_ids": ["RECOVERY-TYPED-INTERVENTION-NOGO", "RECOVERY-TYPED-INTERVENTION-CONDITIONAL-NOGO", "SEL-PRESENTATION-DESCENT", "AGENT-LAW-ONLY-DECOMPOSITION-NOGO"],
+      "attack": "Observational equality cannot by itself formalize a causal category, establish nonisomorphic intervention objects, or yield autonomous agency.",
+      "disposition": "REJECTED",
+      "response": "The frozen unconditional intervention no-go is INCONCLUSIVE because the ambient category and internal witness nonisomorphism are unformalized. The separately identified conditional no-go is proved only for typed nonisomorphic witnesses in one forgetful fiber and leaves a mere right-inverse possible. Retained descent is observational/variational only, and the law-only block theorem makes no autonomous-agency identification.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "98da265a8a8ef8aa9ffb0cddd5290324760de53e54de490e64265830f16336cc"
+    },
+    {
+      "id": "ATTACK-A7-REPRESENTATION-SCOPE",
+      "claim_ids": ["AGENT-LAW-ONLY-DECOMPOSITION-NOGO"],
+      "attack": "A declared typing or partition-preserving subgroup can produce three two-dimensional blocks, contradicting a blanket decomposition no-go.",
+      "disposition": "REJECTED",
+      "response": "The theorem concerns only an unlabeled law/Fisher rule natural under every S7 relabeling. Added typing is explicitly admitted as symmetry-breaking input and lies outside the no-go scope.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "98da265a8a8ef8aa9ffb0cddd5290324760de53e54de490e64265830f16336cc"
+    },
+    {
+      "id": "ATTACK-PARITY-POINTWISE-RANK",
+      "claim_ids": ["PARITY-PROMOTED-RANK"],
+      "attack": "One exact rank check at the symmetric parameter cannot establish full rank on the entire open parameter domain.",
+      "disposition": "REJECTED",
+      "response": "The global proof first marginalizes a hypothetical zero derivative to eliminate all six marginal tangent components, then uses positivity of the interaction derivative to eliminate the seventh. The matrix check is only corroborative.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "98da265a8a8ef8aa9ffb0cddd5290324760de53e54de490e64265830f16336cc"
+    },
+    {
+      "id": "ATTACK-SYMBOLIC-CHECK-AS-PROOF",
+      "claim_ids": ["SELECTION-WITNESS-REGRESSION"],
+      "attack": "Passing exact tests does not prove any global mathematical theorem.",
+      "disposition": "REJECTED",
+      "response": "The claim is only a bound symbolic regression observation. No mathematical theorem depends on it; mathematical claims close with contained derivations.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "98da265a8a8ef8aa9ffb0cddd5290324760de53e54de490e64265830f16336cc"
+    }
+  ],
   "independent_reconstruction": {
-    "claim_ids": [],
-    "method": "Independent reconstruction has not been performed.",
-    "result": "NOT_RUN",
-    "conclusion": "No reconstruction conclusion is available.",
-    "artifact_path": null,
-    "artifact_sha256": null
+    "claim_ids": [
+      "TARGET-ABSOLUTE-CANONICAL-SELECTOR",
+      "RECOVERY-FULL-VFE-NOGO",
+      "RECOVERY-FULL-FISHER-NOGO",
+      "RECOVERY-TYPED-INTERVENTION-NOGO",
+      "RECOVERY-TYPED-INTERVENTION-CONDITIONAL-NOGO",
+      "SEL-PRODUCT-UNIQUENESS",
+      "SEL-MAXIMAL-PRODUCT-CATEGORY",
+      "SEL-CORRELATED-REFINEMENT-NOGO",
+      "SEL-FAITHFUL-QUASI-INVERSE-NOGO",
+      "SEL-REFERENCE-IPROJECTION",
+      "SEL-DETERMINISTIC-COMPLETION",
+      "SEL-PRESENTATION-DESCENT",
+      "FISHER-RETAINED-QUOTIENT",
+      "FISHER-DECLARED-BLOCK-ATTRIBUTION",
+      "AGENT-LAW-ONLY-DECOMPOSITION-NOGO",
+      "PARITY-PROMOTED-RANK",
+      "SELECTION-WITNESS-REGRESSION"
+    ],
+    "method": "Started from the frozen problem contract, atomic claim ledger, and directed dependency graph; listed the target closure before opening only the evidence artifacts named by each ledger entry; then independently re-derived every load-bearing finite identity and checked each evidence artifact against the recorded statement and side conditions.",
+    "result": "PASS",
+    "conclusion": "The direct two-split contradiction reconstructs the complete negative target without any positive-route premise; every other claim reconstructs at its recorded conditional or bounded scope, and the exact witness remains nonproof implementation evidence.",
+    "artifact_path": "evidence/independent-reconstruction.md",
+    "artifact_sha256": "550ee03116b0c5fd684f6eb48eae7e465a9daebe14a31a7ca8462d2a32261a17"
   },
   "oracle_erasure": {
-    "claim_ids": [],
-    "method": "Oracle erasure has not been performed.",
-    "result": "NOT_RUN",
-    "conclusion": "No oracle-erasure conclusion is available.",
-    "artifact_path": null,
-    "artifact_sha256": null
+    "claim_ids": [
+      "TARGET-ABSOLUTE-CANONICAL-SELECTOR",
+      "RECOVERY-FULL-VFE-NOGO",
+      "RECOVERY-FULL-FISHER-NOGO",
+      "RECOVERY-TYPED-INTERVENTION-NOGO",
+      "RECOVERY-TYPED-INTERVENTION-CONDITIONAL-NOGO",
+      "SEL-PRODUCT-UNIQUENESS",
+      "SEL-MAXIMAL-PRODUCT-CATEGORY",
+      "SEL-CORRELATED-REFINEMENT-NOGO",
+      "SEL-FAITHFUL-QUASI-INVERSE-NOGO",
+      "SEL-REFERENCE-IPROJECTION",
+      "SEL-DETERMINISTIC-COMPLETION",
+      "SEL-PRESENTATION-DESCENT",
+      "FISHER-RETAINED-QUOTIENT",
+      "FISHER-DECLARED-BLOCK-ATTRIBUTION",
+      "AGENT-LAW-ONLY-DECOMPOSITION-NOGO",
+      "PARITY-PROMOTED-RANK",
+      "SELECTION-WITNESS-REGRESSION"
+    ],
+    "method": "Removed the affirmative search preference from the logical context, scanned every premise, assumption, claim, edge, evidence scope, proof step, and report for direct or paraphrased dependence on the desired answer, then recomputed the target closure and all independent claim dispositions from their typed inputs.",
+    "result": "PASS",
+    "conclusion": "No premise assumes selector existence or nonexistence, product uniqueness, an interaction ontology, or the intended physical conclusion; the target remains refuted by the explicit split subdiagram and all positive claims retain their independent evidence.",
+    "artifact_path": "evidence/oracle-erasure.md",
+    "artifact_sha256": "7cb5a983f094813678c51d0cc9bfda6062b46bc27cbcaf176bc8cd09d1a4d2aa"
   }
 }

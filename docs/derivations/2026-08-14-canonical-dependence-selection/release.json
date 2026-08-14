@@ -1,15 +1,20 @@
 {
   "schema_version": "rigorous-theory-search/v1",
-  "contract_id": "contract-sha256-b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
-  "target_digest": "b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
-  "checkpoint": "frozen contract; executable witness contract observed RED",
+  "contract_id": "contract-sha256-8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+  "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+  "checkpoint": "Task 5 review repair rebinds the certificate to the explicit R_(1/3), R_(1/2) contract; all proof, witness, reconstruction, attack, oracle, and provenance artifacts are revision-bound in the root control plane.",
   "target_claim": "TARGET-ABSOLUTE-CANONICAL-SELECTOR",
-  "terminal_status": null,
-  "certificate_claim": null,
-  "strongest_result": "No theorem, construction, or nonexistence proof has yet been certified.",
+  "terminal_status": "COMPLETE_NEGATIVE",
+  "certificate_claim": "TARGET-ABSOLUTE-CANONICAL-SELECTOR",
+  "strongest_result": "The frozen existential conjunction has no solution: two admitted marginal-compatible correlated split refinements give one fair/fair marginal input but require one single-valued law section to return two unequal laws, even modulo declared relabelings. Independently, local Markov naturality uniquely selects the product law; reference-relative I-projection and deterministic completion give bounded positive selectors; retained Fisher geometry yields only the qualified quotient and declared-block results recorded in the ledger.",
   "unresolved_obligations": [
-    "Implement the exact finite witness and observe GREEN without weakening the frozen tests.",
-    "Prove or refute the frozen existential target and disposition each independently typed recovery conjunct.",
-    "Complete independent reconstruction, adversarial attacks, oracle erasure, and release validation."
+    "RECOVERY-TYPED-INTERVENTION-NOGO is INCONCLUSIVE outside the target closure: formalize the full ambient typed causal/intervention category and discharge object admission and nonisomorphism for the BSC witnesses inside it.",
+    "Supply any proposed autonomous-agency criterion, agent dynamics/action, and intervention operations as additional typed structure; none is derived from marginal laws or Fisher geometry here.",
+    "Continuum, renormalization, emergent physical geometry, operational observables, and dimensional-unit bridges remain outside this finite certificate."
+  ],
+  "scope_limits": [
+    "COMPLETE_NEGATIVE applies only to the exact frozen existential conjunction and its declared morphism/equivalence classes.",
+    "Reference-relative selectors, product selection on the maximal product-preserving category, declared typed blocks, and the typed-intervention conditional no-go retain only their explicitly stated scopes.",
+    "Structural validation checks binding and closure metadata but does not prove mathematical truth."
   ]
 }

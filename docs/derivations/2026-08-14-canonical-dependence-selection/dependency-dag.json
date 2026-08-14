@@ -1,6 +1,37 @@
 {
   "schema_version": "rigorous-theory-search/v1",
-  "contract_id": "contract-sha256-b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
-  "target_digest": "b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
-  "edges": []
+  "contract_id": "contract-sha256-8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+  "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+  "edges": [
+    {
+      "from": "TARGET-ABSOLUTE-CANONICAL-SELECTOR",
+      "to": "SEL-CORRELATED-REFINEMENT-NOGO",
+      "reason": "The terminal negative certificate uses only the direct two-split single-valued-section nonexistence theorem; none of the positive replacement routes is a premise."
+    },
+    {
+      "from": "RECOVERY-TYPED-INTERVENTION-NOGO",
+      "to": "RECOVERY-TYPED-INTERVENTION-CONDITIONAL-NOGO",
+      "reason": "The conditional forgetful-fiber contradiction is the strongest proved subclaim; the unconditional predicate remains INCONCLUSIVE because category admission and internal nonisomorphism are open."
+    },
+    {
+      "from": "SEL-MAXIMAL-PRODUCT-CATEGORY",
+      "to": "SEL-PRODUCT-UNIQUENESS",
+      "reason": "Necessity first restricts a natural section to the frozen local subcategory, where preparation arrows uniquely force the product family."
+    },
+    {
+      "from": "SEL-PRESENTATION-DESCENT",
+      "to": "SEL-REFERENCE-IPROJECTION",
+      "reason": "The common retained optimizer and optimum use the unique finite reference I-projection on the shared feasible retained problem."
+    },
+    {
+      "from": "SEL-PRESENTATION-DESCENT",
+      "to": "SEL-DETERMINISTIC-COMPLETION",
+      "reason": "Each presentation-specific auxiliary minimizer uses deterministic posterior completion relative to that presentation's full posterior."
+    },
+    {
+      "from": "FISHER-DECLARED-BLOCK-ATTRIBUTION",
+      "to": "FISHER-RETAINED-QUOTIENT",
+      "reason": "The block classes and their metric live in the retained quotient identified by the exact radical/quotient theorem."
+    }
+  ]
 }

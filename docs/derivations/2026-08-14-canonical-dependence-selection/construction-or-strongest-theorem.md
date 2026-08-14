@@ -1,4 +1,4 @@
-<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb","schema_version":"rigorous-theory-search/v1","target_digest":"b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb"} -->
+<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39","schema_version":"rigorous-theory-search/v1","target_digest":"8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39"} -->
 # Construction or strongest theorem
 
 ## Direct negative result
@@ -11,7 +11,7 @@ S_X(\mu_1,\ldots,\mu_n)=\bigotimes_i\mu_i.
 
 More strongly, a wide marginal-compatible category containing all those local kernels admits a natural section if and only if every added kernel preserves product laws; when it exists, the section is unique for that morphism class. Hence the product-preserving marginal-compatible kernels form the maximal such category.
 
-For a fair source bit, the two marginal-compatible split kernels \(R_{1/3}\) and \(R_{1/2}\) both produce fair/fair target marginals but require selected output laws with atom multisets
+For a fair source bit, the two explicitly admitted marginal-compatible split kernels \(R_{1/3}\) and \(R_{1/2}\) both produce fair/fair target marginals but require selected output laws with atom multisets
 
 \[
 \{1/3,1/3,1/6,1/6\}
@@ -25,11 +25,12 @@ The full proof is `evidence/natural-selector-no-go-proof.md`.
 
 ## Independently typed recovery boundaries
 
-The three marginal-recovery predicates fail for different reasons and have separate proof paths.
+The three marginal-recovery predicates receive separate dispositions and proof paths.
 
 * `RECOVERY-FULL-VFE-NOGO`: the product law and a positive correlated law have the same singleton marginals, while their KL values against the same positive product posterior are respectively zero and strictly positive.
 * `RECOVERY-FULL-FISHER-NOGO`: the positive six-bit parity families with fixed \(\kappa=0\) and \(\kappa=1/2\) have the same singleton-marginal family map on \((0,1)^6\), while at the symmetric point their full-joint Fisher tensors are \(4I_6\) and \((65536/16383)I_6\).
-* `RECOVERY-TYPED-INTERVENTION-NOGO`: conditional on the August 13 direct, latent, and null-extended BSC presentations being nonisomorphic objects in the declared typed category over one retained law, universal fiber uniqueness and two-sided recovery fail. A mere right-inverse section may still choose one conventional representative; the full causal/agency category remains open to formalization.
+* `RECOVERY-TYPED-INTERVENTION-NOGO`: **INCONCLUSIVE** for the frozen unconditional predicate because the ambient typed category and internal witness nonisomorphism are not formalized.
+* `RECOVERY-TYPED-INTERVENTION-CONDITIONAL-NOGO`: conditional on the August 13 direct, latent, and null-extended BSC presentations being nonisomorphic objects in one declared typed-category forgetful fiber, universal two-sided recovery fails. A mere right-inverse section may still choose one conventional representative.
 
 The proof, exact source dependencies, and strongest conditional replacements are in `evidence/recovery-factorization-no-go-proof.md`. None of the three claims depends on either of the other two.
 
@@ -126,4 +127,6 @@ The direct proofs are in `evidence/fisher-quotient-agentization-proof.md`.
 
 ## Current scope
 
-This stage proves the selector and recovery nonexistence results, the reference-relative replacements, and the retained Fisher quotient and law-only agentization boundary. The run's root claim ledger, dependency DAG, adversarial record, and terminal release remain for the package-assembly stage; this document does not by itself assign terminal certification state. No result here derives autonomous agents, intervention structure, continuum dynamics, physical geometry, or dimensional units from marginal sections or Fisher geometry.
+The assembled run records `TARGET-ABSOLUTE-CANONICAL-SELECTOR` as `REFUTED` and releases the frozen target as `COMPLETE_NEGATIVE`. The VFE and Fisher recovery no-gos and the conditional intervention no-go are independently verified, while the unconditional intervention no-go is `INCONCLUSIVE` outside the target closure. The bounded positive replacements also have separate ledger entries; none is used as a premise of the target refutation. The release validator checks schema, revision-bound evidence, dependency closure, polarity, attack coverage, and oracle erasure. It is a structural certificate, not an additional mathematical proof beyond the contained derivations.
+
+No result here derives autonomous agents, intervention structure, continuum dynamics, physical geometry, or dimensional units from marginal sections or Fisher geometry.

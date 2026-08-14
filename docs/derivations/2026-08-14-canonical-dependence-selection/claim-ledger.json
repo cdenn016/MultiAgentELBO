@@ -1,21 +1,309 @@
 {
   "schema_version": "rigorous-theory-search/v1",
-  "contract_id": "contract-sha256-b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
-  "target_digest": "b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
+  "contract_id": "contract-sha256-8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+  "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
   "assumptions": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "id": "EV-TARGET-SPLIT-NONEXISTENCE",
+      "kind": "NONEXISTENCE_PROOF",
+      "supports": false,
+      "scope": "The frozen existential conjunction: no single family of law-valued marginal sections can be natural under both admitted split refinements R_(1/3) and R_(1/2), because they have one descended fair/fair input and unequal relabeling-invariant joint outputs.",
+      "side_conditions": ["Finite nonempty typed bit spaces.", "Single-valued law codomain.", "Section equation on the one-coordinate source.", "Both displayed split kernels are in the frozen admitted marginal-compatible class."],
+      "artifact_path": "evidence/natural-selector-no-go-proof.md",
+      "artifact_sha256": "bc9ebe3d76c1d9605c42da4dc494884384270f41df259dbd87dbccf164fc24f5"
+    },
+    {
+      "id": "EV-SELECTOR-DERIVATION",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Finite proofs of local-Markov product uniqueness, maximal product-preserving category, correlated-refinement nonexistence, and faithful-quasi-inverse nonexistence.",
+      "side_conditions": ["Preparation arrows are required for product uniqueness.", "Maximality is relative to the frozen marginal functor and local subcategory.", "The split no-go requires a single-valued law assignment.", "Faithfulness concerns all joint laws in a noninjective marginal fiber."],
+      "artifact_path": "evidence/natural-selector-no-go-proof.md",
+      "artifact_sha256": "bc9ebe3d76c1d9605c42da4dc494884384270f41df259dbd87dbccf164fc24f5"
+    },
+    {
+      "id": "EV-RECOVERY-DERIVATION",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Separate finite derivations of full-joint VFE and Fisher nonfactorization and the conditional typed-intervention two-sided-recovery no-go.",
+      "side_conditions": ["The VFE witness uses the frozen marginal-only function signature, positive posterior, and z>0.", "The Fisher witness uses positive C1 families on one common parameter base with familywise equal singleton marginals.", "The intervention theorem is conditional on the cited presentations being nonisomorphic objects over one forgetful image in the declared typed category."],
+      "artifact_path": "evidence/recovery-factorization-no-go-proof.md",
+      "artifact_sha256": "64cc7409fca7bcf2713fbfef429fddaea8c9b392bd7998d91ab44dd66dbece35"
+    },
+    {
+      "id": "EV-REFERENCE-SELECTION-DERIVATION",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Finite reference I-projection, deterministic posterior completion and strict pushed-reference composition, and qualified retained VFE/presentation descent.",
+      "side_conditions": ["Finite counting-measure spaces and extended-real KL support convention.", "I-projection existence is restricted to the reference support convex hull and smoothness to fixed relative-interior face strata.", "Completion requires a deterministic map and target absolute continuity with respect to the pushed reference.", "Retained descent requires the complete declared retained-law/conditioning equivalence, positive evidence, and common feasible constraints."],
+      "artifact_path": "evidence/reference-relative-selection-proof.md",
+      "artifact_sha256": "a3ca984adf21e3b06c6a1f4ce0824e483f110bab06851b78fd9e150365dd6169"
+    },
+    {
+      "id": "EV-FISHER-QUOTIENT-DERIVATION",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Exact pullback-radical and quotient statements, familywise presentation quotient isometry, declared-block equivalences and attribution boundaries, law/Fisher-only seven-outcome decomposition no-go, and promoted parity ranks.",
+      "side_conditions": ["The exact radical is the derivative preimage of the target radical; equality with the kernel needs transversality.", "Smooth quotient-bundle statements use the locally constant-rank hypotheses stated in the proof.", "Global quotient-manifold statements require the stated regular leaf-space conditions.", "Blocks are declared input; additivity, basicness, and naturality have separate hypotheses.", "The agentization no-go concerns an unlabeled law and Fisher metric, not typed agents."],
+      "artifact_path": "evidence/fisher-quotient-agentization-proof.md",
+      "artifact_sha256": "64ca5753859d61a7bfcb150fce0182fb0878d37734c37af322e81e61aff54148"
+    },
+    {
+      "id": "EV-WITNESS-GREEN-JUNIT",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Fresh deterministic CPU execution of the frozen exact canonical-selection witness regression suite, recorded as sanitized GREEN JUnit with test identities and totals preserved.",
+      "side_conditions": ["The JUnit artifact is jointly bound to the production source, contained test-contract snapshot, and TDD provenance record.", "Passing tests are implementation evidence only and do not prove a mathematical theorem.", "Logarithmic comparisons are not classified as exact rational arithmetic."],
+      "artifact_path": "evidence/green-junit.xml",
+      "artifact_sha256": "82714d624ac455d1dfdbd9e22eeff3cb484077b555c79b99f57baf65ff3b1dc2"
+    },
+    {
+      "id": "EV-WITNESS-PRODUCTION-SOURCE",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Contained production source exercised by the fresh GREEN regression run, using exact rational arithmetic for the declared finite witness operations.",
+      "side_conditions": ["The source is implementation evidence, not a mathematical proof.", "Exact arithmetic covers only the declared rational operations; logarithmic outputs remain floating observations."],
+      "artifact_path": "evidence/exact_selection_witness.py",
+      "artifact_sha256": "2518612bb7fc9055843efda16b296595dec7e88d115ae2f4438486cf38360e45"
+    },
+    {
+      "id": "EV-WITNESS-TEST-CONTRACT-SNAPSHOT",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Contained test-contract snapshot of the exact-fraction regression checks exercised by the GREEN JUnit artifact.",
+      "side_conditions": ["Only the functions and exact finite values named by SELECTION-WITNESS-REGRESSION are covered.", "The snapshot is not a formal proof and has no theorem dependency edge."],
+      "artifact_path": "evidence/test_canonical_dependence_selection_witness.snapshot.py",
+      "artifact_sha256": "132181dfa9f5f581eaa5d0e25d840e9589e11a1b7e311ee52bed75e0f61d2ac4"
+    },
+    {
+      "id": "EV-WITNESS-TDD-PROVENANCE",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Hash-bound TDD provenance tying the production source and test-contract snapshot to the fresh GREEN JUnit command, environment, exactness boundary, prior RED history, and explicit path/hostname sanitization.",
+      "side_conditions": ["The record binds exact artifact hashes after sanitization.", "The historical RED artifact remains provenance rather than theorem evidence."],
+      "artifact_path": "evidence/tdd-record.md",
+      "artifact_sha256": "c646474d635bd2610d80b0028cac0f84af9604d1d8a5e460d2d6fd93a8153858"
+    },
+    {
+      "id": "EV-WITNESS-RED-TDD-HISTORY",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": false,
+      "scope": "Historical RED JUnit record showing that the frozen witness contract initially failed because the production witness module was absent.",
+      "side_conditions": ["This record is TDD provenance only.", "It is not linked to any closed claim and supplies no mathematical counterevidence."],
+      "artifact_path": "evidence/red-junit.xml",
+      "artifact_sha256": "7d1b7cf9febf349c88c9a57c2aaa8d462df33b3cac4f3210c37e2d1d36dec1f8"
+    }
+  ],
   "claims": [
     {
       "id": "TARGET-ABSOLUTE-CANONICAL-SELECTOR",
-      "statement": "Does there exist one family of single-valued law-valued sections S_X : M(X) -> J(X), for every finite nonempty typed list X, with m_X after S_X equal to the identity, that is natural under every coordinatewise finite Markov kernel and every admitted marginal-compatible arity-changing presentation kernel including correlation-generating split refinements, is faithful to every admitted positive full joint law, and satisfies all three of the following independently typed marginal-factorization predicates? (VFE) For every X there exists one function V_X : M(X) x M(X) x (0,infinity) -> extended-real such that V_X(m_X Q,m_X P,z) = -log(z) + KL(Q||P) for every compatible recognition law Q, positive posterior law P, and evidence z>0. (Fisher) Whenever two compatible positive C^1 families p_0,p_1 : Theta -> J(X) on the same parameter space satisfy m_X after p_0 = m_X after p_1 as maps, their pulled-back full-joint Fisher tensors are equal on Theta. (Intervention) Every two compatible enriched presentations with the same marginal observational datum are isomorphic in the declared typed causal/intervention category, and a marginal-to-enrichment reconstruction is a section of the forgetful map up to that type-preserving intervention isomorphism.",
-      "quantifiers": "There exists a single family (S_X)_X, one section for each finite nonempty typed list X, such that for every coordinatewise finite Markov kernel, every admitted marginal-compatible arity-changing presentation kernel including every admitted correlation-generating split refinement, and every admitted positive joint law Q, the section, naturality, and faithfulness requirements in the target statement hold simultaneously; and for every X there exists one V_X with the displayed signature and equality for every compatible (Q,P,z) with P positive and z>0; and for every common parameter space Theta and every pair of compatible positive C^1 families p_0,p_1 : Theta -> J(X) whose complete marginal-family maps agree, their pulled-back full-joint Fisher tensors agree on Theta; and for every marginal observational datum and every pair of its compatible enriched typed intervention presentations, those presentations are type-preservingly intervention-isomorphic and a reconstruction from marginal data is a section of the forgetful map up to that isomorphism.",
+      "statement": "Does there exist one family of single-valued law-valued sections S_X : M(X) -> J(X), for every finite nonempty typed list X, with m_X after S_X equal to the identity, that is natural under every coordinatewise finite Markov kernel and every admitted marginal-compatible arity-changing presentation kernel including the explicitly admitted binary split kernels R_(1/3) and R_(1/2) defined below, is faithful to every admitted positive full joint law, and satisfies all three of the following independently typed marginal-factorization predicates? (VFE) For every X there exists one function V_X : M(X) x M(X) x (0,infinity) -> extended-real such that V_X(m_X Q,m_X P,z) = -log(z) + KL(Q||P) for every compatible recognition law Q, positive posterior law P, and evidence z>0. (Fisher) Whenever two compatible positive C^1 families p_0,p_1 : Theta -> J(X) on the same parameter space satisfy m_X after p_0 = m_X after p_1 as maps, their pulled-back full-joint Fisher tensors are equal on Theta. (Intervention) Every two compatible enriched presentations with the same marginal observational datum are isomorphic in the declared typed causal/intervention category, and a marginal-to-enrichment reconstruction is a section of the forgetful map up to that type-preserving intervention isomorphism.",
+      "quantifiers": "There exists a single family (S_X)_X, one section for each finite nonempty typed list X, such that for every coordinatewise finite Markov kernel, every admitted marginal-compatible arity-changing presentation kernel including the explicitly admitted R_(1/3) and R_(1/2), and every admitted positive joint law Q, the section, naturality, and faithfulness requirements in the target statement hold simultaneously; and for every X there exists one V_X with the displayed signature and equality for every compatible (Q,P,z) with P positive and z>0; and for every common parameter space Theta and every pair of compatible positive C^1 families p_0,p_1 : Theta -> J(X) whose complete marginal-family maps agree, their pulled-back full-joint Fisher tensors agree on Theta; and for every marginal observational datum and every pair of its compatible enriched typed intervention presentations, those presentations are type-preservingly intervention-isomorphic and a reconstruction from marginal data is a section of the forgetful map up to that isomorphism.",
       "kind": "MATHEMATICAL",
-      "target_digest": "b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
-      "state": "CANDIDATE",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "REFUTED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-TARGET-SPLIT-NONEXISTENCE"],
+      "bridge_premise_ids": [],
+      "falsifier": "Invalidate the scope-matched split nonexistence proof by showing that one displayed split is not an admitted marginal-compatible kernel, that their descended fair-source data differ, or that their unequal atom multisets become equal under the frozen equivalence.",
+      "scope_limits": ["The refutation is of the frozen existential conjunction; it does not refute reference-relative selectors or selectors on a smaller product-preserving morphism category."]
+    },
+    {
+      "id": "RECOVERY-FULL-VFE-NOGO",
+      "statement": "No function of only two singleton-marginal tuples and positive evidence can equal -log(z)+KL(Q||P) for every compatible full recognition joint Q and positive posterior joint P.",
+      "quantifiers": "For the two-bit typed list, there does not exist one V_X with the frozen signature whose equality holds for every compatible Q, every positive P, and every z>0.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-RECOVERY-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Construct a single value at the common input (mQ_0,mP,z)=(mQ_(1/2),mP,z) that equals both exact full-joint VFE values, or invalidate normalization, common marginals, positivity, or exact KL strictness in the witness."
+    },
+    {
+      "id": "RECOVERY-FULL-FISHER-NOGO",
+      "statement": "Pulled-back full-joint Fisher information on positive C1 families does not factor through the complete singleton-marginal family map.",
+      "quantifiers": "There exist two positive C1 full-joint families on one common parameter space whose singleton-marginal maps agree at every parameter but whose pulled-back full-joint Fisher tensors differ.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-RECOVERY-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Show that the two parity families fail positivity or familywise marginal equality on the stated domain, or that the exact center Fisher tensors are equal."
+    },
+    {
+      "id": "RECOVERY-TYPED-INTERVENTION-NOGO",
+      "statement": "No marginal-to-enrichment reconstruction recovers every compatible enriched presentation from marginal observational data by a universal two-sided law R U(E) type-preservingly intervention-isomorphic to E in the frozen declared causal/intervention category.",
+      "quantifiers": "For every marginal observational datum and every compatible enriched typed intervention presentation E over it in the frozen declared category, no single reconstruction R has R U(E) type-preservingly intervention-isomorphic to E universally.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "INCONCLUSIVE",
       "assumption_ids": [],
       "evidence_ids": [],
       "bridge_premise_ids": [],
-      "falsifier": "A scope-matched NONEXISTENCE_PROOF that no single family of sections satisfies every frozen conjunct, including each explicit VFE, Fisher, and intervention factorization predicate, under all internal universal quantifiers."
+      "falsifier": "Close the present inconclusive disposition by formalizing the ambient category and then either proving universal fiber uniqueness and two-sided reconstruction or exhibiting admitted nonisomorphic objects in one forgetful fiber.",
+      "scope_limits": ["The full ambient causal/intervention category, object admission, and internal witness nonisomorphism remain unformalized.", "This open claim is outside the negative selector target closure."]
+    },
+    {
+      "id": "RECOVERY-TYPED-INTERVENTION-CONDITIONAL-NOGO",
+      "statement": "Conditional on the direct, latent, and null-extended BSC presentations being nonisomorphic objects over one observational forgetful image in a declared type-preserving intervention category, no reconstruction can recover every compatible enrichment in that fiber by a universal two-sided law R U(E) isomorphic to E.",
+      "quantifiers": "For every declared typed intervention category and forgetful functor satisfying the stated witness hypotheses, there is no reconstruction R for which R U(E) is type-preservingly intervention-isomorphic to E for every compatible enrichment E in the witness fiber.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-RECOVERY-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Provide a typed category satisfying the stated nonisomorphic-fiber hypotheses together with a universal two-sided reconstruction, or find an invalid isomorphism step in the conditional contradiction.",
+      "scope_limits": ["This is a conditional implication and does not close RECOVERY-TYPED-INTERVENTION-NOGO.", "It does not refute a mere right-inverse section choosing one representative per observational fiber."]
+    },
+    {
+      "id": "SEL-PRODUCT-UNIQUENESS",
+      "statement": "A family of marginal sections natural under every coordinatewise finite Markov kernel with independently tensored randomness is uniquely the product coupling family, and that family satisfies naturality throughout the declared local morphism class.",
+      "quantifiers": "For every finite nonempty typed list, every marginal tuple, and every coordinatewise finite Markov kernel in the frozen local class, any natural law-valued section equals the product law; conversely the product law is a section natural under all such kernels.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-SELECTOR-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit an admitted preparation kernel and marginal tuple for which naturality does not force the product, or a local kernel whose tensor pushforward does not preserve products."
+    },
+    {
+      "id": "SEL-MAXIMAL-PRODUCT-CATEGORY",
+      "statement": "A wide marginal-compatible category containing all frozen local kernels admits a natural section if and only if every additional morphism preserves product laws; when it exists the section is uniquely the product family, and all product-preserving morphisms form the maximal such category.",
+      "quantifiers": "For every wide category on the frozen finite typed objects that contains every local kernel and whose morphisms are marginal-compatible, existence of one section family natural under every category morphism is equivalent to product preservation by every morphism.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-SELECTOR-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Find a marginal-compatible non-product-preserving morphism that remains natural for the product section, or a product-preserving morphism for which product naturality fails."
+    },
+    {
+      "id": "SEL-CORRELATED-REFINEMENT-NOGO",
+      "statement": "No single-valued marginal section can satisfy the section equation and be natural under both admitted correlated split refinements R_(1/3) and R_(1/2), even without assuming local-kernel naturality.",
+      "quantifiers": "For every single-valued law assignment satisfying the one-coordinate section equation, simultaneous naturality under the two displayed split kernels at the fair source is impossible.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-SELECTOR-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Show that the two normalized split pushforwards at the fair source have different descended marginals or equal joint laws under the frozen equivalence."
+    },
+    {
+      "id": "SEL-FAITHFUL-QUASI-INVERSE-NOGO",
+      "statement": "For every typed list with at least two nontrivial coordinates, no marginal section can also be a left inverse of marginalization on every compatible full joint law.",
+      "quantifiers": "For every such typed list and every proposed S_X with m_X S_X equal to the identity, there is a joint law Q for which S_X m_X Q differs from Q.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-SELECTOR-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Prove singleton marginalization injective on the displayed binary fiber or construct a two-sided inverse on two distinct laws with one marginal image."
+    },
+    {
+      "id": "SEL-REFERENCE-IPROJECTION",
+      "statement": "For a finite law p, statistic T, and target moment m, the finite KL I-projection exists exactly on conv T(supp p), is unique as a law, has exact minimal-face support, has the stated minimal exponential representation and Pythagorean identity, is analytic on each fixed relative-interior face stratum, and is equivariant under coherent transport of the reference and constraints.",
+      "quantifiers": "For every nonempty finite X, p in Delta(X), finite-dimensional statistic T, and target m, the listed conclusions hold under the finite-KL support convention exactly at the scopes and strata stated in the derivation.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-REFERENCE-SELECTION-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Find a target inside conv T(supp p) with no unique finite minimizer, an optimizer with support outside or strictly smaller than the stated minimal-face preimage, a failure of the oriented identity for a finite-KL feasible law, or a failure of the qualified transported-reference equivariance."
+    },
+    {
+      "id": "SEL-DETERMINISTIC-COMPLETION",
+      "statement": "For every deterministic finite coarse map f, reference p, and retained law r absolutely continuous with respect to f_#p, the displayed reference-conditional lift is the unique finite-KL minimizing law and composes strictly along nested deterministic maps when each stage uses the pushed reference.",
+      "quantifiers": "For every deterministic map of nonempty finite sets and every admissible p and r, the lift, uniqueness, zero-reference convention, and pushed-reference composition conclusions hold.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-REFERENCE-SELECTION-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Under the stated determinism and absolute-continuity conditions, find a nonnormalized lift, a distinct finite-KL minimizer with the same retained law, or a failure of strict composition using pushed references."
+    },
+    {
+      "id": "SEL-PRESENTATION-DESCENT",
+      "statement": "Under the complete August 13 retained-joint and conditioning equivalence, positive evidence, and common feasible retained constraints, the unique retained optimizer and optimum VFE descend; deterministic posterior completion minimizes each full auxiliary VFE but the presentation-specific auxiliary law does not descend, and the envelope differential descends only under the stated positive C1 fixed-stratum hypotheses.",
+      "quantifiers": "For every pair of presentations satisfying the declared equivalence and every common feasible retained problem meeting the stated positivity, support, and regularity hypotheses, the retained optimizer/value conclusions hold; the differential conclusion additionally quantifies over the stated C1 parameterized families.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-REFERENCE-SELECTION-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Produce presentations satisfying the complete declared equivalence and all common feasibility/positivity hypotheses but with unequal retained optimizers or optimum values, or invalidate the qualified envelope chain-rule argument."
+    },
+    {
+      "id": "FISHER-RETAINED-QUOTIENT",
+      "statement": "For a smooth retained-law map and positive-semidefinite target tensor, the pullback radical is exactly the derivative preimage of the target radical; the stated transversality and locally constant-rank conditions yield a smooth positive-definite quotient bundle; a familywise Fisher-isometric commuting diagram gives the qualified pointwise quotient isometries and, on constant-rank strata, the stated bundle isomorphisms; a global quotient manifold requires the separately stated simple Hausdorff leaf-space conditions.",
+      "quantifiers": "At every point of every finite-dimensional smooth retained model the radical identity and exact kernel criterion hold. A diffeomorphic Fisher-isometric presentation diagram gives pointwise quotient-vector-space isometries and a surjective-submersion diagram gives the recorded pointwise fiber isometries. On strata meeting the proof's constant-rank hypotheses these assemble respectively into Q_A to Q_B over F or Q_A isomorphic to F^*Q_B. The global quotient statement is conditional on the simple Hausdorff connected-leaf quotient.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-FISHER-QUOTIENT-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Find a vector violating the exact PSD radical identity, a failure of quotient smoothness while all stated rank hypotheses hold, or a failure of quotient isometry in a familywise commuting Fisher-isometric diagram."
+    },
+    {
+      "id": "FISHER-DECLARED-BLOCK-ATTRIBUTION",
+      "statement": "For declared tangent blocks, quotient directness, retained-image directness, blockwise kernel splitting, and unique quotient decomposition are equivalent; additive Fisher energy additionally requires pairwise orthogonality, and descent/naturality additionally require the stated smooth basic image data and type-preserving presentation transport.",
+      "quantifiers": "For every finite-dimensional declared direct-sum tangent decomposition the four linear conditions are equivalent pointwise; on strata meeting the stated rank and smoothness hypotheses they assemble bundlewise, and the additional energy/descent conclusions hold exactly under their separately stated hypotheses.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-FISHER-QUOTIENT-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Find a declared linear splitting violating one direction of the four-way equivalence, additive energy with a nonzero cross term, or descent of the rotating blocks without basic image subbundles."
+    },
+    {
+      "id": "AGENT-LAW-ONLY-DECOMPOSITION-NOGO",
+      "statement": "An unlabeled uniform seven-outcome law and its Fisher metric cannot naturally under every outcome relabeling determine an unordered decomposition of the six-dimensional tangent into three two-dimensional blocks.",
+      "quantifiers": "There is no rule depending only on the law and Fisher geometry that assigns such a decomposition at the uniform seven-outcome law and is natural under every S_7 relabeling.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-FISHER-QUOTIENT-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Construct an S_7-natural three-by-two block decomposition from only the uniform law/Fisher data, or invalidate perfectness, the homomorphism reduction, or irreducibility of the A_7 sum-zero representation.",
+      "scope_limits": ["Declared typing, a partition-preserving subgroup, or other symmetry-breaking structure may supply blocks.", "No autonomous-agency conclusion is made."]
+    },
+    {
+      "id": "PARITY-PROMOTED-RANK",
+      "statement": "The promoted positive six-bit parity family has full-joint derivative rank seven everywhere on its open domain, while its singleton-retained map has rank six and kernel exactly span(partial_kappa).",
+      "quantifiers": "For every theta in (0,1)^6 and kappa in (-1,1), the full derivative is injective and the singleton derivative has the stated rank and kernel.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-FISHER-QUOTIENT-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit a nonzero tangent in the full derivative kernel at an interior parameter or a singleton-retained kernel direction not proportional to partial_kappa."
+    },
+    {
+      "id": "SELECTION-WITNESS-REGRESSION",
+      "statement": "The hash-bound canonical-selection production source passes the hash-bound frozen deterministic exact finite test-contract snapshot in the recorded fresh GREEN JUnit run, with command and environment bound by the TDD provenance record.",
+      "quantifiers": "For every assertion collected by the contained focused test-contract snapshot in the recorded deterministic CPU run, the bound production source returned the expected exact finite value or declared nonexact logarithmic result.",
+      "kind": "NUMERICAL_OBSERVATION",
+      "target_digest": "8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-WITNESS-GREEN-JUNIT", "EV-WITNESS-PRODUCTION-SOURCE", "EV-WITNESS-TEST-CONTRACT-SNAPSHOT", "EV-WITNESS-TDD-PROVENANCE"],
+      "bridge_premise_ids": [],
+      "falsifier": "Reproduce a failed assertion from the bound production source and test-contract snapshot under the recorded deterministic CPU conditions, or invalidate any production/test/JUnit/TDD hash binding.",
+      "scope_limits": ["This symbolic regression state is not evidence for mathematical proof and no mathematical claim depends on it."]
     }
   ]
 }

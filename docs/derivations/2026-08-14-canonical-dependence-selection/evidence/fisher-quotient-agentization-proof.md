@@ -1,4 +1,4 @@
-<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb","schema_version":"rigorous-theory-search/v1","target_digest":"b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb"} -->
+<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39","schema_version":"rigorous-theory-search/v1","target_digest":"8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39"} -->
 # Retained Fisher quotient and law-only agentization boundary
 
 ## 1. Types and scope
@@ -471,8 +471,30 @@ D(\theta)=\prod_i\theta_i(1-\theta_i).
 \tag{20}
 \]
 
-The August 14 certificate proves positivity and that every proper marginal is
-the corresponding product marginal. Let a tangent
+For the bitwise complement \(\bar x\),
+
+\[
+P_\theta(x)P_\theta(\bar x)=D(\theta),
+\qquad
+Q_{\theta,\kappa}(x)
+=P_\theta(x)\left[1+\kappa\chi(x)P_\theta(\bar x)\right]>0. \tag{21}
+\]
+
+The strict inequality follows from \(0<P_\theta(\bar x)<1\) and
+\(|\kappa|<1\). If \(A\) is any proper coordinate subset, then
+\(A^c\ne\varnothing\) and
+
+\[
+\sum_{x_{A^c}}\chi(x)D(\theta)
+=D(\theta)(-1)^{\sum_{i\in A}x_i}
+ \prod_{j\notin A}\sum_{x_j=0}^1(-1)^{x_j}
+=0. \tag{22}
+\]
+
+Therefore every proper marginal of \(Q_{\theta,\kappa}\) is the
+corresponding product marginal; \(A=\varnothing\) also gives normalization.
+These local identities establish the positivity and cancellation facts used
+below without importing them from another package. Let a tangent
 \((a_1,\ldots,a_6,b)\) have zero derivative under the full-joint map in
 (20). Marginalizing that zero derivative to singleton \(i\) gives the
 derivative of \(\operatorname{Bernoulli}(\theta_i)\), namely
@@ -482,10 +504,10 @@ to
 \[
 b\,\partial_\kappa Q_{\theta,\kappa}(x)
 =b\,\chi(x)D(\theta).
-\tag{21}
+\tag{23}
 \]
 
-Because \(D(\theta)>0\) on the open cube, (21) vanishes at every atom only
+Because \(D(\theta)>0\) on the open cube, (23) vanishes at every atom only
 when \(b=0\). Thus the promoted full-joint map is an immersion of rank seven
 everywhere on its domain. Its pullback of the positive categorical Fisher
 metric is positive definite.
@@ -495,7 +517,7 @@ By contrast, the singleton retained-law map is
 \[
 m(\theta,\kappa)=\theta,
 \qquad dm=(I_6\;0),
-\tag{22}
+\tag{24}
 \]
 
 so it has rank six and
@@ -512,9 +534,10 @@ choice of retained-law map; neither rank count turns it into an agent.
 The radical theorem reconstructs and sharpens the local quotient interface in
 `Theory/05c_pullback_geometry.tex`. Presentation isometry consumes the
 August 13 requirement of parameterwise retained-family equivalence, not merely
-one-point law equality. The parity rank proof consumes the normalized positive
-family and proper-marginal identity certified in the August 14 collective-lift
-package. The executable fraction checks corroborate finite ranks but do not
+one-point law equality. The parity rank proof uses the normalized positive
+family and proper-marginal identity established locally in Section 7; the
+August 14 collective-lift package is a corroborating cross-reference. The
+executable fraction checks corroborate finite ranks but do not
 replace the derivations above.
 
 The strongest justified interpretation is an identifiable retained Fisher

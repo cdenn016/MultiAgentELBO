@@ -1,4 +1,4 @@
-<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb","schema_version":"rigorous-theory-search/v1","target_digest":"b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb"} -->
+<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39","schema_version":"rigorous-theory-search/v1","target_digest":"8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39"} -->
 # Three independently typed recovery-factorization no-go theorems
 
 ## 1. Scope and factorization predicates
@@ -80,10 +80,41 @@ and, for fixed \(|\kappa|<1\),
 Q^{(\kappa)}_\theta(x)=P_\theta(x)+\kappa\chi(x)D(\theta).\tag{5}
 \]
 
-The contained certified source
-`../../2026-08-14-collective-joint-lift-fisher/evidence/collective-lift-fisher-proof.md`, Sections 1--3 and 7, proves positivity, normalization, equality of all proper marginals, and the center formula used below. For completeness, the load-bearing center calculation is reconstructed here.
+Write \(\bar x=(1-x_1,\ldots,1-x_6)\). Atomwise,
 
-Summing the parity term over any omitted bit cancels it, so every singleton marginal of (5) is \(\operatorname{Ber}(\theta_i)\), independently of \(\kappa\). At \(\theta_i=1/2\), put \(c=\kappa/64\) and let \(s_i(x_i)=2\) for \(x_i=1\), \(-2\) for \(x_i=0\). Since \(\partial_iD=0\) at the center,
+\[
+P_\theta(x)P_\theta(\bar x)
+=\prod_i\theta_i(1-\theta_i)=D(\theta),
+\]
+
+so
+
+\[
+Q^{(\kappa)}_\theta(x)
+=P_\theta(x)\left[1+\kappa\chi(x)P_\theta(\bar x)\right]>0. \tag{5a}
+\]
+
+Indeed, \(0<P_\theta(\bar x)<1\) and \(|\kappa|<1\), so the bracket is
+strictly larger than \(1-|\kappa|P_\theta(\bar x)>0\).
+For any proper coordinate subset \(A\), its complement is nonempty and the
+parity correction cancels:
+
+\[
+\sum_{x_{A^c}}\chi(x)D(\theta)
+=D(\theta)(-1)^{\sum_{i\in A}x_i}
+  \prod_{j\notin A}\sum_{x_j=0}^1(-1)^{x_j}
+=0. \tag{5b}
+\]
+
+Thus every proper marginal is the corresponding product marginal. Taking
+\(A=\varnothing\) also proves normalization. These calculations make
+positivity, normalization, and familywise singleton-marginal equality local
+to this proof. The contained certified source
+`../../2026-08-14-collective-joint-lift-fisher/evidence/collective-lift-fisher-proof.md`,
+Sections 1--3 and 7, is a corroborating cross-reference rather than a missing
+premise.
+
+At \(\theta_i=1/2\), put \(c=\kappa/64\) and let \(s_i(x_i)=2\) for \(x_i=1\), \(-2\) for \(x_i=0\). Since \(\partial_iD=0\) at the center,
 
 \[
 Q^{(\kappa)}_\theta(x)=\frac{1+c\chi(x)}{64},
@@ -160,9 +191,20 @@ P^{L0}_\theta(O=o\mid\operatorname{do}(E=e))
 =B_b(o\oplus e).\tag{13}
 \]
 
-For \(b\ne1/2\), \(\operatorname{do}(E=0)\) and \(\operatorname{do}(E=1)\) give different output laws. The direct presentation has only a singleton auxiliary coordinate and therefore no pair of typed binary \(E\)-interventions corresponding to (13). The null-extended presentation additionally has a typed binary \(N\)-node absent from both other presentations. Node type and admitted intervention targets are invariants of the declared type-preserving intervention isomorphism. Thus the three enriched structures are pairwise nonisomorphic even though their retained observational law agrees.
+For \(b\ne1/2\), \(\operatorname{do}(E=0)\) and \(\operatorname{do}(E=1)\) give different output laws. The direct presentation has only a singleton auxiliary coordinate and therefore no pair of typed binary \(E\)-interventions corresponding to (13). The null-extended presentation additionally has a typed binary \(N\)-node absent from both other presentations. Conditional on a category that admits these presentations and makes node type and intervention targets invariants of type-preserving isomorphism, the three enriched structures are pairwise nonisomorphic even though their retained observational law agrees.
 
-**Theorem 4.1 (claim `RECOVERY-TYPED-INTERVENTION-NOGO`, conditional typed statement).** Let \(U:\mathcal E\to\mathcal B\) be the declared forgetful functor from enriched typed intervention presentations to marginal observational data. Conditional on the August 13 direct, latent, and null-extended witnesses being objects of \(\mathcal E\) that have one common \(U\)-image and are nonisomorphic under the declared type-preserving intervention isomorphisms, no reconstruction \(R:\mathcal B\to\mathcal E\) can recover every compatible enrichment by a two-sided law
+**Unconditional disposition (claim
+`RECOVERY-TYPED-INTERVENTION-NOGO`).** The frozen predicate quantifies
+inside a declared typed causal/intervention category, but this run does not
+supply a complete definition of that category or an internal proof that
+(10)--(12) are admitted pairwise nonisomorphic objects in it. Observational
+law equality alone cannot discharge those obligations. The unconditional
+predicate is therefore **INCONCLUSIVE** in this package; neither the displayed
+presentations nor the abstract argument below are promoted into an
+unconditional no-go.
+
+**Theorem 4.1 (claim
+`RECOVERY-TYPED-INTERVENTION-CONDITIONAL-NOGO`).** Let \(U:\mathcal E\to\mathcal B\) be the declared forgetful functor from enriched typed intervention presentations to marginal observational data. Conditional on the August 13 direct, latent, and null-extended witnesses being objects of \(\mathcal E\) that have one common \(U\)-image and are nonisomorphic under the declared type-preserving intervention isomorphisms, no reconstruction \(R:\mathcal B\to\mathcal E\) can recover every compatible enrichment by a two-sided law
 
 \[
 R\,U(E)\cong E\qquad\text{for every compatible }E\in\mathcal E.\tag{14}
@@ -172,18 +214,29 @@ R\,U(E)\cong E\qquad\text{for every compatible }E\in\mathcal E.\tag{14}
 
 **Conditional replacement.** A mere section \(R\) may choose one conventional enrichment per marginal datum. Faithful recovery requires the stronger two-sided condition (14), which is impossible under the conditional nonisomorphic-fiber witness. Typed interventions can instead descend after the retained datum includes them and the equivalence intertwines every admitted intervention kernel. The full typed causal category, autonomy predicate, and causal/agency interpretation remain open formalization obligations; equality of observational laws alone supplies none of them.
 
-The retained-law equality and nonisomorphism depend exactly on the August 13 BSC construction cited above. They do not depend on the parity family or on either scalar/tensor no-go.
+The retained-law equality is proved by the displayed finite sums. The conditional nonisomorphism premise additionally requires the ambient category, object admission, and type-preserving invariants stated above. Neither part depends on the parity family or on either scalar/tensor no-go.
 
 ## 5. Independent claim and dependency edges
 
 | Claim | Witness type | Exact dependencies | Conditional replacement |
 | --- | --- | --- | --- |
 | `RECOVERY-FULL-VFE-NOGO` | two positive full-joint VFE inputs with equal displayed marginals and unequal KL | laws (1); finite KL strictness; frozen signature of \(V_X\) | supply full laws, or retain a complete joint posterior/evidence and collapse or conditionally minimize |
-| `RECOVERY-FULL-FISHER-NOGO` | two positive \(C^1\) full-joint families with the same marginal-family map and unequal tensors | parity family (5); cancellation of proper marginals; center calculation (6)--(9); certified August 14 source | supply a parameterized full-joint lift, or compute Fisher only at the declared retained-joint scope |
-| `RECOVERY-TYPED-INTERVENTION-NOGO` | conditional nonisomorphic enriched objects in one observational fiber | BSC presentations (10)--(12); intervention law (13); August 13 source; declared type-preserving isomorphism | no universal two-sided recovery; a mere right-inverse section may choose one representative; retaining intervention kernels requires the typed category to be formalized |
+| `RECOVERY-FULL-FISHER-NOGO` | two positive \(C^1\) full-joint families with the same marginal-family map and unequal tensors | parity family (5); cancellation of proper marginals; center calculation (6)--(9); August 14 source as corroboration only | supply a parameterized full-joint lift, or compute Fisher only at the declared retained-joint scope |
+| `RECOVERY-TYPED-INTERVENTION-NOGO` | frozen unconditional typed-category predicate | complete ambient category, witness admission, and internal nonisomorphism proof are absent | **INCONCLUSIVE**; formalize those inputs before assigning a closed mathematical disposition |
+| `RECOVERY-TYPED-INTERVENTION-CONDITIONAL-NOGO` | nonisomorphic enriched objects in one observational fiber, conditional on the stated category hypotheses | BSC presentations (10)--(12); intervention law (13); abstract forgetful-fiber contradiction | no universal two-sided recovery under those hypotheses; a mere right-inverse may choose one representative |
 
-No edge between these three claims is needed or valid: scalar VFE, statistical-family Fisher, and typed intervention structure have different codomains and different equality notions. Each proof remains valid if the other two sections are erased.
+No edge between the VFE, Fisher, and intervention claims is needed or valid:
+they have different codomains and equality notions. The conditional
+intervention theorem records the strongest proved implication; it is not a
+dependency that closes the unconditional intervention predicate.
 
 ## 6. Scope
 
-The results show only nonfactorization through the frozen singleton marginal data. They do not say that joint VFE, joint Fisher, or interventions are undefinable; each becomes well-defined once its missing typed input is supplied. The intervention conclusion is conditional on the stated nonisomorphism inside the declared typed category and does not forbid a conventional right-inverse section. Formal definitions of autonomous agency, the full causal category, and its intervention isomorphisms remain open. The results also do not recover a continuum ontology or turn an information tensor into physical geometry.
+The closed results show only nonfactorization through the frozen singleton
+marginal data at their stated scopes. They do not say that joint VFE, joint
+Fisher, or interventions are undefinable. The unconditional intervention
+predicate remains inconclusive; only the explicitly conditional implication
+is proved, and it does not forbid a conventional right-inverse section.
+Formal definitions of autonomous agency, the full causal category, and its
+intervention isomorphisms remain open. The results also do not recover a
+continuum ontology or turn an information tensor into physical geometry.

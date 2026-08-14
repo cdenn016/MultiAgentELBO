@@ -1,9 +1,10 @@
+<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39","schema_version":"rigorous-theory-search/v1","target_digest":"8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39"} -->
 # Canonical selection witness TDD record
 
 ## Bound contract
 
-- Contract ID: `contract-sha256-b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb`
-- Target digest: `b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb`
+- Contract ID: `contract-sha256-8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39`
+- Target digest: `8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39`
 - Test source: `tests/test_canonical_dependence_selection_witness.py`
 - Intended production source: `evidence/exact_selection_witness.py`
 - Production source state during the RED run: absent by design
@@ -18,7 +19,7 @@ $env:PYTHONHASHSEED='0'
 Remove-Item Env:MULTIAGENTELBO_RUN_CUDA_TESTS -ErrorAction SilentlyContinue
 Remove-Item Env:VFE3_TEST_DEVICE -ErrorAction SilentlyContinue
 Remove-Item Env:CUBLAS_WORKSPACE_CONFIG -ErrorAction SilentlyContinue
-C:\Python314\python.exe -m pytest tests\test_canonical_dependence_selection_witness.py -q -p no:cacheprovider --basetemp=C:\tmp\maelbo-selector-red-20260814 --junitxml=docs\derivations\2026-08-14-canonical-dependence-selection\evidence\red-junit.xml
+C:\Python314\python.exe -m pytest tests\test_canonical_dependence_selection_witness.py -q -p no:cacheprovider --basetemp={TEMP}\maelbo-selector-red-20260814 --junitxml=docs\derivations\2026-08-14-canonical-dependence-selection\evidence\red-junit.xml
 ```
 
 Process exit status: `1`.
@@ -30,7 +31,7 @@ Machine-derived JUnit totals:
 - errors: 0
 - skipped: 0
 - time: 0.103 seconds
-- LF-normalized JUnit SHA-256: `e98e5cbbd94a20f355b5b2a3caa6f450d23c9ccd4f9e9dd4d4070b9f2fbe966d`
+- Sanitized LF JUnit SHA-256: `7d1b7cf9febf349c88c9a57c2aaa8d462df33b3cac4f3210c37e2d1d36dec1f8`
 
 ## Failing tests
 
@@ -54,7 +55,7 @@ The tests freeze exact rational expectations for the binary correlation family, 
 
 ## GREEN status
 
-Task 2 implemented all 15 frozen public callables and ran the focused contract from the repository root under the deterministic CPU environment:
+The durable GREEN record was regenerated during the Task 5 review repair from the repository root under the deterministic CPU environment:
 
 ```powershell
 $env:CUDA_VISIBLE_DEVICES='-1'
@@ -62,7 +63,7 @@ $env:PYTHONHASHSEED='0'
 Remove-Item Env:MULTIAGENTELBO_RUN_CUDA_TESTS -ErrorAction SilentlyContinue
 Remove-Item Env:VFE3_TEST_DEVICE -ErrorAction SilentlyContinue
 Remove-Item Env:CUBLAS_WORKSPACE_CONFIG -ErrorAction SilentlyContinue
-C:\Python314\python.exe -m pytest tests\test_canonical_dependence_selection_witness.py -q -p no:cacheprovider --basetemp=C:\tmp\maelbo-selector-green-20260814 --junitxml=docs\derivations\2026-08-14-canonical-dependence-selection\evidence\green-junit.xml
+C:\Python314\python.exe -m pytest tests\test_canonical_dependence_selection_witness.py -q -p no:cacheprovider --basetemp={TEMP}\maelbo-selector-task5-review-fix-20260814-8112f008 --junitxml={STAGING_ROOT}\evidence\green-junit.xml
 ```
 
 Process exit status: `0`.
@@ -73,10 +74,18 @@ Machine-derived JUnit totals:
 - failures: 0
 - errors: 0
 - skipped: 0
-- time: 0.065 seconds
-- LF JUnit SHA-256: `280412a91ddc6bb930069b9bcb23b8bcd07f9289ba9947badbe16d7148fd50e5`
+- time: 0.060 seconds
+- Sanitized LF JUnit SHA-256: `82714d624ac455d1dfdbd9e22eeff3cb484077b555c79b99f57baf65ff3b1dc2`
 
-The exact witness SHA-256 is `2518612bb7fc9055843efda16b296595dec7e88d115ae2f4438486cf38360e45`. The LF source snapshot SHA-256 is `132181dfa9f5f581eaa5d0e25d840e9589e11a1b7e311ee52bed75e0f61d2ac4`.
+The production-source SHA-256 is `2518612bb7fc9055843efda16b296595dec7e88d115ae2f4438486cf38360e45`. The LF test-contract-snapshot SHA-256 is `132181dfa9f5f581eaa5d0e25d840e9589e11a1b7e311ee52bed75e0f61d2ac4`.
+
+`{TEMP}` denotes the machine temporary root and `{STAGING_ROOT}` denotes
+the atomic writable package-staging root. They are explicit provenance
+redactions; every other command token and environment assignment is retained.
+The durable GREEN and RED JUnit files replace the machine hostname with
+`{HOST}`; the RED file also replaces the absolute worktree prefix with
+`{WORKTREE}`. Test IDs, totals, timings, failure messages, and pass/fail
+semantics are preserved.
 
 ## Exactness boundary
 
@@ -95,7 +104,7 @@ Two initial reversible source mutations were applied separately, tested, and rev
 1. One negative categorical atom derivative in `dependence_fisher` was changed to positive. The run exited `1` with 11 tests, 2 failures, 0 errors, and 0 skips. The direct Fisher test and deterministic-JSON test failed because the categorical derivative vector no longer had zero total. This catches a sign mutation that a bare sum of squares would otherwise hide.
 2. The promoted-parity `kappa` derivative column was replaced by zero. The run exited `1` with 11 tests, 1 failure, 0 errors, and 0 skips. The promoted-parity rank test reported rank 6 instead of the required rank 7.
 
-The mutation JUnit files were scratch diagnostics under `C:\tmp`; they are not closure evidence and are not referenced as durable artifacts.
+The mutation JUnit files were scratch diagnostics under `{TEMP}`; they are not closure evidence and are not referenced as durable artifacts.
 
 ### Reviewer-fix mutation cycle
 
@@ -111,10 +120,11 @@ Five additional reversible mutations each failed its focused test with 1 test, 1
 
 ## Portability controls
 
-All three durable evidence artifacts have zero carriage-return bytes:
+The four durable witness inputs have zero carriage-return bytes and are bound by their final LF SHA-256 values:
 
-- `exact_selection_witness.py`: 14,820 bytes, raw Git blob `e2a3a18ee2eaee39bde7cb822b4f99869241de52`, filtered Git blob `e2a3a18ee2eaee39bde7cb822b4f99869241de52`;
-- `green-junit.xml`: 2,302 bytes, raw Git blob `5506430d2a990132e4ccef6e1e9698f7c77c22fb`, filtered Git blob `5506430d2a990132e4ccef6e1e9698f7c77c22fb`;
-- `test_canonical_dependence_selection_witness.snapshot.py`: 12,586 bytes, raw Git blob `a1e9bf468199918928bdd79bf0572eea1643e400`, filtered Git blob `a1e9bf468199918928bdd79bf0572eea1643e400`.
+- `exact_selection_witness.py`: 14,820 bytes, SHA-256 `2518612bb7fc9055843efda16b296595dec7e88d115ae2f4438486cf38360e45`;
+- `green-junit.xml`: 2,293 bytes, SHA-256 `82714d624ac455d1dfdbd9e22eeff3cb484077b555c79b99f57baf65ff3b1dc2`;
+- `test_canonical_dependence_selection_witness.snapshot.py`: 12,586 bytes, SHA-256 `132181dfa9f5f581eaa5d0e25d840e9589e11a1b7e311ee52bed75e0f61d2ac4`;
+- `red-junit.xml`: 14,690 bytes, SHA-256 `7d1b7cf9febf349c88c9a57c2aaa8d462df33b3cac4f3210c37e2d1d36dec1f8`.
 
-The live test file is an `text=auto` Windows checkout with CRLF working bytes. Its Git-filtered blob is `a1e9bf468199918928bdd79bf0572eea1643e400`, exactly equal to both the raw and filtered snapshot blob. Therefore the evidence snapshot is byte-identical to the portable committed test source rather than to platform-specific checkout newlines.
+The test-contract snapshot represents the portable LF test source rather than platform-specific checkout newlines. The ledger separately binds this TDD record, closing the source/test/JUnit/command/environment provenance chain without treating execution as mathematical proof.

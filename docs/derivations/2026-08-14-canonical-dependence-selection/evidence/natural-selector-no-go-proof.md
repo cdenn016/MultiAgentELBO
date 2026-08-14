@@ -1,4 +1,4 @@
-<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb","schema_version":"rigorous-theory-search/v1","target_digest":"b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb"} -->
+<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39","schema_version":"rigorous-theory-search/v1","target_digest":"8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39"} -->
 # Local-Markov selector classification and correlated-refinement no-go
 
 ## 1. Typed finite categories
@@ -47,7 +47,7 @@ Then, for every finite nonempty typed list and every marginal tuple,
 S_X(\mu_1,\ldots,\mu_n)=\bigotimes_i\mu_i.\tag{5}
 \]
 
-Conversely, (5) is a section satisfying (4) for precisely this local morphism class.
+Conversely, (5) is a section satisfying (4) throughout the declared local morphism class.
 
 **Proof.** Let \(\mathbf1_X=(\{*\},\ldots,\{*\})\) have the same arity and typing as \(X\). Both \(J(\mathbf1_X)\) and \(M(\mathbf1_X)\) are singletons, so the section condition forces \(S_{\mathbf1_X}=\delta_{(*,\ldots,*)}\). Given \(\mu=(\mu_i)_i\in M(X)\), define the preparation kernel \(P_i:\{*\}\rightsquigarrow X_i\) by \(P_i(x_i\mid *)=\mu_i(x_i)\). Its independently tensored joint action prepares \(\otimes_i\mu_i\), whereas its marginal action prepares \(\mu\). Naturality (4) therefore gives
 
@@ -163,7 +163,49 @@ A conditional replacement is exact: a section may select one representative per 
 
 ## 7. Hypothesis controls and dependency map
 
-The preparation arrows are load-bearing. If the admitted local class is reduced to typed bijections, many equivariant selectors can coexist; for example, on two unlabeled bits the family \(Q_\rho\) with a fixed nonzero \(|\rho|\) is equivariant under simultaneous relabelings but is not the product rule. Thus Theorem 2.1 does not survive deletion of the preparation kernels.
+The preparation arrows are load-bearing. If the admitted local class is
+reduced to coordinatewise typed bijections, a fully equivariant nonproduct
+section exists already on two bits. Write
+
+\[
+p_a=(1-a,a),\qquad p_b=(1-b,b),\qquad
+H=\begin{pmatrix}1&-1\\-1&1\end{pmatrix},
+\]
+
+and, for a fixed \(0<\varepsilon<1\), set
+
+\[
+\delta(a,b)
+=\varepsilon a(1-a)b(1-b)(2a-1)(2b-1),
+\qquad
+S^\varepsilon(a,b)=p_a\otimes p_b+\delta(a,b)H. \tag{11}
+\]
+
+The entries of \(H\) have zero row sums, zero column sums, and zero total,
+so (11) is normalized and has marginals \(p_a,p_b\). For each product atom
+\(p_a(x)p_b(y)\),
+
+\[
+|\delta(a,b)|
+\le \varepsilon a(1-a)b(1-b)
+\le \varepsilon p_a(x)p_b(y).
+\]
+
+The second inequality follows in the four cases by cancelling the selected
+atom and leaving respectively \(ab\), \(a(1-b)\), \((1-a)b\), or
+\((1-a)(1-b)\), each at most one. Thus every entry is nonnegative; on the
+open square it is strictly positive. At a boundary marginal \(\delta=0\),
+so the same conclusion holds. Whenever
+\(a,b\notin\{0,1/2,1\}\), \(\delta\ne0\), hence the section is not the
+product rule.
+
+A flip of the first bit sends \(a\) to \(1-a\), changes \(\delta\) to
+\(-\delta\), and swaps the rows of \(H\), which also changes \(H\) to
+\(-H\). Therefore the pushed correction equals the correction at the
+flipped marginals. The same calculation holds for a flip of the second bit;
+two flips change both signs back, and the identity cases are immediate.
+These are all coordinatewise bijections of two typed bits, so
+\(S^\varepsilon\) is fully coordinatewise-bijection-equivariant.
 
 Marginal compatibility is also load-bearing for a morphism to act on \(M\). The deterministic XOR map \((x_1,x_2)\mapsto x_1\oplus x_2\) sends \(Q_0\) to a fair bit and \(Q_1\) to a deterministic bit although those sources have the same singleton marginals, so no \(\bar K\) satisfying (3) exists for XOR on the marginal-only category.
 

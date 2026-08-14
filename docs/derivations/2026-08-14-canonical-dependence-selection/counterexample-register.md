@@ -1,4 +1,4 @@
-<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb","schema_version":"rigorous-theory-search/v1","target_digest":"b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb"} -->
+<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39","schema_version":"rigorous-theory-search/v1","target_digest":"8112f0083a554a4df3b5de3875174d0b0cbfeee36a7bc2ea20e78c8cf9da6b39"} -->
 # Counterexample register
 
 ## Selector and faithfulness controls
@@ -7,7 +7,7 @@
 | --- | --- | --- | --- |
 | CE-SEL-REFINEMENT | one single-valued law section is natural under every admitted correlated split | fair source bit; \(R_{1/3}\) and \(R_{1/2}\); common fair/fair marginals; distinct atom multisets \(\{1/3,1/3,1/6,1/6\}\) and \(\{3/8,3/8,1/8,1/8\}\) | direct nonexistence; unequal absolute correlations survive every sample relabeling |
 | CE-SEL-FAITHFUL | a marginal section is also a left inverse on all joints | \(Q_0=(1/4,1/4,1/4,1/4)\), \(Q_{1/2}=(3/8,1/8,1/8,3/8)\), and \(mQ_0=mQ_{1/2}\) | marginalization is noninjective, so \(Sm=\operatorname{id}\) is impossible |
-| CE-PREPARATION-REMOVAL | local-product uniqueness without preparation arrows | restrict the morphism class to typed bijections; a fixed nonzero-correlation binary rule can remain relabeling-equivariant | preparation arrows are load-bearing for product uniqueness under the declared local class |
+| CE-PREPARATION-REMOVAL | local-product uniqueness without preparation arrows | on two bits, \(S^\varepsilon=p_a\otimes p_b+\delta H\), \(H=\begin{psmallmatrix}1&-1\\-1&1\end{psmallmatrix}\), \(\delta=\varepsilon a(1-a)b(1-b)(2a-1)(2b-1)\), \(0<\varepsilon<1\) | zero row/column sums preserve normalization and marginals, the atomwise bound proves nonnegativity, and sign covariance under either flip gives full coordinatewise-bijection equivariance; the rule is nonproduct when \(\delta\ne0\) |
 | CE-MARGINAL-COMPATIBILITY | every joint kernel acts on marginal-only data | XOR sends same-marginal sources \(Q_0\) and \(Q_1\) to different output laws | interaction-sensitive XOR has no descended \(\bar K\) and is not a marginal-only morphism |
 | CE-SET-VALUED | a fiber-valued assignment resolves the law-valued contradiction | \(\mu\mapsto\{Q:mQ=\mu\}\) contains both correlated outputs | it is not the frozen single-valued signature and selects no VFE, Fisher family, or intervention object |
 
@@ -19,7 +19,7 @@ Full derivations: `evidence/natural-selector-no-go-proof.md`.
 | --- | --- | --- | --- |
 | CE-RECOVERY-VFE | full-joint VFE factors through \((mQ,mP,z)\) | \(P=Q_0\) uniform and \(Q_{1/2}\) correlated; all displayed marginals uniform; KL values zero and strictly positive | no function of marginal inputs can return every compatible full-joint VFE |
 | CE-RECOVERY-FISHER | full-joint Fisher factors through the marginal-family map | six-bit \(Q^{(0)}_\theta\), \(Q^{(1/2)}_\theta\); identical singleton families; center tensors \(4I_6\) and \((65536/16383)I_6\) | a selected family, not one marginal law value, is required for full Fisher |
-| CE-RECOVERY-INTERVENTION | universal typed-enrichment uniqueness and two-sided recovery from observational marginals | conditional August 13 direct, latent, and null-extended BSC objects; same retained law; nonisomorphic typed intervention inventories in the declared category | refutes universal fiber uniqueness and \(RU(E)\cong E\) for every enrichment; does not refute a mere right-inverse section choosing one representative |
+| CE-RECOVERY-INTERVENTION | universal typed-enrichment uniqueness and two-sided recovery from observational marginals | conditional August 13 direct, latent, and null-extended BSC objects in one forgetful fiber, assumed admitted and nonisomorphic in a declared typed category | proves the conditional two-sided-recovery no-go only; the frozen unconditional claim is **INCONCLUSIVE** until the category and witness hypotheses are formalized, and a mere right-inverse may still choose one representative |
 | CE-FISHER-BOUNDARY | positivity can be omitted from a Fisher-family claim | a categorical family with a zero atom and a tangent entering that atom | the score/Fisher expression can be singular; the proved witness remains in the positive interior |
 | CE-FAMILY-POINT | equality at one parameter determines Fisher | constant fair Bernoulli versus \(\operatorname{Ber}(1/2+t)\) at \(t=0\) | one law value does not determine family derivatives or Fisher |
 
@@ -60,3 +60,7 @@ Full derivations: `evidence/fisher-quotient-agentization-proof.md`.
 ## Scope
 
 These controls refute only the matching frozen statements or demonstrate the necessity of named hypotheses. None is evidence against reference-relative selection under its proved finite support conditions, deterministic completion under absolute continuity, retained descent under the complete August 13 equivalence, or block attribution supplied by declared basic typed structure.
+
+## Release binding
+
+Each terminal claim is paired with an explicit adversarial attack in `evidence/adversarial-attacks.md` and a machine-readable disposition in `adversarial-report.json`. Those attacks test scope and load-bearing hypotheses; numerical agreement is used only for the witness regression and is not treated as proof of any mathematical claim.
