@@ -144,13 +144,18 @@ structure survives the generalization to arbitrary exponential families; that an
 
 This section supersedes every conflicting claim above while preserving the earlier sections as a
 dated record of the investigation. It incorporates the independent audit and the repaired
-`shared_latent_coupling_witness.py` and `meta_agent_coherence_witness.py`. The remediation branch has
-collected regression coverage for those witnesses, but its final revision-bound verification ledger
-and final full-suite aggregate are still pending. Consequently, neither the old ledger pin nor the
-old `21 failed / 1092 passed / 15 skipped` total in §6 is current evidence.
+`shared_latent_coupling_witness.py` and `meta_agent_coherence_witness.py`. Source/theory remediation
+revision `76af87b` has current revision-bound evidence: the full CPU suite contains 1,182 tests,
+with 1,166 passed, 16 skipped, and zero failures or errors; both rigorous-theory release validators
+exit zero; and the independent verifier review contains 183 tests, with 170 passed, 13 capability or
+fixture skips, and zero failures or errors. The old ledger pin and the old
+`21 failed / 1092 passed / 15 skipped` total in §6 are historical only. This closure makes no CUDA
+claim. Evidence and hashes are recorded in
+`docs/audits/evidence/2026-08-13-claude-opus-remediation/manifest.md`.
 
 | Topic | Corrected status and boundary |
 |---|---|
+| Finite presentation descent | **P/C.** Collapsed retained-variable VFE descends under equality of the retained joint law. Full auxiliary-latent VFE equals the collapsed VFE plus an expected conditional KL; on the support-qualified tier, posterior completion or minimization over auxiliary lifts removes that defect. Strictly positive parameterwise-equal retained families have the same retained Fisher tensor and every common `C^1` pullback. Full-joint Fisher tensors, node inventories, and interventions do not generally descend. Paired marginals admit distinct smooth positive lifts with different VFE and Fisher pullbacks, so canonical agentization and lift selection remain open. |
 | Shared-latent rank | **P/D.** For positive-definite private and latent covariances, the Woodbury correction satisfies `rank(C) = rank(Lambda) <= R`; equality with the declared width `R` requires full column rank of `Lambda`. Latent width alone neither forces nor forbids positive edge weights. |
 | Positive KL split | **C.** An exact rank-two Gaussian control has strictly positive KL edge weights and a proper residual prior. A separate rank-one control shows that a proper residual prior is an independent side condition. |
 | Induced transports | **C/D.** A cross-block identifies the product `beta_ab W_ab Omega_ab`, not `Omega_ab` alone. After dividing out declared positive `beta` and invertible `W`, an exact `N=3`, `K=d=2` rotation construction has a nontrivial transport cocycle, exact precision reconstruction, and a proper residual prior. The previous universal cocycle no-go is withdrawn. |
@@ -164,5 +169,8 @@ old `21 failed / 1092 passed / 15 skipped` total in §6 is current evidence.
 | Gibbs-Haar plaquette term | **D, conditional model only.** It is an exact negative-ELBO component only after declaring a new random compact-link Gibbs-Haar generative model (including the inverse-temperature coefficient and entropy term). It is not derived from the current fixed-link ELBO and does not by itself derive current-model curvature dynamics. |
 | Fiber symmetry | **P/typed.** Homogeneity is sufficient for transitive full-fiber reach, not necessary for every gauge action: nonhomogeneous statistical manifolds can have nontransitive isometry sectors. A homogeneous space need not be symmetric; the symmetric-space conclusion is valid for the SPD covariance sector or where a symmetric-pair hypothesis is separately proved. |
 
-Until the pending revision-bound closure is issued, cite the exact derivations and collected witness
-tests for individual claims and label aggregate repository verification **pending**.
+Revision-bound CPU closure is issued for source/theory revision `76af87b`; cite the exact derivations,
+claim ledgers, and durable JUnit evidence for individual claims. The current globally installed
+verification skill is a coherent schema-1.1 upgrade whose nine active files differ from the frozen
+schema-1.0 contract. That mismatch correctly fails closed. Preserve v1 and its historical evidence;
+a versioned v2 builder/contract migration remains **open** rather than silently refreshing v1.

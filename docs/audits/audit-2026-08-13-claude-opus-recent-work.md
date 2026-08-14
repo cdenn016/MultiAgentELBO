@@ -367,3 +367,67 @@ gate remains finite and presentation-aware:
 
 The corrected shared-latent examples should be used as witnesses inside that theorem, not as proof
 that literal PIFB2 or a physical ontology has already emerged.
+
+## 2026-08-13 remediation closure
+
+The five required remediation steps above are complete at source/theory revision `76af87b`. This
+closure supersedes the audit's pre-remediation severity assignments and test totals; it does not
+erase the historical findings.
+
+### Closed findings
+
+- The shared-latent witness now proves `rank(C) = rank(Lambda) <= R`, separates latent width from
+  positive KL-edge and proper-prior side conditions, divides the identified cross-block into declared
+  `beta`, `W`, and `Omega` factors, supplies an exact nontrivial rotation cocycle, and treats `d >= K`
+  as necessary rather than sufficient.
+- The meta-agent witness now uses the transported sender covariance for the frozen-beta forward-KL
+  Hessian, scales the prior block by support, separates positive-support normalization from exact
+  departure, uses stored reverse transports and actual receiver-row normalization, and narrows the
+  retired regime table to its exact identity cell with countercontrols.
+- `STATUS.md`, the worklog, Tier-0 decisions, and `overview.md` now carry the corrected rank,
+  support, transport, graph/base, holonomy, Gibbs-Haar, and fiber-symmetry boundaries. A Markdown C0
+  regression prevents escaped LaTeX controls from becoming raw control bytes again.
+- The verifier now validates exact bytes and executes those retained bytes in an isolated
+  `C:\Python314\python.exe -I -S -B` child with neutral working directory, stripped Python import
+  environment, strict framed output, and an operation allowlist. Tests cover post-validation path
+  replacement, current-directory and `PYTHONPATH` shadowing, parent `sys.modules` poisoning,
+  malformed ledgers, junction constraints, and every Wave 0-E documented lifecycle.
+
+### New finite theorem boundary
+
+The certified finite presentation-descent package proves four claims. Collapsed retained-variable
+VFE depends only on the retained joint law. Full auxiliary-latent VFE is the collapsed VFE plus an
+expected conditional KL, removed by posterior completion or minimization over lifts on the
+support-qualified tier. Parameterwise-equal strictly positive retained families have identical
+retained Fisher tensors and common `C^1` pullbacks. Finally, paired marginals admit explicit distinct
+smooth positive lifts with different full-joint VFE and Fisher pullbacks. Thus observational
+presentation invariants exist, but neither canonical agentization nor a shared physical geometry is
+obtained for free.
+
+### Mechanical closure
+
+All commands used the CPU interpreter and make no CUDA claim.
+
+- Full suite at revision `76af87b`: **1,182 tests; 1,166 passed, 16 skipped, 0 failures, 0 errors** in
+  266.528 seconds. JUnit SHA-256: `6dd6813ce01731399d800c24e9c9abe5eeed121f377092aaed1e01c2b86015c2`.
+- Independent verifier/launcher review: **183 tests; 170 passed, 13 skipped, 0 failures, 0 errors**.
+  JUnit SHA-256: `119ceff248ca8918bf336812ca925a45a0963963cedd661fbbdc8afb446a68d5`.
+- Focused theory, witness, and Markdown regression lane: **28 passed, 0 skipped, 0 failures, 0 errors**.
+  JUnit SHA-256: `99bea732f3e96b41bb40455e97fc308475559091f077bff6ae7395930557377d`.
+- Both rigorous-theory release validators exit zero. Independent mathematical and verifier re-reviews
+  found no remaining Critical, High, or Medium defect in their remediated scopes.
+
+The globally installed verification skill has coherently advanced from the frozen schema-1.0
+contract to schema 1.1. All nine active files differ. In-place hash refresh is intentionally
+rejected: the current builder requires a 1.0 start template, and three historical Wave-0 evidence
+indexes bind the existing v1 manifest. The safe follow-up is a versioned v2 migration; until then,
+the installation mismatch remains visibly fail closed.
+
+### Next buildout gate
+
+The presentation-descent gate is now closed at the finite observational tier. The next theorem should
+promote or select dependence data explicitly: construct an equivariant collective joint-law lift,
+prove its shared Fisher semigeometry and dependence residual on the retained quotient, and state
+exactly which enriched equivalence preserves interventions and node identity. Only after that finite
+gate should the program attempt continuum section-space measures, emergent causal geometry, or
+dimensionful constants.
