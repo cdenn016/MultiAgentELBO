@@ -1,0 +1,15 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-d86240f62e14f68c51e3f940b3bf9ba6637c563f2b1d30698bd73c9ded2f89ee",
+  "target_digest": "d86240f62e14f68c51e3f940b3bf9ba6637c563f2b1d30698bd73c9ded2f89ee",
+  "checkpoint": "frozen contract; executable witness contract observed RED",
+  "target_claim": "TARGET-ABSOLUTE-CANONICAL-SELECTOR",
+  "terminal_status": null,
+  "certificate_claim": null,
+  "strongest_result": "No theorem, construction, or nonexistence proof has yet been certified.",
+  "unresolved_obligations": [
+    "Implement the exact finite witness and observe GREEN without weakening the frozen tests.",
+    "Prove or refute the frozen existential target and disposition each independently typed recovery conjunct.",
+    "Complete independent reconstruction, adversarial attacks, oracle erasure, and release validation."
+  ]
+}

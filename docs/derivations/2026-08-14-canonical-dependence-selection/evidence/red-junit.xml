@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="11" skipped="0" tests="11" time="0.103" timestamp="2026-08-14T07:09:05.215723-05:00" hostname="DESKTOP-RT15E78"><testcase classname="tests.test_canonical_dependence_selection_witness" name="test_binary_correlation_family_has_exact_atoms_marginals_and_split_law" time="0.000"><failure message="AssertionError: expected RED: exact_selection_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file">def test_binary_correlation_family_has_exact_atoms_marginals_and_split_law():
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_canonical_dependence_selection_witness.py:69: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), (
+            "expected RED: exact_selection_witness.py has not been implemented"
+        )
+E       AssertionError: expected RED: exact_selection_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file
+
+tests\test_canonical_dependence_selection_witness.py:49: AssertionError</failure></testcase><testcase classname="tests.test_canonical_dependence_selection_witness" name="test_preparation_pushforward_forces_the_hand_derived_product_coupling" time="0.000"><failure message="AssertionError: expected RED: exact_selection_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file">def test_preparation_pushforward_forces_the_hand_derived_product_coupling():
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_canonical_dependence_selection_witness.py:92: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), (
+            "expected RED: exact_selection_witness.py has not been implemented"
+        )
+E       AssertionError: expected RED: exact_selection_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file
+
+tests\test_canonical_dependence_selection_witness.py:49: AssertionError</failure></testcase><testcase classname="tests.test_canonical_dependence_selection_witness" name="test_faithful_quasi_inverse_counterexample_survives_relabeling" time="0.000"><failure message="AssertionError: expected RED: exact_selection_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file">def test_faithful_quasi_inverse_counterexample_survives_relabeling():
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_canonical_dependence_selection_witness.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), (
+            "expected RED: exact_selection_witness.py has not been implemented"
+        )
+E       AssertionError: expected RED: exact_selection_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file
+
+tests\test_canonical_dependence_selection_witness.py:49: AssertionError</failure></testcase><testcase classname="tests.test_canonical_dependence_selection_witness" name="test_dependence_fisher_is_computed_exactly_on_two_controls" time="0.000"><failure message="AssertionError: expected RED: exact_selection_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file">def test_dependence_fisher_is_computed_exactly_on_two_controls():
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_canonical_dependence_selection_witness.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), (
+            "expected RED: exact_selection_witness.py has not been implemented"
+        )
+E       AssertionError: expected RED: exact_selection_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file
+
+tests\test_canonical_dependence_selection_witness.py:49: AssertionError</failure></testcase><testcase classname="tests.test_canonical_dependence_selection_witness" name="test_deterministic_completion_pushes_forward_and_composes_strictly" time="0.000"><failure message="AssertionError: expected RED: exact_selection_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file">def test_deterministic_completion_pushes_forward_and_composes_strictly():
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_canonical_dependence_selection_witness.py:126: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), (
+            "expected RED: exact_selection_witness.py has not been implemented"
+        )
+E       AssertionError: expected RED: exact_selection_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file
+
+tests\test_canonical_dependence_selection_witness.py:49: AssertionError</failure></testcase><testcase classname="tests.test_canonical_dependence_selection_witness" name="test_completion_conditional_defect_is_exactly_selective" time="0.000"><failure message="AssertionError: expected RED: exact_selection_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file">def test_completion_conditional_defect_is_exactly_selective():
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_canonical_dependence_selection_witness.py:173: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), (
+            "expected RED: exact_selection_witness.py has not been implemented"
+        )
+E       AssertionError: expected RED: exact_selection_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file
+
+tests\test_canonical_dependence_selection_witness.py:49: AssertionError</failure></testcase><testcase classname="tests.test_canonical_dependence_selection_witness" name="test_reference_relative_selector_inherits_feasible_reference_dependence" time="0.000"><failure message="AssertionError: expected RED: exact_selection_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file">def test_reference_relative_selector_inherits_feasible_reference_dependence():
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_canonical_dependence_selection_witness.py:203: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), (
+            "expected RED: exact_selection_witness.py has not been implemented"
+        )
+E       AssertionError: expected RED: exact_selection_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file
+
+tests\test_canonical_dependence_selection_witness.py:49: AssertionError</failure></testcase><testcase classname="tests.test_canonical_dependence_selection_witness" name="test_fraction_gaussian_elimination_reports_exact_ranks" time="0.000"><failure message="AssertionError: expected RED: exact_selection_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file">def test_fraction_gaussian_elimination_reports_exact_ranks():
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_canonical_dependence_selection_witness.py:217: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), (
+            "expected RED: exact_selection_witness.py has not been implemented"
+        )
+E       AssertionError: expected RED: exact_selection_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file
+
+tests\test_canonical_dependence_selection_witness.py:49: AssertionError</failure></testcase><testcase classname="tests.test_canonical_dependence_selection_witness" name="test_bsc_retained_quotient_has_rank_one_and_two_exact_null_vectors" time="0.000"><failure message="AssertionError: expected RED: exact_selection_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file">def test_bsc_retained_quotient_has_rank_one_and_two_exact_null_vectors():
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_canonical_dependence_selection_witness.py:238: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), (
+            "expected RED: exact_selection_witness.py has not been implemented"
+        )
+E       AssertionError: expected RED: exact_selection_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file
+
+tests\test_canonical_dependence_selection_witness.py:49: AssertionError</failure></testcase><testcase classname="tests.test_canonical_dependence_selection_witness" name="test_promoted_parity_retains_seven_joint_directions_but_six_marginal_directions" time="0.000"><failure message="AssertionError: expected RED: exact_selection_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file">def test_promoted_parity_retains_seven_joint_directions_but_six_marginal_directions():
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_canonical_dependence_selection_witness.py:270: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), (
+            "expected RED: exact_selection_witness.py has not been implemented"
+        )
+E       AssertionError: expected RED: exact_selection_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file
+
+tests\test_canonical_dependence_selection_witness.py:49: AssertionError</failure></testcase><testcase classname="tests.test_canonical_dependence_selection_witness" name="test_main_emits_one_byte_stable_json_document" time="0.000"><failure message="AssertionError: expected RED: exact_selection_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file">def test_main_emits_one_byte_stable_json_document():
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_canonical_dependence_selection_witness.py:287: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), (
+            "expected RED: exact_selection_witness.py has not been implemented"
+        )
+E       AssertionError: expected RED: exact_selection_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-canonical-dependence-selection-20260814/docs/derivations/2026-08-14-canonical-dependence-selection/evidence/exact_selection_witness.py').is_file
+
+tests\test_canonical_dependence_selection_witness.py:49: AssertionError</failure></testcase></testsuite></testsuites>

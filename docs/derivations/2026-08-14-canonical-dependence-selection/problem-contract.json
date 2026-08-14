@@ -1,0 +1,53 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-d86240f62e14f68c51e3f940b3bf9ba6637c563f2b1d30698bd73c9ded2f89ee",
+  "target_digest": "d86240f62e14f68c51e3f940b3bf9ba6637c563f2b1d30698bd73c9ded2f89ee",
+  "target": {
+    "statement": "Does there exist one family of single-valued law-valued sections S_X : M(X) -> J(X), for every finite nonempty typed list X, with m_X after S_X equal to the identity, that is natural under every coordinatewise finite Markov kernel and every admitted marginal-compatible arity-changing presentation kernel including correlation-generating split refinements, is faithful to every admitted positive full joint law, and through the marginal datum independently recovers the full-joint VFE of every compatible recognition/generative/evidence triple, the pulled-back full-joint Fisher tensor of every compatible positive C^1 statistical family, and the typed intervention semantics of every compatible enriched intervention structure?",
+    "kind": "MATHEMATICAL",
+    "quantifier_class": "EXISTENTIAL",
+    "quantifiers": "There exists a single family (S_X)_X, one section for each finite nonempty typed list X, such that for every coordinatewise finite Markov kernel, every admitted marginal-compatible arity-changing presentation kernel including every admitted correlation-generating split refinement, every admitted positive joint law Q, every compatible full-joint VFE enrichment (Q,P,z), every pair of compatible positive C^1 full-joint statistical families on a common parameter space, and every pair of compatible enriched typed intervention presentations with the same marginal datum, all section, naturality, faithfulness, VFE-factorization, Fisher-factorization, and typed-intervention reconstruction requirements in the target statement hold simultaneously.",
+    "domains": [
+      "Finite nonempty typed lists X=(X_i), joint-law spaces J(X)=Delta(product_i X_i), marginal-data spaces M(X)=product_i Delta(X_i), and marginalization maps m_X:J(X)->M(X).",
+      "Coordinatewise finite Markov kernels with independently tensored channel randomness, and admitted marginal-compatible arity-changing kernels K for which a unique K_bar satisfies m_Y after K_# = K_bar after m_X.",
+      "Admitted positive full joint laws, compatible recognition/generative/evidence triples (Q,P,z) with P positive and z>0, compatible positive C^1 full-joint statistical families on a common parameter space, and compatible enriched typed causal/intervention presentations."
+    ],
+    "codomains": [
+      "Single normalized joint laws in J(X) selected from each marginal datum in M(X).",
+      "Extended-real full-joint VFE values -log(z)+KL(Q||P), pulled-back Fisher tensors on the declared common parameter space, and typed intervention structures up to declared type-preserving intervention isomorphism."
+    ],
+    "regularity": "All probability spaces are finite and all laws are normalized. Strict positivity is required for full-joint Fisher families and wherever finite KL or smooth score calculations are invoked. Statistical families are C^1 on their declared common parameter space. No continuity or positivity is assumed merely to define a law-valued marginal section.",
+    "measures": [
+      "Counting measure on every finite sample space.",
+      "Probability laws are normalized mass functions; KL uses the standard extended-real support convention."
+    ],
+    "boundary_conditions": [
+      "Finite-simplex boundary laws are admitted for section and naturality claims when all displayed expressions remain defined.",
+      "Fisher claims are restricted to positive interior laws; support-zero and boundary cases require separate support-stratum statements."
+    ],
+    "symmetries": [
+      "Typed coordinate relabelings and sample relabelings act by pushforward.",
+      "The fixed-arity monoidal action uses independent tensor products of local Markov kernels.",
+      "Typed intervention equivalence permits only type-preserving intervention isomorphisms."
+    ],
+    "equivalence": "Law equality is equality of normalized finite mass functions. VFE equality is equality in the extended reals under the same evidence convention. Fisher equality is tensor equality on the same parameter base. Intervention equality is isomorphism in the declared type-preserving causal/intervention category. The August 13 presentation equivalence remains equality of the complete retained joint law and completed retained conditioning algebra, parameterwise for Fisher claims; equality of singleton marginals alone is not that equivalence.",
+    "premises": [
+      "For each finite nonempty typed list X, m_X extracts the declared singleton or disjoint-block marginals from J(X), and product coupling makes m_X surjective.",
+      "A coordinatewise morphism acts on J by the tensor product of its local finite Markov kernels and on M by coordinatewise pushforward.",
+      "An admitted arity-changing presentation kernel is marginal-compatible only when its joint pushforward descends through m_X to the marginal datum.",
+      "Each VFE, Fisher, and intervention recovery requirement is an independently typed factorization predicate through m_X; a compatible enrichment belongs to its separately declared domain and is not inferred from marginal data."
+    ],
+    "modeling_postulates": [],
+    "search_priors": [
+      "SEARCH_PRIOR_AFFIRMATIVE"
+    ],
+    "permitted_theorems": [
+      "Finite probability normalization, pushforward, marginalization, and tensor-product identities proved or directly reconstructed in the run.",
+      "Finite KL nonnegativity, strict convexity on a fixed feasible support, and the finite conditional KL chain rule when all support hypotheses are mapped explicitly.",
+      "Finite categorical Fisher score identities, exact finite-dimensional linear algebra, the constant-rank theorem, and explicitly proved finite-group representation lemmas."
+    ],
+    "negative_certificate_kind": "NONEXISTENCE_PROOF",
+    "falsification_criterion": "A scope-matched nonexistence proof must show that no single family (S_X)_X can satisfy the frozen existential conjunction under all internal universal quantifiers. Each independently typed VFE, Fisher, and intervention recovery predicate must also receive its own direct disposition and strongest conditional replacement; failure to construct a selector is not a certificate.",
+    "literature_policy": "Use contained derivations and exact finite calculations as the primary mathematical record. External reliance is permitted only on named primary sources or standard theorem statements with hypothesis-by-hypothesis mapping. Searches, if later used, must record database, date, language, inclusion rule, unavailable sources, and stopping rule; no priority or worldwide-exhaustiveness claim is permitted."
+  }
+}
