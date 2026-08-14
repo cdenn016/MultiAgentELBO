@@ -78,7 +78,7 @@ K_\#\!\left(\bigotimes_i\mu_i\right)
 \tag{6}
 \]
 
-**Theorem 3.1 (maximal-category iff).** Let \(\mathcal C\) be a wide category on the finite typed lists whose morphisms are marginal-compatible kernels and which contains every fixed-arity local kernel. A section family is natural under every morphism of \(\mathcal C\) if and only if every morphism of \(\mathcal C\) is product-preserving in the sense of (6). When it exists, that section family is unique and is the product family (5). Consequently, the collection of all product-preserving marginal-compatible kernels is the maximal wide category containing the local kernels on which a natural marginal section exists.
+**Theorem 3.1 (maximal-category iff).** Let \(\mathcal C\) be a wide category on the finite typed lists whose morphisms are marginal-compatible kernels and which contains every fixed-arity local kernel. The category \(\mathcal C\) admits a section family natural under every morphism of \(\mathcal C\) if and only if every morphism of \(\mathcal C\) is product-preserving in the sense of (6). When such a natural family exists for this morphism class, it is unique and is the product family (5). Consequently, the collection of all product-preserving marginal-compatible kernels is the maximal wide category containing the local kernels on which a natural marginal section exists.
 
 **Proof.** If a \(\mathcal C\)-natural section exists, its restriction to local kernels is the product family by Theorem 2.1. For any \(K\in\mathcal C(X,Y)\) and any \(\mu\in M(X)\), naturality and marginal compatibility give
 
@@ -124,7 +124,7 @@ Indeed, (8) has two atoms \((1+\rho)/4\), two atoms \((1-\rho)/4\), total mass o
 
 ## 5. Relabeling-robust correlated-refinement nonexistence
 
-**Theorem 5.1 (claim `SEL-CORRELATED-REFINEMENT-NOGO`).** No single law-valued marginal section can be natural simultaneously under all coordinatewise finite Markov kernels and under the two admitted split refinements \(R_{1/3}\) and \(R_{1/2}\). In fact, naturality under both split refinements alone already contradicts single-valuedness at the fair/fair marginal datum.
+**Theorem 5.1 (claim `SEL-CORRELATED-REFINEMENT-NOGO`).** The section axiom together with naturality under the two admitted split refinements \(R_{1/3}\) and \(R_{1/2}\), without any local-kernel naturality assumption, contradicts a single-valued law assignment at the fair/fair marginal datum.
 
 **Proof.** On the one-coordinate source, the section condition forces \(S_U(u)=u\). Both split marginal maps send \(u\) to \((u,u)\). Naturality under each split would therefore require
 

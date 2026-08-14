@@ -19,7 +19,7 @@ For a fair source bit, the two marginal-compatible split kernels \(R_{1/3}\) and
 \{3/8,3/8,1/8,1/8\}.
 \]
 
-These multisets remain distinct under every sample relabeling. One single-valued law selector cannot equal both outputs. This is a direct scope-matched nonexistence proof for the frozen existential conjunction, independent of every positive replacement. The same binary family proves marginalization is noninjective, so no marginal section can also be faithful to every compatible full joint law.
+These multisets remain distinct under every sample relabeling. The section axiom plus naturality under these two splits, without any local-kernel naturality assumption, forces one single-valued selector to equal both outputs. This is a direct scope-matched nonexistence proof for the frozen existential conjunction, independent of every positive replacement. The same binary family proves marginalization is noninjective, so no marginal section can also be faithful to every compatible full joint law.
 
 The full proof is `evidence/natural-selector-no-go-proof.md`.
 
@@ -29,7 +29,7 @@ The three marginal-recovery predicates fail for different reasons and have separ
 
 * `RECOVERY-FULL-VFE-NOGO`: the product law and a positive correlated law have the same singleton marginals, while their KL values against the same positive product posterior are respectively zero and strictly positive.
 * `RECOVERY-FULL-FISHER-NOGO`: the positive six-bit parity families with fixed \(\kappa=0\) and \(\kappa=1/2\) have the same singleton-marginal family map on \((0,1)^6\), while at the symmetric point their full-joint Fisher tensors are \(4I_6\) and \((65536/16383)I_6\).
-* `RECOVERY-TYPED-INTERVENTION-NOGO`: the certified direct, latent, and null-extended BSC presentations have one retained observational law but nonisomorphic type-preserving intervention structures.
+* `RECOVERY-TYPED-INTERVENTION-NOGO`: conditional on the August 13 direct, latent, and null-extended BSC presentations being nonisomorphic objects in the declared typed category over one retained law, universal fiber uniqueness and two-sided recovery fail. A mere right-inverse section may still choose one conventional representative; the full causal/agency category remains open to formalization.
 
 The proof, exact source dependencies, and strongest conditional replacements are in `evidence/recovery-factorization-no-go-proof.md`. None of the three claims depends on either of the other two.
 
@@ -47,7 +47,7 @@ and is then unique as a law relative to \((p,T,m)\). Its exact support is the in
 D(q\|p)=D(q\|q_{p,m})+D(q_{p,m}\|p).
 \]
 
-The selected law is analytic on each fixed relative-interior face stratum. It is equivariant only when the reference and complete constraint diagram are transported coherently. For singleton marginal constraints, higher-order log-linear interactions are inherited from \(p\); a product reference yields the product law, whereas a feasible correlated reference selects itself.
+The selected law is analytic on each fixed relative-interior face stratum. It is equivariant only when the reference and complete constraint diagram are transported coherently. For full-support relative-interior singleton targets, full-table higher-order log-linear interactions are inherited from \(p\); at a boundary target the statement is restricted to the minimal-face support and contrasts through zero atoms are undefined. A product reference yields the product law, whereas a feasible correlated reference selects itself.
 
 For a deterministic coarse map \(f:X\to Y\), reference \(p\), and \(r\ll f_\#p\), the unique KL-minimizing completion relative to \((f,p,r)\) is
 
@@ -59,7 +59,7 @@ r(f(x))p(x)/(f_\#p)(f(x)),&(f_\#p)(f(x))>0,\\
 \end{cases}
 \]
 
-It composes strictly along nested deterministic coarse maps when every stage uses the pushed reference. With the retained posterior as reference, the retained optimizer and optimized VFE value descend under the August 13 retained-joint/conditioning equivalence. The retained envelope differential descends only for a positive \(C^1\) parameterized family with a common locally fixed feasible set and support stratum and a unique \(C^1\) optimizer. Presentation-specific auxiliary completions do not descend.
+It composes strictly along nested deterministic coarse maps when every stage uses the pushed reference. With the retained posterior as reference and a feasible retained target \(m\in\operatorname{conv}T(\operatorname{supp}\pi)\), the finite optimizer satisfies \(q^*\ll\pi\), its deterministic completion is defined, and the retained optimizer and optimized VFE value descend under the August 13 retained-joint/conditioning equivalence. The retained envelope differential descends only for a positive \(C^1\) parameterized family with a common locally fixed feasible set and support stratum and a unique \(C^1\) optimizer. Presentation-specific auxiliary completions do not descend.
 
 The full proof and boundary counterexamples are in `evidence/reference-relative-selection-proof.md`.
 

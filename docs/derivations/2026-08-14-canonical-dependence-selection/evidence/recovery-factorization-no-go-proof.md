@@ -162,11 +162,15 @@ P^{L0}_\theta(O=o\mid\operatorname{do}(E=e))
 
 For \(b\ne1/2\), \(\operatorname{do}(E=0)\) and \(\operatorname{do}(E=1)\) give different output laws. The direct presentation has only a singleton auxiliary coordinate and therefore no pair of typed binary \(E\)-interventions corresponding to (13). The null-extended presentation additionally has a typed binary \(N\)-node absent from both other presentations. Node type and admitted intervention targets are invariants of the declared type-preserving intervention isomorphism. Thus the three enriched structures are pairwise nonisomorphic even though their retained observational law agrees.
 
-**Theorem 4.1 (claim `RECOVERY-TYPED-INTERVENTION-NOGO`).** The forgetful map from these compatible typed causal/intervention presentations to their marginal observational datum has a fiber containing nonisomorphic objects. Consequently, no marginal-to-enrichment reconstruction can be a section of that forgetful map up to type-preserving intervention isomorphism for every compatible enrichment.
+**Theorem 4.1 (claim `RECOVERY-TYPED-INTERVENTION-NOGO`, conditional typed statement).** Let \(U:\mathcal E\to\mathcal B\) be the declared forgetful functor from enriched typed intervention presentations to marginal observational data. Conditional on the August 13 direct, latent, and null-extended witnesses being objects of \(\mathcal E\) that have one common \(U\)-image and are nonisomorphic under the declared type-preserving intervention isomorphisms, no reconstruction \(R:\mathcal B\to\mathcal E\) can recover every compatible enrichment by a two-sided law
 
-**Proof.** If such a reconstruction existed, every two objects over the same marginal datum would be isomorphic to the reconstructed object and hence to each other. Equations (10)--(13) give objects over one datum that are not type-preservingly intervention-isomorphic. Contradiction. \(\square\)
+\[
+R\,U(E)\cong E\qquad\text{for every compatible }E\in\mathcal E.\tag{14}
+\]
 
-**Conditional replacement.** Typed interventions descend after they are included in the retained datum and the equivalence requires intertwining every admitted intervention kernel. Alternatively, one may choose a conventional enrichment or postulate an intervention/agency structure. Equality of observational laws alone supplies neither choice.
+**Proof.** If (14) held and \(U(E_1)=U(E_2)=b\), then \(E_1\cong R(b)\cong E_2\). The conditional August 13 witnesses supply nonisomorphic \(E_1,E_2\) over one \(b\), a contradiction. This refutes universal fiber uniqueness and faithful two-sided recovery. It does not refute a mere right-inverse section satisfying \(U R\cong\operatorname{id}_{\mathcal B}\), which may choose one conventional representative from each fiber without recovering the other representatives. \(\square\)
+
+**Conditional replacement.** A mere section \(R\) may choose one conventional enrichment per marginal datum. Faithful recovery requires the stronger two-sided condition (14), which is impossible under the conditional nonisomorphic-fiber witness. Typed interventions can instead descend after the retained datum includes them and the equivalence intertwines every admitted intervention kernel. The full typed causal category, autonomy predicate, and causal/agency interpretation remain open formalization obligations; equality of observational laws alone supplies none of them.
 
 The retained-law equality and nonisomorphism depend exactly on the August 13 BSC construction cited above. They do not depend on the parity family or on either scalar/tensor no-go.
 
@@ -176,10 +180,10 @@ The retained-law equality and nonisomorphism depend exactly on the August 13 BSC
 | --- | --- | --- | --- |
 | `RECOVERY-FULL-VFE-NOGO` | two positive full-joint VFE inputs with equal displayed marginals and unequal KL | laws (1); finite KL strictness; frozen signature of \(V_X\) | supply full laws, or retain a complete joint posterior/evidence and collapse or conditionally minimize |
 | `RECOVERY-FULL-FISHER-NOGO` | two positive \(C^1\) full-joint families with the same marginal-family map and unequal tensors | parity family (5); cancellation of proper marginals; center calculation (6)--(9); certified August 14 source | supply a parameterized full-joint lift, or compute Fisher only at the declared retained-joint scope |
-| `RECOVERY-TYPED-INTERVENTION-NOGO` | nonisomorphic enriched objects in one observational fiber | BSC presentations (10)--(12); intervention law (13); certified August 13 source; declared type-preserving isomorphism | retain the intervention algebra/kernels, or declare an enrichment convention/postulate |
+| `RECOVERY-TYPED-INTERVENTION-NOGO` | conditional nonisomorphic enriched objects in one observational fiber | BSC presentations (10)--(12); intervention law (13); August 13 source; declared type-preserving isomorphism | no universal two-sided recovery; a mere right-inverse section may choose one representative; retaining intervention kernels requires the typed category to be formalized |
 
 No edge between these three claims is needed or valid: scalar VFE, statistical-family Fisher, and typed intervention structure have different codomains and different equality notions. Each proof remains valid if the other two sections are erased.
 
 ## 6. Scope
 
-The results show only nonfactorization through the frozen singleton marginal data. They do not say that joint VFE, joint Fisher, or interventions are undefinable; each becomes well-defined once its missing typed input is supplied. They also do not identify nodes with autonomous agents, recover a continuum ontology, or turn an information tensor into physical geometry.
+The results show only nonfactorization through the frozen singleton marginal data. They do not say that joint VFE, joint Fisher, or interventions are undefinable; each becomes well-defined once its missing typed input is supplied. The intervention conclusion is conditional on the stated nonisomorphism inside the declared typed category and does not forbid a conventional right-inverse section. Formal definitions of autonomous agency, the full causal category, and its intervention isomorphisms remain open. The results also do not recover a continuum ontology or turn an information tensor into physical geometry.

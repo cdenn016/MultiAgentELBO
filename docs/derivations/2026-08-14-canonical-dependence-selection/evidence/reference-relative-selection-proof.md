@@ -172,13 +172,13 @@ q(a):q(b)=p(a):p(b).
 
 Swapping \(a,b\) while holding a nonsymmetric reference \(p(a)\ne p(b)\) fixed does not commute with selection. The reference must be pushed forward as in (12).
 
-For singleton-indicator constraints on a finite product space and a positive reference, (8) becomes
+For singleton-indicator constraints on a finite product space, a positive reference, and a target in the relative interior of the full marginal polytope, the minimal face is the full polytope and \(q_{p,m}\) has full support. On that full-support stratum, (8) becomes
 
 \[
 \log q_{p,m}(x)=\log p(x)+\sum_i\alpha_i(x_i)-\Psi.\tag{15}
 \]
 
-Every higher-order log-linear contrast annihilates constants and sums of one-coordinate functions, so (15) has exactly the higher-order interaction contrasts of \(\log p\). They are inherited from the declared reference, not derived from the target marginals. A product reference remains product after the unary tilt and therefore yields the product law with the target marginals. If a correlated reference already has the target marginals, it is itself feasible and has KL zero, so uniqueness relative to that reference selects it unchanged.
+Every full-table higher-order log-linear contrast annihilates constants and sums of one-coordinate functions, so (15) has exactly the full-table higher-order interaction contrasts of \(\log p\). They are inherited from the declared reference, not derived from the target marginals. On a boundary target, \(q_{p,m}\) has support \(A_m\); then (15) and any inherited contrast statement are restricted to \(A_m\), and contrasts involving zero-probability atoms are undefined. A product reference remains product after the unary tilt on the applicable support and therefore yields the product law with the target marginals. If a correlated reference already has the target marginals, it is itself feasible and has KL zero, so uniqueness relative to that reference selects it unchanged.
 
 ## 8. Deterministic posterior completion
 
@@ -236,12 +236,12 @@ Fix a finite retained state \(R\), observation \(o\), and a presentation \(a\) w
 \mathcal F^a_{\rm ret}(q)=-\log z^a+D(q\|\pi^a).\tag{19}
 \]
 
-**Theorem 10.1 (retained descent, claim `SEL-PRESENTATION-DESCENT`).** Under the August 13 equivalence of the complete retained joint law and completed retained conditioning algebra, equivalent presentations have equal \(z^a\) and \(\pi^a\) on every positive-evidence retained slice. If they use the same declared moment constraints \((T,m)\), Theorem 2.1 applied with reference \(\pi^a\) gives the same unique retained optimizer as a law and the same optimum of (19). In the unconstrained case the optimizer is \(q^*=\pi^a\) and the optimum is \(-\log z^a\).
+**Theorem 10.1 (retained descent, claim `SEL-PRESENTATION-DESCENT`).** Under the August 13 equivalence of the complete retained joint law and completed retained conditioning algebra, equivalent presentations have equal \(z^a\) and \(\pi^a\) on every positive-evidence retained slice. Suppose they use the same declared moment constraints \((T,m)\) and \(m\in\operatorname{conv}T(\operatorname{supp}\pi^a)\), so Theorem 2.1 supplies a finite unique retained optimizer \(q^*\) as a law. Then the optimizer and optimum of (19) agree, and finite optimality gives \(q^*\ll\pi^a\). In the unconstrained case \(q^*=\pi^a\) and the optimum is \(-\log z^a\).
 
 For each presentation with deterministic forgetting map \(f_a:(R,E_a)\to R\), the full posterior supplies a presentation-specific reference \(p^a=P^a(R,E_a\mid o)\). Equation (16) gives the full recognition completion
 
 \[
-Q^{a,*}=L_{f_a}^{p^a}(q^*).
+Q^{a,*}=L_{f_a}^{p^a}(q^*),\qquad q^*\ll f_{a\#}p^a=\pi^a.
 \tag{20}
 \]
 
@@ -286,6 +286,6 @@ The hypotheses cannot be inferred from pointwise equality. A constant fair Berno
 | --- | --- | --- |
 | `SEL-REFERENCE-IPROJECTION` | finite counting measure; support convention (1); \(m\in C_p\); strict convexity; minimal-face support; statistic minimalization | existence iff, unique law relative to \((p,T,m)\), exact support, exponential form, (11), analytic on each fixed relative-interior face stratum, transported-reference equivariance |
 | `SEL-DETERMINISTIC-COMPLETION` | deterministic \(f\); \(r\ll f_\#p\); zero-reference convention; conditional KL identity | unique law (16) and strict pushed-reference composition (18) |
-| `SEL-PRESENTATION-DESCENT` | August 13 retained-joint/conditioning equivalence; positive evidence; common retained constraints; for (22), positive \(C^1\) family, locally fixed feasible support stratum, and unique \(C^1\) optimizer | retained optimizer/value descend; envelope differential descends only under the stated familywise hypotheses; full auxiliary completion does not |
+| `SEL-PRESENTATION-DESCENT` | August 13 retained-joint/conditioning equivalence; positive evidence; common retained constraints with \(m\in\operatorname{conv}T(\operatorname{supp}\pi)\); finite \(q^*\ll\pi=f_\#p\); for (22), positive \(C^1\) family, locally fixed feasible support stratum, and unique \(C^1\) optimizer | retained optimizer/value descend; completion (20) is defined; envelope differential descends only under the stated familywise hypotheses; full auxiliary completion does not |
 
 These positive theorems are logically independent of the absolute selector refutation. Their uniqueness statements are always relative to an explicit reference, morphism, constraint, support stratum, or equivalence class in the same paragraph. They provide no autonomous-agency, continuum, intervention-recovery, or physical-geometry conclusion.
