@@ -150,6 +150,26 @@ COUNTEREXAMPLE_KEYS = {
     "diagnostic_tv",
     "raw_invariants_equal",
 }
+RAW_PRESENTATION_INVARIANTS = {
+    "direct": {
+        "roles": ("retained-state", "record"),
+        "cardinalities": (2, 2),
+        "edges": (("R", "O"),),
+        "auxiliary_target": (),
+    },
+    "split": {
+        "roles": ("retained-state", "mediator", "record"),
+        "cardinalities": (2, 2, 2),
+        "edges": (("R", "E"), ("E", "O")),
+        "auxiliary_target": ("E",),
+    },
+    "null": {
+        "roles": ("retained-state", "mediator", "null", "record"),
+        "cardinalities": (2, 2, 2, 2),
+        "edges": (("R", "E"), ("E", "O")),
+        "auxiliary_target": ("E", "N"),
+    },
+}
 NUMERIC_RE = re.compile(r"^-?(0|[1-9][0-9]*)(/[1-9][0-9]*)?$")
 NUMERIC_LIKE_RE = re.compile(
     r"^[+-]?(?:[0-9]+(?:[./][0-9]*)?|[.][0-9]+)(?:[eE][+-]?[0-9]+)?$"
@@ -174,6 +194,47 @@ def _all_contexts(nodes):
         tuple((node, value) for node, value in zip(nodes, values) if value is not None)
         for values in itertools.product((None, 0, 1), repeat=len(nodes))
     )
+
+
+def _direct_oracle_experiment():
+    contexts = _all_contexts(("R", "O"))
+    literal_responses = dict(zip(CONTROL_CONTEXTS, CONTROL_RETAINED_LAWS))
+
+    def right_override(left, right):
+        assignments = dict(left)
+        assignments.update(right)
+        return tuple(
+            (node, assignments[node])
+            for node in ("R", "O")
+            if node in assignments
+        )
+
+    signatures = {
+        context: tuple(
+            literal_responses[right_override(right_override(left, context), right)]
+            for left in contexts
+            for right in contexts
+        )
+        for context in contexts
+    }
+    signature_classes = {}
+    for context in contexts:
+        signature_classes.setdefault(signatures[context], []).append(context)
+    classes = tuple(tuple(members) for members in signature_classes.values())
+    context_to_class = {
+        context: class_index
+        for class_index, behavioral_class in enumerate(classes)
+        for context in behavioral_class
+    }
+    multiplication = tuple(
+        tuple(
+            context_to_class[right_override(left_class[0], right_class[0])]
+            for right_class in classes
+        )
+        for left_class in classes
+    )
+    responses = tuple(literal_responses[members[0]] for members in classes)
+    return contexts, signatures, (classes, multiplication, responses)
 
 
 def _relabel_retained(law, flip_r, flip_o):
@@ -441,6 +502,36 @@ def test_every_selector_returns_declared_signature_and_experiment_schemas(
     experiment = witness.response_image(selector, **arguments)
     _assert_contextual_signature_schema(signature, node_order)
     _assert_reduced_experiment_schema(experiment, node_order)
+
+
+def test_direct_selector_matches_independent_literal_response_oracle():
+    witness = _load_witness()
+    contexts, signatures, expected_experiment = _direct_oracle_experiment()
+
+    for context in contexts:
+        actual = witness.contextual_response_signature(
+            "direct", a=CONTROL_A, b=CONTROL_B, context=context
+        )
+        assert actual == signatures[context]
+    actual_experiment = witness.response_image(
+        "direct", a=CONTROL_A, b=CONTROL_B
+    )
+    assert actual_experiment == expected_experiment
+
+    classes, multiplication, _ = actual_experiment
+    lookup = {
+        context: class_index
+        for class_index, behavioral_class in enumerate(classes)
+        for context in behavioral_class
+    }
+    for left_index, left_class in enumerate(classes):
+        for right_index, right_class in enumerate(classes):
+            products = {
+                lookup[witness.compose_context(left, right)]
+                for left in left_class
+                for right in right_class
+            }
+            assert products == {multiplication[left_index][right_index]}
 
 
 def test_bsc_context_composition_and_validation_are_exact():
@@ -803,13 +894,14 @@ def test_full_response_images_do_not_match_under_any_boundary_relabeling():
 
 def test_raw_signature_and_all_binary_state_relabelings_are_controlled():
     witness = _load_witness()
-    expected = {
-        "roles": ("retained-state", "mediator", "record"),
-        "cardinalities": (2, 2, 2),
-        "edges": (("R", "E"), ("E", "O")),
-        "auxiliary_target": ("E",),
+    actual = {
+        model: witness.raw_presentation_invariants(model)
+        for model in ("direct", "split", "null")
     }
-    assert witness.raw_presentation_invariants("split") == expected
+    assert actual == RAW_PRESENTATION_INVARIANTS
+    assert actual["direct"] != actual["split"]
+    assert actual["direct"] != actual["null"]
+    assert actual["split"] != actual["null"]
     with pytest.raises(ValueError):
         witness.raw_presentation_invariants("unknown")
 
@@ -951,11 +1043,7 @@ def test_main_json_is_recursive_exact_sorted_compact_and_stable():
         witness.same_signature_counterexample()
     )
     assert first_payload["raw_invariants"] == _json_ready(
-        {
-            "direct": witness.raw_presentation_invariants("direct"),
-            "null": witness.raw_presentation_invariants("null"),
-            "split": witness.raw_presentation_invariants("split"),
-        }
+        RAW_PRESENTATION_INVARIANTS
     )
 
 

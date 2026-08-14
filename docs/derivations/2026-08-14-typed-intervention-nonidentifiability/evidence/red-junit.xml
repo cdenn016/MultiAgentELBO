@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="17" skipped="0" tests="17" time="0.323" timestamp="2026-08-14T15:21:57.078478-05:00" hostname="DESKTOP-RT15E78"><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_public_api_call_signatures_are_exact" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_public_api_call_signatures_are_exact():
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="18" skipped="0" tests="18" time="0.344" timestamp="2026-08-14T15:46:53.496840-05:00" hostname="DESKTOP-RT15E78"><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_public_api_call_signatures_are_exact" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_public_api_call_signatures_are_exact():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:351:
+tests\test_typed_intervention_semantics_witness.py:412:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -10,9 +10,9 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_every_selector_returns_declared_signature_and_experiment_schemas[direct]" time="0.001"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">selector = 'direct', node_order = ('R', 'O'), eta = None
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_every_selector_returns_declared_signature_and_experiment_schemas[direct]" time="0.001"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">selector = 'direct', node_order = ('R', 'O'), eta = None
 
     @pytest.mark.parametrize(
         ("selector", "node_order", "eta"),
@@ -30,7 +30,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:433:
+tests\test_typed_intervention_semantics_witness.py:494:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -38,9 +38,9 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_every_selector_returns_declared_signature_and_experiment_schemas[split]" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">selector = 'split', node_order = ('R', 'E', 'O'), eta = None
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_every_selector_returns_declared_signature_and_experiment_schemas[split]" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">selector = 'split', node_order = ('R', 'E', 'O'), eta = None
 
     @pytest.mark.parametrize(
         ("selector", "node_order", "eta"),
@@ -58,7 +58,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:433:
+tests\test_typed_intervention_semantics_witness.py:494:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -66,9 +66,9 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_every_selector_returns_declared_signature_and_experiment_schemas[null]" time="0.001"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">selector = 'null', node_order = ('R', 'E', 'N', 'O'), eta = Fraction(2, 5)
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_every_selector_returns_declared_signature_and_experiment_schemas[null]" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">selector = 'null', node_order = ('R', 'E', 'N', 'O'), eta = Fraction(2, 5)
 
     @pytest.mark.parametrize(
         ("selector", "node_order", "eta"),
@@ -86,7 +86,7 @@ tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure>
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:433:
+tests\test_typed_intervention_semantics_witness.py:494:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -94,13 +94,13 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_bsc_context_composition_and_validation_are_exact" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_bsc_context_composition_and_validation_are_exact():
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_direct_selector_matches_independent_literal_response_oracle" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_direct_selector_matches_independent_literal_response_oracle():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:447:
+tests\test_typed_intervention_semantics_witness.py:508:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -108,13 +108,13 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_joint_and_retained_laws_use_frozen_lexicographic_order" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_joint_and_retained_laws_use_frozen_lexicographic_order():
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_bsc_context_composition_and_validation_are_exact" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_bsc_context_composition_and_validation_are_exact():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:551:
+tests\test_typed_intervention_semantics_witness.py:538:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -122,13 +122,13 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_all_nine_shared_boundary_intervention_tables_are_literal" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_all_nine_shared_boundary_intervention_tables_are_literal():
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_joint_and_retained_laws_use_frozen_lexicographic_order" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_joint_and_retained_laws_use_frozen_lexicographic_order():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:582:
+tests\test_typed_intervention_semantics_witness.py:642:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -136,13 +136,13 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_control_mediator_responses_have_exact_total_variation" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_control_mediator_responses_have_exact_total_variation():
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_all_nine_shared_boundary_intervention_tables_are_literal" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_all_nine_shared_boundary_intervention_tables_are_literal():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:602:
+tests\test_typed_intervention_semantics_witness.py:673:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -150,13 +150,13 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_null_assignments_are_exhaustively_inert_in_all_27_contexts" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_null_assignments_are_exhaustively_inert_in_all_27_contexts():
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_control_mediator_responses_have_exact_total_variation" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_control_mediator_responses_have_exact_total_variation():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:616:
+tests\test_typed_intervention_semantics_witness.py:693:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -164,13 +164,13 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_null_two_sided_signatures_and_reduced_quotient_are_identical" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_null_two_sided_signatures_and_reduced_quotient_are_identical():
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_null_assignments_are_exhaustively_inert_in_all_27_contexts" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_null_assignments_are_exhaustively_inert_in_all_27_contexts():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:635:
+tests\test_typed_intervention_semantics_witness.py:707:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -178,13 +178,13 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_same_signature_pair_has_frozen_passive_and_mediator_responses" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_same_signature_pair_has_frozen_passive_and_mediator_responses():
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_null_two_sided_signatures_and_reduced_quotient_are_identical" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_null_two_sided_signatures_and_reduced_quotient_are_identical():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:705:
+tests\test_typed_intervention_semantics_witness.py:726:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -192,13 +192,13 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_reduced_experiments_match_all_frozen_classes_tables_and_hashes" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_reduced_experiments_match_all_frozen_classes_tables_and_hashes():
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_same_signature_pair_has_frozen_passive_and_mediator_responses" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_same_signature_pair_has_frozen_passive_and_mediator_responses():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:750:
+tests\test_typed_intervention_semantics_witness.py:796:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -206,13 +206,13 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_full_response_images_do_not_match_under_any_boundary_relabeling" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_full_response_images_do_not_match_under_any_boundary_relabeling():
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_reduced_experiments_match_all_frozen_classes_tables_and_hashes" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_reduced_experiments_match_all_frozen_classes_tables_and_hashes():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:789:
+tests\test_typed_intervention_semantics_witness.py:841:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -220,13 +220,13 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_raw_signature_and_all_binary_state_relabelings_are_controlled" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_raw_signature_and_all_binary_state_relabelings_are_controlled():
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_full_response_images_do_not_match_under_any_boundary_relabeling" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_full_response_images_do_not_match_under_any_boundary_relabeling():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:805:
+tests\test_typed_intervention_semantics_witness.py:880:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -234,13 +234,13 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_counterexample_record_is_transparent_and_independently_recomputed" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_counterexample_record_is_transparent_and_independently_recomputed():
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_raw_signature_and_all_binary_state_relabelings_are_controlled" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_raw_signature_and_all_binary_state_relabelings_are_controlled():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:825:
+tests\test_typed_intervention_semantics_witness.py:896:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -248,13 +248,13 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_main_json_is_recursive_exact_sorted_compact_and_stable" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_main_json_is_recursive_exact_sorted_compact_and_stable():
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_counterexample_record_is_transparent_and_independently_recomputed" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_counterexample_record_is_transparent_and_independently_recomputed():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:842:
+tests\test_typed_intervention_semantics_witness.py:917:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -262,13 +262,13 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_fresh_process_json_and_lf_test_snapshot_are_byte_identical" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_fresh_process_json_and_lf_test_snapshot_are_byte_identical():
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_main_json_is_recursive_exact_sorted_compact_and_stable" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_main_json_is_recursive_exact_sorted_compact_and_stable():
 &gt;       witness = _load_witness()
                   ^^^^^^^^^^^^^^^
 
-tests\test_typed_intervention_semantics_witness.py:963:
+tests\test_typed_intervention_semantics_witness.py:934:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def _load_witness() -&gt; ModuleType:
@@ -276,6 +276,20 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
 E       assert False
 E        +  where False = is_file()
-E        +    where is_file = WindowsPath('C:/Users/chris and christine/Desktop/MultiAgentELBO/.superpowers/worktrees/MultiAgentELBO-typed-intervent...260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
 
-tests\test_typed_intervention_semantics_witness.py:160: AssertionError</failure></testcase></testsuite></testsuites>
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase><testcase classname="tests.test_typed_intervention_semantics_witness" name="test_fresh_process_json_and_lf_test_snapshot_are_byte_identical" time="0.000"><failure message="AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file">def test_fresh_process_json_and_lf_test_snapshot_are_byte_identical():
+&gt;       witness = _load_witness()
+                  ^^^^^^^^^^^^^^^
+
+tests\test_typed_intervention_semantics_witness.py:1051:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def _load_witness() -&gt; ModuleType:
+&gt;       assert WITNESS.is_file(), RED_MESSAGE
+E       AssertionError: expected RED: exact_typed_intervention_witness.py has not been implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = WindowsPath('C:/tmp/maelbo-typed-intervention-contract-red-r2-20260814/docs/derivations/2026-08-14-typed-intervention-nonidentifiability/evidence/exact_typed_intervention_witness.py').is_file
+
+tests\test_typed_intervention_semantics_witness.py:180: AssertionError</failure></testcase></testsuite></testsuites>
