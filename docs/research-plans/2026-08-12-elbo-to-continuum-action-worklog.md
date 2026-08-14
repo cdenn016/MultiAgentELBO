@@ -3104,3 +3104,143 @@ covariance, autonomous agency, a section-space or continuum law, a global Hausdo
 block projectability absent their stated conditions, physical geometry, physical time, dimensional
 units, and renormalization. The broad typed-intervention claim remains **INCONCLUSIVE**, not open by
 omission and not closed by the conditional BSC no-go.
+
+---
+
+## 8. 2026-08-14 governing correction -- finite typed-intervention nonidentifiability
+
+This append-only correction preserves the investigation above and supersedes its broad
+typed-intervention **INCONCLUSIVE** wording only in the finite category declared by
+`docs/derivations/2026-08-14-typed-intervention-nonidentifiability/`. The certificate target digest
+is `efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874`. The frozen universal
+claim that passive retained law determines the reduced active response experiment is
+**COMPLETE_NEGATIVE**.
+
+### 8.1 Declared raw category and operational reduction
+
+An object of \(\mathsf{FinTIP}_{R,O}^{\mathrm{iso}}\) is a finite normalized typed DAG
+presentation
+
+\[
+P=\bigl(V,\tau,(X_v)_{v\in V},D,(\kappa_v)_{v\in V},r,o\bigr),
+\]
+
+with finite nonempty state spaces, declared roles, distinguished retained-state and record nodes,
+and normalized local kernels. Isomorphisms preserve the types, DAG, kernels, hard interventions, and
+induced laws. For each \(P\), all partial hard assignments form a finite monoid under total right
+override:
+
+\[
+(i\star j)(v)=
+\begin{cases}
+j(v),&j\text{ assigns }v,\\
+i(v),&j\text{ does not assign }v\text{ and }i\text{ does},\\
+\text{undefined},&\text{otherwise}.
+\end{cases}
+\]
+
+The retained response \(\Phi_P(i)\) is the complete \((R,O)\) joint table of the intervened
+presentation. Contexts are identified by the full two-sided behavioral signature,
+
+\[
+i\equiv_P j
+\quad\Longleftrightarrow\quad
+\Phi_P(u\star i\star v)=\Phi_P(u\star j\star v)
+\quad\text{for every }u,v\in A_P.
+\]
+
+Associativity makes this relation a two-sided congruence, so multiplication and the response map
+descend to \(\bar A_P=A_P/{\equiv_P}\). Typed isomorphisms transport this construction
+functorially:
+
+\[
+\operatorname{Red}:\mathsf{FinTIP}_{R,O}^{\mathrm{iso}}
+\longrightarrow\mathsf{FinRIE}_{R,O}^{\mathrm{iso}},
+\qquad
+\overline U_{\mathrm{pass}}:\mathsf{FinRIE}_{R,O}^{\mathrm{iso}}
+\longrightarrow\mathsf{FinObs}_{R,O}^{\mathrm{iso}}.
+\]
+
+The second functor retains the identity-class response. All comparisons use complete joint tables,
+including tables with zero entries; there is no version-dependent conditioning on null events.
+
+### 8.2 Same-signature response-image obstruction
+
+For \(e\in[0,1]\), write \(C_e(y\mid x)=1-e\) when \(y=x\) and
+\(C_e(y\mid x)=e\) otherwise. Let \(L(a,b)\) denote the binary chain
+\(R\to E\to O\) with fair \(R\), kernel \(C_a\) on \(R\to E\), and kernel
+\(C_b\) on \(E\to O\). Take
+
+\[
+L_1=L(a=1/4,b=1/3),
+\qquad
+L_2=L(a=1/3,b=1/4).
+\]
+
+The models have identical node roles, state cardinalities, edges, and mediator intervention target.
+BSC composition gives the same passive crossover \(5/12\) and complete retained law. Every response
+vector below uses lexicographic coordinate order \((R,O)=(0,0),(0,1),(1,0),(1,1)\):
+
+\[
+(7/24,5/24,5/24,7/24).
+\]
+
+Each two-sided quotient has fifteen behavioral classes. The \(L_1\)
+\(\operatorname{do}(E=0)\) response is
+
+\[
+q_*=(1/3,1/6,1/3,1/6).
+\]
+
+The full-support laws in the complete \(L_2\) response image are exactly
+
+\[
+(7/24,5/24,5/24,7/24),\quad
+(3/8,1/8,3/8,1/8),\quad
+(1/8,3/8,1/8,3/8),
+\]
+
+and every other response has a zero entry. The four independent typed flips of the retained bits
+send \(q_*\) only to itself or to \((1/6,1/3,1/6,1/3)\). Neither occurs in the second image.
+Therefore no identity-preserving protocol-monoid isomorphism can intertwine all responses, and
+\(\operatorname{Red}(L_1)\not\cong\operatorname{Red}(L_2)\).
+
+The mediator-output total-variation values \(1/3\) and \(1/2\) are exact but diagnostic only.
+An arbitrary reduced-protocol bijection need not preserve the named mediator pair. The complete
+four-relabeling response-image mismatch is the load-bearing invariant.
+
+### 8.3 Independent-null control
+
+If an isolated independent binary node \(N\) is added to the split chain, forgetting \(N\) is a
+surjective context-monoid homomorphism and
+\(\Phi_{S^N}(i)=\Phi_S(\pi i)\) for every context. This holds for both assignments to \(N\)
+and all \(3^3=27\) partial contexts over \(\{R,E,O\}\). The equivalence holds in both
+directions at the level of two-sided signatures, so forgetting \(N\) induces an identity- and
+response-preserving quotient-monoid isomorphism. Null-node inventory is therefore an inert-padding
+control, not the negative certificate.
+
+### 8.4 Recovery consequence and exact supersession boundary
+
+The equal passive images and nonisomorphic reduced experiments show that
+\(\overline U_{\mathrm{pass}}\) is not essentially injective on the declared BSC subcategory.
+Consequently there is no universal reconstruction with
+
+\[
+R\overline U_{\mathrm{pass}}
+\cong\operatorname{id}_{\mathsf{FinRIE}_{R,O}^{\mathrm{iso}}}.
+\]
+
+The conventional representative-selecting direction
+
+\[
+\overline U_{\mathrm{pass}}R
+\cong\operatorname{id}_{\mathsf{FinObs}_{R,O}^{\mathrm{iso}}}
+\]
+
+remains allowed. This finite theorem neither selects such a section nor makes its choice canonical.
+
+The supersession stops at the frozen finite hard-intervention boundary. Category canonicity,
+existence or uniqueness of a minimal realization, arbitrary latent-dilation equivalence,
+soft/stochastic/continuous interventions, autonomous agency, continuum/bundle/gauge/RG extensions,
+VFE emergence, and any informational identification with physical geometry, action, time, units,
+constants, or ontology remain **OPEN**.

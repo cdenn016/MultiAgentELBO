@@ -213,3 +213,22 @@ It releases the frozen absolute-selector target as **COMPLETE_NEGATIVE**.
 | Retained Fisher quotient and blocks | **P/conditional.** For `rho: Theta -> N`, `rad(rho^*g) = d rho^{-1}(rad g)`; it equals `ker d rho` exactly when `im d rho` meets `rad g` trivially. Constant rank yields the positive-definite vector-bundle quotient, not automatically a global quotient manifold. Declared blocks require kernel splitting for direct quotient decomposition, Fisher orthogonality for additive energy, and the bracket/projectability and global typing conditions for descent. |
 | Promoted parity rank | **P/limited.** The promoted family `(theta,kappa) -> Q_(theta,kappa)` has full-joint rank seven, while singleton retention has rank six with kernel exactly `span{partial_kappa}`. This closes the earlier augmented-rank check for this family only. Rank does not select agent blocks, supply intervention types, or agentize the law. |
 | Supersession and remaining scope | Earlier phrases that canonical selection is open are superseded only by the scoped absolute no-go and the reference-relative replacements above. Earlier statements that rank checks remain are superseded only by the promoted parity rank calculation. **OPEN:** arbitrary-family lifts, coarse-preserving nonproduct selection, `GL(K)` covariance, autonomous agency, continuum laws, global quotient and block projectability without their stated hypotheses, physical geometry, physical time, units, and renormalization. |
+
+---
+
+## 11. 2026-08-14 finite typed-intervention certificate -- current authority
+
+This chronological correction supersedes the earlier typed-intervention
+`INCONCLUSIVE` wording only inside the frozen finite BSC category. The governing package is
+`docs/derivations/2026-08-14-typed-intervention-nonidentifiability/`, with target digest
+`efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874`. Its frozen universal
+passive-identifiability target is released as **COMPLETE_NEGATIVE**.
+
+| Topic | Governing result and boundary |
+|---|---|
+| Raw and reduced categories | **D/P.** `FinTIP_(R,O)^iso` is the declared groupoid of finite normalized typed DAG presentations with every partial hard assignment. Total right override makes each context set a monoid. Equality of the complete two-sided contextual retained-response signature is an equivalence and a two-sided congruence. It defines `Red : FinTIP_(R,O)^iso -> FinRIE_(R,O)^iso`; retaining the identity-class response defines `Ubar_pass : FinRIE_(R,O)^iso -> FinObs_(R,O)^iso`. |
+| Same-signature passive-identifiability target | **R/P.** The chains `L(1/4,1/3)` and `L(1/3,1/4)` have the same roles, binary cardinalities, edges, mediator target, passive crossover `5/12`, and complete passive retained law `(7/24,5/24,5/24,7/24)` in lexicographic coordinate order `(R,O)=(0,0),(0,1),(1,0),(1,1)`. Each reduction has fifteen classes. The first model's `do(E=0)` law `(1/3,1/6,1/3,1/6)` is absent from the complete second-model response image under all four admitted typed boundary flips, so the reduced experiments are nonisomorphic. |
+| Null-extension control | **P/C.** An independent isolated binary node is invisible after every assignment to it and every one of the 27 partial `{R,E,O}` contexts. Forgetting that node induces an identity- and response-preserving quotient-monoid isomorphism. Null-node inventory does not carry the negative certificate. |
+| Recovery typing | **P/R.** `Ubar_pass` is not essentially injective on the declared BSC subcategory, so no universal `R Ubar_pass ~= id_FinRIE` exists there. This does not refute a conventional representative-selecting section `Ubar_pass R ~= id_FinObs`. |
+| Diagnostic boundary | **D.** The mediator-output total-variation contrasts `1/3` and `1/2` are exact diagnostics, but an arbitrary protocol-class bijection need not preserve the named mediator pair. The complete four-relabeling response-image mismatch is the proof invariant. |
+| Supersession and remaining scope | **O.** The finite theorem does not establish category canonicity, a minimal realization, arbitrary latent-dilation equivalence, soft/stochastic/continuous interventions, autonomous agency, continuum/gauge/RG extension, VFE emergence, or any identification with physical geometry, time, units, constants, or ontology. Those category-independent and physicalization questions remain open. |

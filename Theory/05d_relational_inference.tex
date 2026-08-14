@@ -976,13 +976,152 @@ every singleton-family map, is independent of \(\kappa\).  Direct finite
 score summation at the symmetric point gives
 \eqref{eq:hist-cds-parity-fisher-witness}.  \(\square\)
 
-\openproblemheading{Unconditional typed-intervention recovery}{open:hist-typed-intervention-recovery}
-Whether one marginal-to-enrichment reconstruction can recover every
-compatible enriched presentation up to type-preserving intervention
-isomorphism is \emph{inconclusive} here.  The ambient typed intervention
-category, admission of the proposed witnesses, and their internal
-nonisomorphism have not been formalized.  Observational equality alone does
-not close those obligations.  \status{OPEN}
+The finite intervention result below is bound to the released certificate
+with target digest
+\texttt{efe715cba81c2000}\allowbreak%
+\texttt{403811015e6cecb5}\allowbreak%
+\texttt{99f4023133543b5c}\allowbreak%
+\texttt{b0ae77288bccc874}.
+It closes one universal target inside the declared finite category; it does
+not make that category ontologically canonical.
+
+\definitionheading{Finite typed-intervention presentations}{def:hist-finite-typed-intervention-presentation}
+Let \(\mathsf{FinTIP}_{R,O}^{\mathrm{iso}}\) be the groupoid whose objects are
+tuples
+\begin{equation}
+P=\bigl(V,\tau,(X_v)_{v\in V},D,(\kappa_v)_{v\in V},r,o\bigr).
+\label{eq:hist-intervention-raw-presentation}
+\end{equation}
+Here \(V\) is finite and nonempty, every state space \(X_v\) is finite and
+nonempty, \(\tau:V\to\mathcal T\) is the declared role/type map,
+\(D=(V,E_D)\) is a finite DAG, the distinguished nodes \(r,o\) have the
+retained-state and record roles under \(\tau\), and each
+\(\kappa_v:X_{\operatorname{pa}(v)}\rightsquigarrow X_v\) is a normalized
+finite Markov kernel.  A hard intervention replaces exactly the selected
+local kernels by point masses.  An isomorphism is a type-preserving node
+bijection with state-space bijections that fixes the retained roles, carries
+the DAG and every local kernel to the target presentation, and intertwines
+all hard interventions and their induced laws.  Let
+\(\mathsf{FinObs}_{R,O}^{\mathrm{iso}}\) contain the complete retained
+objects \((X_R,X_O,P_{RO})\) with typed boundary relabelings.  Passive
+marginalization defines
+\(U_{\mathrm{pass}}:\mathsf{FinTIP}_{R,O}^{\mathrm{iso}}
+\to\mathsf{FinObs}_{R,O}^{\mathrm{iso}}\).  Complete joint tables are used
+even when intervened cells vanish, so no conditioning on a null event is
+introduced.  \status{DEFINITION}
+
+\definitionheading{Right-override intervention monoid}{def:hist-intervention-action-monoid}
+For \(P\), let \(A_P\) be the set of all partial sections
+\(i:\operatorname{dom}i\to\coprod_{v\in V}X_v\) with
+\(i(v)\in X_v\).  Sequential hard interventions compose by total right
+override:
+\begin{equation}
+(i\star j)(v)=
+\begin{cases}
+j(v),&v\in\operatorname{dom}j,\\
+i(v),&v\in\operatorname{dom}i\setminus\operatorname{dom}j,\\
+\text{undefined},&v\notin\operatorname{dom}i\cup\operatorname{dom}j.
+\end{cases}
+\label{eq:hist-intervention-right-override}
+\end{equation}
+The empty section is the identity, and associativity holds pointwise because
+both parenthesizations return the last assignment that names \(v\).
+Writing \(P^i\) for the intervened presentation, one has
+\((P^i)^j=P^{i\star j}\).  Its retained response is
+\begin{equation}
+\Phi_P(i)=\bigl(p_{P^i}\bigr)_{RO}.
+\label{eq:hist-intervention-response}
+\end{equation}
+Thus \((A_P,\star,\varnothing)\) is a finite monoid acting by hard-kernel
+replacement.  \status{ESTABLISHED}
+
+\definitionheading{Two-sided operational reduction}{def:hist-intervention-behavioral-congruence}
+Contexts are behaviorally equivalent when their complete response signatures
+agree in every left and right context:
+\begin{equation}
+i\equiv_P j
+\quad\Longleftrightarrow\quad
+\Phi_P(u\star i\star v)=\Phi_P(u\star j\star v)
+\quad\text{for all }u,v\in A_P.
+\label{eq:hist-intervention-behavioral-equivalence}
+\end{equation}
+This formula defines the two-sided behavioral relation.  \status{DEFINITION}
+
+\propositionheading{Behavioral quotient is well-defined}{prop:hist-intervention-behavioral-quotient}
+The relation \(\equiv_P\) is an equivalence relation.  Associativity of
+\(\star\) also gives
+\(a\star i\star b\equiv_P a\star j\star b\), so it is a two-sided
+monoid congruence.  Hence
+\(\bar A_P=A_P/{\equiv_P}\) is a monoid and
+\(\bar\Phi_P([i])=\Phi_P(i)\) is well-defined.  Define
+\begin{equation}
+\operatorname{Red}(P)
+=\bigl(X_R,X_O,\bar A_P,[\varnothing],\bar\Phi_P\bigr).
+\label{eq:hist-intervention-reduced-experiment}
+\end{equation}
+The groupoid \(\mathsf{FinRIE}_{R,O}^{\mathrm{iso}}\) has these reduced
+experiments as objects; its arrows are identity-preserving monoid
+isomorphisms together with typed boundary relabelings that intertwine every
+retained response.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Reflexivity, symmetry, and transitivity follow pointwise from equality of the
+complete signature indexed by \((u,v)\).  If \(i\equiv_P j\), then for all
+\(u,v,a,b\in A_P\), associativity gives
+\[
+\Phi_P\bigl(u\star(a\star i\star b)\star v\bigr)
+=\Phi_P\bigl((u\star a)\star i\star(b\star v)\bigr)
+=\Phi_P\bigl((u\star a)\star j\star(b\star v)\bigr)
+=\Phi_P\bigl(u\star(a\star j\star b)\star v\bigr).
+\]
+Thus the relation is a two-sided congruence and quotient multiplication is
+representative independent.  Taking \(u=v=\varnothing\) in
+\eqref{eq:hist-intervention-behavioral-equivalence} proves that
+\(\bar\Phi_P\) is well-defined.  \(\square\)
+
+\propositionheading{Functorial operational reduction}{prop:hist-intervention-reduction-functor}
+Typed transport of nodes and states carries contexts, right override, and
+complete retained responses compatibly.  It therefore descends through
+\(\equiv_P\), and the assignments
+\begin{equation}
+\operatorname{Red}:\mathsf{FinTIP}_{R,O}^{\mathrm{iso}}
+\longrightarrow\mathsf{FinRIE}_{R,O}^{\mathrm{iso}},
+\qquad
+\overline U_{\mathrm{pass}}:\mathsf{FinRIE}_{R,O}^{\mathrm{iso}}
+\longrightarrow\mathsf{FinObs}_{R,O}^{\mathrm{iso}}
+\label{eq:hist-intervention-reduced-functors}
+\end{equation}
+are functors, where \(\overline U_{\mathrm{pass}}\) retains the response of
+the identity class.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+A raw isomorphism induces a bijective homomorphism of context monoids and
+pushes each retained response through its boundary relabeling.  Surjectivity
+of that context map transports the two universal quantifiers in
+\eqref{eq:hist-intervention-behavioral-equivalence}; applying the inverse
+gives the converse.  The induced quotient map preserves multiplication,
+identity, and responses, and respects identity arrows and composition.  The
+identity class is preserved, which makes \(\overline U_{\mathrm{pass}}\)
+well-typed.  \(\square\)
+
+\propositionheading{Independent-null operational collapse}{prop:hist-null-intervention-collapse}
+Let \(S\) be the split chain on \(\{R,E,O\}\), and let \(S^N\) add an
+independent isolated binary node \(N\).  Forgetting the \(N\)-coordinate
+induces an identity- and response-preserving quotient-monoid isomorphism
+\(\operatorname{Red}(S^N)\cong\operatorname{Red}(S)\).  In particular,
+the empty context, \(\operatorname{do}(N=0)\), and
+\(\operatorname{do}(N=1)\) lie in one behavioral class.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Let \(\pi:A_{S^N}\to A_S\) forget \(N\).  It is a surjective monoid
+homomorphism.  Independence and normalization give
+\(\Phi_{S^N}(i)=\Phi_S(\pi i)\) for every context; equivalently, the
+independent \(N\)-factor sums to one whether unassigned or replaced by
+either point mass.  Therefore
+\(i\equiv_{S^N}j\) exactly when \(\pi i\equiv_S\pi j\), and \(\pi\)
+descends to the claimed isomorphism.  The exact finite control checks both
+values of \(N\) against all \(3^3=27\) partial contexts on
+\(\{R,E,O\}\).  \(\square\)
 
 \propositionheading{Conditional intervention-recovery no-go}{prop:hist-conditional-intervention-recovery-nogo}
 Let \(U:\mathcal E\to\mathcal B\) be a declared forgetful functor.  If two
@@ -994,8 +1133,6 @@ R\,U(E)\cong E
 \quad\text{for every compatible }E.
 \label{eq:hist-cds-two-sided-intervention-recovery}
 \end{equation}
-Conditional on their admission and nonisomorphism, the direct, latent, and
-null-extended binary-symmetric-channel presentations supply such a witness.
 A conventional right-inverse choosing one representative per observational
 fiber is not excluded.  \status{ESTABLISHED}
 
@@ -1003,6 +1140,99 @@ fiber is not excluded.  \status{ESTABLISHED}
 Equation \eqref{eq:hist-cds-two-sided-intervention-recovery} would make both
 \(E_0\) and \(E_1\) isomorphic to \(R(U(E_0))=R(U(E_1))\), hence isomorphic
 to each other, contradicting the hypothesis.  \(\square\)
+
+\theoremheading{Finite typed-intervention nonidentifiability}{thm:hist-finite-typed-intervention-nonidentifiability}
+In the declared binary-symmetric-channel subcategory, equality of the
+complete passive retained law does not determine the reduced
+protocol-indexed retained response experiment.  Write
+\begin{equation}
+C_e(y\mid x)=
+\begin{cases}
+1-e,&y=x,\\
+e,&y\ne x,
+\end{cases}
+\label{eq:hist-intervention-bsc-kernel}
+\end{equation}
+and let \(L(a,b)\) denote the chain \(R\to E\to O\) with
+\(R\sim\operatorname{Bernoulli}(1/2)\), kernel \(C_a\) on
+\(R\to E\), and kernel \(C_b\) on \(E\to O\).  Set
+\begin{equation}
+L_1=L(a=1/4,b=1/3),
+\qquad
+L_2=L(a=1/3,b=1/4).
+\label{eq:hist-intervention-same-signature-laws}
+\end{equation}
+They have the same node roles, binary state cardinalities, edges, and
+mediator intervention target, and both have passive crossover \(5/12\) and
+retained law.  In every response vector below, coordinates are ordered
+lexicographically as \((R,O)=(0,0),(0,1),(1,0),(1,1)\):
+\begin{equation}
+\Phi_{L_1}(\varnothing)=\Phi_{L_2}(\varnothing)
+=(7/24,5/24,5/24,7/24).
+\label{eq:hist-intervention-passive-law}
+\end{equation}
+Each reduced protocol monoid has fifteen behavioral classes, yet the
+\(L_1\) response
+\begin{equation}
+\Phi_{L_1}\bigl(\operatorname{do}(E=0)\bigr)
+=(1/3,1/6,1/3,1/6)
+\label{eq:hist-intervention-unmatched-response}
+\end{equation}
+is absent from the complete \(L_2\) reduced response image under all four
+independent typed binary boundary relabelings of \(R\) and \(O\).
+Therefore \(\operatorname{Red}(L_1)\) and
+\(\operatorname{Red}(L_2)\) are nonisomorphic.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+BSC composition gives \(a+b-2ab=5/12\) for both parameter pairs.  Direct
+two-sided reduction gives fifteen classes in each model.  The full-support
+laws in the complete \(L_2\) response image are exactly
+\begin{equation}
+(7/24,5/24,5/24,7/24),\qquad
+(3/8,1/8,3/8,1/8),\qquad
+(1/8,3/8,1/8,3/8);
+\label{eq:hist-intervention-ltwo-full-support-image}
+\end{equation}
+every other \(L_2\) response has at least one zero entry.  The four boundary
+flips send the displayed \(L_1\) response only to itself or to
+\((1/6,1/3,1/6,1/3)\).  Both are strictly positive and neither equals one
+of the three displayed \(L_2\) laws, so neither occurs in the complete
+\(L_2\) response image.  A reduced isomorphism would have to map the
+\(\operatorname{do}(E=0)\) class to a class with exactly such a relabeled
+response, a contradiction.  The mediator-output total-variation contrasts,
+\(1/3\) for \(L_1\) and \(1/2\) for \(L_2\), are diagnostics only:
+an arbitrary protocol-class bijection need not preserve the named mediator
+pair.  The complete response-image mismatch is the proof invariant.
+\(\square\)
+
+\corollaryheading{No universal two-sided finite recovery}{cor:hist-finite-typed-intervention-recovery-nogo}
+The functor \(\overline U_{\mathrm{pass}}\) is not essentially injective on
+the declared BSC subcategory.  Consequently there is no functor
+\(\mathcal R:\mathsf{FinObs}_{R,O}^{\mathrm{iso}}
+\to\mathsf{FinRIE}_{R,O}^{\mathrm{iso}}\) with
+\(\mathcal R\,\overline U_{\mathrm{pass}}\cong
+\operatorname{id}_{\mathsf{FinRIE}_{R,O}^{\mathrm{iso}}}\) on that
+subcategory.  This does not exclude the conventional representative-selecting
+condition
+\(\overline U_{\mathrm{pass}}\mathcal R\cong
+\operatorname{id}_{\mathsf{FinObs}_{R,O}^{\mathrm{iso}}}\).
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Apply \Cref{prop:hist-conditional-intervention-recovery-nogo} to the equal
+passive images and nonisomorphic reduced experiments in
+\Cref{thm:hist-finite-typed-intervention-nonidentifiability}.  \(\square\)
+
+\openproblemheading{Category-independent typed-intervention recovery}{open:hist-typed-intervention-recovery}
+The preceding theorem supersedes the earlier inconclusive status only for
+the frozen finite BSC category, all partial hard assignments, its two-sided
+behavioral quotient, and the admitted typed boundary flips.  It does not
+choose that category canonically, prove a minimal realization, compare every
+latent dilation, or cover soft, stochastic, continuous, continuum, gauge, or
+renormalization-scale interventions.  It supplies no criterion for autonomous
+agency and no bridge from the reduced experiment to VFE emergence, physical
+geometry, time, units, constants, or ontology.  Those category-independent
+and interpretive recovery questions remain open.  \status{OPEN}
 
 \theoremheading{Finite reference-relative I-projection}{thm:hist-reference-relative-iprojection}
 Let \(A\) be finite, let \(p\in\Delta(A)\), let
@@ -1166,8 +1396,9 @@ absolute split-selector target depends only on
 \Cref{thm:hist-correlated-refinement-nogo}; none of the positive replacements
 is a premise.  Arbitrary-family coarse-preserving nonproduct selection,
 autonomous agency, continuum and renormalization limits, physical geometry,
-units, and time remain open.  Unconditional typed-intervention recovery
-instead remains \emph{inconclusive} for the reasons stated in
+units, and time remain open.  The finite BSC recovery target is refuted by
+\Cref{thm:hist-finite-typed-intervention-nonidentifiability}, while
+category-independent intervention semantics remains open as stated in
 \Cref{open:hist-typed-intervention-recovery}.
 
 \section{Natural-gradient selection of an oriented orbit}

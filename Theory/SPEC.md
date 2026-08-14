@@ -680,17 +680,39 @@ automatically basic. Declared block directness also requires blockwise kernel sp
 additivity requires Fisher orthogonality, and block descent requires projectable/basic image data.
 
 The recovery statements remain independently typed. Full-joint VFE and full-joint Fisher tensors do
-not factor through singleton marginal data. The unconditional typed-intervention no-go is
-**INCONCLUSIVE** until the ambient typed category, witness admission, and internal nonisomorphism are
-formalized. Conditional on the direct, latent, and null-extended BSC presentations being
-nonisomorphic objects in one declared forgetful fiber, universal two-sided recovery is impossible;
-a conventional right inverse may still choose one representative. Finally, when `kappa` is promoted
-in the six-bit parity family, the full-joint map has rank seven everywhere, whereas singleton
-retention has rank six with kernel exactly `span{partial_kappa}`. This identifies `kappa` only as a
-full-joint interaction direction lost by singleton retention; rank does not type or agentize it.
-Arbitrary-family and coarse-preserving lifts, autonomous agency and its intervention structure,
-continuum extension, physical geometry, physical time, dimensional units, and renormalization remain
-**OPEN**.
+not factor through singleton marginal data. The governing finite typed-intervention correction is
+bound to target digest
+`efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874`.
+Its raw groupoid `FinTIP_(R,O)^iso` contains finite normalized typed DAG presentations and all
+partial hard assignments. Their total right-override monoid `A_P` is reduced by the two-sided
+congruence that equates contexts exactly when every left/right contextual retained response agrees.
+This gives the well-typed functors
+`Red : FinTIP_(R,O)^iso -> FinRIE_(R,O)^iso` and
+`Ubar_pass : FinRIE_(R,O)^iso -> FinObs_(R,O)^iso`.
+
+Inside the declared BSC subcategory,
+`L(1/4,1/3)` and `L(1/3,1/4)` have one raw structural signature and the same complete passive
+retained law `(7/24,5/24,5/24,7/24)`, in lexicographic retained-coordinate order
+`(R,O)=(0,0),(0,1),(1,0),(1,1)`, but their fifteen-class reduced experiments are
+nonisomorphic. The first model's `do(E=0)` response `(1/3,1/6,1/3,1/6)` is absent from the
+complete second-model response image under all four admitted typed boundary flips. This full
+response-image obstruction is load-bearing; unequal mediator total variation is diagnostic only.
+An independent isolated null node collapses under the same two-sided quotient and is a control, not
+the negative certificate. The frozen universal target is therefore `COMPLETE_NEGATIVE`.
+
+Accordingly, `Ubar_pass` is not essentially injective and no universal reconstruction satisfies
+`R Ubar_pass ~= id_FinRIE` on that subcategory. A conventional representative-selecting section
+`Ubar_pass R ~= id_FinObs` remains allowed. This supersedes the earlier broad
+`INCONCLUSIVE` wording only for the frozen finite hard-intervention category. Category canonicity,
+minimal realization, arbitrary latent dilation, soft/stochastic/continuous interventions,
+autonomous agency, continuum/gauge/RG extension, VFE emergence, and every physical identification
+remain **OPEN**.
+
+Finally, when `kappa` is promoted in the six-bit parity family, the full-joint map has rank seven
+everywhere, whereas singleton retention has rank six with kernel exactly
+`span{partial_kappa}`. This identifies `kappa` only as a full-joint interaction direction lost by
+singleton retention; rank does not type or agentize it. Arbitrary-family and coarse-preserving lifts,
+physical geometry, physical time, dimensional units, and renormalization remain **OPEN**.
 
 **Emergent duration is Fisher length on an already selected orbit.** The oriented inference orbit
 inherits the Fisher line element, and integration from a chosen origin defines an agent-relative
