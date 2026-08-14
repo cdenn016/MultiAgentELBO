@@ -611,6 +611,30 @@ VFE restriction. The exact recognition Fisher metric is the pullback of the cond
 Fisher metric along `\iota_i`, or its justified quotient. A weighted sum of marginal Fisher metrics
 is exact only after a separate block-orthogonality or fixed-dependence result.
 
+**Governing finite-lift correction (2026-08-14).** The general lift obligation above remains open,
+but it now has one exact nonproduct witness. For three paired binary agents, the declared family
+p_kappa = p_0 + kappa chi D, with fixed |kappa| < 1, is a strictly positive normalized smooth right
+inverse of the six one-bit marginal map and an immersion. Every proper marginal remains the
+corresponding product marginal. For each fixed marginal tuple, this is one parity line in the
+57-dimensional Frechet fiber, not a construction of arbitrary paired-joint laws. It is equivariant
+under simultaneous complement of both typed channels of an agent and typed agent permutations.
+An odd independent channel complement changes kappa's sign, so it requires a pseudoscalar kappa; no
+within-pair belief--model swap, GL(K) action, Lie connection, intervention map, or canonical agency
+follows.
+
+For any regular joint score, use the exact residual
+G_J - G_w = K - C + sum_i (1-w_i)G_i, where K = E[RR^T] and the ordered signed cross tensor is
+C = sum_{i ne j} E[L_iL_j^T]. Equality on a declared tangent subspace means that this bilinear
+residual restricts to zero there. In the parity witness, pairwise independence gives C = 0 and K is
+positive definite for nonzero kappa. At the symmetric point c = kappa/64,
+G_J = 4I_6/(1-c^2); equality with a weighted marginal metric on the full tangent requires every
+w_i = 1/(1-c^2), and unit weights agree only at kappa = 0. Do not generalize this ordering: the
+older two-bit lift has a signed, indefinite joint-minus-product Fisher difference. The symmetric
+posterior is realized by the supplied hyperedge record K_hyp(1|x) = (1+c chi(x))/2; it is engineered
+generative data, not a consequence of pairwise locality or conditional independence. The
+arbitrary-family, canonical-selection, coarse-preservation, continuum, physicalization, time, units,
+and renormalization obligations remain open.
+
 **Emergent duration is Fisher length on an already selected orbit.** The oriented inference orbit
 inherits the Fisher line element, and integration from a chosen origin defines an agent-relative
 information clock invariant under orientation-preserving reparameterization. Fisher supplies

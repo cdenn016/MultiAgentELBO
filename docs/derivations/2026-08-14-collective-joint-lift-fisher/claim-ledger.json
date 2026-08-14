@@ -1,0 +1,289 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+  "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+  "assumptions": [],
+  "evidence": [
+    {
+      "id": "ev-collective-proof",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "The exact six-bit parity lift, finite symmetry classification, right-inverse/immersion theorem, general score decomposition, parity residual theorem, center values, and two-bit counterexample.",
+      "side_conditions": ["theta lies in the open unit cube.", "kappa is fixed with absolute value below one.", "Odd-flip covariance requires the separately declared pseudoscalar action."],
+      "artifact_path": "evidence/collective-lift-fisher-proof.md",
+      "artifact_sha256": "f647141b49a0146a5ba38445bb2df7a462c44821a8fa9017f64dd8794972facf"
+    },
+    {
+      "id": "ev-vfe-hyperedge-proof",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Strictly positive finite target/recognition laws with common outside marginal, the declared binary hyperedge record, and the same-marginal cancelling record-kernel control.",
+      "side_conditions": ["The target is fixed and strictly positive.", "VFE covariance pushes recognition and target coherently.", "The hyperedge kernel is declared model data, not derived pairwise locality."],
+      "artifact_path": "evidence/vfe-hyperedge-proof.md",
+      "artifact_sha256": "4c52c5ebe1a34e534445bf84aa44b9ab7fab8ee2c22500f5027f9b3420bad904"
+    },
+    {
+      "id": "ev-rank-boundaries",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Fixed-singleton Frechet-fiber dimension, lift nonselection, redundant interaction amplitudes, quotient conditions, and excluded physical/canonical inferences.",
+      "side_conditions": ["The 57-dimensional count fixes six independent singleton affine marginals.", "The redundant promotion depends on kappa and eta only through their product.", "Manifold quotient claims require additional regularity."],
+      "artifact_path": "evidence/rank-and-scope-boundaries.md",
+      "artifact_sha256": "573e443467644d717ab9a13e2ee691cb5a017a162c27f93ad84b5dbe0baf4f55"
+    },
+    {
+      "id": "ev-weighted-gate",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "The exact weighted marginal Fisher defect for a general smooth positive joint family and its full-tangent specialization at the parity-family center.",
+      "side_conditions": ["Equality on a tangent subspace means vanishing of the full bilinear defect there.", "Center matching does not imply off-center or law-level equality."],
+      "artifact_path": "evidence/weighted-marginal-gate.md",
+      "artifact_sha256": "a34a124b1d24df531d5f581a8e8e55dd01d61c3c169ba0725a84692dd87d5ae3"
+    },
+    {
+      "id": "ev-exact-witness",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Deterministic exact Fraction corroboration of probability atoms, normalization, all 63 proper marginals, finite symmetries, derivatives, Fisher matrices, residual principal minors, record normalization/evidence/posterior, fixed-outside identities at the rational-law level, and record-kernel cancellation; math.log evaluations provide floating corroboration only for KL/VFE values and directional equalities.",
+      "side_conditions": ["The executable is corroboration, not proof of universal claims.", "Probability, marginal, symmetry, derivative, and Fisher arithmetic is exact Fraction arithmetic.", "KL/VFE logarithms and their final equality comparisons use math.log floating evaluation.", "No random inputs or non-standard dependencies are used."],
+      "artifact_path": "evidence/exact_collective_witness.py",
+      "artifact_sha256": "e70d97a5d1ab23a30a7ca1b157a0111def0e506022aec4d75c245e1a8a46aaee"
+    },
+    {
+      "id": "ev-focused-green",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Machine-readable focused test result: five tests passed after the final witness controls.",
+      "side_conditions": ["JUnit records test execution only.", "Mathematical closure uses derivations."],
+      "artifact_path": "evidence/green-junit.xml",
+      "artifact_sha256": "913f49366ff1b7f2cc717285a24965155ca52ccfd595e3c2b8d9cdbaef834e8f"
+    },
+    {
+      "id": "ev-initial-red",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Machine-readable initial RED provenance: all five focused tests failed because the witness file did not yet exist.",
+      "side_conditions": ["This supports test-first process provenance only, not a mathematical claim.", "The failures are the expected missing-witness FileNotFoundError."],
+      "artifact_path": "evidence/red-junit.xml",
+      "artifact_sha256": "c50568bc4fff3f9bbbf3a88ec83c554b78f83c4f36aa5ca2c2a686c9610f590f"
+    },
+    {
+      "id": "ev-review-red",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Machine-readable remediation RED provenance: the updated tests failed before the direction labels, true agent-theta control, and corrected subgroup payload were implemented.",
+      "side_conditions": ["This supports review-remediation process provenance only.", "The final GREEN supersedes the expected RED failures for correctness."],
+      "artifact_path": "evidence/review-red-junit.xml",
+      "artifact_sha256": "a55b26d69c60ef7d00e1c2088dddfbd0742961d622abb6a068c6c5bbe66e7661"
+    },
+    {
+      "id": "ev-review2-red",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Machine-readable second remediation RED provenance: the test required pair-index parameterization and a three-entry payload before the single-pair witness was generalized.",
+      "side_conditions": ["This supports all-three-pairs review provenance only.", "The final GREEN supersedes the expected TypeError and payload-shape failures."],
+      "artifact_path": "evidence/review2-red-junit.xml",
+      "artifact_sha256": "08da8303dd226242febb28ece6d4236a1644aab8890d713b3f633b91b2401175"
+    },
+    {
+      "id": "ev-tdd-record",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Human-readable TDD chronology linking the initial and remediation RED runs, final GREEN run, and test-source snapshot.",
+      "side_conditions": ["This is process evidence, not mathematical closure.", "JUnit and snapshot bytes are independently hash-checked."],
+      "artifact_path": "evidence/tdd-record.md",
+      "artifact_sha256": "05d487bbcda1bdd7a09d3df35fcbd71f219fd3877e85b99b63a5cda9405dce13"
+    },
+    {
+      "id": "ev-final-test-snapshot",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Byte-for-byte package snapshot of the final focused test source used for the final GREEN run.",
+      "side_conditions": ["The snapshot hash equals the workspace test-source hash at release.", "The snapshot establishes provenance, not mathematical truth."],
+      "artifact_path": "evidence/test_collective_joint_lift_witness.snapshot.py",
+      "artifact_sha256": "cd184931ca1ffb4ae57403544c9526e93666d49fb03779f14b025f6f86d645b0"
+    }
+  ],
+  "claims": [
+    {
+      "id": "target",
+      "statement": "Construct and classify a finite collective joint-law lift for three paired binary agents: prove that Q_kappa(x)=P_theta(x)+kappa chi(x) D(theta), on x in {0,1}^6, theta in (0,1)^6, and fixed |kappa|<1, is a strictly positive normalized smooth lift whose every proper marginal is the corresponding product marginal; identify exactly its paired-complement and explicitly admitted finite-coordinate-relabeling boundary; prove its smooth right-inverse, immersion, Fisher rank, radical, and quotient statements; prove the fixed-outside agent-block local/global VFE difference and differential; derive the general signed joint-score residual formula and the parity-family positive-definite residual theorem, including the exact center metric and weighted-marginal equality gate; construct the declared three-agent hyperedge record witness; and prove by explicit boundaries and a two-bit counterexample that kappa, full-joint VFE, and full-joint Fisher are extra lift-dependent structure rather than consequences of the six singleton Bernoulli sections grouped into three agent pairs.",
+      "quantifiers": "For every theta in (0,1)^6 and every fixed real kappa with |kappa|<1, the six-bit construction and its proper-marginal, smoothness, right-inverse, immersion, symmetry-boundary, Fisher, and residual conclusions hold. For every paired agent block A, every strictly positive normalized target T, and every pair of strictly positive normalized recognition laws Q and Q' with a common outside marginal, the stated finite VFE difference identity holds; its differential holds for every normalized fixed-outside conditional tangent. There exists the displayed binary-record hyperedge kernel with posterior Q_kappa at theta=(1/2,...,1/2), and there exists the displayed two-bit lift whose Fisher correction relative to the product marginal metric is indefinite. Quotient-manifold conclusions are only conditional on the separately stated constant-rank, integrability, regular-leaf-space, and basicness hypotheses.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-collective-proof", "ev-vfe-hyperedge-proof", "ev-rank-boundaries", "ev-weighted-gate"],
+      "bridge_premise_ids": [],
+      "falsifier": "Any scope-satisfying finite counterexample to a universal conjunct, or failure of an existential record or two-bit witness, refutes the corresponding target conjunct."
+    },
+    {
+      "id": "positive-normalized-lift",
+      "statement": "For every theta in (0,1)^6 and fixed |kappa|<1, Q_kappa has 64 strictly positive atoms and unit total mass.",
+      "quantifiers": "For every admitted theta and kappa.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-collective-proof", "ev-exact-witness"],
+      "bridge_premise_ids": [],
+      "falsifier": "One nonpositive atom or nonunit sum in the admitted open domain refutes the claim."
+    },
+    {
+      "id": "all-proper-marginals",
+      "statement": "Every proper subset marginal of Q_kappa is the corresponding product Bernoulli marginal.",
+      "quantifiers": "For every admitted theta and kappa, all 63 proper coordinate subsets including the empty subset, and every assignment on that subset.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-collective-proof", "ev-exact-witness"],
+      "bridge_premise_ids": [],
+      "falsifier": "A surviving parity contribution in any proper marginal refutes the claim."
+    },
+    {
+      "id": "symmetry-boundary",
+      "statement": "Fixed scalar kappa is equivariant under paired even complements and admitted finite relabelings, but a nonzero scalar is not equivariant under an odd complement unless kappa transforms pseudoscalarly.",
+      "quantifiers": "For every admitted theta and kappa; pair permutations require identified types, and within-pair swaps are only toy-coordinate symmetries.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-collective-proof", "ev-exact-witness"],
+      "bridge_premise_ids": [],
+      "falsifier": "A failed paired equality or a fixed-nonzero-scalar odd equality refutes the classification."
+    },
+    {
+      "id": "right-inverse-immersion",
+      "statement": "Singleton extraction composed with the fixed-kappa lift is the identity, so the lift is a smooth rank-six immersion with positive-definite Fisher pullback and zero radical; further quotient conclusions have the stated regularity boundary.",
+      "quantifiers": "For every fixed admitted kappa on the open theta cube; secondary quotient claims only under their explicit added hypotheses.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-collective-proof", "ev-rank-boundaries"],
+      "bridge_premise_ids": [],
+      "falsifier": "Failure of the extraction identity, derivative rank, or categorical-Fisher positivity refutes the fixed-kappa claim."
+    },
+    {
+      "id": "fixed-outside-vfe",
+      "statement": "With a common outside marginal, the global VFE difference and normalized conditional directional differential equal the outside-weighted block-local difference and differential.",
+      "quantifiers": "For every finite two-bit/four-bit split, strictly positive normalized target, pair of strictly positive recognition laws with common outside marginal, and normalized fixed-outside conditional tangent.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-vfe-hyperedge-proof", "ev-exact-witness"],
+      "bridge_premise_ids": [],
+      "falsifier": "A scope-satisfying finite KL-chain or tangent counterexample refutes the claim."
+    },
+    {
+      "id": "joint-fisher-decomposition",
+      "statement": "The general joint Fisher tensor equals E[ss^T]+E[sR^T]+E[Rs^T]+E[RR^T], and comparison with the product marginal metric retains all signed defects.",
+      "quantifiers": "For every strictly positive smooth finite joint family parameterized by its six Bernoulli singleton marginals.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-collective-proof", "ev-weighted-gate"],
+      "bridge_premise_ids": [],
+      "falsifier": "A failure of the exact score expansion refutes the claim."
+    },
+    {
+      "id": "parity-residual-positive",
+      "statement": "In the six-bit parity family, pairwise independence kills the signed Fisher cross defects and E[RR^T] is positive definite for every nonzero kappa.",
+      "quantifiers": "For every theta in (0,1)^6 and every nonzero fixed |kappa|<1.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-collective-proof", "ev-exact-witness"],
+      "bridge_premise_ids": [],
+      "falsifier": "A nonzero residual-score null vector or nonvanishing cross defect refutes the claim."
+    },
+    {
+      "id": "center-fisher",
+      "statement": "At theta_i=1/2 and c=kappa/64, G_joint=4 I6/(1-c^2); at kappa=1/2 the residual is 4 I6/16383.",
+      "quantifiers": "For every fixed |kappa|<1 at the center, with the stated special value.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-collective-proof", "ev-exact-witness"],
+      "bridge_premise_ids": [],
+      "falsifier": "Any unequal diagonal or nonzero off-diagonal exact sum refutes the claim."
+    },
+    {
+      "id": "weighted-marginal-gate",
+      "statement": "Relative to G_w=diag(w_i/[theta_i(1-theta_i)]), the exact defect is the full signed product-metric defect plus diag((1-w_i)/[theta_i(1-theta_i)]); at the parity center full-tangent equality holds exactly when every w_i=1/(1-c^2).",
+      "quantifiers": "For every smooth positive family in the general formula and every weights w_i; the iff specialization is at the six-bit parity center.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-weighted-gate"],
+      "bridge_premise_ids": [],
+      "falsifier": "A mismatched exact defect or a different full-tangent center equality condition refutes the claim."
+    },
+    {
+      "id": "hyperedge-record",
+      "statement": "The declared uniform-prior binary hyperedge kernel has evidence 1/2, posterior Q_kappa at the center, correlated-lift VFE log 2, and product-lift excess -log(1-c^2)/2.",
+      "quantifiers": "For every fixed |kappa|<1 at theta_i=1/2 with c=kappa/64 and record value 1.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-vfe-hyperedge-proof", "ev-exact-witness"],
+      "bridge_premise_ids": [],
+      "falsifier": "Failed kernel normalization, evidence, Bayes posterior, or VFE expression refutes the witness."
+    },
+    {
+      "id": "pairwise-record-cancellation",
+      "statement": "There exists a strictly positive normalized joint binary-record kernel with the same two marginal kernels as the product construction and zero ab coefficient.",
+      "quantifiers": "For every functions a,b bounded in absolute value by eta<1/2, pointwise in the conditioning state.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-vfe-hyperedge-proof", "ev-exact-witness"],
+      "bridge_premise_ids": [],
+      "falsifier": "Nonpositivity, nonnormalization, changed marginal kernels, or a surviving ab coefficient refutes the construction."
+    },
+    {
+      "id": "two-bit-indefinite",
+      "statement": "The older two-bit correlated lift has a Fisher correction relative to 4I2 with eigenvalues -4/9 and 4/7.",
+      "quantifiers": "At the displayed two-bit center with kappa=1/2.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-collective-proof", "ev-exact-witness"],
+      "bridge_premise_ids": [],
+      "falsifier": "A positive-semidefinite correction or different exact eigenvalues refute the witness."
+    },
+    {
+      "id": "redundant-parameter-rank",
+      "statement": "For the promoted amplitude kappa eta, only the product is identifiable and the interaction Fisher block has rank at most one, with rank zero at the origin.",
+      "quantifiers": "For every admitted theta and redundant interaction parameters on the positivity domain.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-rank-boundaries"],
+      "bridge_premise_ids": [],
+      "falsifier": "Two linearly independent interaction derivatives in the displayed promotion refute the claim."
+    },
+    {
+      "id": "lift-dependence-boundaries",
+      "statement": "The six singleton sections do not select kappa, full-joint VFE, full-joint Fisher, or a joint record factorization; no canonical, intervention, agency, GL(K), continuum, physical, time/unit, or renormalization conclusion follows from the finite premises.",
+      "quantifiers": "Across the displayed fixed-singleton lift family and record-kernel controls; excluded conclusions require additional future premises.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["ev-rank-boundaries", "ev-vfe-hyperedge-proof", "ev-collective-proof"],
+      "bridge_premise_ids": [],
+      "falsifier": "A unique selection function derived solely from the six singleton laws, or a derivation of an excluded typed structure from the frozen premises, refutes the corresponding boundary."
+    }
+  ]
+}

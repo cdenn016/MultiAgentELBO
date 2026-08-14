@@ -1,0 +1,32 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+  "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+  "attacks": [
+    {
+      "id": "attack-full-dependency-closure",
+      "claim_ids": ["target", "positive-normalized-lift", "all-proper-marginals", "symmetry-boundary", "right-inverse-immersion", "fixed-outside-vfe", "joint-fisher-decomposition", "parity-residual-positive", "center-fisher", "weighted-marginal-gate", "hyperedge-record", "pairwise-record-cancellation", "two-bit-indefinite", "redundant-parameter-rank", "lift-dependence-boundaries"],
+      "attack": "A contract-only falsifier attacked atom positivity, every proper marginal, singleton versus block typing, finite symmetry labels, right-inverse rank, the interpretation of the VFE witness direction, every signed Fisher term, residual null vectors, weighted equality, hyperedge locality, record factorization, redundant amplitudes, and physical/canonical overreach.",
+      "response": "All attacks are rejected against the final corrected claims. Early singleton/block, within-pair typing, and VFE-direction wording defects were sustained and repaired. Direct derivations and exact negative controls close the remaining attacks; the excluded canonical and physical bridges remain outside the theorem.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "a723ed0ce22a920cc1dc8f2359412d8c24e54aac80525c60de07c6973b93f148",
+      "disposition": "REJECTED"
+    }
+  ],
+  "independent_reconstruction": {
+    "claim_ids": ["target", "positive-normalized-lift", "all-proper-marginals", "symmetry-boundary", "right-inverse-immersion", "fixed-outside-vfe", "joint-fisher-decomposition", "parity-residual-positive", "center-fisher", "weighted-marginal-gate", "hyperedge-record", "pairwise-record-cancellation", "two-bit-indefinite", "redundant-parameter-rank", "lift-dependence-boundaries"],
+    "method": "A labeled sequential contract-only pass rebuilt each dependency before comparing with the construction and executable; this is procedural separation, not independent-agent corroboration.",
+    "result": "PASS",
+    "conclusion": "Every dependency was reconstructed from finite algebra with the same open-domain, typing, symmetry, VFE-direction, Fisher-sign, identifiability, and interpretation boundaries.",
+    "artifact_path": "evidence/independent-reconstruction.md",
+    "artifact_sha256": "f8eb727caff4a7886daabe1716242a778de26bc697f0ec2eb5019718343c0d47"
+  },
+  "oracle_erasure": {
+    "claim_ids": ["target", "positive-normalized-lift", "all-proper-marginals", "symmetry-boundary", "right-inverse-immersion", "fixed-outside-vfe", "joint-fisher-decomposition", "parity-residual-positive", "center-fisher", "weighted-marginal-gate", "hyperedge-record", "pairwise-record-cancellation", "two-bit-indefinite", "redundant-parameter-rank", "lift-dependence-boundaries"],
+    "method": "Removed the affirmative prior, all status and PASS labels, every preferred-lift statement, and every canonical or physical analogy; then rederived the full dependency closure and scanned premises for paraphrased desired conclusions.",
+    "result": "PASS",
+    "conclusion": "All mathematical ancestors survive erasure, while the hyperedge remains explicitly declared data and no canonical, intervention, agency, geometric, continuum, physical, or renormalization bridge appears.",
+    "artifact_path": "evidence/oracle-erasure.md",
+    "artifact_sha256": "29bfcdca31dd9b3581a1fafc364c51b1bdde902e50c218e1a603ae11ccf96dca"
+  }
+}

@@ -174,3 +174,20 @@ claim ledgers, and durable JUnit evidence for individual claims. The current glo
 verification skill is a coherent schema-1.1 upgrade whose nine active files differ from the frozen
 schema-1.0 contract. That mismatch correctly fails closed. Preserve v1 and its historical evidence;
 a versioned v2 builder/contract migration remains **open** rather than silently refreshing v1.
+
+---
+
+## 9. 2026-08-14 finite collective-lift correction -- current authority
+
+This section supersedes any conflicting reading above while preserving the earlier status record.
+It closes one exact finite categorical joint-lift instance and leaves the general program open.
+
+| Topic | Corrected status and boundary |
+|---|---|
+| Three-agent parity lift | **P.** For six paired binary channels, fixed p_kappa = p_0 + kappa chi D with |kappa| < 1 is positive, normalized, smooth, a marginal right inverse, and an immersion. Every proper marginal is product. For fixed marginals it is one parity line in a 57-dimensional Frechet fiber, not an arbitrary correlated-family construction. |
+| Relabeling symmetry | **P/typed.** Paired simultaneous complements and typed agent permutations are exact symmetries. Odd independent channel complements require pseudoscalar kappa. No within-pair belief--model swap, GL(K) action, or Lie connection follows. |
+| Agent-block VFE | **P.** With any one two-channel agent block varied and its four-bit outside marginal fixed, the outside-averaged conditional VFE difference and differential equal the corresponding global VFE restriction exactly. This is objective compatibility, not an intervention or convergence theorem. |
+| Fisher residual | **P.** Generally, G_J - G_w = K - C + sum_i (1-w_i)G_i. Equality on a tangent subspace is exactly vanishing of that restricted bilinear residual. Here pairwise independence makes C = 0, and K is positive definite for nonzero kappa. At the center c = kappa/64, G_J = 4I_6/(1-c^2); the unit-weight residual is 4c^2 I_6/(1-c^2), hence 4I_6/16383 at kappa = 1/2. Full-tangent weighted equality requires every w_i = 1/(1-c^2); unit weights agree only at kappa = 0. |
+| Ordering boundary | **P/limited.** The positive residual is parity-family-specific. The older two-bit smooth lift has an indefinite joint-minus-product Fisher difference, so no general Loewner ordering is restored. |
+| Declared hyperedge record | **P/D.** With uniform prior, the supplied normalized record K_hyp(1|x) = (1+c chi(x))/2 has evidence 1/2, posterior p_kappa, tight VFE log 2, and product-lift excess -log(1-c^2)/2. It is an engineered three-agent hyperedge factor, not derived pairwise locality, conditional independence, or canonical agency. |
+| Remaining scope | **O.** Arbitrary-family lift existence, canonical selection, coarse-graining preservation, independent odd relabeling without an interaction pseudoscalar, GL(K), interventions, autonomous agency, continuum laws, physical geometry/time/units, and renormalization remain open. Kappa is fixed relational or nomological data; promoting it requires an interaction-state type plus identifiability and rank checks. |

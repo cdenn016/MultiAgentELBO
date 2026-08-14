@@ -1,0 +1,30 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+  "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+  "edges": [
+    {"from": "target", "to": "positive-normalized-lift"},
+    {"from": "target", "to": "all-proper-marginals"},
+    {"from": "target", "to": "symmetry-boundary"},
+    {"from": "target", "to": "right-inverse-immersion"},
+    {"from": "target", "to": "fixed-outside-vfe"},
+    {"from": "target", "to": "joint-fisher-decomposition"},
+    {"from": "target", "to": "parity-residual-positive"},
+    {"from": "target", "to": "center-fisher"},
+    {"from": "target", "to": "weighted-marginal-gate"},
+    {"from": "target", "to": "hyperedge-record"},
+    {"from": "target", "to": "lift-dependence-boundaries"},
+    {"from": "right-inverse-immersion", "to": "all-proper-marginals"},
+    {"from": "parity-residual-positive", "to": "joint-fisher-decomposition"},
+    {"from": "parity-residual-positive", "to": "all-proper-marginals"},
+    {"from": "center-fisher", "to": "joint-fisher-decomposition"},
+    {"from": "weighted-marginal-gate", "to": "joint-fisher-decomposition"},
+    {"from": "weighted-marginal-gate", "to": "center-fisher"},
+    {"from": "hyperedge-record", "to": "positive-normalized-lift"},
+    {"from": "lift-dependence-boundaries", "to": "all-proper-marginals"},
+    {"from": "lift-dependence-boundaries", "to": "hyperedge-record"},
+    {"from": "lift-dependence-boundaries", "to": "pairwise-record-cancellation"},
+    {"from": "lift-dependence-boundaries", "to": "two-bit-indefinite"},
+    {"from": "lift-dependence-boundaries", "to": "redundant-parameter-rank"}
+  ]
+}

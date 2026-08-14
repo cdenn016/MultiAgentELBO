@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="5" time="0.643" timestamp="2026-08-14T01:17:28.930735-05:00" hostname="DESKTOP-RT15E78"><testcase classname="tests.test_collective_joint_lift_witness" name="test_all_63_proper_marginals_are_product" time="0.068" /><testcase classname="tests.test_collective_joint_lift_witness" name="test_paired_complements_are_equivariant_but_odd_flip_is_not" time="0.023" /><testcase classname="tests.test_collective_joint_lift_witness" name="test_exact_center_fisher_and_residual" time="0.031" /><testcase classname="tests.test_collective_joint_lift_witness" name="test_hyperedge_record_and_block_local_global_identity" time="0.010"><failure message="TypeError: agent_theta_block_vfe_witness() takes 0 positional arguments but 1 was given">def test_hyperedge_record_and_block_local_global_identity() -&gt; None:
+        module = _load_witness()
+        record = module.hyperedge_record(Fraction(1, 2))
+        assert record["c"] == Fraction(1, 128)
+        assert record["evidence"] == Fraction(1, 2)
+        assert record["posterior_matches_center_lift"] is True
+        assert record["correlated_lift_vfe_exact"] == "log(2)"
+        assert record["product_lift_excess_exact"] == "-log(1-c^2)/2"
+        assert math.isclose(
+            record["product_lift_vfe"],
+            math.log(2.0) - 0.5 * math.log(1.0 - float(record["c"] ** 2)),
+            rel_tol=0.0,
+            abs_tol=1e-15,
+        )
+
+        pairwise_control = module.pairwise_record_cancellation(Fraction(1, 3))
+        assert pairwise_control == {
+            "eta": Fraction(1, 3),
+            "all_strictly_positive": True,
+            "all_normalized": True,
+            "same_marginal_kernels": True,
+            "cancelling_ab_coefficient": Fraction(0),
+            "product_ab_coefficient": Fraction(1, 4),
+            "minimum_atom": Fraction(1, 12),
+        }
+
+        block = module.block_vfe_witness()
+        assert block["direction_kind"] == "kappa_lift"
+        assert block["outside_marginal_equal"] is True
+        assert math.isclose(
+            block["global_difference"],
+            block["outside_weighted_local_difference"],
+            rel_tol=0.0,
+            abs_tol=1e-15,
+        )
+        assert math.isclose(
+            block["global_differential"],
+            block["outside_weighted_local_differential"],
+            rel_tol=0.0,
+            abs_tol=1e-15,
+        )
+
+        for agent_pair_index, expected_coordinates in enumerate(((0, 1), (2, 3), (4, 5))):
+&gt;           agent = module.agent_theta_block_vfe_witness(agent_pair_index)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: agent_theta_block_vfe_witness() takes 0 positional arguments but 1 was given
+
+tests\test_collective_joint_lift_witness.py:181: TypeError</failure></testcase><testcase classname="tests.test_collective_joint_lift_witness" name="test_json_output_is_deterministic" time="0.451"><failure message="TypeError: string indices must be integers, not 'str'">capsys = &lt;_pytest.capture.CaptureFixture object at 0x00000243491F38C0&gt;
+
+    def test_json_output_is_deterministic(capsys) -&gt; None:
+        module = _load_witness()
+        assert module.main() == 0
+        first = capsys.readouterr().out
+        assert module.main() == 0
+        second = capsys.readouterr().out
+        assert first == second
+        payload = json.loads(first)
+        assert payload["proper_marginal_subset_count"] == 63
+        assert payload["paired_complement_group_size"] == 8
+        assert payload["typed_agent_permutation_count"] == 6
+        assert payload["pair_partition_preserving_coordinate_symmetry_count"] == 48
+        assert payload["pairwise_record_cancellation"] == {
+            "cancelling_ab_coefficient": "0",
+            "eta": "1/3",
+            "minimum_atom": "1/12",
+            "product_ab_coefficient": "1/4",
+            "same_marginal_kernels": True,
+            "strictly_positive": True,
+        }
+        assert payload["odd_flip_scalar_equivariant"] is False
+        assert payload["odd_flip_pseudoscalar_equivariant"] is True
+        assert payload["center"]["c"] == "1/128"
+        assert payload["center"]["residual_diagonal"] == "4/16383"
+        assert payload["record"]["evidence"] == "1/2"
+        assert payload["block_vfe"]["direction_kind"] == "kappa_lift"
+        assert payload["block_vfe"]["outside_marginal_equal"] is True
+&gt;       assert [item["agent_coordinates"] for item in payload["agent_theta_block_vfe"]] == [
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+            [0, 1],
+            [2, 3],
+            [4, 5],
+        ]
+E       TypeError: string indices must be integers, not 'str'
+
+tests\test_collective_joint_lift_witness.py:229: TypeError</failure></testcase></testsuite></testsuites>

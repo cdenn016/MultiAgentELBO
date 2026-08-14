@@ -1,0 +1,11 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+  "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+  "checkpoint": "release",
+  "target_claim": "target",
+  "terminal_status": "COMPLETE_AFFIRMATIVE",
+  "certificate_claim": "target",
+  "strongest_result": "The fixed-|kappa| six-bit parity family is a strictly positive normalized smooth rank-six right-inverse lift with every proper marginal product, exact paired-complement and type-compatible agent-pair permutation covariance, a shared joint Fisher tensor equal to the Bernoulli product metric plus a positive-definite residual for kappa nonzero, exact fixed-outside block VFE identities, and a declared hyperedge record realization; the six singleton sections do not select kappa or determine full-joint VFE/Fisher, and none of the excluded geometric, physical, agency, continuum, or renormalization conclusions follows.",
+  "unresolved_obligations": []
+}

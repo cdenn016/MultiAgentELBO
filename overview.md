@@ -122,6 +122,44 @@ theorem of §6 makes a stronger declaration:
 its recognition law is \(\bigotimes_a Q_a\) with \(\zeta_a=q_a\otimes s_a\), so its total correlation
 vanishes identically across agents and across channels. That is the theorem's declared family, not
 this section's ontological target.
+
+**Governing correction, 2026-08-14 -- one finite collective lift now exists.** For three paired
+binary agents, write the six bits as \(x\), take
+\(p_0(x;\theta)=\prod_i\theta_i^{x_i}(1-\theta_i)^{1-x_i}\),
+\(D(\theta)=\prod_i\theta_i(1-\theta_i)\), and
+\(\chi(x)=(-1)^{\sum_i x_i}\). For fixed \(|\kappa|<1\),
+\(p_\kappa=p_0+\kappa\chi D\) is strictly positive and normalized; every proper marginal is the
+corresponding product marginal. It is therefore a smooth marginal right inverse and immersion. For
+each fixed marginal tuple, however, it explores only one parity line in the 57-dimensional Frechet
+fiber. This supersedes any reading of the preceding historical paragraph as saying that no concrete
+correlated right inverse exists; it does not supply arbitrary-family existence or canonical
+selection.
+
+The lift is exactly equivariant under simultaneous complement of both channels of an agent and under
+typed agent permutations. An odd single-channel complement sends \(\kappa\) to \(-\kappa\), so
+independent odd relabelings require a pseudoscalar interaction coordinate. The construction uses no
+within-pair belief--model swap and yields no \(GL(K)\) action, Lie connection, intervention identity,
+or autonomous agency. Here \(\kappa\) is fixed relational or nomological data; promoting it requires
+typing it as interaction state and checking identifiability and augmented-model rank.
+
+The exact general score identity is
+\(G_J-G_w=K-C+\sum_i(1-w_i)G_i\), with \(K=\mathbb E[RR^T]\) and signed
+\(C=\sum_{i\ne j}\mathbb E[L_iL_j^T]\). In this parity family all pairs are independent, so
+\(C=0\) and \(K\succ0\) for \(\kappa\ne0\). At \(\theta_i=1/2\), put
+\(c=\kappa/64\): then \(G_J=4I_6/(1-c^2)\), the unit-marginal residual is
+\(4c^2I_6/(1-c^2)\), and \(\kappa=1/2\) gives \(4I_6/16383\). Full-tangent equality with weighted
+marginals requires every \(w_i=1/(1-c^2)\); unit weights agree only when \(\kappa=0\). This
+positive ordering is family-specific: the older two-bit lift has an indefinite joint-minus-product
+Fisher difference.
+
+At the symmetric point the supplied record
+\(K_{\rm hyp}(1\mid x)=\tfrac12(1+c\chi(x))\), with uniform prior, has evidence \(1/2\) and posterior
+exactly \(p_\kappa\). Its posterior VFE is the tight value \(\log2\); the product lift has excess
+\(-\tfrac12\log(1-c^2)\). This is a declared three-agent hyperedge kernel, not a derivation from
+pairwise locality, conditional independence, or canonical agency. Fixed-outside updates of any one
+two-channel agent block obey both the exact local--global VFE difference identity and its
+differential. Canonical lift selection, coarse-graining preservation, continuum extension, physical
+geometry, physical time, units, and renormalization remain open.
 The ultimate continuum target would place a proper probability law on a standard-Borel or Polish
 space of admissible paired sections, but that section-space measure, its tightness, and its
 finite-to-continuum derivation remain open.

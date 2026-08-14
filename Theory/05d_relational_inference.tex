@@ -484,12 +484,350 @@ proved canonicity or lift-independence theorem removes that choice.
 \status{ESTABLISHED}
 
 By \Cref{thm:obs-local-global-potential},
-$\overline{\Fenergy}_{B,o}$ differs from the collective VFE restricted along
-$Q_i\mapsto Q_{B^c}r_B^{Q_i}$ only by a $Q_i$-independent outside term.
+\(\overline{\Fenergy}_{B,o}\) differs from the collective VFE restricted along
+\(Q_i\mapsto Q_{B^c}r_B^{Q_i}\) only by a \(Q_i\)-independent outside term.
 Their differentials and natural-gradient rays therefore agree when the same
 block metric is used.  A single realized conditional objective
-$\Fenergy_{B,o}(r_B;b)$ need not have that gradient, and independently moving
+\(\Fenergy_{B,o}(r_B;b)\) need not have that gradient, and independently moving
 outside marginals do not define the same fixed objective. \status{ESTABLISHED}
+
+\section{A finite correlated right-inverse witness}
+\label{sec:hist-finite-parity-lift}
+
+\definitionheading{Three-agent parity lift}{def:hist-three-agent-parity-lift}
+Let
+\begin{equation}
+I_6=\{1,2,3\}\times\{b,m\},
+\qquad
+x=(x_j)_{j\in I_6}\in\{0,1\}^{I_6},
+\qquad
+\theta=(\theta_j)_{j\in I_6}\in(0,1)^{I_6}.
+\label{eq:hist-parity-indexing}
+\end{equation}
+The channel label in a typed agent permutation is preserved.  Define
+\begin{align}
+p_0(x;\theta)
+&=\prod_{j\in I_6}\theta_j^{x_j}(1-\theta_j)^{1-x_j},
+&
+D(\theta)
+&=\prod_{j\in I_6}\theta_j(1-\theta_j),
+\label{eq:hist-parity-product-and-amplitude}\\
+\chi(x)
+&=(-1)^{\sum_{j\in I_6}x_j},
+&
+p_\kappa(x;\theta)
+&=p_0(x;\theta)+\kappa\chi(x)D(\theta),
+\qquad |\kappa|<1.
+\label{eq:hist-parity-lift-law}
+\end{align}
+The map \(\iota_\kappa:(0,1)^6\to\Delta^\circ_{63}\) sends \(\theta\)
+to \(p_\kappa(\mathord{\cdot};\theta)\).  In this definition \(\kappa\)
+is fixed relational or nomological data, not an inferred coordinate.
+\status{DEFINITION}
+
+\theoremheading{Positive smooth lift with the declared even relabeling symmetry}{thm:hist-three-agent-parity-lift}
+For every fixed \(|\kappa|<1\), the law in
+\eqref{eq:hist-parity-lift-law} is strictly positive and normalized.  Every
+proper marginal is the corresponding product-Bernoulli marginal of \(p_0\).
+Consequently the map \(\iota_\kappa\) is a smooth right inverse of the map
+that extracts the six one-bit marginals, and it is an immersion.
+
+Let \(H_{\rm pair}=(\mathbb Z_2)^3\rtimes S_3\) act by simultaneous
+complement of the two channel bits of any selected agent and by typed agent
+permutations \((a,r)\mapsto(\sigma(a),r)\).  Apply the same complements and
+permutations to the coordinates of \(\theta\).  Then
+\begin{equation}
+\iota_\kappa(g\theta)=g_\#\iota_\kappa(\theta)
+\qquad\text{for every }g\in H_{\rm pair}.
+\label{eq:hist-parity-paired-equivariance}
+\end{equation}
+For an odd single-channel complement \(F_j\), by contrast,
+\begin{equation}
+(F_j)_\#p_\kappa(\mathord{\cdot};\theta)
+=p_{-\kappa}(\mathord{\cdot};F_j\theta).
+\label{eq:hist-parity-odd-pseudoscalar}
+\end{equation}
+Thus odd independent complements are equivariant only if \(\kappa\) is
+promoted to a pseudoscalar that changes sign, or if \(\kappa=0\).
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+For each atom,
+\begin{equation}
+\frac{p_0(x;\theta)}{D(\theta)}
+=\prod_{j:x_j=1}\frac{1}{1-\theta_j}
+\times
+\prod_{j:x_j=0}\frac{1}{\theta_j}>1.
+\label{eq:hist-parity-positivity-ratio}
+\end{equation}
+Hence
+\(p_\kappa\geq p_0-|\kappa|D>(1-|\kappa|)D>0\).
+Normalization follows from
+\(\sum_x\chi(x)=\prod_{j\in I_6}(1-1)=0\).  If a marginal sums out at
+least one coordinate, its parity term contains the same zero factor, so the
+entire perturbation cancels and the remaining law is the product marginal.
+Writing \(\pi\) for extraction of the one-bit success probabilities gives
+\(\pi\circ\iota_\kappa=\operatorname{id}_{(0,1)^6}\).  Polynomial
+dependence gives smoothness, and differentiation of the right-inverse
+identity gives
+\(D\pi_{\iota_\kappa(\theta)}D\iota_{\kappa,\theta}=I_6\), so
+\(D\iota_{\kappa,\theta}\) is injective.
+
+A paired complement changes two bits, so it preserves \(\chi\); it also
+preserves \(D\), while the product law transforms by ordinary Bernoulli
+relabeling.  A typed agent permutation preserves all three expressions in
+\eqref{eq:hist-parity-product-and-amplitude}--\eqref{eq:hist-parity-lift-law}.
+This proves \eqref{eq:hist-parity-paired-equivariance}.  A single-channel
+complement changes the sign of \(\chi\), proving
+\eqref{eq:hist-parity-odd-pseudoscalar}.  \(\square\)
+
+For a fixed interior tuple \(\theta\), the Frechet fiber of positive laws
+with those six one-bit marginals has dimension \(63-6=57\); varying
+\(\kappa\) traces only its one-dimensional parity line.  The theorem therefore
+exhibits one correlated lift direction and does not classify or parameterize
+the other fifty-six dependence directions.  For \(\kappa\ne0\), it also gives
+an exact same-marginal control against any claim that pairwise independence
+forces the full joint to be a product.  \status{ESTABLISHED}
+
+\corollaryheading{Agent-block local--global VFE identity}{cor:hist-parity-agent-block-vfe}
+Fix an agent block \(B_a=\{(a,b),(a,m)\}\), fix the four outside
+parameters \(\theta_{B_a^c}\), and let
+\begin{equation}
+r_{a,\theta_{B_a}}(x_{B_a}\mid x_{B_a^c})
+=\frac{p_\kappa(x;\theta)}
+{p_{0,B_a^c}(x_{B_a^c};\theta_{B_a^c})}.
+\label{eq:hist-parity-agent-conditional}
+\end{equation}
+For any two interior block parameters \(\theta_{B_a}\) and
+\(\theta'_{B_a}\), and any fixed strictly positive posterior target
+\(\Pi_o\) on the Boolean cube, all relative entropies are finite and
+\begin{align}
+&\Fenergy_o^{\rm ext}
+\left(p_\kappa(\mathord{\cdot};\theta'_{B_a},\theta_{B_a^c})\right)
+-\Fenergy_o^{\rm ext}
+\left(p_\kappa(\mathord{\cdot};\theta_{B_a},\theta_{B_a^c})\right)
+\notag\\
+&\quad
+=\E_{p_{0,B_a^c}}\left[
+\Fenergy_{B_a,o}^{\rm ext}
+\left(r_{a,\theta'_{B_a}};X_{B_a^c}\right)
+-\Fenergy_{B_a,o}^{\rm ext}
+\left(r_{a,\theta_{B_a}};X_{B_a^c}\right)
+\right].
+\label{eq:hist-parity-agent-local-global-vfe}
+\end{align}
+Thus the outside-averaged agent-block conditional VFE is exactly the
+restriction of one global VFE up to a block-parameter-independent constant.
+For every block tangent \(V\in T_{\theta_{B_a}}(0,1)^2\), differentiation
+gives
+\begin{equation}
+d\Fenergy_o^{\rm ext}[V]
+=\E_{p_{0,B_a^c}}\left[
+d\Fenergy_{B_a,o}^{\rm ext}[V]
+\right],
+\label{eq:hist-parity-agent-local-global-differential}
+\end{equation}
+where both differentials are evaluated at the same lifted conditional law
+and the outside expectation is fixed.
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+The proper-marginal statement in
+\Cref{thm:hist-three-agent-parity-lift} makes the outside marginal exactly
+\(p_{0,B_a^c}\), independent of \(\theta_{B_a}\), and strict positivity
+makes \eqref{eq:hist-parity-agent-conditional} a positive conditional law.
+The finite state space and positive target make every KL term finite.
+Equation \eqref{eq:hist-parity-agent-local-global-vfe} is then
+\Cref{thm:obs-local-global-potential} with this fixed outside marginal.
+The summands are smooth on the finite positive family, so differentiating
+that finite identity proves
+\eqref{eq:hist-parity-agent-local-global-differential}.
+\(\square\)
+
+\propositionheading{Exact joint-versus-weighted-marginal score residual}{prop:hist-general-score-residual}
+Let \(P_u\) be a regular dominated joint family on
+\((Y_1,\ldots,Y_m)\), with square-integrable joint score
+\(L=\nabla_u\log p_u(Y)\).  Let
+\(L_i=\E[L\mid Y_i]\) be the embedded score of its \(i\)-th marginal and
+let \(w_i\) be fixed scalar weights.  Define
+\begin{align}
+G_J&=\E[LL^\top],
+&G_i&=\E[L_iL_i^\top],
+&G_w&=\sum_iw_iG_i,
+\label{eq:hist-score-metrics}\\
+R&=L-\sum_iL_i,
+&K&=\E[RR^\top],
+&C&=\sum_{i\ne j}\E[L_iL_j^\top].
+\label{eq:hist-score-residual-tensors}
+\end{align}
+The ordered sum makes \(C\) symmetric, but it can be indefinite.  The exact
+identity is
+\begin{equation}
+G_J-G_w
+=K-C+\sum_i(1-w_i)G_i.
+\label{eq:hist-joint-weighted-marginal-residual}
+\end{equation}
+On a declared tangent subspace \(T\), equality \(G_J=G_w\) holds exactly
+when the bilinear restriction
+\begin{equation}
+\left.
+\left(K-C+\sum_i(1-w_i)G_i\right)
+\right|_{T\times T}=0.
+\label{eq:hist-score-residual-equality-criterion}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+The marginal-score identity gives
+\(\E[LL_i^\top]=\E[L_iL_i^\top]=G_i\), and likewise after transpose.
+Expanding \(K=\E[(L-\sum_iL_i)(L-\sum_iL_i)^\top]\) therefore gives
+\(K=G_J-\sum_iG_i+C\).  Rearrangement proves
+\eqref{eq:hist-joint-weighted-marginal-residual}.  \(\square\)
+
+\corollaryheading{Parity-family Fisher residual}{cor:hist-parity-fisher-residual}
+For the family in \Cref{def:hist-three-agent-parity-lift}, every pair of bits
+is independent, so \(C=0\).  With unit marginal weights,
+\begin{equation}
+G_J-\sum_{j\in I_6}G_j=K\succ0
+\qquad\text{when }\kappa\ne0.
+\label{eq:hist-parity-positive-fisher-residual}
+\end{equation}
+At \(\theta_j=1/2\) for all \(j\), set \(c=\kappa/64\).  Then
+\begin{equation}
+G_J=\frac{4}{1-c^2}I_6,
+\qquad
+G_J-\sum_{j\in I_6}G_j
+=\frac{4c^2}{1-c^2}I_6.
+\label{eq:hist-parity-center-fisher}
+\end{equation}
+In particular, \(\kappa=1/2\) gives the residual
+\begin{equation}
+G_J-\sum_{j\in I_6}G_j=\frac{4}{16383}I_6.
+\label{eq:hist-parity-half-fisher-residual}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+All two-bit marginals are product by
+\Cref{thm:hist-three-agent-parity-lift}; centered marginal scores from
+distinct bits therefore have zero cross expectation.  If \(s_j\) is the
+one-bit Bernoulli score and \(L\) the joint score, direct differentiation
+gives
+\begin{equation}
+R_j=L_j^{\rm joint}-s_j
+=\frac{\kappa\chi(x)D(\theta)}{p_\kappa(x;\theta)}
+\times
+\left(\frac{1-x_j}{\theta_j}-\frac{x_j}{1-\theta_j}\right).
+\label{eq:hist-parity-score-residual-coordinate}
+\end{equation}
+If \(v^\top R\) vanishes on every atom, positivity and
+\(\kappa D\ne0\) imply that the sum of the six bracketed one-bit functions,
+weighted by \(v_j\), vanishes on the Boolean cube.  Comparing two atoms that
+differ only in coordinate \(j\) forces \(v_j=0\).  Thus no nonzero \(v\)
+lies in the null space of \(K=\E[RR^\top]\), proving positive definiteness.
+
+At the center, \(D=1/4096\) and
+\begin{equation}
+p_\kappa(x;\tfrac12\mathbf1)
+=\frac1{64}\left(1+c\chi(x)\right).
+\label{eq:hist-parity-center-law}
+\end{equation}
+The derivative of \(D\) vanishes there, each product-marginal score has
+squared magnitude \(4\), and averaging
+\((1+c\chi)^{-1}=(1-c\chi)/(1-c^2)\) over the Boolean cube gives
+\eqref{eq:hist-parity-center-fisher}.  Substitution of
+\(c=(1/2)/64=1/128\) gives
+\eqref{eq:hist-parity-half-fisher-residual}.  \(\square\)
+
+At the parity center, the six unit-coordinate marginal tensors are
+\(G_j=4e_je_j^\top\).  Therefore equality \(G_J=G_w\) on the full
+six-dimensional tangent space holds exactly when
+\begin{equation}
+w_j=\frac{1}{1-c^2}
+\qquad\text{for every }j\in I_6.
+\label{eq:hist-parity-center-weight-equality}
+\end{equation}
+For unit weights this holds exactly when \(c=0\), equivalently
+\(\kappa=0\).  \status{ESTABLISHED}
+
+The positive-semidefinite ordering in
+\eqref{eq:hist-parity-positive-fisher-residual} is specific to this parity
+family.  The older two-bit signed Fisher witness at the symmetric point has
+joint pullback
+\(63^{-1}\begin{psmallmatrix}256&-32\\-32&256\end{psmallmatrix}\) and
+product-marginal metric \(4I_2\); their difference is
+\(63^{-1}\begin{psmallmatrix}4&-32\\-32&4\end{psmallmatrix}\), with
+eigenvalues \(36/63\) and \(-28/63\).  Hence the parity-family ordering does
+not support a general Loewner-order claim.  \status{ESTABLISHED}
+
+\definitionheading{Declared three-agent parity hyperedge}{def:hist-parity-hyperedge}
+At the symmetric point of \eqref{eq:hist-parity-center-law}, let the latent
+prior be \(U(x)=1/64\) and supply the binary record kernel
+\begin{equation}
+K_{\rm hyp}(1\mid x)=\frac12\left(1+c\chi(x)\right),
+\qquad
+K_{\rm hyp}(0\mid x)=\frac12\left(1-c\chi(x)\right).
+\label{eq:hist-parity-hyperedge-kernel}
+\end{equation}
+This is a normalized three-agent hyperedge record by declaration.
+\status{DEFINITION}
+
+\propositionheading{Exact posterior and tight VFE for the declared hyperedge}{prop:hist-parity-hyperedge-vfe}
+The evidence of record \(O=1\) is \(P(O=1)=1/2\), and its posterior is
+exactly \(p_\kappa(\mathord{\cdot};\tfrac12\mathbf1)\).  For
+\begin{equation}
+\Fenergy_1(Q)
+=\KL(Q\Vert U)-\E_Q\log K_{\rm hyp}(1\mid X),
+\label{eq:hist-parity-hyperedge-vfe}
+\end{equation}
+the posterior attains the tight value \(\Fenergy_1=\log2\).  The product
+lift of its six one-bit marginals is \(U\), and its exact excess is
+\begin{equation}
+\Fenergy_1(U)-\log2=-\frac12\log(1-c^2).
+\label{eq:hist-parity-product-lift-excess}
+\end{equation}
+\status{ESTABLISHED}
+
+\paragraph{Proof.}
+Exactly half of the atoms have each parity, so averaging
+\eqref{eq:hist-parity-hyperedge-kernel} under \(U\) gives evidence \(1/2\).
+Bayes' rule then gives posterior
+\(64^{-1}(1+c\chi)\), which is
+\eqref{eq:hist-parity-center-law}.  The standard VFE gap identity gives the
+tight posterior value \(-\log P(O=1)=\log2\).  Every posterior one-bit
+marginal is uniform, so its product lift is \(U\), and
+\begin{equation}
+-\E_U\log K_{\rm hyp}(1\mid X)
+=\log2-\frac12\log(1-c^2),
+\label{eq:hist-parity-uniform-vfe}
+\end{equation}
+because the two parities have equal \(U\)-mass.  This proves
+\eqref{eq:hist-parity-product-lift-excess}.  \(\square\)
+
+The hyperedge kernel in \eqref{eq:hist-parity-hyperedge-kernel} is supplied
+generative data.  No derivation from pairwise locality, conditional
+independence, autonomous agency, or a canonical agent inventory is claimed.
+No within-pair belief--model swap is used as a universal typed symmetry.
+\status{NOT-CLAIMED}
+
+The finite group action above supplies no principal \(\GL(K)\) action, Lie
+algebra, connection, parallel transport, or holonomy.  Promoting \(\kappa\)
+from fixed relational data to a variable would require typing it as an
+interaction state and then proving identifiability and the rank of the
+augmented statistical model.  Those structures do not follow from the parity
+formula.  \status{NOT-CLAIMED}
+
+\openproblemheading{Scope beyond the finite parity witness}{open:hist-parity-lift-scope}
+\Cref{thm:hist-three-agent-parity-lift} closes one finite categorical
+right-inverse instance.  Existence for arbitrary paired-joint marginal
+families, canonical lift selection, preservation by coarse graining,
+equivariance under independent odd relabelings or a \(\GL(K)\) action, an
+intervention identity, a continuum or section-space lift, physical geometry,
+physical time, units, and renormalization remain open.  Closing any one of
+these requires a construction in its declared category and proof of the
+corresponding normalization, compatibility, and regularity conditions; the
+one-dimensional parity line inside one finite Frechet fiber supplies none of
+those general results.  \status{OPEN}
 
 The Fisher natural gradient is characterized by
 \begin{equation}

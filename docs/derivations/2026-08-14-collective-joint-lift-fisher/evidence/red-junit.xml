@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="5" time="0.072" timestamp="2026-08-14T00:25:52.394634-05:00" hostname="DESKTOP-RT15E78"><testcase classname="tests.test_collective_joint_lift_witness" name="test_all_63_proper_marginals_are_product" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'">def test_all_63_proper_marginals_are_product() -&gt; None:
+&gt;       module = _load_witness()
+                 ^^^^^^^^^^^^^^^
+
+tests\test_collective_joint_lift_witness.py:28:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_collective_joint_lift_witness.py:23: in _load_witness
+    specification.loader.exec_module(module)
+&lt;frozen importlib._bootstrap_external&gt;:755: in exec_module
+    ???
+&lt;frozen importlib._bootstrap_external&gt;:892: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x0000023C78FAFE30&gt;
+path = 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'
+
+&gt;   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'
+
+&lt;frozen importlib._bootstrap_external&gt;:950: FileNotFoundError</failure></testcase><testcase classname="tests.test_collective_joint_lift_witness" name="test_paired_complements_are_equivariant_but_odd_flip_is_not" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'">def test_paired_complements_are_equivariant_but_odd_flip_is_not() -&gt; None:
+&gt;       module = _load_witness()
+                 ^^^^^^^^^^^^^^^
+
+tests\test_collective_joint_lift_witness.py:50:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_collective_joint_lift_witness.py:23: in _load_witness
+    specification.loader.exec_module(module)
+&lt;frozen importlib._bootstrap_external&gt;:755: in exec_module
+    ???
+&lt;frozen importlib._bootstrap_external&gt;:892: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x0000023C78FAFB30&gt;
+path = 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'
+
+&gt;   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'
+
+&lt;frozen importlib._bootstrap_external&gt;:950: FileNotFoundError</failure></testcase><testcase classname="tests.test_collective_joint_lift_witness" name="test_exact_center_fisher_and_residual" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'">def test_exact_center_fisher_and_residual() -&gt; None:
+&gt;       module = _load_witness()
+                 ^^^^^^^^^^^^^^^
+
+tests\test_collective_joint_lift_witness.py:92:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_collective_joint_lift_witness.py:23: in _load_witness
+    specification.loader.exec_module(module)
+&lt;frozen importlib._bootstrap_external&gt;:755: in exec_module
+    ???
+&lt;frozen importlib._bootstrap_external&gt;:892: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x0000023C7904A6F0&gt;
+path = 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'
+
+&gt;   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'
+
+&lt;frozen importlib._bootstrap_external&gt;:950: FileNotFoundError</failure></testcase><testcase classname="tests.test_collective_joint_lift_witness" name="test_hyperedge_record_and_block_local_global_identity" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'">def test_hyperedge_record_and_block_local_global_identity() -&gt; None:
+&gt;       module = _load_witness()
+                 ^^^^^^^^^^^^^^^
+
+tests\test_collective_joint_lift_witness.py:106:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_collective_joint_lift_witness.py:23: in _load_witness
+    specification.loader.exec_module(module)
+&lt;frozen importlib._bootstrap_external&gt;:755: in exec_module
+    ???
+&lt;frozen importlib._bootstrap_external&gt;:892: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x0000023C7904AF30&gt;
+path = 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'
+
+&gt;   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'
+
+&lt;frozen importlib._bootstrap_external&gt;:950: FileNotFoundError</failure></testcase><testcase classname="tests.test_collective_joint_lift_witness" name="test_json_output_is_deterministic" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'">capsys = &lt;_pytest.capture.CaptureFixture object at 0x0000023C78FA3770&gt;
+
+    def test_json_output_is_deterministic(capsys) -&gt; None:
+&gt;       module = _load_witness()
+                 ^^^^^^^^^^^^^^^
+
+tests\test_collective_joint_lift_witness.py:137:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_collective_joint_lift_witness.py:23: in _load_witness
+    specification.loader.exec_module(module)
+&lt;frozen importlib._bootstrap_external&gt;:755: in exec_module
+    ???
+&lt;frozen importlib._bootstrap_external&gt;:892: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x0000023C7904AED0&gt;
+path = 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'
+
+&gt;   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\chris and christine\\Desktop\\MultiAgentELBO\\.superpowers\\worktrees\\MultiAgentELBO-collective-joint-lift-20260814\\docs\\derivations\\2026-08-14-collective-joint-lift-fisher\\evidence\\exact_collective_witness.py'
+
+&lt;frozen importlib._bootstrap_external&gt;:950: FileNotFoundError</failure></testcase></testsuite></testsuites>

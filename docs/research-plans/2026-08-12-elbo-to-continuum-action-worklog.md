@@ -2835,3 +2835,110 @@ controls. A new tracked-Markdown hygiene test also rejects forbidden C0 bytes; t
 `\beta`, `\times`, `\alpha`, `\to`, `D_{\rm KL}`, and `w_{\rm out}` sequences in the affected
 records were repaired. Do not publish a new HEAD, ledger status, or aggregate test count until the
 final source revision is fixed and the machine-readable verification pass is rerun against it.
+
+---
+
+## 6. 2026-08-14 governing correction -- finite collective parity lift
+
+This dated section supersedes conflicting readings elsewhere in this worklog but does not rewrite the
+historical investigation. The new result closes one finite categorical right-inverse instance. It
+does not close the general joint-lift, continuum, physicalization, or renormalization programs.
+
+### 6.1 Construction, exact marginal lift, and symmetry boundary
+
+Index three agents with two typed binary channels each, so \(x,\theta\) have six coordinates, and set
+
+\[
+p_0(x;\theta)=\prod_i\theta_i^{x_i}(1-\theta_i)^{1-x_i},\qquad
+D(\theta)=\prod_i\theta_i(1-\theta_i),\qquad
+\chi(x)=(-1)^{\sum_i x_i}.
+\]
+
+For fixed \(|\kappa|<1\),
+
+\[
+p_\kappa(x;\theta)=p_0(x;\theta)+\kappa\chi(x)D(\theta)
+\]
+
+is strictly positive because \(p_0/D>1\) atomwise, and it is normalized because the parity term sums
+to zero. Summing out any nonempty coordinate set also kills the parity term, so every proper marginal
+is exactly the corresponding product marginal. The map from \(\theta\) to \(p_\kappa\) is therefore a
+smooth right inverse of the six one-bit marginal map; differentiating the right-inverse identity
+proves it is an immersion. At fixed marginals, the admissible Frechet fiber has dimension
+\(63-6=57\), while varying \(\kappa\) gives only one parity line. Pairwise independence therefore
+does not force a product joint, but this control does not construct arbitrary paired-joint laws.
+
+The exact declared symmetry is simultaneous complement of both typed channels of any agent, together
+with typed permutations of agents. A single-channel complement reverses parity and sends
+\(\kappa\mapsto-\kappa\), so independent odd complements require \(\kappa\) to be a pseudoscalar.
+No within-pair belief--model swap is used as a universal typed symmetry. This finite relabeling action
+supplies no \(GL(K)\) action, Lie algebra, connection, parallel transport, or holonomy.
+
+### 6.2 Agent-block VFE and the score residual
+
+For any one two-channel agent block, fixing the four outside parameters fixes its outside marginal.
+The positive conditional obtained from \(p_\kappa\) therefore satisfies the exact local--global VFE
+identity: the global VFE difference between any two block settings equals the outside expectation of
+their conditional agent-block VFE difference. Differentiating the finite identity gives equality of
+the corresponding global and outside-averaged conditional derivatives for every block tangent. This
+is objective compatibility for a fixed outside law, not an intervention identity, autonomous-agent
+theorem, or convergence result.
+
+For a regular joint family with joint score \(L\), marginal scores
+\(L_i=\mathbb E[L\mid Y_i]\), residual \(R=L-\sum_iL_i\), and fixed weights, define
+
+\[
+K=\mathbb E[RR^T],\qquad
+C=\sum_{i\ne j}\mathbb E[L_iL_j^T],\qquad
+G_w=\sum_iw_iG_i.
+\]
+
+Then the exact identity and its equality gate are
+
+\[
+G_J-G_w=K-C+\sum_i(1-w_i)G_i,
+\]
+
+with \(G_J=G_w\) on a declared tangent subspace exactly when the bilinear restriction of the
+right-hand side vanishes there. In the parity family every pair is independent, so \(C=0\).
+An atomwise comparison proves \(K\succ0\) for \(\kappa\ne0\). At
+\(\theta_i=1/2\), write \(c=\kappa/64\); then
+
+\[
+G_J=\frac{4}{1-c^2}I_6,\qquad
+G_J-\sum_iG_i=\frac{4c^2}{1-c^2}I_6.
+\]
+
+At \(\kappa=1/2\) the latter is \(4I_6/16383\). On the full tangent,
+\(G_J=G_w\) exactly when every \(w_i=1/(1-c^2)\); unit weights agree exactly at
+\(\kappa=0\). This positive ordering is not general: the older two-bit lift has
+\(63^{-1}\left(\begin{smallmatrix}4&-32\\-32&4\end{smallmatrix}\right)\) as its
+joint-minus-product Fisher difference, with one positive and one negative eigenvalue.
+
+### 6.3 Supplied hyperedge record and retained open obligations
+
+At the symmetric point, the uniform latent prior and supplied record kernel
+
+\[
+K_{\rm hyp}(1\mid x)=\frac12(1+c\chi(x)),\qquad
+K_{\rm hyp}(0\mid x)=\frac12(1-c\chi(x))
+\]
+
+give evidence \(1/2\) and posterior exactly \(p_\kappa\). The posterior VFE is the tight value
+\(\log2\). The product lift of the six uniform one-bit marginals is the uniform prior and has exact
+excess
+
+\[
+-\frac12\log(1-c^2).
+\]
+
+This kernel is supplied three-agent hyperedge data. It is not derived from pairwise locality,
+conditional independence, or canonical agency. The construction keeps \(\kappa\) fixed as relational
+or nomological data; promoting it requires a declared interaction-state type and separate
+identifiability and augmented-rank checks.
+
+The remaining open obligations are arbitrary-family lift existence, canonical lift selection,
+preservation under coarse graining, independent odd relabeling without a pseudoscalar interaction
+coordinate, \(GL(K)\) covariance, interventions, autonomous agency, a section-space or continuum
+law, physical geometry, physical time, units, and renormalization. The finite parity witness supplies
+none of those closures.

@@ -1,0 +1,91 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+  "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+  "mechanism_families": [
+    {
+      "family_id": "PARITY-HOEFFDING-LIFT",
+      "core_mechanism": "Add the top-order parity character multiplied by the full Bernoulli variance product to the product law.",
+      "target_obligation_ids": ["positive-normalized-lift", "all-proper-marginals", "right-inverse-immersion"],
+      "representation": "A polynomial map from (0,1)^6 into the 64-outcome simplex interior.",
+      "invariant_or_obstruction": "Summing any omitted bit annihilates parity, so every proper marginal forgets kappa.",
+      "obligations": ["Factor every atom for strict positivity.", "Prove all 63 proper subset marginals.", "Derive rank from the extraction right inverse."],
+      "bridge": "Singleton extraction composed with the lift is the identity on the open parameter cube.",
+      "failure_test": "Any nonpositive atom, nonunit mass, surviving proper-marginal parity term, or rank loss rejects the family.",
+      "verified_results": ["Strict positivity and normalization.", "All proper marginals are product.", "Smooth right inverse and rank-six immersion."],
+      "open_gaps": ["No section-level rule selects kappa."],
+      "novelty_fingerprint": "top parity character + Bernoulli variance product + proper-marginal annihilation + right-inverse rank",
+      "disposition": "accepted"
+    },
+    {
+      "family_id": "DECLARED-FINITE-RELABELINGS",
+      "core_mechanism": "Track the parity character under simultaneous sample/parameter complements and explicitly admitted coordinate relabelings.",
+      "target_obligation_ids": ["symmetry-boundary"],
+      "representation": "Eight paired complements, type-compatible agent-pair permutations, and accidental toy-coordinate swaps tracked separately.",
+      "invariant_or_obstruction": "Even complements preserve chi; odd complements reverse chi and therefore reverse the interaction sign.",
+      "obligations": ["Prove paired-complement covariance.", "Separate type-compatible pair permutations from accidental within-pair toy symmetries.", "Give the scalar odd-flip negative control and pseudoscalar repair."],
+      "bridge": "A pseudoscalar declaration extends covariance by sending kappa to -kappa under odd flips.",
+      "failure_test": "A fixed nonzero scalar-kappa odd-flip equality or a failed paired equality rejects the classification.",
+      "verified_results": ["Exact paired-complement equivariance and finite-relabeling classification with sharp odd-flip boundary."],
+      "open_gaps": ["No larger continuum or GL(K) gauge action is supplied."],
+      "novelty_fingerprint": "finite parity representation + paired even complements + declared relabelings + pseudoscalar obstruction",
+      "disposition": "accepted"
+    },
+    {
+      "family_id": "SCORE-PROJECTION-RESIDUAL",
+      "core_mechanism": "Decompose the joint score into marginal Bernoulli scores plus a residual and retain every signed cross term before specializing.",
+      "target_obligation_ids": ["joint-fisher-decomposition", "parity-residual-positive", "center-fisher", "weighted-marginal-gate"],
+      "representation": "Six joint score functions in finite L2(Q_kappa).",
+      "invariant_or_obstruction": "Pairwise independence and the score projection identity kill the signed cross terms only in the six-bit parity family.",
+      "obligations": ["Write the unsimplified matrix formula.", "Prove residual linear independence for kappa nonzero.", "Compute the exact center matrix."],
+      "bridge": "The residual Gram matrix is the exact lift-dependent Fisher contribution after the parity-family orthogonality proof.",
+      "failure_test": "A nonzero residual null vector or a mismatch at the center rejects the theorem.",
+      "verified_results": ["General signed formula.", "Positive-definite six-bit residual for nonzero kappa.", "Exact center metric and residual."],
+      "open_gaps": ["The positive residual is not universal across other lift families."],
+      "novelty_fingerprint": "joint-score residual + signed cross terms + pairwise projection orthogonality + residual Gram PD",
+      "disposition": "accepted"
+    },
+    {
+      "family_id": "FINITE-KL-DISINTEGRATION",
+      "core_mechanism": "Disintegrate recognition and target over a fixed outside block and cancel their common outside marginal term.",
+      "target_obligation_ids": ["fixed-outside-vfe"],
+      "representation": "Strictly positive finite laws on a two-bit agent block times a four-bit outside configuration.",
+      "invariant_or_obstruction": "The global difference equals the outside-weighted conditional local difference only while the outside marginal is fixed.",
+      "obligations": ["Prove the exact difference.", "Differentiate along normalized conditional tangents.", "State coherent target pushforward for covariance."],
+      "bridge": "The finite KL chain rule identifies the precise local coordinate variation of the global VFE.",
+      "failure_test": "A fixed-outside finite counterexample to either equality rejects the family.",
+      "verified_results": ["Exact local/global difference and differential under fixed outside marginal."],
+      "open_gaps": ["Changing the outside marginal adds its own KL and differential terms."],
+      "novelty_fingerprint": "agent-block disintegration + common outside marginal + conditional KL difference + tangent identity",
+      "disposition": "accepted"
+    },
+    {
+      "family_id": "DECLARED-HYPEREDGE-RECORD",
+      "core_mechanism": "Use one normalized binary record kernel with a six-bit parity likelihood term.",
+      "target_obligation_ids": ["hyperedge-record", "pairwise-record-cancellation", "lift-dependence-boundaries"],
+      "representation": "Uniform prior on 64 states and one declared binary hyperedge record.",
+      "invariant_or_obstruction": "The posterior interaction is fixed by the declared joint kernel, not by pairwise sections or pairwise locality.",
+      "obligations": ["Compute evidence and posterior.", "Compute both lift VFEs.", "Construct the same-marginal cancelling record kernel.", "Separate the hyperedge declaration from pairwise factorization."],
+      "bridge": "At the center, c=kappa/64 maps the record posterior exactly to Q_kappa.",
+      "failure_test": "Failed kernel normalization, evidence, posterior, or VFE expression rejects the witness.",
+      "verified_results": ["Evidence one half, posterior Q_kappa, correlated VFE log 2, and exact product excess."],
+      "open_gaps": ["No pairwise-local derivation or physical interaction claim follows."],
+      "novelty_fingerprint": "uniform prior + binary parity likelihood + exact posterior lift + VFE selection boundary",
+      "disposition": "accepted"
+    },
+    {
+      "family_id": "PAIRWISE-LOCAL-SELECTION",
+      "core_mechanism": "Attempt to infer the six-bit interaction or a preferred joint kernel from six singleton sections alone.",
+      "target_obligation_ids": ["lift-dependence-boundaries"],
+      "representation": "Only six singleton Bernoulli marginals grouped into three agent pairs, without a joint record kernel or selection axiom.",
+      "invariant_or_obstruction": "All singleton marginals are independent of kappa, so the retained data are noninjective in the lift coordinate.",
+      "obligations": ["Supply an extra naturality, likelihood, or optimization principle and prove uniqueness."],
+      "bridge": "None under the frozen premises.",
+      "failure_test": "Two distinct kappa values with identical singleton sections defeat selection from those sections alone.",
+      "verified_results": [],
+      "open_gaps": ["No canonical lift-selection theorem is available."],
+      "novelty_fingerprint": "singleton sections only + missing joint kernel + nonidentifiable parity coordinate",
+      "disposition": "refuted under frozen data"
+    }
+  ]
+}

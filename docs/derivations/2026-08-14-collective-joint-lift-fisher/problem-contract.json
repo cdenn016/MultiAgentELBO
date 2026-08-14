@@ -1,0 +1,67 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+  "target_digest": "ebf8914b08524414858dcfd879ec3b08e5abd21bb0c9f8f36feb64d97f1cd7f2",
+  "target": {
+    "statement": "Construct and classify a finite collective joint-law lift for three paired binary agents: prove that Q_kappa(x)=P_theta(x)+kappa chi(x) D(theta), on x in {0,1}^6, theta in (0,1)^6, and fixed |kappa|<1, is a strictly positive normalized smooth lift whose every proper marginal is the corresponding product marginal; identify exactly its paired-complement and explicitly admitted finite-coordinate-relabeling boundary; prove its smooth right-inverse, immersion, Fisher rank, radical, and quotient statements; prove the fixed-outside agent-block local/global VFE difference and differential; derive the general signed joint-score residual formula and the parity-family positive-definite residual theorem, including the exact center metric and weighted-marginal equality gate; construct the declared three-agent hyperedge record witness; and prove by explicit boundaries and a two-bit counterexample that kappa, full-joint VFE, and full-joint Fisher are extra lift-dependent structure rather than consequences of the six singleton Bernoulli sections grouped into three agent pairs.",
+    "kind": "MATHEMATICAL",
+    "quantifier_class": "MIXED",
+    "quantifiers": "For every theta in (0,1)^6 and every fixed real kappa with |kappa|<1, the six-bit construction and its proper-marginal, smoothness, right-inverse, immersion, symmetry-boundary, Fisher, and residual conclusions hold. For every paired agent block A, every strictly positive normalized target T, and every pair of strictly positive normalized recognition laws Q and Q' with a common outside marginal, the stated finite VFE difference identity holds; its differential holds for every normalized fixed-outside conditional tangent. There exists the displayed binary-record hyperedge kernel with posterior Q_kappa at theta=(1/2,...,1/2), and there exists the displayed two-bit lift whose Fisher correction relative to the product marginal metric is indefinite. Quotient-manifold conclusions are only conditional on the separately stated constant-rank, integrability, regular-leaf-space, and basicness hypotheses.",
+    "domains": [
+      "The finite sample space Omega={0,1}^6 with the full sigma-algebra and agent blocks A1={1,2}, A2={3,4}, A3={5,6}.",
+      "The open parameter cube Theta=(0,1)^6 and fixed interaction scalar kappa in (-1,1).",
+      "The interior Delta_63^o of the categorical simplex on Omega, with counting measure.",
+      "Strictly positive normalized finite target and recognition laws for VFE and Fisher calculations.",
+      "The binary record space Y={0,1} for the declared hyperedge observation kernel."
+    ],
+    "codomains": [
+      "Strictly positive normalized joint laws on Omega.",
+      "The six singleton Bernoulli parameters extracted from a joint law.",
+      "Finite real variational free energies and symmetric positive-definite Fisher matrices on the regular six-parameter lift.",
+      "Positive-semidefinite pullback tensors and their explicitly qualified quotients for secondary section maps."
+    ],
+    "regularity": "All displayed finite laws and kernels are normalized and strictly positive on the open domains. The lift is polynomial and therefore smooth. Fisher derivatives are finite sums over a fixed sample space; all scores are square-integrable and differentiation commutes with summation. VFE differentials are taken only through strictly positive laws along normalized finite tangents.",
+    "measures": [
+      "Counting measure on Omega and on the record space Y.",
+      "Normalized categorical probability laws Q_kappa, targets T, and recognition laws Q and Q'.",
+      "Uniform prior Pi(x)=1/64 in the hyperedge witness."
+    ],
+    "boundary_conditions": [
+      "Theta is open; theta_i=0 or 1 is excluded from the Fisher and immersion theorem.",
+      "The interaction bound is strict, |kappa|<1; no closed-boundary positivity claim is made.",
+      "Fixed-target VFE covariance requires the target to be pushed forward coherently with recognition.",
+      "Quotient-manifold claims stop at the stated regularity boundary."
+    ],
+    "symmetries": [
+      "The eight paired two-bit complements, acting simultaneously on sample and matching parameter coordinates while leaving scalar kappa fixed.",
+      "Agent-pair permutations only when the paired agent and channel types are identified; within-pair coordinate swaps are accidental symmetries of the toy formula and are not universally typed.",
+      "An odd coordinate complement is not a symmetry for nonzero scalar kappa; it becomes equivariant only if kappa is declared a pseudoscalar and changes sign.",
+      "No GL(K), continuum gauge, spacetime, or physical symmetry is asserted."
+    ],
+    "equivalence": "Joint laws are compared by equality after the declared simultaneous finite relabeling. Section equivalence retains only the six singleton Bernoulli marginals, grouped into three declared agent pairs, and intentionally forgets the six-bit interaction coordinate kappa; it does not retain three arbitrary two-bit joint marginals. VFE covariance compares both recognition and target under the same pushforward. No observational equivalence is promoted to ontological or agency identity.",
+    "premises": [
+      "P_theta is the six-coordinate product Bernoulli law, D(theta)=product_i theta_i(1-theta_i), and chi(x)=(-1)^(sum_i x_i).",
+      "The extraction map records singleton probabilities E_i(Q)=sum_x x_i Q(x).",
+      "For the general residual formula, q_theta is a strictly positive smooth finite joint family with singleton marginals Bernoulli(theta_i).",
+      "For the parity residual simplification, every two-coordinate marginal is the product Bernoulli marginal, as derived from the construction.",
+      "The hyperedge kernel is declared directly as joint three-agent record structure and is not inferred from pairwise locality."
+    ],
+    "modeling_postulates": [
+      "Choosing a nonzero value of kappa is additional joint-lift model structure; the six singleton sections do not select it.",
+      "Calling the declared six-bit record kernel a three-agent hyperedge is a finite graphical-model declaration, not a claim of physical interaction, agency, geometry, or time."
+    ],
+    "search_priors": [
+      "SEARCH_PRIOR_AFFIRMATIVE: seek the strongest exact finite collective lift and shared-Fisher theorem while retaining every lift-selection and physicalization obstruction."
+    ],
+    "permitted_theorems": [
+      "Finite-sum normalization, marginalization, differentiation, and score identities.",
+      "The finite relative-entropy chain rule and nonnegativity of KL divergence.",
+      "Positive definiteness of the categorical Fisher metric on the interior simplex tangent space.",
+      "The inverse-function rank implication dE composed with dL equals the identity.",
+      "Sylvester's criterion only as executable corroboration; the general residual theorem is proved by linear independence of residual score functions."
+    ],
+    "negative_certificate_kind": "COUNTEREXAMPLE",
+    "falsification_criterion": "A single theta and fixed |kappa|<1 with a nonpositive atom, failed normalization, nonproduct proper marginal, failed declared equivariance, rank loss, incorrect VFE identity, or incorrect Fisher formula refutes the corresponding universal conjunct. Failure of the displayed record kernel to normalize or recover Q_kappa refutes that existential witness. A positive-semidefinite Fisher correction for the displayed two-bit family refutes the signed/indefinite boundary witness.",
+    "literature_policy": "This is a self-contained finite construction. No external novelty or priority claim is made. Only elementary finite probability, KL, and Fisher identities are used, each derived in the evidence artifacts; no external source is load-bearing."
+  }
+}
