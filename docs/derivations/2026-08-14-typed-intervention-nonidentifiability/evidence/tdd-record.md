@@ -90,10 +90,60 @@ The RED XML was decoded as UTF-8, every CRLF or bare CR was changed to LF, space
 
 The live test and package snapshot are byte-identical. For all three artifacts, the raw LF bytes and the configured Git-clean-filter bytes describe the same content; the Git blob identifiers above are the repository object identities after the explicit `text eol=lf` rules.
 
-## GREEN and mutation status
+## GREEN command and result
 
-GREEN, fresh-process witness execution, and all specified mutants are intentionally not run in Task 1. Task 2 must create the production witness only after this committed RED checkpoint, retain the frozen test bytes, record a zero-failure GREEN JUnit, and preserve byte-identical source restoration around every mutant.
+After contract commit `28077de`, the witness was evaluated from the isolated repository root with the same CPU-only deterministic environment:
+
+```powershell
+$env:CUDA_VISIBLE_DEVICES='-1'
+$env:PYTHONHASHSEED='0'
+Remove-Item Env:MULTIAGENTELBO_RUN_CUDA_TESTS -ErrorAction SilentlyContinue
+Remove-Item Env:VFE3_TEST_DEVICE -ErrorAction SilentlyContinue
+Remove-Item Env:CUBLAS_WORKSPACE_CONFIG -ErrorAction SilentlyContinue
+C:\Python314\python.exe -m pytest tests\test_typed_intervention_semantics_witness.py -q --basetemp=C:\tmp\maelbo-typed-intervention-green-final-20260814 --junitxml=docs\derivations\2026-08-14-typed-intervention-nonidentifiability\evidence\green-junit.xml
+```
+
+Process exit status: `0`.
+
+Machine-derived JUnit totals:
+
+- tests: 18
+- failures: 0
+- errors: 0
+- skipped: 0
+- time: 7.055 seconds
+
+The final test includes two in-process `main()` calls, one fresh-process witness execution, exact stdout byte equality, and live-test/snapshot byte equality. The fresh process exited zero, emitted no stderr, and produced the same single-LF ASCII document.
+
+### Final GREEN byte identities
+
+| Artifact | Filesystem SHA-256 | Filtered Git blob | Bytes | CR bytes | UTF-8 BOM |
+| --- | --- | --- | ---: | ---: | --- |
+| `evidence/exact_typed_intervention_witness.py` | `114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985` | `6729f8f0ea075f1f1dc4c0872ccf23a3b609fb49` | 22929 | 0 | no |
+| `evidence/green-junit.xml` | `4ab838c07ac466bc11016df695b4883eb3a2bf01b599a041f9d01713695c6ff5` | `2f5ca7aeb41348e64c6b75a384bba4a48aecdfe2` | 3078 | 0 | no |
+| `tests/test_typed_intervention_semantics_witness.py` | `0df74569948a70df5100f3d006b6d7b6d97da1f7a11a6cdd028e662a489ce73e` | `a1148f6309d6240434d576d9c47a3171675e71d9` | 39241 | 0 | no |
+| `evidence/test_typed_intervention_semantics_witness.snapshot.py` | `0df74569948a70df5100f3d006b6d7b6d97da1f7a11a6cdd028e662a489ce73e` | `a1148f6309d6240434d576d9c47a3171675e71d9` | 39241 | 0 | no |
+
+## Mutation evidence
+
+Nine reversible mutants were applied separately to the final source. Every run used the focused 18-test file, exited `1`, reported at least one test failure, and reported zero errors and zero skips. Every reversal restored witness SHA-256 `114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985` exactly before the next mutation.
+
+| Mutant | Mutant SHA-256 | Failures | JUnit SHA-256 |
+| --- | --- | ---: | --- |
+| wrong channel composition | `db24dfb9b853805ac9bc6762bc5e5559291d41eace5ecf041481a5ee095dd84b` | 5 | `9b8a67cc0f0c4da324e58dbf0ba5cacc92d4c1bd74808297884125871d222551` |
+| ignored `b` | `9e329bbf74b211ed678ee7bbd06cd74b5562c628920754f7b897a943f35ead37` | 9 | `4516cafe6bec2836759eff889bf109c89921e5a5487709ae69580166303361a3` |
+| omitted left/right context composition | `6e266140812bb8e052a30826befcbc4cfac5790720d788539f03db8a3f870983` | 2 | `3f7c2fecbde225c1934af5575efd69f2b9d71ed30330f70167bac391913f0eda` |
+| altered response-image entry | `8f5666cdb4e02e98d03485be3fb7e6bd728e7cdaec92a15e037e7e2346e69729` | 2 | `9140f3fa54bb24ff81408e4e0cd76c3b3f34e2cfc32d1a79ba7785a40bfec241` |
+| collapsed class multiplication | `7e3125519bc9d64088f5bb1e51bfa8b8e4581ceb9e3cec2ab393d451309e1690` | 6 | `4a62f404cb6bcd8530951c50ab416d2a09a0660f7381cff346c36d9608349d65` |
+| equalized diagnostic contrasts | `c82958c6623855861febf42eafdff4cd49da87fe9705760a3f98c03cb9e7946c` | 1 | `ae0899b8266290dfdb87c648a74c662d71b885315447ae0e9397689cd17b858b` |
+| unsorted nested JSON | `c97edcc1eff22642afb171584768165fee2b2b1e9dcefbcbdd778cda6da6d19f` | 1 | `0daeb88fb744ae6b658825862af6c841b2977d8b24765dec12659d0725b13111` |
+| direct response semantics | `3388a07264bd55afaba06c2aeb7cf47b26490f5191624757ea885498d0e38ad4` | 2 | `046c19d7c287dc894df313af2932a86783ba75b093b607bcd58993ff3bd28a5f` |
+| direct/null raw invariants | `4bc41723bb9a101ed37bbd328982e75aaf9717145ce4432fb4521a3136822e7a` | 2 | `957f5b8a58706191c769ee57e32b2a47f641eaf6d610e22753ec07712f0cb19f` |
+
+`evidence/mutations/mutation-record.json` records each exact command, semantic edit, process exit, machine-derived totals, failing test identifiers, JUnit location and SHA-256, and pre/mutant/post source hashes. Its SHA-256 is `e03fccd021e623deb40e0013590a0f8a376f73f44126db4541495fd2689dd1fc`, its filtered Git blob is `1fdfa2562ae6a339426c64c76f5117e02ef52501`, and all nine recorded bindings passed an independent standard-library parser check.
+
+The JSON mutant disables both recursive dictionary ordering and `json.dumps` key sorting. Disabling only the serializer sort remains behaviorally sorted because the witness independently sorts nested dictionaries before serialization; the combined mutant removes both safeguards and is killed by the canonical-byte test.
 
 ## Evidence boundary
 
-This RED run verifies only that the exact executable contract fails for the intended missing implementation. It is not numerical evidence for any mathematical theorem and does not establish the target counterexample, reduced nonisomorphism, or no-recovery result.
+The RED establishes that the frozen executable contract reaches the missing implementation boundary. GREEN and mutation evidence establish the current exact program behavior for the bound source and test bytes. They corroborate finite tables and counterexample data, but they are not a mathematical derivation and do not by themselves prove reduced nonisomorphism or the no-recovery theorem.

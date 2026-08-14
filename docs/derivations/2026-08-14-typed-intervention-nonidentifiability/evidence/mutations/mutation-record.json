@@ -1,0 +1,169 @@
+{
+  "baseline_witness_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "-1",
+    "PYTHONHASHSEED": "0",
+    "interpreter": "C:\\Python314\\python.exe"
+  },
+  "focused_test_sha256": "0df74569948a70df5100f3d006b6d7b6d97da1f7a11a6cdd028e662a489ce73e",
+  "junit_normalization": "UTF-8 without BOM; CRLF and bare CR changed to LF; spaces and tabs stripped only at line ends",
+  "mutations": [
+    {
+      "command": "C:\\Python314\\python.exe -m pytest tests\\test_typed_intervention_semantics_witness.py -q --tb=no --basetemp=C:\\tmp\\maelbo-typed-intervention-mut-wrong-channel-final-20260814 --junitxml=docs\\derivations\\2026-08-14-typed-intervention-nonidentifiability\\evidence\\mutations\\wrong-channel-composition-junit.xml",
+      "description": "Replace a+b-2ab by a+b-ab in compose_bsc.",
+      "exit_status": 1,
+      "failing_tests": [
+        "test_direct_selector_matches_independent_literal_response_oracle",
+        "test_bsc_context_composition_and_validation_are_exact",
+        "test_all_nine_shared_boundary_intervention_tables_are_literal",
+        "test_same_signature_pair_has_frozen_passive_and_mediator_responses",
+        "test_main_json_is_recursive_exact_sorted_compact_and_stable"
+      ],
+      "id": "wrong-channel-composition",
+      "junit": "wrong-channel-composition-junit.xml",
+      "junit_sha256": "9b8a67cc0f0c4da324e58dbf0ba5cacc92d4c1bd74808297884125871d222551",
+      "mutant_sha256": "db24dfb9b853805ac9bc6762bc5e5559291d41eace5ecf041481a5ee095dd84b",
+      "post_restore_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "pre_mutation_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "totals": {"errors": 0, "failures": 5, "skipped": 0, "tests": 18}
+    },
+    {
+      "command": "C:\\Python314\\python.exe -m pytest tests\\test_typed_intervention_semantics_witness.py -q --tb=no --basetemp=C:\\tmp\\maelbo-typed-intervention-mut-ignored-b-final-20260814 --junitxml=docs\\derivations\\2026-08-14-typed-intervention-nonidentifiability\\evidence\\mutations\\ignored-b-junit.xml",
+      "description": "Use channel a in place of b for the split model's mediator-to-output kernel.",
+      "exit_status": 1,
+      "failing_tests": [
+        "test_joint_and_retained_laws_use_frozen_lexicographic_order",
+        "test_all_nine_shared_boundary_intervention_tables_are_literal",
+        "test_null_assignments_are_exhaustively_inert_in_all_27_contexts",
+        "test_null_two_sided_signatures_and_reduced_quotient_are_identical",
+        "test_same_signature_pair_has_frozen_passive_and_mediator_responses",
+        "test_reduced_experiments_match_all_frozen_classes_tables_and_hashes",
+        "test_full_response_images_do_not_match_under_any_boundary_relabeling",
+        "test_counterexample_record_is_transparent_and_independently_recomputed",
+        "test_main_json_is_recursive_exact_sorted_compact_and_stable"
+      ],
+      "id": "ignored-b",
+      "junit": "ignored-b-junit.xml",
+      "junit_sha256": "4516cafe6bec2836759eff889bf109c89921e5a5487709ae69580166303361a3",
+      "mutant_sha256": "9e329bbf74b211ed678ee7bbd06cd74b5562c628920754f7b897a943f35ead37",
+      "post_restore_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "pre_mutation_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "totals": {"errors": 0, "failures": 9, "skipped": 0, "tests": 18}
+    },
+    {
+      "command": "C:\\Python314\\python.exe -m pytest tests\\test_typed_intervention_semantics_witness.py -q --tb=no --basetemp=C:\\tmp\\maelbo-typed-intervention-mut-omitted-contexts-20260814 --junitxml=docs\\derivations\\2026-08-14-typed-intervention-nonidentifiability\\evidence\\mutations\\omitted-two-sided-context-junit.xml",
+      "description": "Evaluate the focal context without either left or right contextual composition.",
+      "exit_status": 1,
+      "failing_tests": [
+        "test_direct_selector_matches_independent_literal_response_oracle",
+        "test_null_two_sided_signatures_and_reduced_quotient_are_identical"
+      ],
+      "id": "omitted-two-sided-context",
+      "junit": "omitted-two-sided-context-junit.xml",
+      "junit_sha256": "3f7c2fecbde225c1934af5575efd69f2b9d71ed30330f70167bac391913f0eda",
+      "mutant_sha256": "6e266140812bb8e052a30826befcbc4cfac5790720d788539f03db8a3f870983",
+      "post_restore_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "pre_mutation_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "totals": {"errors": 0, "failures": 2, "skipped": 0, "tests": 18}
+    },
+    {
+      "command": "C:\\Python314\\python.exe -m pytest tests\\test_typed_intervention_semantics_witness.py -q --tb=no --basetemp=C:\\tmp\\maelbo-typed-intervention-mut-response-entry-20260814 --junitxml=docs\\derivations\\2026-08-14-typed-intervention-nonidentifiability\\evidence\\mutations\\altered-response-image-entry-junit.xml",
+      "description": "Replace the final reduced response entry by the identity response.",
+      "exit_status": 1,
+      "failing_tests": [
+        "test_direct_selector_matches_independent_literal_response_oracle",
+        "test_reduced_experiments_match_all_frozen_classes_tables_and_hashes"
+      ],
+      "id": "altered-response-image-entry",
+      "junit": "altered-response-image-entry-junit.xml",
+      "junit_sha256": "9140f3fa54bb24ff81408e4e0cd76c3b3f34e2cfc32d1a79ba7785a40bfec241",
+      "mutant_sha256": "8f5666cdb4e02e98d03485be3fb7e6bd728e7cdaec92a15e037e7e2346e69729",
+      "post_restore_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "pre_mutation_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "totals": {"errors": 0, "failures": 2, "skipped": 0, "tests": 18}
+    },
+    {
+      "command": "C:\\Python314\\python.exe -m pytest tests\\test_typed_intervention_semantics_witness.py -q --tb=no --basetemp=C:\\tmp\\maelbo-typed-intervention-mut-collapsed-multiplication-20260814 --junitxml=docs\\derivations\\2026-08-14-typed-intervention-nonidentifiability\\evidence\\mutations\\collapsed-class-multiplication-junit.xml",
+      "description": "Collapse every quotient product to class zero.",
+      "exit_status": 1,
+      "failing_tests": [
+        "test_every_selector_returns_declared_signature_and_experiment_schemas[direct]",
+        "test_every_selector_returns_declared_signature_and_experiment_schemas[split]",
+        "test_every_selector_returns_declared_signature_and_experiment_schemas[null]",
+        "test_direct_selector_matches_independent_literal_response_oracle",
+        "test_null_two_sided_signatures_and_reduced_quotient_are_identical",
+        "test_reduced_experiments_match_all_frozen_classes_tables_and_hashes"
+      ],
+      "id": "collapsed-class-multiplication",
+      "junit": "collapsed-class-multiplication-junit.xml",
+      "junit_sha256": "4a62f404cb6bcd8530951c50ab416d2a09a0660f7381cff346c36d9608349d65",
+      "mutant_sha256": "7e3125519bc9d64088f5bb1e51bfa8b8e4581ceb9e3cec2ab393d451309e1690",
+      "post_restore_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "pre_mutation_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "totals": {"errors": 0, "failures": 6, "skipped": 0, "tests": 18}
+    },
+    {
+      "command": "C:\\Python314\\python.exe -m pytest tests\\test_typed_intervention_semantics_witness.py -q --tb=no --basetemp=C:\\tmp\\maelbo-typed-intervention-mut-equalized-contrasts-20260814 --junitxml=docs\\derivations\\2026-08-14-typed-intervention-nonidentifiability\\evidence\\mutations\\equalized-diagnostic-contrasts-junit.xml",
+      "description": "Replace the right diagnostic total variation by the left diagnostic value.",
+      "exit_status": 1,
+      "failing_tests": [
+        "test_counterexample_record_is_transparent_and_independently_recomputed"
+      ],
+      "id": "equalized-diagnostic-contrasts",
+      "junit": "equalized-diagnostic-contrasts-junit.xml",
+      "junit_sha256": "ae0899b8266290dfdb87c648a74c662d71b885315447ae0e9397689cd17b858b",
+      "mutant_sha256": "c82958c6623855861febf42eafdff4cd49da87fe9705760a3f98c03cb9e7946c",
+      "post_restore_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "pre_mutation_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "totals": {"errors": 0, "failures": 1, "skipped": 0, "tests": 18}
+    },
+    {
+      "command": "C:\\Python314\\python.exe -m pytest tests\\test_typed_intervention_semantics_witness.py -q --tb=no --basetemp=C:\\tmp\\maelbo-typed-intervention-mut-unsorted-json-r2-20260814 --junitxml=docs\\derivations\\2026-08-14-typed-intervention-nonidentifiability\\evidence\\mutations\\unsorted-nested-json-junit.xml",
+      "description": "Disable both recursive dictionary sorting and json.dumps key sorting so nested insertion order leaks into the document.",
+      "exit_status": 1,
+      "failing_tests": [
+        "test_main_json_is_recursive_exact_sorted_compact_and_stable"
+      ],
+      "id": "unsorted-nested-json",
+      "junit": "unsorted-nested-json-junit.xml",
+      "junit_sha256": "0daeb88fb744ae6b658825862af6c841b2977d8b24765dec12659d0725b13111",
+      "mutant_sha256": "c97edcc1eff22642afb171584768165fee2b2b1e9dcefbcbdd778cda6da6d19f",
+      "post_restore_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "pre_mutation_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "totals": {"errors": 0, "failures": 1, "skipped": 0, "tests": 18}
+    },
+    {
+      "command": "C:\\Python314\\python.exe -m pytest tests\\test_typed_intervention_semantics_witness.py -q --tb=no --basetemp=C:\\tmp\\maelbo-typed-intervention-mut-direct-response-20260814 --junitxml=docs\\derivations\\2026-08-14-typed-intervention-nonidentifiability\\evidence\\mutations\\direct-response-semantics-junit.xml",
+      "description": "Use channel a directly as the direct selector's crossover instead of the composed channel.",
+      "exit_status": 1,
+      "failing_tests": [
+        "test_direct_selector_matches_independent_literal_response_oracle",
+        "test_all_nine_shared_boundary_intervention_tables_are_literal"
+      ],
+      "id": "direct-response-semantics",
+      "junit": "direct-response-semantics-junit.xml",
+      "junit_sha256": "046c19d7c287dc894df313af2932a86783ba75b093b607bcd58993ff3bd28a5f",
+      "mutant_sha256": "3388a07264bd55afaba06c2aeb7cf47b26490f5191624757ea885498d0e38ad4",
+      "post_restore_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "pre_mutation_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "totals": {"errors": 0, "failures": 2, "skipped": 0, "tests": 18}
+    },
+    {
+      "command": "C:\\Python314\\python.exe -m pytest tests\\test_typed_intervention_semantics_witness.py -q --tb=no --basetemp=C:\\tmp\\maelbo-typed-intervention-mut-raw-invariants-20260814 --junitxml=docs\\derivations\\2026-08-14-typed-intervention-nonidentifiability\\evidence\\mutations\\corrupt-direct-null-raw-invariants-junit.xml",
+      "description": "Delete the direct edge and the null auxiliary intervention target from the raw invariant records.",
+      "exit_status": 1,
+      "failing_tests": [
+        "test_raw_signature_and_all_binary_state_relabelings_are_controlled",
+        "test_main_json_is_recursive_exact_sorted_compact_and_stable"
+      ],
+      "id": "corrupt-direct-null-raw-invariants",
+      "junit": "corrupt-direct-null-raw-invariants-junit.xml",
+      "junit_sha256": "957f5b8a58706191c769ee57e32b2a47f641eaf6d610e22753ec07712f0cb19f",
+      "mutant_sha256": "4bc41723bb9a101ed37bbd328982e75aaf9717145ce4432fb4521a3136822e7a",
+      "post_restore_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "pre_mutation_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985",
+      "totals": {"errors": 0, "failures": 2, "skipped": 0, "tests": 18}
+    }
+  ],
+  "schema_version": "typed-intervention-mutation-evidence/v1"
+}
