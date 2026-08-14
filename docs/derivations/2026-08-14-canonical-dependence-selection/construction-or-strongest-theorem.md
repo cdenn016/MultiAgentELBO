@@ -47,7 +47,7 @@ and is then unique as a law relative to \((p,T,m)\). Its exact support is the in
 D(q\|p)=D(q\|q_{p,m})+D(q_{p,m}\|p).
 \]
 
-The selected law is analytic on each fixed relative-interior face stratum. It is equivariant only when the reference and complete constraint diagram are transported coherently. For full-support relative-interior singleton targets, full-table higher-order log-linear interactions are inherited from \(p\); at a boundary target the statement is restricted to the minimal-face support and contrasts through zero atoms are undefined. A product reference yields the product law, whereas a feasible correlated reference selects itself.
+The selected law is analytic on each fixed relative-interior face stratum. It is equivariant only when the reference and complete constraint diagram are transported coherently. For a positive reference and a full-support relative-interior singleton target, full-table higher-order log-linear interactions are inherited from \(p\); at a boundary target the statement is restricted to the minimal-face support and contrasts through zero atoms are undefined. A product reference yields the product law, whereas a feasible correlated reference selects itself.
 
 For a deterministic coarse map \(f:X\to Y\), reference \(p\), and \(r\ll f_\#p\), the unique KL-minimizing completion relative to \((f,p,r)\) is
 
