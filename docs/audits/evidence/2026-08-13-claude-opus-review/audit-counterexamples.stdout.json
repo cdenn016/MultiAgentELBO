@@ -1,0 +1,50 @@
+{
+  "curved_zero_mode": {
+    "lambda_min": -1.0093727113579085e-15,
+    "nonidentity_holonomy_residual": 0.8358573684315326,
+    "parallel_section_residual": 0.0
+  },
+  "dimension_not_sufficient_for_invertibility": {
+    "K": 2,
+    "d": 2,
+    "determinant": 0.0,
+    "induced_rank": 1
+  },
+  "fisher_kl_slot": {
+    "first_slot_hessian_error": 1.1630234119699068,
+    "second_slot_hessian_error": 1.3877787807814457e-17
+  },
+  "gamma_nontransitive_isometry": {
+    "fisher_pullback_residual": 1.1102230246251565e-16,
+    "shape_after": 2.3,
+    "shape_before": 2.3
+  },
+  "rank_two_positive_split": {
+    "correction_rank": 2,
+    "min_beta": 0.18181818181818182,
+    "min_prior": 0.16363636363636358,
+    "split_residual": 0.0
+  },
+  "regime_table_mismatch": {
+    "intended_asymmetry": 0.4796037173934117,
+    "intended_min_real_eigenvalue": 0.5822025680809417,
+    "outgoing_row_sums": [
+      1.953296759604802,
+      1.4762217623421354,
+      1.7307542903656148,
+      1.471411997171975
+    ],
+    "relative_operator_mismatch": 0.3705873571152344,
+    "source_asymmetry": 0.4598197340248062,
+    "source_min_real_eigenvalue": -0.3906813011399293
+  },
+  "support_scaled_prior": {
+    "chi_scaled_lambda_min": 0.0,
+    "zero_modes": 3
+  },
+  "weighted_rotation_cocycle": {
+    "max_cocycle_residual": 3.597533769998862e-16,
+    "max_cross_block_residual": 0.0,
+    "min_residual_prior_eigenvalue": 0.25
+  }
+}

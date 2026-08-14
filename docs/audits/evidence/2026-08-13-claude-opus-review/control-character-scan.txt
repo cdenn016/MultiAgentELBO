@@ -1,0 +1,6 @@
+target=docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md
+revision=f9ce06a5782dd5fd0392761cdd1872a983429326
+scan=bytes less than 0x20 excluding TAB, LF, CR
+count=1
+offset=70278 decimal=7 hex=0x07
+additional_rendering_issue=TAB bytes replace intended LaTeX escapes near lines 916 and 924-926

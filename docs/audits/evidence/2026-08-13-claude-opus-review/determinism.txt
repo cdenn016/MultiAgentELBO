@@ -1,0 +1,6 @@
+revision=f9ce06a5782dd5fd0392761cdd1872a983429326
+meta_agent_coherence_replay_equal=True
+shared_latent_coupling_replay_equal=True
+comparison=case-sensitive full-file text equality
+meta_agent_coherence_bytes=14692
+shared_latent_coupling_bytes=12236
