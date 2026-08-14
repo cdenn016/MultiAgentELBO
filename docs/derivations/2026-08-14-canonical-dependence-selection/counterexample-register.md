@@ -42,6 +42,20 @@ Full derivations and exact August 13/14 source dependencies: `evidence/recovery-
 
 Full derivations: `evidence/reference-relative-selection-proof.md`.
 
+## Fisher quotient and agentization controls
+
+| ID | Dropped hypothesis or overclaim | Exact witness | Consequence |
+| --- | --- | --- | --- |
+| CE-RADICAL-TARGET | \(\operatorname{rad}(\rho^*g)=\ker d\rho\) for every PSD target tensor | identity \(\rho:\mathbb R^2\to\mathbb R^2\), \(g=dx^2\) | \(d\rho^{-1}(\operatorname{rad}g)=\operatorname{span}\{\partial_y\}\) while \(\ker d\rho=0\); transversality of \(\operatorname{im}d\rho\) to \(\operatorname{rad}g\) is necessary |
+| CE-GLOBAL-QUOTIENT | a constant-rank radical bundle automatically defines a global quotient-manifold metric | on \(\mathbb T^2\), for irrational \(\alpha\), \(h=(dy-\alpha dx)^2\) has radical \(\operatorname{span}(\partial_x+\alpha\partial_y)\) with dense leaves and non-Hausdorff leaf space | constant rank and involutivity supply no simple Hausdorff quotient; a regular leaf space and basicness remain separate |
+| CE-PRESENTATION-POINT | one-point law/Fisher equality gives presentation quotient isometry | \(\operatorname{Ber}(1/2+t)\) and \(\operatorname{Ber}(1/2+2t)\) agree at \(t=0\) but have Fisher values 4 and 16 | the complete familywise commuting diagram and Fisher isometry are load-bearing |
+| CE-BLOCK-CROSS | a direct quotient split makes Fisher energy additive | \(\mathbb R^2=B_1\oplus B_2\) with Euclidean metric, \(B_1=\operatorname{span}(e_1)\), \(B_2=\operatorname{span}(e_1+e_2)\) | the direct split has a nonzero cross term; pairwise Fisher orthogonality is additionally necessary |
+| CE-BLOCK-BASIC | smooth pointwise direct and orthogonal blocks descend along retained-law fibers | \(\rho(x,y,z)=(x,y)\); \(B_1=\operatorname{span}(\cos z\,\partial_x+\sin z\,\partial_y,\partial_z)\), \(B_2=\operatorname{span}(-\sin z\,\partial_x+\cos z\,\partial_y)\) | quotient block images rotate with \(z\) over one retained law and are not basic |
+| CE-LAW-ONLY-BLOCKS | an unlabeled law and its Fisher metric canonically supply three rank-two agent blocks | uniform law on seven outcomes; tangent is the irreducible six-dimensional \(A_7\) sum-zero representation | permutation naturality would give \(A_7\to S_3\), necessarily trivial, forcing impossible invariant rank-two blocks; typing or symmetry breaking is extra structure |
+| CE-RETAINED-INTERACTION | full-joint identifiability implies singleton-retained identifiability | promoted six-bit parity family \((\theta,\kappa)\mapsto Q_{\theta,\kappa}\) | full-joint rank is seven, but singleton retention has rank six and kernel \(\operatorname{span}\{\partial_\kappa\}\) |
+
+Full derivations: `evidence/fisher-quotient-agentization-proof.md`.
+
 ## Scope
 
-These controls refute only the matching frozen statements or demonstrate the necessity of named hypotheses. None is evidence against reference-relative selection under its proved finite support conditions, deterministic completion under absolute continuity, or retained descent under the complete August 13 equivalence.
+These controls refute only the matching frozen statements or demonstrate the necessity of named hypotheses. None is evidence against reference-relative selection under its proved finite support conditions, deterministic completion under absolute continuity, retained descent under the complete August 13 equivalence, or block attribution supplied by declared basic typed structure.

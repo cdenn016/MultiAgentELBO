@@ -63,6 +63,50 @@ It composes strictly along nested deterministic coarse maps when every stage use
 
 The full proof and boundary counterexamples are in `evidence/reference-relative-selection-proof.md`.
 
+## Retained Fisher quotient and declared-block boundary
+
+For every smooth retained-law map \(\rho:\Theta\to N\) and positive-semidefinite
+target tensor \(g\), the pullback radical is exactly
+
+\[
+\operatorname{rad}(\rho^*g)=d\rho^{-1}(\operatorname{rad}g).
+\]
+
+It equals \(\ker d\rho\) if and only if
+\(\operatorname{im}d\rho\cap\operatorname{rad}g=\{0\}\). Constant rank then
+gives a smooth positive-definite vector-bundle quotient
+\(T\Theta/\ker d\rho\cong\operatorname{im}d\rho\). A global quotient manifold
+still requires a simple regular null foliation and basic tensors.
+
+A familywise commuting presentation diagram
+\(\rho_BF=J\rho_A\), with \(F\) a diffeomorphism (or the proved
+surjective-submersion redundant-presentation variant) and \(J\) a Fisher
+isometric immersion, transports the kernels and induces a quotient isometry.
+Generic Markov contraction or equality at one parameter is insufficient.
+
+For a declared smooth splitting \(T\Theta=\bigoplus_aB_a\), the following are
+equivalent on a constant-rank stratum: the quotient block images form a direct
+sum, their retained images form a direct sum, the kernel splits blockwise, and
+each quotient tangent has a unique linear block decomposition. Additive Fisher
+energy additionally requires pairwise Fisher orthogonality. Descent along
+retained-law fibers requires the block images/projectors to be basic, and
+presentation invariance additionally requires natural transport by a declared
+type-preserving permutation. A rotating-block example proves that pointwise
+smooth directness and orthogonality do not imply basicness.
+
+At the uniform seven-outcome law, permutation naturality would make any
+law/Fisher-only decomposition into three rank-two blocks define
+\(S_7\to S_3\). Its restriction to the perfect group \(A_7\) is trivial, while
+the six-dimensional sum-zero representation has scalar commutant and is
+irreducible. Hence no such natural block decomposition exists without typing
+or other symmetry-breaking data. Finally, the promoted parity family
+\((\theta,\kappa)\mapsto Q_{\theta,\kappa}\) has full-joint rank seven
+everywhere, whereas singleton retention has rank six and kernel exactly
+\(\operatorname{span}\{\partial_\kappa\}\). Identifiability is therefore
+relative to the declared retained map.
+
+The direct proofs are in `evidence/fisher-quotient-agentization-proof.md`.
+
 ## Current scope
 
-This stage proves the selector and recovery nonexistence results and the reference-relative replacements. The run's root claim ledger, dependency DAG, adversarial record, and terminal release remain for the package-assembly stage; this document does not by itself assign terminal certification state. The Fisher quotient and law-only agentization boundary are handled by the next proof lane. No result here derives autonomous agents, intervention structure, continuum dynamics, physical geometry, or dimensional units from marginal sections.
+This stage proves the selector and recovery nonexistence results, the reference-relative replacements, and the retained Fisher quotient and law-only agentization boundary. The run's root claim ledger, dependency DAG, adversarial record, and terminal release remain for the package-assembly stage; this document does not by itself assign terminal certification state. No result here derives autonomous agents, intervention structure, continuum dynamics, physical geometry, or dimensional units from marginal sections or Fisher geometry.
