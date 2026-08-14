@@ -1,7 +1,7 @@
 {
   "schema_version": "rigorous-theory-search/v1",
-  "contract_id": "contract-sha256-d86240f62e14f68c51e3f940b3bf9ba6637c563f2b1d30698bd73c9ded2f89ee",
-  "target_digest": "d86240f62e14f68c51e3f940b3bf9ba6637c563f2b1d30698bd73c9ded2f89ee",
+  "contract_id": "contract-sha256-b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
+  "target_digest": "b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
   "attacks": [],
   "independent_reconstruction": {
     "claim_ids": [],

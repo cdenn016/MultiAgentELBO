@@ -1,21 +1,21 @@
 {
   "schema_version": "rigorous-theory-search/v1",
-  "contract_id": "contract-sha256-d86240f62e14f68c51e3f940b3bf9ba6637c563f2b1d30698bd73c9ded2f89ee",
-  "target_digest": "d86240f62e14f68c51e3f940b3bf9ba6637c563f2b1d30698bd73c9ded2f89ee",
+  "contract_id": "contract-sha256-b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
+  "target_digest": "b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
   "assumptions": [],
   "evidence": [],
   "claims": [
     {
       "id": "TARGET-ABSOLUTE-CANONICAL-SELECTOR",
-      "statement": "Does there exist one family of single-valued law-valued sections S_X : M(X) -> J(X), for every finite nonempty typed list X, with m_X after S_X equal to the identity, that is natural under every coordinatewise finite Markov kernel and every admitted marginal-compatible arity-changing presentation kernel including correlation-generating split refinements, is faithful to every admitted positive full joint law, and through the marginal datum independently recovers the full-joint VFE of every compatible recognition/generative/evidence triple, the pulled-back full-joint Fisher tensor of every compatible positive C^1 statistical family, and the typed intervention semantics of every compatible enriched intervention structure?",
-      "quantifiers": "There exists a single family (S_X)_X, one section for each finite nonempty typed list X, such that for every coordinatewise finite Markov kernel, every admitted marginal-compatible arity-changing presentation kernel including every admitted correlation-generating split refinement, every admitted positive joint law Q, every compatible full-joint VFE enrichment (Q,P,z), every pair of compatible positive C^1 full-joint statistical families on a common parameter space, and every pair of compatible enriched typed intervention presentations with the same marginal datum, all section, naturality, faithfulness, VFE-factorization, Fisher-factorization, and typed-intervention reconstruction requirements in the target statement hold simultaneously.",
+      "statement": "Does there exist one family of single-valued law-valued sections S_X : M(X) -> J(X), for every finite nonempty typed list X, with m_X after S_X equal to the identity, that is natural under every coordinatewise finite Markov kernel and every admitted marginal-compatible arity-changing presentation kernel including correlation-generating split refinements, is faithful to every admitted positive full joint law, and satisfies all three of the following independently typed marginal-factorization predicates? (VFE) For every X there exists one function V_X : M(X) x M(X) x (0,infinity) -> extended-real such that V_X(m_X Q,m_X P,z) = -log(z) + KL(Q||P) for every compatible recognition law Q, positive posterior law P, and evidence z>0. (Fisher) Whenever two compatible positive C^1 families p_0,p_1 : Theta -> J(X) on the same parameter space satisfy m_X after p_0 = m_X after p_1 as maps, their pulled-back full-joint Fisher tensors are equal on Theta. (Intervention) Every two compatible enriched presentations with the same marginal observational datum are isomorphic in the declared typed causal/intervention category, and a marginal-to-enrichment reconstruction is a section of the forgetful map up to that type-preserving intervention isomorphism.",
+      "quantifiers": "There exists a single family (S_X)_X, one section for each finite nonempty typed list X, such that for every coordinatewise finite Markov kernel, every admitted marginal-compatible arity-changing presentation kernel including every admitted correlation-generating split refinement, and every admitted positive joint law Q, the section, naturality, and faithfulness requirements in the target statement hold simultaneously; and for every X there exists one V_X with the displayed signature and equality for every compatible (Q,P,z) with P positive and z>0; and for every common parameter space Theta and every pair of compatible positive C^1 families p_0,p_1 : Theta -> J(X) whose complete marginal-family maps agree, their pulled-back full-joint Fisher tensors agree on Theta; and for every marginal observational datum and every pair of its compatible enriched typed intervention presentations, those presentations are type-preservingly intervention-isomorphic and a reconstruction from marginal data is a section of the forgetful map up to that isomorphism.",
       "kind": "MATHEMATICAL",
-      "target_digest": "d86240f62e14f68c51e3f940b3bf9ba6637c563f2b1d30698bd73c9ded2f89ee",
+      "target_digest": "b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb",
       "state": "CANDIDATE",
       "assumption_ids": [],
       "evidence_ids": [],
       "bridge_premise_ids": [],
-      "falsifier": "A scope-matched NONEXISTENCE_PROOF that no single family of sections satisfies every conjunct under the frozen internal universal quantifiers."
+      "falsifier": "A scope-matched NONEXISTENCE_PROOF that no single family of sections satisfies every frozen conjunct, including each explicit VFE, Fisher, and intervention factorization predicate, under all internal universal quantifiers."
     }
   ]
 }

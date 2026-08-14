@@ -2,8 +2,8 @@
 
 ## Bound contract
 
-- Contract ID: `contract-sha256-d86240f62e14f68c51e3f940b3bf9ba6637c563f2b1d30698bd73c9ded2f89ee`
-- Target digest: `d86240f62e14f68c51e3f940b3bf9ba6637c563f2b1d30698bd73c9ded2f89ee`
+- Contract ID: `contract-sha256-b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb`
+- Target digest: `b8102c1f5917a6cbc9a69df8b10c1470d18d5146f56093a253b1a8644465bccb`
 - Test source: `tests/test_canonical_dependence_selection_witness.py`
 - Intended production source: `evidence/exact_selection_witness.py`
 - Production source state during this record: absent by design
