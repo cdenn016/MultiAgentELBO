@@ -56,5 +56,14 @@
       "design_path": "docs/superpowers/specs/2026-08-14-typed-intervention-semantics-design.md",
       "plan_path": "docs/superpowers/plans/2026-08-14-typed-intervention-semantics.md"
     }
+  },
+  "certification_basis": {
+    "task_3_commit": "56cc9ea0346971495de5a0b5561c14f02868bad3",
+    "task_3_parent_contract_commit": "66a7df4de9f33ccb7cb8a98ecba92a6a55bb96a9",
+    "proof_artifacts": [
+      "evidence/typed-category-proof.md",
+      "evidence/operational-reduction-proof.md"
+    ],
+    "release_method": "Direct derivation, exact rational corroboration, independent reconstruction, semantic oracle erasure, and adversarial attack adjudication."
   }
 }

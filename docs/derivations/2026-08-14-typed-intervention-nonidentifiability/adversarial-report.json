@@ -2,21 +2,155 @@
   "schema_version": "rigorous-theory-search/v1",
   "contract_id": "contract-sha256-efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
   "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
-  "attacks": [],
+  "attacks": [
+    {
+      "id": "ATTACK-01-CATEGORY-DEPENDENCE",
+      "claim_ids": ["TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS", "CLM-RAW-TYPED-PRESENTATIONS", "CLM-REDUCTION-FUNCTOR", "CLM-CATEGORY-CANONICITY"],
+      "attack": "The conclusion may overreach from one declared finite hard-intervention groupoid to a category-independent or ontological theorem.",
+      "disposition": "REJECTED",
+      "response": "The target, objects, arrows, equivalence, and conclusion are explicitly relative to the frozen finite BSC subcategory; category canonicity is separately INCONCLUSIVE.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "eedfb69dc3a201460092bc5aa1d5827d05a0cdf9b2297406407f4212fedddcb5"
+    },
+    {
+      "id": "ATTACK-02-PROTOCOL-MONOID-AUTOMORPHISM",
+      "claim_ids": ["CLM-RIGHT-OVERRIDE-MONOID", "CLM-TWO-SIDED-CONGRUENCE", "CLM-FIFTEEN-BEHAVIORAL-CLASSES", "CLM-RESPONSE-IMAGE-OBSTRUCTION", "CLM-REDUCED-NONISOMORPHISM"],
+      "attack": "An arbitrary protocol-monoid automorphism could send the named mediator class to a different class with a matching response.",
+      "disposition": "REJECTED",
+      "response": "The proof checks the complete L_2 response image under every boundary flip, so no destination class has the response required by intertwining.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "eedfb69dc3a201460092bc5aa1d5827d05a0cdf9b2297406407f4212fedddcb5"
+    },
+    {
+      "id": "ATTACK-03-ABSTRACT-ACTION-SIMULATION",
+      "claim_ids": ["TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS", "CLM-REDUCED-NONISOMORPHISM"],
+      "attack": "A renamed abstract action might simulate the opposing reduced experiment despite failure of syntax-preserving maps.",
+      "disposition": "REJECTED",
+      "response": "Reduced isomorphism already permits arbitrary identity-preserving monoid isomorphisms; the missing response-image element defeats all such simulations.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "eedfb69dc3a201460092bc5aa1d5827d05a0cdf9b2297406407f4212fedddcb5"
+    },
+    {
+      "id": "ATTACK-04-NULL-DELETION",
+      "claim_ids": ["CLM-NULL-NODE-COLLAPSE", "CLM-REDUCED-NONISOMORPHISM"],
+      "attack": "The claimed distinction might be an artifact of isolated-node inventory or auxiliary target count.",
+      "disposition": "REJECTED",
+      "response": "The load-bearing pair has one common raw signature, and the independent null extension is separately proved isomorphic to the split reduction after forgetting N.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "eedfb69dc3a201460092bc5aa1d5827d05a0cdf9b2297406407f4212fedddcb5"
+    },
+    {
+      "id": "ATTACK-05-BOUNDARY-RELABELING",
+      "claim_ids": ["CLM-RESPONSE-IMAGE-OBSTRUCTION", "CLM-REDUCED-NONISOMORPHISM"],
+      "attack": "A binary state flip on R or O may transform an L_2 response into the unmatched L_1 response.",
+      "disposition": "REJECTED",
+      "response": "All four flips are exhausted; the two-element orbit of the unmatched law has rational atoms absent from every full-support L_2 response, while zero support is invariant under permutation.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "eedfb69dc3a201460092bc5aa1d5827d05a0cdf9b2297406407f4212fedddcb5"
+    },
+    {
+      "id": "ATTACK-06-RESPONSE-SET-MATCHING",
+      "claim_ids": ["TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS", "CLM-FIFTEEN-BEHAVIORAL-CLASSES", "CLM-RESPONSE-IMAGE-OBSTRUCTION"],
+      "attack": "A response class omitted from a mediator-only comparison could match the disputed law.",
+      "disposition": "REJECTED",
+      "response": "The direct derivation partitions all twenty-seven contexts and compares every one of the fifteen reduced responses, not only the mediator pair.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "eedfb69dc3a201460092bc5aa1d5827d05a0cdf9b2297406407f4212fedddcb5"
+    },
+    {
+      "id": "ATTACK-07-RIGHT-INVERSE-CONFUSION",
+      "claim_ids": ["CLM-NO-TWO-SIDED-RECOVERY", "CLM-CONVENTIONAL-RIGHT-INVERSE-ALLOWANCE"],
+      "attack": "The recovery corollary may accidentally rule out the conventional section condition Ubar_pass R naturally isomorphic to the passive identity.",
+      "disposition": "REJECTED",
+      "response": "The contradiction proves only that R Ubar_pass cannot be naturally isomorphic to the reduced identity; the opposite composition remains explicitly allowed.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "eedfb69dc3a201460092bc5aa1d5827d05a0cdf9b2297406407f4212fedddcb5"
+    },
+    {
+      "id": "ATTACK-08-NORMALIZATION",
+      "claim_ids": ["CLM-RAW-TYPED-PRESENTATIONS", "CLM-PASSIVE-EQUALITY-L1-L2"],
+      "attack": "An observational or intervened product may fail to normalize, invalidating witness admission.",
+      "disposition": "REJECTED",
+      "response": "Reverse-topological sink summation proves normalization, and every intervention replacement is a normalized point mass.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "eedfb69dc3a201460092bc5aa1d5827d05a0cdf9b2297406407f4212fedddcb5"
+    },
+    {
+      "id": "ATTACK-09-CONDITIONING-NULL-EVENTS",
+      "claim_ids": ["CLM-PASSIVE-EQUALITY-L1-L2", "CLM-RESPONSE-IMAGE-OBSTRUCTION"],
+      "attack": "Zero cells under hard interventions may make response equality depend on a conditional-law version.",
+      "disposition": "REJECTED",
+      "response": "Every compared response is a complete four-atom retained joint mass table obtained by finite marginalization; no null-event conditional is used.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "eedfb69dc3a201460092bc5aa1d5827d05a0cdf9b2297406407f4212fedddcb5"
+    },
+    {
+      "id": "ATTACK-10-AGENCY-OVERREACH",
+      "claim_ids": ["TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS", "CLM-AUTONOMOUS-AGENCY", "CLM-PHYSICAL-IDENTIFICATION"],
+      "attack": "A mediator, intervention target, or reduced protocol class may be silently identified with autonomous agency or physical ontology.",
+      "disposition": "REJECTED",
+      "response": "The finite theorem makes neither identification; both are explicitly separated as INCONCLUSIVE bridge claims outside the target.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "eedfb69dc3a201460092bc5aa1d5827d05a0cdf9b2297406407f4212fedddcb5"
+    },
+    {
+      "id": "ATTACK-11-EXECUTABLE-ONLY-CLASS-COUNT",
+      "claim_ids": ["CLM-RIGHT-OVERRIDE-MONOID", "CLM-TWO-SIDED-CONGRUENCE", "CLM-FIFTEEN-BEHAVIORAL-CLASSES"],
+      "attack": "The fifteen-class result may be inferred only from executable enumeration.",
+      "disposition": "REJECTED",
+      "response": "A direct partition proof gives six size-three masked-O classes and nine distinct singleton classes; execution is corroborative only.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "eedfb69dc3a201460092bc5aa1d5827d05a0cdf9b2297406407f4212fedddcb5"
+    },
+    {
+      "id": "ATTACK-12-QUANTIFIER-MISMATCH",
+      "claim_ids": ["TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS", "CLM-PASSIVE-EQUALITY-L1-L2", "CLM-REDUCED-NONISOMORPHISM"],
+      "attack": "One witness pair cannot establish an existential nonexistence theorem.",
+      "disposition": "REJECTED",
+      "response": "The frozen target is universal and explicitly declares COUNTEREXAMPLE as its negative certificate kind; one admitted premise-satisfying, conclusion-falsifying pair is quantifier-matched.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "eedfb69dc3a201460092bc5aa1d5827d05a0cdf9b2297406407f4212fedddcb5"
+    }
+  ],
   "independent_reconstruction": {
-    "claim_ids": [],
-    "method": "Independent reconstruction has not been performed.",
-    "result": "NOT_RUN",
-    "conclusion": "No reconstruction conclusion is available.",
-    "artifact_path": null,
-    "artifact_sha256": null
+    "claim_ids": [
+      "TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS",
+      "CLM-RAW-TYPED-PRESENTATIONS",
+      "CLM-RIGHT-OVERRIDE-MONOID",
+      "CLM-TWO-SIDED-CONGRUENCE",
+      "CLM-REDUCTION-FUNCTOR",
+      "CLM-PASSIVE-EQUALITY-L1-L2",
+      "CLM-FIFTEEN-BEHAVIORAL-CLASSES",
+      "CLM-RESPONSE-IMAGE-OBSTRUCTION",
+      "CLM-REDUCED-NONISOMORPHISM",
+      "CLM-NULL-NODE-COLLAPSE",
+      "CLM-SHARED-BOUNDARY-CONTROL",
+      "CLM-UBAR-NOT-ESSENTIALLY-INJECTIVE",
+      "CLM-NO-TWO-SIDED-RECOVERY",
+      "CLM-CONVENTIONAL-RIGHT-INVERSE-ALLOWANCE"
+    ],
+    "method": "Re-derived every load-bearing definition and exact table from the frozen contract before comparison with the Task 3 narrative or executable witness.",
+    "result": "PASS",
+    "conclusion": "The reconstruction reproduced normalization, the monoid and congruence, quotient functoriality, nine control tables, null collapse, fifteen classes, passive equality, the complete four-flip response-image obstruction, reduced nonisomorphism, and the typed recovery consequences.",
+    "artifact_path": "evidence/independent-reconstruction.md",
+    "artifact_sha256": "58aecc8bb770e17c6e1878085718b0f958b50459f2e0c75d3796c06ce75ee160"
   },
   "oracle_erasure": {
-    "claim_ids": [],
-    "method": "Oracle erasure has not been performed.",
-    "result": "NOT_RUN",
-    "conclusion": "No oracle-erasure conclusion is available.",
-    "artifact_path": null,
-    "artifact_sha256": null
+    "claim_ids": [
+      "TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS",
+      "CLM-RAW-TYPED-PRESENTATIONS",
+      "CLM-RIGHT-OVERRIDE-MONOID",
+      "CLM-TWO-SIDED-CONGRUENCE",
+      "CLM-REDUCTION-FUNCTOR",
+      "CLM-PASSIVE-EQUALITY-L1-L2",
+      "CLM-FIFTEEN-BEHAVIORAL-CLASSES",
+      "CLM-RESPONSE-IMAGE-OBSTRUCTION",
+      "CLM-REDUCED-NONISOMORPHISM"
+    ],
+    "method": "Removed directional expectation, scanned premises and load-bearing steps for paraphrased conclusion dependence, and recomputed the full target ancestry from definitions and exact rational identities.",
+    "result": "PASS",
+    "conclusion": "Every closure ancestor and the target disposition remain supported without a directional search prior; null controls, diagnostics, and downstream recovery claims are unnecessary to target closure.",
+    "artifact_path": "evidence/oracle-erasure.md",
+    "artifact_sha256": "363da704b9e65685cddcccb7f2387644a9e39568715524b1421766729dfa188f"
   }
 }

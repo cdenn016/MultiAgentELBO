@@ -28,57 +28,63 @@ so both passive retained laws are
 (7/24,5/24,5/24,7/24).
 ```
 
-**Operational reduction.** Direct derivation partitions each set of twenty-seven
-raw contexts into fifteen two-sided behavioral classes: nine singleton classes
-with `O` unassigned and six size-three classes in which a hard-assigned `O`
-masks the three possible central `E` statuses. The class-size vector is
+**Operational reduction.** Direct derivation partitions each set of
+twenty-seven raw contexts into fifteen two-sided behavioral classes: nine
+singleton classes with `O` unassigned and six size-three classes in which a
+hard-assigned `O` masks the three possible central `E` statuses. The
+class-size vector is
 
 ```text
 (1,3,3,1,1,1,3,3,1,1,1,3,3,1,1).
 ```
 
-**Load-bearing obstruction.** In `L_1`, the class of `do(E=0)` has response
+**Load-bearing obstruction.** In `L_1`, the class of `do(E=0)` has
+response
 
 ```text
 q_* = (1/3,1/6,1/3,1/6).
 ```
 
-Across all four independent binary flips of `R` and `O`, the orbit of `q_*`
-contains only
+Across all four independent binary flips of `R` and `O`, the orbit of
+`q_*` contains only
 
 ```text
 (1/3,1/6,1/3,1/6),
 (1/6,1/3,1/6,1/3).
 ```
 
-The only full-support responses anywhere in the complete `L_2` reduced image
-have first atoms `7/24`, `3/8=9/24`, or `1/8=3/24`; the orbit atoms are
-`1/3=8/24` or `1/6=4/24`. Responses with zeros remain responses with zeros
-under relabeling. Hence no `L_2` response class can be carried to `q_*` by any
-admitted boundary relabeling. An arbitrary identity-preserving protocol-monoid
-isomorphism would still have to map the `q_*` class to such a response class,
-so no reduced-experiment isomorphism exists.
+The only full-support responses anywhere in the complete `L_2` reduced
+image have first atoms `7/24`, `3/8=9/24`, or `1/8=3/24`; the orbit
+atoms are `1/3=8/24` or `1/6=4/24`. Responses with zeros remain responses
+with zeros under relabeling. Hence no `L_2` response class can be carried to
+`q_*` by any admitted boundary relabeling. An arbitrary
+identity-preserving protocol-monoid isomorphism would still have to map the
+`q_*` class to such a response class, so no reduced-experiment isomorphism
+exists.
 
 **Direct evidence.** The full derivation is in
 `evidence/operational-reduction-proof.md`; raw normalization, isomorphism
 transport, and functoriality of `Red` are in
-`evidence/typed-category-proof.md`. The exact rational witness and focused
-tests corroborate the class table and response image but do not substitute for
-these derivations.
+`evidence/typed-category-proof.md`. The independent reconstruction repeats
+the derivation from the contract. The exact rational witness and focused
+tests corroborate the class table and response image but do not substitute
+for these derivations.
 
-**Disposition at this checkpoint.** Direct counterexample derivation complete;
-terminal rigorous-theory release remains pending the Task 4 dependency ledger,
-independent reconstruction, oracle erasure, and adversarial certificate.
+**Disposition.** Certified counterexample for the frozen universal target.
+The target is `REFUTED`, every transitive dependency ancestor is directly
+derived and `EVIDENCE_VERIFIED`, and the release status is
+`COMPLETE_NEGATIVE`. Independent reconstruction, semantic oracle erasure,
+and the adversarial portfolio are retained as hash-bound evidence.
 
 ## Non-load-bearing controls
 
-The mediator-output total-variation values `1/3` and `1/2` diagnose the active
-difference but do not close the theorem, because a protocol isomorphism need
-not preserve the named mediator pair. Direct/split/null node-count differences
-also do not close it. Indeed, the independent null extension is operationally
-isomorphic to the split model after two-sided reduction: forgetting `N`
-induces a quotient-monoid isomorphism and covers both assignments to `N` and
-all twenty-seven contexts on `{R,E,O}`.
+The mediator-output total-variation values `1/3` and `1/2` diagnose the
+active difference but do not close the theorem, because a protocol
+isomorphism need not preserve the named mediator pair. Direct/split/null
+node-count differences also do not close it. Indeed, the independent null
+extension is operationally isomorphic to the split model after two-sided
+reduction: forgetting `N` induces a quotient-monoid isomorphism and covers
+both assignments to `N` and all twenty-seven contexts on `{R,E,O}`.
 
 ## Falsification and boundaries
 

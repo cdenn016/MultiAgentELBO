@@ -2,8 +2,238 @@
   "schema_version": "rigorous-theory-search/v1",
   "contract_id": "contract-sha256-efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
   "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
-  "assumptions": [],
-  "evidence": [],
+  "assumptions": [
+    {
+      "id": "ASM-FINITE-DAG",
+      "kind": "MATHEMATICAL",
+      "statement": "All node and state sets are finite and nonempty, the graph is acyclic, and every local kernel is normalized with respect to counting measure."
+    },
+    {
+      "id": "ASM-HARD-INTERVENTION",
+      "kind": "MATHEMATICAL",
+      "statement": "A hard intervention replaces each selected local kernel by the corresponding point mass and leaves every other mechanism unchanged."
+    },
+    {
+      "id": "ASM-COMPLETE-JOINT-RESPONSE",
+      "kind": "MATHEMATICAL",
+      "statement": "Every passive or intervened response is compared as the complete retained joint mass table on the ordered boundary (R,O), without conditioning on null events."
+    },
+    {
+      "id": "ASM-ADMITTED-BOUNDARY-SYMMETRY",
+      "kind": "MATHEMATICAL",
+      "statement": "The only admitted boundary state relabelings in the binary witness are the four independent bit flips on R and O."
+    },
+    {
+      "id": "ASM-DECLARED-MODEL-CLASS",
+      "kind": "MODELING_POSTULATE",
+      "statement": "The finite typed category is a declared mathematical model class, not an ontologically canonical description."
+    },
+    {
+      "id": "ASM-PHYSICAL-BRIDGE-REQUIRED",
+      "kind": "MODELING_POSTULATE",
+      "statement": "Any identification of informational quantities, agents, geometry, or units with physical ontology requires an additional operational bridge not supplied by this theorem."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "EV-RAW-CATEGORY-DERIVATION",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Direct proof of finite DAG normalization, hard-intervention closure, typed isomorphism transport, raw groupoid structure, and functorial reduction.",
+      "side_conditions": ["Finite nonempty state spaces.", "Normalized local kernels.", "Finite DAG.", "Complete retained joint responses."],
+      "artifact_path": "evidence/typed-category-proof.md",
+      "artifact_sha256": "63ef4e6dfdb5ac8aa6f9a0427a4fbca84d52fa61f5816def91108c92992c2df5"
+    },
+    {
+      "id": "EV-OPERATIONAL-DERIVATION",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Direct proof of the right-override monoid, two-sided congruence, quotient, null collapse, exact BSC tables, full response-image obstruction, reduced nonisomorphism, and recovery corollary.",
+      "side_conditions": ["Frozen finite BSC subcategory.", "All partial hard assignments.", "Four typed binary boundary relabelings."],
+      "artifact_path": "evidence/operational-reduction-proof.md",
+      "artifact_sha256": "99488608db91c5d4de0b5ebe363cfa7d62225d396dde77778c653af3a59b0621"
+    },
+    {
+      "id": "EV-COUNTEREXAMPLE",
+      "kind": "COUNTEREXAMPLE",
+      "supports": false,
+      "scope": "Quantifier-matched counterexample to the frozen universal implication: equal passive retained law with nonisomorphic reduced response experiments.",
+      "side_conditions": ["Both witnesses are admitted normalized BSC chains.", "The pair has one common raw signature.", "Nonisomorphism uses the complete response image under all four boundary flips."],
+      "artifact_path": "counterexample-register.md",
+      "artifact_sha256": "e960bdc7276cbd0be2c0dbdd2a678f646a65127ca9c2cbf343a1fbf0471c66f7"
+    },
+    {
+      "id": "EV-STRONGEST-THEOREM",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Assembled finite nonidentifiability theorem, reduced passive-functor consequence, and exact scope boundary.",
+      "side_conditions": ["Category-relative finite theorem.", "No autonomous-agency or physical interpretation."],
+      "artifact_path": "construction-or-strongest-theorem.md",
+      "artifact_sha256": "480eeee5da8589d547cc6b58db1ac8cfb50c62457c5b1927052b50118a64c35e"
+    },
+    {
+      "id": "EV-INDEPENDENT-RECONSTRUCTION",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Independent reconstruction of definitions, normalization, nine boundary tables, null control, fifteen behavioral classes, passive equality, and four-relabeling response-image obstruction from the frozen contract.",
+      "side_conditions": ["Reconstruction begins from the frozen contract rather than the Task 3 narrative.", "Mechanical checks are corroborative only."],
+      "artifact_path": "evidence/independent-reconstruction.md",
+      "artifact_sha256": "58aecc8bb770e17c6e1878085718b0f958b50459f2e0c75d3796c06ce75ee160"
+    },
+    {
+      "id": "EV-ADVERSARIAL-ATTACKS",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Evidence-weighted responses to twelve attacks, including every required category, action, null, relabeling, recovery, normalization, conditioning, and agency challenge.",
+      "side_conditions": ["Rejection applies only to the frozen finite theorem.", "Broader open questions remain outside closure."],
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "eedfb69dc3a201460092bc5aa1d5827d05a0cdf9b2297406407f4212fedddcb5"
+    },
+    {
+      "id": "EV-ORACLE-ERASURE",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Semantic removal of directional expectation followed by a full recomputation of the target dependency closure and a paraphrased-prior scan.",
+      "side_conditions": ["The contract records no affirmative search prior.", "The audit is not itself a proof of the mathematical claims."],
+      "artifact_path": "evidence/oracle-erasure.md",
+      "artifact_sha256": "363da704b9e65685cddcccb7f2387644a9e39568715524b1421766729dfa188f"
+    },
+    {
+      "id": "EV-EXACT-WITNESS-SOURCE",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Exact Fraction implementation of the frozen intervention, quotient, counterexample, and deterministic serialization API.",
+      "side_conditions": ["Python 3.14 standard library.", "Exact rational arithmetic.", "Mechanical corroboration, not mathematical proof."],
+      "artifact_path": "evidence/exact_typed_intervention_witness.py",
+      "artifact_sha256": "114f3c74b62161fe6866c1918ba6d7f58eb47ef144d53bb13c58704084b0d985"
+    },
+    {
+      "id": "EV-GREEN-JUNIT",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Machine-readable focused GREEN record: eighteen tests, zero failures, zero errors, and zero skips.",
+      "side_conditions": ["Bound to the exact witness and test-source hashes recorded in the TDD artifact."],
+      "artifact_path": "evidence/green-junit.xml",
+      "artifact_sha256": "4ab838c07ac466bc11016df695b4883eb3a2bf01b599a041f9d01713695c6ff5"
+    },
+    {
+      "id": "EV-RED-JUNIT",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Machine-readable RED record: all eighteen tests failed only at the declared absent-witness boundary before implementation.",
+      "side_conditions": ["Disposable mirror omitted the witness by design.", "No collection, import, or environmental error."],
+      "artifact_path": "evidence/red-junit.xml",
+      "artifact_sha256": "f37ad52fb126a0a7e7ce235b5275542ff286adcee959e993477d44dee0a0e9ab"
+    },
+    {
+      "id": "EV-TEST-SNAPSHOT",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Byte-identical LF snapshot of the frozen focused test contract.",
+      "side_conditions": ["SHA-256 equals the committed live test source recorded in the TDD artifact."],
+      "artifact_path": "evidence/test_typed_intervention_semantics_witness.snapshot.py",
+      "artifact_sha256": "0df74569948a70df5100f3d006b6d7b6d97da1f7a11a6cdd028e662a489ce73e"
+    },
+    {
+      "id": "EV-TDD-RECORD",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Durable commands, machine-derived RED and GREEN totals, source identities, mutation summary, and evidence limitations.",
+      "side_conditions": ["RED precedes production implementation.", "GREEN and mutation runs use the bound source bytes."],
+      "artifact_path": "evidence/tdd-record.md",
+      "artifact_sha256": "5b86720cb5ef264af127b142b7c7ce909f7c3e86dc73dca111569e6530821f8b"
+    },
+    {
+      "id": "EV-MUTATION-RECORD",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Nine reversible mutation commands, pre/mutant/post hashes, failing tests, machine totals, and JUnit bindings.",
+      "side_conditions": ["Every mutant was killed.", "Production source was restored byte-identically between mutants."],
+      "artifact_path": "evidence/mutations/mutation-record.json",
+      "artifact_sha256": "e03fccd021e623deb40e0013590a0f8a376f73f44126db4541495fd2689dd1fc"
+    },
+    {
+      "id": "EV-MUT-WRONG-COMPOSITION",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "JUnit record killing the wrong BSC composition mutant.",
+      "side_conditions": ["Five focused tests failed; zero errors and skips."],
+      "artifact_path": "evidence/mutations/wrong-channel-composition-junit.xml",
+      "artifact_sha256": "9b8a67cc0f0c4da324e58dbf0ba5cacc92d4c1bd74808297884125871d222551"
+    },
+    {
+      "id": "EV-MUT-IGNORED-B",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "JUnit record killing the ignored mediator-to-output parameter mutant.",
+      "side_conditions": ["Nine focused tests failed; zero errors and skips."],
+      "artifact_path": "evidence/mutations/ignored-b-junit.xml",
+      "artifact_sha256": "4516cafe6bec2836759eff889bf109c89921e5a5487709ae69580166303361a3"
+    },
+    {
+      "id": "EV-MUT-OMITTED-CONTEXT",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "JUnit record killing omission of left and right contextual composition.",
+      "side_conditions": ["Two focused tests failed; zero errors and skips."],
+      "artifact_path": "evidence/mutations/omitted-two-sided-context-junit.xml",
+      "artifact_sha256": "3f7c2fecbde225c1934af5575efd69f2b9d71ed30330f70167bac391913f0eda"
+    },
+    {
+      "id": "EV-MUT-ALTERED-RESPONSE",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "JUnit record killing an altered reduced response-image entry.",
+      "side_conditions": ["Two focused tests failed; zero errors and skips."],
+      "artifact_path": "evidence/mutations/altered-response-image-entry-junit.xml",
+      "artifact_sha256": "9140f3fa54bb24ff81408e4e0cd76c3b3f34e2cfc32d1a79ba7785a40bfec241"
+    },
+    {
+      "id": "EV-MUT-COLLAPSED-MULTIPLICATION",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "JUnit record killing collapse of quotient multiplication to the identity class.",
+      "side_conditions": ["Six focused tests failed; zero errors and skips."],
+      "artifact_path": "evidence/mutations/collapsed-class-multiplication-junit.xml",
+      "artifact_sha256": "4a62f404cb6bcd8530951c50ab416d2a09a0660f7381cff346c36d9608349d65"
+    },
+    {
+      "id": "EV-MUT-EQUALIZED-DIAGNOSTIC",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "JUnit record killing an equalized diagnostic total-variation contrast.",
+      "side_conditions": ["One focused test failed; zero errors and skips.", "The diagnostic remains non-load-bearing."],
+      "artifact_path": "evidence/mutations/equalized-diagnostic-contrasts-junit.xml",
+      "artifact_sha256": "ae0899b8266290dfdb87c648a74c662d71b885315447ae0e9397689cd17b858b"
+    },
+    {
+      "id": "EV-MUT-UNSORTED-JSON",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "JUnit record killing noncanonical nested JSON ordering.",
+      "side_conditions": ["One focused test failed; zero errors and skips."],
+      "artifact_path": "evidence/mutations/unsorted-nested-json-junit.xml",
+      "artifact_sha256": "0daeb88fb744ae6b658825862af6c841b2977d8b24765dec12659d0725b13111"
+    },
+    {
+      "id": "EV-MUT-DIRECT-SEMANTICS",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "JUnit record killing direct-selector use of an uncomposed channel.",
+      "side_conditions": ["Two focused tests failed; zero errors and skips."],
+      "artifact_path": "evidence/mutations/direct-response-semantics-junit.xml",
+      "artifact_sha256": "046c19d7c287dc894df313af2932a86783ba75b093b607bcd58993ff3bd28a5f"
+    },
+    {
+      "id": "EV-MUT-RAW-INVARIANTS",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "JUnit record killing corruption of direct and null raw invariant records.",
+      "side_conditions": ["Two focused tests failed; zero errors and skips."],
+      "artifact_path": "evidence/mutations/corrupt-direct-null-raw-invariants-junit.xml",
+      "artifact_sha256": "957f5b8a58706191c769ee57e32b2a47f641eaf6d610e22753ec07712f0cb19f"
+    }
+  ],
   "claims": [
     {
       "id": "TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS",
@@ -11,14 +241,293 @@
       "quantifiers": "For all reduced experiments Red(P) and Red(Q) arising from admissible finite binary-symmetric-channel presentations P and Q with retained nodes (R,O), if Ubar_pass(Red(P)) and Ubar_pass(Red(Q)) have the same complete passive retained joint law up to an admitted typed boundary relabeling, then Red(P) and Red(Q) are isomorphic as reduced intervention experiments by an identity-preserving protocol-monoid isomorphism intertwining every retained response law up to one admitted typed boundary relabeling.",
       "kind": "MATHEMATICAL",
       "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
-      "state": "CANDIDATE",
+      "state": "REFUTED",
+      "assumption_ids": ["ASM-FINITE-DAG", "ASM-HARD-INTERVENTION", "ASM-COMPLETE-JOINT-RESPONSE", "ASM-ADMITTED-BOUNDARY-SYMMETRY"],
+      "evidence_ids": ["EV-COUNTEREXAMPLE"],
+      "bridge_premise_ids": [],
+      "falsifier": "Construct an identity-preserving protocol-monoid isomorphism intertwining the two witness response maps under one admitted typed boundary relabeling, or show either witness is outside the frozen domain.",
+      "scope_limits": ["Declared finite BSC subcategory only.", "No category-independent, ontological, autonomous-agency, continuum, gauge, or physical-identification conclusion."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-RAW-TYPED-PRESENTATIONS",
+      "statement": "Finite normalized typed DAG presentations with all partial hard interventions and typed invertible transport form the declared raw groupoid, and every observational or intervened law is normalized.",
+      "quantifiers": "For every object and typed isomorphism satisfying the frozen finite-domain assumptions.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FINITE-DAG", "ASM-HARD-INTERVENTION", "ASM-COMPLETE-JOINT-RESPONSE"],
+      "evidence_ids": ["EV-RAW-CATEGORY-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit a normalized finite DAG object whose truncated product is not normalized or a typed isomorphism that fails to transport an intervention response.",
+      "scope_limits": ["Finite hard-intervention category only."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-RIGHT-OVERRIDE-MONOID",
+      "statement": "All partial hard assignments on a presentation form a monoid under total right override, with the empty assignment as identity.",
+      "quantifiers": "For every finite presentation P and all contexts i,j,k in A_P.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-HARD-INTERVENTION"],
+      "evidence_ids": ["EV-OPERATIONAL-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Find a node and three valid contexts for which the two parenthesizations select different final assignments.",
+      "scope_limits": ["Partial hard assignments only."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-TWO-SIDED-CONGRUENCE",
+      "statement": "Equality of complete two-sided retained-response signatures is an equivalence relation and a two-sided congruence on the right-override context monoid.",
+      "quantifiers": "For every finite presentation P and all contexts i,j,a,b,u,v in A_P.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-COMPLETE-JOINT-RESPONSE"],
+      "evidence_ids": ["EV-OPERATIONAL-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Find equivalent contexts separated by multiplication on the left or right.",
+      "scope_limits": ["Equivalence is defined by the complete two-sided signature, not identity response alone."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-REDUCTION-FUNCTOR",
+      "statement": "The behavioral quotient has well-defined multiplication, identity, and descended retained response, and typed raw isomorphisms define a functor Red from raw presentations to reduced intervention experiments.",
+      "quantifiers": "For every declared raw object P and every typed raw isomorphism g.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FINITE-DAG", "ASM-HARD-INTERVENTION", "ASM-COMPLETE-JOINT-RESPONSE"],
+      "evidence_ids": ["EV-RAW-CATEGORY-DERIVATION", "EV-OPERATIONAL-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Find equivalent representatives with different quotient products or responses, or a raw isomorphism that does not preserve behavioral classes.",
+      "scope_limits": ["Declared finite groupoids and typed boundary relabelings."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-PASSIVE-EQUALITY-L1-L2",
+      "statement": "The admitted same-signature chains L(1/4,1/3) and L(1/3,1/4) have the identical complete passive retained law (7/24,5/24,5/24,7/24).",
+      "quantifiers": "For the two explicitly declared BSC objects L_1 and L_2.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FINITE-DAG", "ASM-HARD-INTERVENTION", "ASM-COMPLETE-JOINT-RESPONSE"],
+      "evidence_ids": ["EV-OPERATIONAL-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION", "EV-EXACT-WITNESS-SOURCE", "EV-GREEN-JUNIT"],
+      "bridge_premise_ids": [],
+      "falsifier": "Compute unequal composed crossovers or unequal atoms in the complete passive retained tables.",
+      "scope_limits": ["Exact rational BSC pair only."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-FIFTEEN-BEHAVIORAL-CLASSES",
+      "statement": "Each same-signature witness has exactly fifteen two-sided behavioral classes: nine singleton classes with O unassigned and six size-three classes in which a hard assignment to O masks E.",
+      "quantifiers": "For every one of the twenty-seven partial contexts on R,E,O in each of L_1 and L_2.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-HARD-INTERVENTION", "ASM-COMPLETE-JOINT-RESPONSE"],
+      "evidence_ids": ["EV-OPERATIONAL-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION", "EV-EXACT-WITNESS-SOURCE", "EV-GREEN-JUNIT", "EV-MUT-COLLAPSED-MULTIPLICATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Find an omitted raw context, two displayed classes with equal complete signatures, or one size-three class split by a contextual response.",
+      "scope_limits": ["Frozen binary chains and hard contexts only."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-RESPONSE-IMAGE-OBSTRUCTION",
+      "statement": "The L_1 response (1/3,1/6,1/3,1/6) is absent from the complete L_2 reduced response image under every one of the four admitted typed binary boundary relabelings.",
+      "quantifiers": "For every class of Red(L_2) and every independent binary state flip on R and O.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-COMPLETE-JOINT-RESPONSE", "ASM-ADMITTED-BOUNDARY-SYMMETRY"],
+      "evidence_ids": ["EV-OPERATIONAL-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION", "EV-EXACT-WITNESS-SOURCE", "EV-GREEN-JUNIT", "EV-MUT-ALTERED-RESPONSE", "EV-MUT-IGNORED-B"],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit an L_2 response class and admitted boundary flip whose relabeled law equals the unmatched L_1 response.",
+      "scope_limits": ["Complete response-image invariant; diagnostic total variation is not used."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-REDUCED-NONISOMORPHISM",
+      "statement": "Red(L_1) and Red(L_2) are nonisomorphic as identity-preserving response-intertwining reduced intervention experiments.",
+      "quantifiers": "For every identity-preserving protocol-monoid isomorphism candidate and every admitted typed boundary relabeling.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-COMPLETE-JOINT-RESPONSE", "ASM-ADMITTED-BOUNDARY-SYMMETRY"],
+      "evidence_ids": ["EV-OPERATIONAL-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION", "EV-STRONGEST-THEOREM", "EV-ADVERSARIAL-ATTACKS"],
+      "bridge_premise_ids": [],
+      "falsifier": "Construct an identity-preserving monoid isomorphism and one admitted boundary relabeling that intertwine every retained response.",
+      "scope_limits": ["Nonisomorphism in the declared FinRIE groupoid."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-NULL-NODE-COLLAPSE",
+      "statement": "Forgetting an independent isolated binary node induces an identity-, multiplication-, and response-preserving isomorphism between the null extension and split reduced experiment.",
+      "quantifiers": "For both assignments to N, every one of the twenty-seven contexts on R,E,O, and every pair of left and right contexts.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FINITE-DAG", "ASM-HARD-INTERVENTION", "ASM-COMPLETE-JOINT-RESPONSE"],
+      "evidence_ids": ["EV-OPERATIONAL-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION", "EV-EXACT-WITNESS-SOURCE", "EV-GREEN-JUNIT", "EV-MUT-OMITTED-CONTEXT", "EV-MUT-COLLAPSED-MULTIPLICATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Find a retained response depending on the isolated node or show that forgetting N fails to preserve or reflect behavioral equivalence.",
+      "scope_limits": ["Independent isolated node only.", "Non-load-bearing control outside target ancestry."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-SHARED-BOUNDARY-CONTROL",
+      "statement": "The direct, split, and independent-null controls have the same nine retained-boundary intervention laws at the frozen parameters.",
+      "quantifiers": "For every partial assignment on the shared retained boundary R,O.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FINITE-DAG", "ASM-HARD-INTERVENTION", "ASM-COMPLETE-JOINT-RESPONSE"],
+      "evidence_ids": ["EV-OPERATIONAL-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION", "EV-EXACT-WITNESS-SOURCE", "EV-GREEN-JUNIT", "EV-MUT-WRONG-COMPOSITION", "EV-MUT-DIRECT-SEMANTICS"],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit one of the nine shared boundary contexts with unequal retained laws.",
+      "scope_limits": ["Shared-boundary control only; auxiliary interventions differ."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-EXACT-WITNESS-CORROBORATION",
+      "statement": "The bound exact implementation satisfies the frozen focused executable contract, and every one of nine specified semantic mutants is killed before exact source restoration.",
+      "quantifiers": "For the exact source, frozen test snapshot, RED and GREEN records, and nine mutation records contained in this package.",
+      "kind": "NUMERICAL_OBSERVATION",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-EXACT-WITNESS-SOURCE", "EV-GREEN-JUNIT", "EV-RED-JUNIT", "EV-TEST-SNAPSHOT", "EV-TDD-RECORD", "EV-MUTATION-RECORD", "EV-MUT-WRONG-COMPOSITION", "EV-MUT-IGNORED-B", "EV-MUT-OMITTED-CONTEXT", "EV-MUT-ALTERED-RESPONSE", "EV-MUT-COLLAPSED-MULTIPLICATION", "EV-MUT-EQUALIZED-DIAGNOSTIC", "EV-MUT-UNSORTED-JSON", "EV-MUT-DIRECT-SEMANTICS", "EV-MUT-RAW-INVARIANTS"],
+      "bridge_premise_ids": [],
+      "falsifier": "Reproduce a failing focused GREEN test, a surviving specified mutant, or a digest mismatch in the contained source and records.",
+      "scope_limits": ["Mechanical corroboration only; it does not prove mathematical nonisomorphism."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-UBAR-NOT-ESSENTIALLY-INJECTIVE",
+      "statement": "The reduced passive functor Ubar_pass is not essentially injective on the declared BSC subcategory.",
+      "quantifiers": "There exist two nonisomorphic reduced experiments X and Y with equal passive images.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-COMPLETE-JOINT-RESPONSE", "ASM-ADMITTED-BOUNDARY-SYMMETRY"],
+      "evidence_ids": ["EV-OPERATIONAL-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION", "EV-STRONGEST-THEOREM"],
+      "bridge_premise_ids": [],
+      "falsifier": "Show that the equal-passive witness objects are isomorphic in the declared reduced groupoid.",
+      "scope_limits": ["Downstream corollary outside target ancestry."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-NO-TWO-SIDED-RECOVERY",
+      "statement": "No functor R from passive retained objects to reduced experiments can satisfy a natural isomorphism R Ubar_pass ~= identity on every reduced experiment in the declared BSC subcategory.",
+      "quantifiers": "For every proposed reconstruction functor R and natural isomorphism of the stated type.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-COMPLETE-JOINT-RESPONSE", "ASM-ADMITTED-BOUNDARY-SYMMETRY"],
+      "evidence_ids": ["EV-OPERATIONAL-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION", "EV-STRONGEST-THEOREM"],
+      "bridge_premise_ids": [],
+      "falsifier": "Construct a functor and natural isomorphism R Ubar_pass ~= identity on the declared subcategory.",
+      "scope_limits": ["Does not rule out Ubar_pass R ~= identity."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-CONVENTIONAL-RIGHT-INVERSE-ALLOWANCE",
+      "statement": "The certified contradiction for R Ubar_pass ~= identity does not imply nonexistence of a conventional representative-selecting section satisfying Ubar_pass R ~= identity.",
+      "quantifiers": "For the logical content of the same-fiber contradiction and the two opposite functor-composition types.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-OPERATIONAL-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION", "EV-STRONGEST-THEOREM", "EV-ADVERSARIAL-ATTACKS"],
+      "bridge_premise_ids": [],
+      "falsifier": "Derive nonexistence of Ubar_pass R ~= identity using only the certified same-fiber pair and without additional assumptions.",
+      "scope_limits": ["No existence or canonical-choice theorem for such a section is asserted."],
+      "open_obligations": []
+    },
+    {
+      "id": "CLM-CATEGORY-CANONICITY",
+      "statement": "The declared finite typed-intervention category is the ontologically canonical category of agents or physical systems.",
+      "quantifiers": "Across all admissible ontological and operational representations.",
+      "kind": "MODELING_POSTULATE",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": ["ASM-DECLARED-MODEL-CLASS"],
+      "evidence_ids": [],
+      "bridge_premise_ids": [],
+      "falsifier": "Produce a competing operationally adequate category not equivalent under a justified ontology criterion.",
+      "scope_limits": ["Explicitly outside the frozen target."],
+      "open_obligations": ["Define an ontology criterion and prove a scope-matched uniqueness or equivalence theorem."]
+    },
+    {
+      "id": "CLM-AUTONOMOUS-AGENCY",
+      "statement": "A mediator, intervention target, or reduced protocol class in the finite model is thereby an autonomous agent.",
+      "quantifiers": "For every modeled mediator, target, or protocol class.",
+      "kind": "MODELING_POSTULATE",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": ["ASM-DECLARED-MODEL-CLASS"],
+      "evidence_ids": [],
+      "bridge_premise_ids": [],
+      "falsifier": "Give an admitted modeled variable that lacks the proposed operational criteria for autonomous agency.",
+      "scope_limits": ["Explicitly outside the frozen target."],
+      "open_obligations": ["Define autonomous agency operationally and establish the required bridge for modeled variables."]
+    },
+    {
+      "id": "CLM-MINIMAL-REALIZATION",
+      "statement": "Every passive object in a justified ambient category has a unique minimal reduced intervention realization up to the intended equivalence.",
+      "quantifiers": "For every passive object in a future explicitly declared ambient category.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "INCONCLUSIVE",
       "assumption_ids": [],
       "evidence_ids": [],
       "bridge_premise_ids": [],
-      "falsifier": "Exhibit two admitted equal-passive-law reduced experiments with no identity-preserving response-intertwining isomorphism under any admitted typed boundary relabeling.",
-      "scope_limits": [
-        "No category-independent, ontological, autonomous-agency, continuum, gauge, or physical-identification claim is part of this target."
-      ]
+      "falsifier": "Exhibit nonunique minimal objects under the proposed criterion.",
+      "scope_limits": ["Future work; no ambient category or minimality criterion is presently frozen."],
+      "open_obligations": ["Define the ambient category, minimality criterion, and equivalence.", "Prove existence and uniqueness or provide a scope-matched obstruction."]
+    },
+    {
+      "id": "CLM-SOFT-CONTINUOUS-INTERVENTIONS",
+      "statement": "The same reduction and nonidentifiability theorem extends unchanged to arbitrary soft, stochastic, or continuous interventions.",
+      "quantifiers": "For every such intervention family in a future declared category.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [],
+      "evidence_ids": [],
+      "bridge_premise_ids": [],
+      "falsifier": "Find a well-typed soft or continuous intervention family for which composition or behavioral quotienting fails.",
+      "scope_limits": ["Hard finite interventions only are certified."],
+      "open_obligations": ["Define the richer intervention algebra, equivalence, topology, and continuity or measurability conditions.", "Prove quotient and counterexample transport."]
+    },
+    {
+      "id": "CLM-CONTINUUM-GAUGE-EXTENSION",
+      "statement": "The finite theorem extends to continuum, bundle, gauge, or renormalization-scale categories with all overlap, covariance, and closure conditions.",
+      "quantifiers": "For all objects and morphisms in a future explicitly typed continuum or gauge category.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [],
+      "evidence_ids": [],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit a topology, overlap, gauge, singular-stratum, or coarse-graining obstruction to the proposed extension.",
+      "scope_limits": ["Finite discrete theorem only."],
+      "open_obligations": ["Define the continuum or gauge category and intervention action.", "Prove global coherence, covariance, quotient regularity, and any renormalization closure."]
+    },
+    {
+      "id": "CLM-PHYSICAL-IDENTIFICATION",
+      "statement": "Informational responses or updates in the finite sections thereby determine physical geometry, constants, units, time, or other physical properties.",
+      "quantifiers": "For every proposed informational-to-physical identification.",
+      "kind": "PHYSICAL_INTERPRETATION",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": ["ASM-PHYSICAL-BRIDGE-REQUIRED"],
+      "evidence_ids": [],
+      "bridge_premise_ids": ["ASM-PHYSICAL-BRIDGE-REQUIRED"],
+      "falsifier": "Produce operationally distinguishable physical systems with the same proposed informational invariant or a dimensional inconsistency in the identification.",
+      "scope_limits": ["No physical identification is part of the frozen theorem."],
+      "open_obligations": ["Specify dimensions, units, observables, and an operational bridge.", "Establish the required continuum, gauge, and empirical evidence."]
     }
   ]
 }

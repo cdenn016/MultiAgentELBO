@@ -2,14 +2,50 @@
   "schema_version": "rigorous-theory-search/v1",
   "contract_id": "contract-sha256-efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
   "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
-  "checkpoint": "Task 1 freezes the committed design and plan at Git revision 66a7df4de9f33ccb7cb8a98ecba92a6a55bb96a9 and establishes only an exact-witness RED contract; no production witness or mathematical certificate exists.",
+  "checkpoint": "Release assembled from Task 3 commit 56cc9ea0346971495de5a0b5561c14f02868bad3 with direct proof, exact rational corroboration, independent reconstruction, adversarial adjudication, and semantic oracle erasure.",
   "target_claim": "TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS",
-  "terminal_status": null,
-  "certificate_claim": null,
-  "strongest_result": "No theorem, construction, or counterexample has been established.",
+  "terminal_status": "COMPLETE_NEGATIVE",
+  "certificate_claim": "TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS",
+  "negative_certificate_kind": "COUNTEREXAMPLE",
+  "certificate_evidence_id": "EV-COUNTEREXAMPLE",
+  "dependency_closure": [
+    "TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS",
+    "CLM-PASSIVE-EQUALITY-L1-L2",
+    "CLM-REDUCED-NONISOMORPHISM",
+    "CLM-RESPONSE-IMAGE-OBSTRUCTION",
+    "CLM-FIFTEEN-BEHAVIORAL-CLASSES",
+    "CLM-REDUCTION-FUNCTOR",
+    "CLM-TWO-SIDED-CONGRUENCE",
+    "CLM-RIGHT-OVERRIDE-MONOID",
+    "CLM-RAW-TYPED-PRESENTATIONS"
+  ],
+  "strongest_result": "In the declared finite BSC subcategory, equal complete passive retained law does not identify the reduced protocol-indexed retained response experiment: L(1/4,1/3) and L(1/3,1/4) have one common passive law and raw signature but nonisomorphic reduced experiments because one complete response-image element remains unmatched under all four admitted boundary relabelings. Therefore Ubar_pass is not essentially injective and no universal two-sided reconstruction R Ubar_pass naturally isomorphic to the reduced identity exists.",
   "unresolved_obligations": [
-    "Implement the exact finite witness against the frozen failing test contract.",
-    "Prove the raw category, two-sided congruence, null collapse, same-signature nonisomorphism, and no-two-sided-recovery corollary.",
-    "Perform independent reconstruction, adversarial review, oracle erasure, and release validation."
+    "Ontological canonicity of the declared category.",
+    "Operational criteria and bridge for autonomous agency.",
+    "Existence and uniqueness of a minimal realization in a separately declared ambient category.",
+    "Soft, stochastic, continuous, continuum, gauge, and renormalization-scale extensions.",
+    "Any VFE-emergence or informational-to-physical identification, including geometry, constants, units, or time.",
+    "Existence or canonical choice of a conventional representative-selecting section Ubar_pass R naturally isomorphic to the passive identity."
+  ],
+  "release_metrics": {
+    "claims_total": 21,
+    "claims_evidence_verified": 14,
+    "claims_refuted": 1,
+    "claims_inconclusive": 6,
+    "dependency_ancestors_evidence_verified": 8,
+    "mechanism_families": 9,
+    "adversarial_attacks": 12,
+    "focused_green_tests": 18,
+    "focused_green_failures": 0,
+    "focused_green_errors": 0,
+    "focused_green_skipped": 0,
+    "killed_mutants": 9
+  },
+  "scope_guards": [
+    "The target closure rests on passive equality, the complete four-relabeling response-image obstruction, and reduced nonisomorphism.",
+    "Diagnostic total variation and null-node inventory are not target ancestors.",
+    "The theorem rules out R Ubar_pass naturally isomorphic to the reduced identity, not Ubar_pass R naturally isomorphic to the passive identity.",
+    "No autonomous-agency, ontological-canonicity, continuum, gauge, VFE, or physical-identification claim is released."
   ]
 }
