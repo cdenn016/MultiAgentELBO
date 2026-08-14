@@ -8,6 +8,7 @@ genuine RED at the missing-witness boundary.
 from __future__ import annotations
 
 import hashlib
+import inspect
 import importlib.util
 import io
 import itertools
@@ -257,6 +258,165 @@ def _capture_main(witness):
     return output.encode("ascii"), json.loads(output)
 
 
+def _call_signature(function):
+    signature = inspect.signature(function)
+    return tuple(
+        (parameter.name, parameter.kind, parameter.default)
+        for parameter in signature.parameters.values()
+    )
+
+
+def _assert_context_schema(context, node_order):
+    assert type(context) is tuple
+    ranks = {node: index for index, node in enumerate(node_order)}
+    previous_rank = -1
+    seen = set()
+    for assignment in context:
+        assert type(assignment) is tuple
+        assert len(assignment) == 2
+        node, bit = assignment
+        assert type(node) is str
+        assert node in ranks
+        assert node not in seen
+        assert ranks[node] > previous_rank
+        assert type(bit) is int
+        assert bit in (0, 1)
+        seen.add(node)
+        previous_rank = ranks[node]
+
+
+def _assert_retained_law_schema(law):
+    assert type(law) is tuple
+    assert len(law) == 4
+    assert all(type(atom) is Fraction and atom >= 0 for atom in law)
+    assert sum(law, Fraction(0)) == Fraction(1)
+
+
+def _assert_contextual_signature_schema(signature, node_order):
+    context_count = 3 ** len(node_order)
+    assert type(signature) is tuple
+    assert len(signature) == context_count * context_count
+    for law in signature:
+        _assert_retained_law_schema(law)
+
+
+def _assert_reduced_experiment_schema(experiment, node_order):
+    assert type(experiment) is tuple
+    assert len(experiment) == 3
+    classes, multiplication, responses = experiment
+    assert type(classes) is tuple
+    assert classes
+    flattened_contexts = []
+    representatives = []
+    canonical_contexts = _all_contexts(node_order)
+    context_ranks = {
+        context: index for index, context in enumerate(canonical_contexts)
+    }
+    for behavioral_class in classes:
+        assert type(behavioral_class) is tuple
+        assert behavioral_class
+        for context in behavioral_class:
+            _assert_context_schema(context, node_order)
+            flattened_contexts.append(context)
+        assert behavioral_class == tuple(
+            sorted(behavioral_class, key=context_ranks.__getitem__)
+        )
+        representatives.append(behavioral_class[0])
+    assert len(flattened_contexts) == len(canonical_contexts)
+    assert set(flattened_contexts) == set(canonical_contexts)
+    assert tuple(representatives) == tuple(
+        sorted(representatives, key=context_ranks.__getitem__)
+    )
+
+    class_count = len(classes)
+    assert type(multiplication) is tuple
+    assert len(multiplication) == class_count
+    for row in multiplication:
+        assert type(row) is tuple
+        assert len(row) == class_count
+        assert all(
+            type(class_index) is int and 0 <= class_index < class_count
+            for class_index in row
+        )
+    assert multiplication[0] == tuple(range(class_count))
+    assert tuple(row[0] for row in multiplication) == tuple(range(class_count))
+
+    assert type(responses) is tuple
+    assert len(responses) == class_count
+    for law in responses:
+        _assert_retained_law_schema(law)
+
+
+def test_public_api_call_signatures_are_exact():
+    witness = _load_witness()
+    positional = inspect.Parameter.POSITIONAL_OR_KEYWORD
+    keyword_only = inspect.Parameter.KEYWORD_ONLY
+    required = inspect.Parameter.empty
+    expected = {
+        "bsc": (
+            ("epsilon", positional, required),
+            ("output_bit", positional, required),
+            ("input_bit", positional, required),
+        ),
+        "compose_bsc": (
+            ("a", positional, required), ("b", positional, required)
+        ),
+        "compose_context": (
+            ("left", positional, required), ("right", positional, required)
+        ),
+        "direct_retained_law": (
+            ("delta", positional, required), ("context", positional, ())
+        ),
+        "split_joint_law": (
+            ("a", positional, required), ("b", positional, required),
+            ("context", positional, ()),
+        ),
+        "split_retained_law": (
+            ("a", positional, required), ("b", positional, required),
+            ("context", positional, ()),
+        ),
+        "null_extended_joint_law": (
+            ("a", positional, required), ("b", positional, required),
+            ("eta", positional, required), ("context", positional, ()),
+        ),
+        "null_extended_retained_law": (
+            ("a", positional, required), ("b", positional, required),
+            ("eta", positional, required), ("context", positional, ()),
+        ),
+        "intervention_response": (
+            ("model", positional, required), ("a", keyword_only, required),
+            ("b", keyword_only, required), ("eta", keyword_only, None),
+            ("context", keyword_only, ()),
+        ),
+        "shared_boundary_intervention_law": (
+            ("model", positional, required), ("context", positional, ())
+        ),
+        "mediator_response": (
+            ("b", positional, required),
+            ("mediator_bit", positional, required),
+        ),
+        "binary_total_variation": (
+            ("left", positional, required), ("right", positional, required)
+        ),
+        "contextual_response_signature": (
+            ("model", positional, required), ("a", keyword_only, required),
+            ("b", keyword_only, required), ("eta", keyword_only, None),
+            ("context", keyword_only, ()),
+        ),
+        "response_image": (
+            ("model", positional, required), ("a", keyword_only, required),
+            ("b", keyword_only, required), ("eta", keyword_only, None),
+        ),
+        "same_signature_counterexample": (),
+        "raw_presentation_invariants": (("model", positional, required),),
+        "main": (),
+    }
+
+    assert set(expected) == REQUIRED_API
+    for name, parameters in expected.items():
+        assert _call_signature(getattr(witness, name)) == parameters
+
+
 def test_bsc_context_composition_and_validation_are_exact():
     witness = _load_witness()
 
@@ -274,6 +434,9 @@ def test_bsc_context_composition_and_validation_are_exact():
     assert witness.compose_context(
         (("R", 0), ("E", 0)), (("R", 1), ("O", 1))
     ) == (("R", 1), ("E", 0), ("O", 1))
+    assert witness.compose_context(
+        (("O", 1), ("N", 0)), (("E", 1), ("R", 0))
+    ) == (("R", 0), ("E", 1), ("N", 0), ("O", 1))
     assert witness.compose_context((), ()) == ()
 
     for invalid in (Fraction(-1, 10), Fraction(11, 10)):
@@ -303,6 +466,43 @@ def test_bsc_context_composition_and_validation_are_exact():
         witness.bsc(CONTROL_A, 2, 0)
     with pytest.raises(ValueError):
         witness.bsc(CONTROL_A, 0, -1)
+
+    invalid_context_calls = (
+        lambda: witness.direct_retained_law(
+            CONTROL_DELTA, (("E", 0),)
+        ),
+        lambda: witness.split_joint_law(
+            CONTROL_A, CONTROL_B, (("N", 0),)
+        ),
+        lambda: witness.split_retained_law(
+            CONTROL_A, CONTROL_B, (("N", 0),)
+        ),
+        lambda: witness.null_extended_joint_law(
+            CONTROL_A, CONTROL_B, CONTROL_ETA, (("X", 0),)
+        ),
+        lambda: witness.null_extended_retained_law(
+            CONTROL_A, CONTROL_B, CONTROL_ETA, (("X", 0),)
+        ),
+        lambda: witness.shared_boundary_intervention_law(
+            "direct", (("E", 0),)
+        ),
+        lambda: witness.shared_boundary_intervention_law(
+            "split", (("N", 0),)
+        ),
+        lambda: witness.contextual_response_signature(
+            "direct", a=CONTROL_A, b=CONTROL_B, context=(("E", 0),)
+        ),
+        lambda: witness.contextual_response_signature(
+            "split", a=CONTROL_A, b=CONTROL_B, context=(("N", 0),)
+        ),
+        lambda: witness.contextual_response_signature(
+            "null", a=CONTROL_A, b=CONTROL_B, eta=CONTROL_ETA,
+            context=(("X", 0),)
+        ),
+    )
+    for invalid_context_call in invalid_context_calls:
+        with pytest.raises(ValueError):
+            invalid_context_call()
     with pytest.raises(ValueError):
         witness.intervention_response(
             "unknown", a=CONTROL_A, b=CONTROL_B, context=()
@@ -424,6 +624,9 @@ def test_null_two_sided_signatures_and_reduced_quotient_are_identical():
         eta=CONTROL_ETA,
         context=(("N", 1),),
     )
+    _assert_contextual_signature_schema(noop, ("R", "E", "N", "O"))
+    _assert_contextual_signature_schema(do_n0, ("R", "E", "N", "O"))
+    _assert_contextual_signature_schema(do_n1, ("R", "E", "N", "O"))
     assert noop == do_n0 == do_n1
     assert len(noop) == 81 * 81
     serialized = json.dumps(
@@ -439,6 +642,8 @@ def test_null_two_sided_signatures_and_reduced_quotient_are_identical():
     null = witness.response_image(
         "null", a=CONTROL_A, b=CONTROL_B, eta=CONTROL_ETA
     )
+    _assert_reduced_experiment_schema(split, ("R", "E", "O"))
+    _assert_reduced_experiment_schema(null, ("R", "E", "N", "O"))
     split_classes, split_multiplication, split_responses = split
     null_classes, null_multiplication, null_responses = null
     split_lookup = {
@@ -523,8 +728,7 @@ def test_reduced_experiments_match_all_frozen_classes_tables_and_hashes():
     right_classes, right_multiplication, right_responses = right
 
     for experiment in (left, right):
-        assert isinstance(experiment, tuple)
-        assert len(experiment) == 3
+        _assert_reduced_experiment_schema(experiment, ("R", "E", "O"))
     assert tuple(behavioral_class[0] for behavioral_class in left_classes) == (
         REDUCED_REPRESENTATIVES
     )
@@ -624,7 +828,87 @@ def test_main_json_is_recursive_exact_sorted_compact_and_stable():
         "null_control",
         "raw_invariants",
     ]
-    assert all(isinstance(first_payload[key], dict) and first_payload[key] for key in first_payload)
+
+    direct_passive = witness.direct_retained_law(CONTROL_DELTA)
+    split_passive = witness.split_retained_law(CONTROL_A, CONTROL_B)
+    null_passive = witness.null_extended_retained_law(
+        CONTROL_A, CONTROL_B, CONTROL_ETA
+    )
+    mediator_responses = (
+        witness.mediator_response(CONTROL_B, 0),
+        witness.mediator_response(CONTROL_B, 1),
+    )
+    expected_control = {
+        "direct_passive": direct_passive,
+        "mediator_responses": mediator_responses,
+        "mediator_total_variation": witness.binary_total_variation(
+            *mediator_responses
+        ),
+        "null_passive": null_passive,
+        "shared_boundary_laws": tuple(
+            witness.shared_boundary_intervention_law("direct", context)
+            for context in CONTROL_CONTEXTS
+        ),
+        "split_passive": split_passive,
+    }
+
+    noop_signature = witness.contextual_response_signature(
+        "null", a=CONTROL_A, b=CONTROL_B, eta=CONTROL_ETA, context=()
+    )
+    do_n0_signature = witness.contextual_response_signature(
+        "null", a=CONTROL_A, b=CONTROL_B, eta=CONTROL_ETA,
+        context=(("N", 0),)
+    )
+    do_n1_signature = witness.contextual_response_signature(
+        "null", a=CONTROL_A, b=CONTROL_B, eta=CONTROL_ETA,
+        context=(("N", 1),)
+    )
+    split_experiment = witness.response_image(
+        "split", a=CONTROL_A, b=CONTROL_B
+    )
+    null_experiment = witness.response_image(
+        "null", a=CONTROL_A, b=CONTROL_B, eta=CONTROL_ETA
+    )
+    split_classes, split_multiplication, split_responses = split_experiment
+    null_classes, null_multiplication, null_responses = null_experiment
+    split_lookup = {
+        context: class_index
+        for class_index, behavioral_class in enumerate(split_classes)
+        for context in behavioral_class
+    }
+    class_images = tuple(
+        tuple(sorted({
+            split_lookup[tuple(
+                (node, bit) for node, bit in context if node != "N"
+            )]
+            for context in behavioral_class
+        }))
+        for behavioral_class in null_classes
+    )
+    assert all(len(image) == 1 for image in class_images)
+    class_map = tuple(image[0] for image in class_images)
+    assert class_map == tuple(range(15))
+    multiplication_preserved = all(
+        class_map[null_multiplication[left_index][right_index]]
+        == split_multiplication[class_map[left_index]][class_map[right_index]]
+        for left_index in range(len(null_classes))
+        for right_index in range(len(null_classes))
+    )
+    assert multiplication_preserved
+    assert null_responses == split_responses
+    expected_null_control = {
+        "do_n0_signature": do_n0_signature,
+        "do_n1_signature": do_n1_signature,
+        "forget_n_isomorphism": {
+            "class_map": class_map,
+            "identity_preserved": class_map[0] == 0,
+            "multiplication_preserved": multiplication_preserved,
+            "responses_preserved": null_responses == split_responses,
+        },
+        "noop_signature": noop_signature,
+        "null_experiment": null_experiment,
+        "split_experiment": split_experiment,
+    }
     canonical = (
         json.dumps(
             first_payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True
@@ -633,6 +917,10 @@ def test_main_json_is_recursive_exact_sorted_compact_and_stable():
     ).encode("ascii")
     assert first_bytes == canonical
     _validate_json_tree(first_payload)
+    assert first_payload["control"] == _json_ready(expected_control)
+    assert first_payload["null_control"] == _json_ready(
+        expected_null_control
+    )
     assert first_payload["counterexample"] == _json_ready(
         witness.same_signature_counterexample()
     )

@@ -29,16 +29,27 @@ Process exit status: `1`.
 
 Machine-derived JUnit totals:
 
-- tests: 13
-- failures: 13
+- tests: 14
+- failures: 14
 - errors: 0
 - skipped: 0
-- time: 0.188 seconds
+- time: 0.281 seconds
 
-All 13 `<failure>` nodes contain the declared absent-witness assertion.
+All 14 `<failure>` nodes contain the declared absent-witness assertion.
+
+## Contract-review correction
+
+This RED supersedes the narrower Task 1 record in commit `bff35ede271270cdd7e784f2a16d369a3dae73cd`. The production witness remained absent throughout the correction. The tightened executable contract now additionally freezes:
+
+- every public call signature through exact `inspect.signature` parameter names, kinds, defaults, and keyword-only boundaries;
+- exact nested tuple schemas for contextual signatures, behavioral classes, context assignments, multiplication rows and class indices, and response laws;
+- canonical `R,E,N,O` composition ordering;
+- presentation-specific absent-node rejection through each relevant direct public context entry point; and
+- literal deterministic `control` and `null_control` inner schemas, each compared to an independently recomputed native record containing the specified passive laws, nine boundary responses, mediator pair and total variation, complete null signatures, split/null reduced experiments, and forget-`N` isomorphism checks.
 
 ## Failing tests
 
+- `tests.test_typed_intervention_semantics_witness::test_public_api_call_signatures_are_exact`
 - `tests.test_typed_intervention_semantics_witness::test_bsc_context_composition_and_validation_are_exact`
 - `tests.test_typed_intervention_semantics_witness::test_joint_and_retained_laws_use_frozen_lexicographic_order`
 - `tests.test_typed_intervention_semantics_witness::test_all_nine_shared_boundary_intervention_tables_are_literal`
@@ -55,7 +66,7 @@ All 13 `<failure>` nodes contain the declared absent-witness assertion.
 
 ## Expected failure reason
 
-Every collected test failed at `_load_witness()` because `exact_typed_intervention_witness.py` did not exist. The assertion text was `expected RED: exact_typed_intervention_witness.py has not been implemented`. There were no collection errors, import errors, malformed fixtures, environmental failures, or unrelated test failures. This proves that the frozen executable contract reaches the missing production boundary before Task 2 implementation.
+Every collected test failed at `_load_witness()` because `exact_typed_intervention_witness.py` did not exist. The assertion text was `expected RED: exact_typed_intervention_witness.py has not been implemented`. There were no collection errors, import errors, malformed fixtures, environmental failures, or unrelated test failures. This proves that the review-corrected executable contract reaches the missing production boundary before Task 2 implementation.
 
 The contract freezes every required API signature, exact BSC and validation behavior, lexicographic joint-law order, all nine shared-boundary tables, mediator responses, exhaustive nullness, literal two-sided signatures, quotient-monoid reduction, same-signature passive and intervened laws, all four boundary relabelings, all eight raw binary state relabelings, fifteen reduced classes, multiplication and full-serialization hashes, transparent counterexample records, recursive JSON encoding, fresh-process byte stability, and source-snapshot byte identity.
 
@@ -65,9 +76,9 @@ The RED XML was decoded as UTF-8, every CRLF or bare CR was changed to LF, space
 
 | Artifact | Filesystem SHA-256 | Filtered Git blob | Bytes | CR bytes | UTF-8 BOM |
 | --- | --- | --- | ---: | ---: | --- |
-| `evidence/red-junit.xml` | `7293f9eae9a099dcc9ee4af8be0b96e0c315ca205e4d28e041db50a797257deb` | `403b0ace408b35f53c5e2d3246d5e40f09495ce0` | 19569 | 0 | no |
-| `tests/test_typed_intervention_semantics_witness.py` | `842648791ac73db70cc0749764bd7a0ac8b923e8c831a6fe95381c1a218a0d2d` | `6924a373e0458e2292a632a9c827232cd72aaca5` | 24598 | 0 | no |
-| `evidence/test_typed_intervention_semantics_witness.snapshot.py` | `842648791ac73db70cc0749764bd7a0ac8b923e8c831a6fe95381c1a218a0d2d` | `6924a373e0458e2292a632a9c827232cd72aaca5` | 24598 | 0 | no |
+| `evidence/red-junit.xml` | `781d64bcb3930932480370f9a68d28e93ef2ceda888d820ae5fc9a27f42fc8ba` | `a46fa3443da5c0c48ab3d6c3028934c2cc06f96e` | 21012 | 0 | no |
+| `tests/test_typed_intervention_semantics_witness.py` | `93066eb5d06c66d891039d74694dc342f4924de515aee1c28717b85dbc9c1bc3` | `b2667e23b9d44d4be304463ff066a822dc84b2a9` | 35450 | 0 | no |
+| `evidence/test_typed_intervention_semantics_witness.snapshot.py` | `93066eb5d06c66d891039d74694dc342f4924de515aee1c28717b85dbc9c1bc3` | `b2667e23b9d44d4be304463ff066a822dc84b2a9` | 35450 | 0 | no |
 
 The live test and package snapshot are byte-identical. For all three artifacts, the raw LF bytes and the configured Git-clean-filter bytes describe the same content; the Git blob identifiers above are the repository object identities after the explicit `text eol=lf` rules.
 
