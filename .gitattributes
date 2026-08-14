@@ -9,6 +9,10 @@ docs/derivations/2026-08-12-elbo-pifb2-fast-slow-program/** text eol=lf
 docs/derivations/2026-08-13-finite-presentation-descent-joint-fisher/** text eol=lf
 docs/derivations/2026-08-14-collective-joint-lift-fisher/** text eol=lf
 docs/derivations/2026-08-14-canonical-dependence-selection/** text eol=lf
+docs/derivations/2026-08-14-typed-intervention-nonidentifiability/** text eol=lf
+
+# Typed-intervention witness contract has byte-bound evidence snapshots.
+tests/test_typed_intervention_semantics_witness.py text eol=lf
 
 # The supplied Windows snapshot must retain its checked-out line endings.
 Theory/** text eol=crlf

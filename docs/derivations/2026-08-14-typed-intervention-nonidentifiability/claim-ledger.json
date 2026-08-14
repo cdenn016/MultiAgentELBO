@@ -1,0 +1,24 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+  "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+  "assumptions": [],
+  "evidence": [],
+  "claims": [
+    {
+      "id": "TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS",
+      "statement": "For every two admissible finite reduced typed-intervention experiments in the declared binary-symmetric-channel subcategory, equality of their passive retained (R,O) law implies isomorphism of their reduced protocol-indexed retained response experiments.",
+      "quantifiers": "For all reduced experiments Red(P) and Red(Q) arising from admissible finite binary-symmetric-channel presentations P and Q with retained nodes (R,O), if Ubar_pass(Red(P)) and Ubar_pass(Red(Q)) have the same complete passive retained joint law up to an admitted typed boundary relabeling, then Red(P) and Red(Q) are isomorphic as reduced intervention experiments by an identity-preserving protocol-monoid isomorphism intertwining every retained response law up to one admitted typed boundary relabeling.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+      "state": "CANDIDATE",
+      "assumption_ids": [],
+      "evidence_ids": [],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit two admitted equal-passive-law reduced experiments with no identity-preserving response-intertwining isomorphism under any admitted typed boundary relabeling.",
+      "scope_limits": [
+        "No category-independent, ontological, autonomous-agency, continuum, gauge, or physical-identification claim is part of this target."
+      ]
+    }
+  ]
+}

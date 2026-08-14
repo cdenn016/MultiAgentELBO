@@ -1,0 +1,60 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+  "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+  "target": {
+    "statement": "For every two admissible finite reduced typed-intervention experiments in the declared binary-symmetric-channel subcategory, equality of their passive retained (R,O) law implies isomorphism of their reduced protocol-indexed retained response experiments.",
+    "kind": "MATHEMATICAL",
+    "quantifier_class": "UNIVERSAL",
+    "quantifiers": "For all reduced experiments Red(P) and Red(Q) arising from admissible finite binary-symmetric-channel presentations P and Q with retained nodes (R,O), if Ubar_pass(Red(P)) and Ubar_pass(Red(Q)) have the same complete passive retained joint law up to an admitted typed boundary relabeling, then Red(P) and Red(Q) are isomorphic as reduced intervention experiments by an identity-preserving protocol-monoid isomorphism intertwining every retained response law up to one admitted typed boundary relabeling.",
+    "domains": [
+      "FinTIP_(R,O)^iso objects are finite nonempty typed causal presentations P=(V,tau,(X_v),G,(kappa_v),r,o) with finite nonempty state spaces, a finite DAG, normalized local Markov kernels, distinguished retained-state and record nodes, and every finite hard intervention.",
+      "The declared BSC subcategory contains binary chains R->E->O with R~Bernoulli(1/2), edge kernels C_a and C_b, and their operational reductions by all partial hard assignments.",
+      "For each presentation P, A_P is the finite monoid of partial hard assignments under total right override, and Phi_P maps each context to the complete retained (R,O) joint law."
+    ],
+    "codomains": [
+      "FinObs_(R,O)^iso contains finite retained objects (X_R,X_O,P_RO) with typed boundary relabelings.",
+      "FinRIE_(R,O)^iso contains finite reduced intervention experiments (behavioral classes, quotient multiplication, retained responses) with identity-preserving response-intertwining isomorphisms."
+    ],
+    "regularity": "Finite exact setting only: all state spaces and context monoids are finite, every local kernel and induced law is normalized, and all executable probabilities are exact rational numbers.",
+    "measures": [
+      "Counting measure on every finite state space.",
+      "Normalized finite probability mass functions for observational and hard-intervention laws."
+    ],
+    "boundary_conditions": [
+      "The retained boundary is the ordered pair (R,O), and retained laws are complete joint tables in lexicographic order (0,0),(0,1),(1,0),(1,1).",
+      "The load-bearing witness pair uses the same nodes R,E,O, the same roles and binary cardinalities, the same chain R->E->O, and the same mediator intervention target E."
+    ],
+    "symmetries": [
+      "Raw isomorphisms are type-preserving node bijections with state-space bijections that fix retained roles, preserve the DAG, transport every local kernel, and intertwine every hard intervention.",
+      "Reduced isomorphisms use identity-preserving protocol-monoid isomorphisms and one of the four typed binary boundary state relabelings on R and O.",
+      "No autonomous-agency, ontological-canonicity, continuum, gauge, soft-intervention, or physical-identification symmetry is admitted."
+    ],
+    "equivalence": "For contexts i and j in A_P, i ==_P j exactly when Phi_P(u star i star v)=Phi_P(u star j star v) for every u,v in A_P, where star is total right override. Red(P) is the quotient monoid A_P/==_P with the descended retained response map. Two reduced experiments are isomorphic exactly under the identity, multiplication, and typed-boundary response-preservation conditions stated in the frozen design.",
+    "premises": [
+      "Finite hard interventions replace selected local kernels by point masses and leave every other mechanism unchanged.",
+      "Ubar_pass retains the identity-class complete joint response and forgets every nonidentity protocol class.",
+      "The admitted BSC parameter pairs (a,b)=(1/4,1/3) and (1/3,1/4) are objects of the declared subcategory.",
+      "Intervened responses are compared as complete joint tables, including zero cells; no conditioning on null events is used."
+    ],
+    "modeling_postulates": [
+      "The raw finite typed category and its BSC subcategory are declared mathematical model classes and are not asserted to be ontologically canonical."
+    ],
+    "search_priors": [],
+    "permitted_theorems": [
+      "Finite probability normalization and exact rational arithmetic.",
+      "Elementary finite DAG factorization and truncated-product intervention identities.",
+      "Elementary monoid, congruence, quotient, groupoid, functor, and isomorphism arguments.",
+      "A single admitted counterexample refutes a universal implication."
+    ],
+    "negative_certificate_kind": "COUNTEREXAMPLE",
+    "falsification_criterion": "The universal target is refuted by two admitted reduced experiments with equal passive retained law but no identity-preserving response-intertwining reduced-experiment isomorphism under any admitted typed boundary relabeling. A proposed witness is invalidated by constructing such an isomorphism or by showing that either presentation falls outside the frozen domain.",
+    "literature_policy": "This finite internal theorem may rely on the committed design and prior repository certificates. Any later external reliance must use a current primary source with an exact statement and hypothesis mapping; no priority or ontology claim is in scope.",
+    "input_revision": {
+      "git_commit": "66a7df4de9f33ccb7cb8a98ecba92a6a55bb96a9",
+      "origin_main_baseline": "f956c7f1d7fb035d157b415c670a13a46f631233",
+      "design_path": "docs/superpowers/specs/2026-08-14-typed-intervention-semantics-design.md",
+      "plan_path": "docs/superpowers/plans/2026-08-14-typed-intervention-semantics.md"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+  "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+  "checkpoint": "Task 1 freezes the committed design and plan at Git revision 66a7df4de9f33ccb7cb8a98ecba92a6a55bb96a9 and establishes only an exact-witness RED contract; no production witness or mathematical certificate exists.",
+  "target_claim": "TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS",
+  "terminal_status": null,
+  "certificate_claim": null,
+  "strongest_result": "No theorem, construction, or counterexample has been established.",
+  "unresolved_obligations": [
+    "Implement the exact finite witness against the frozen failing test contract.",
+    "Prove the raw category, two-sided congruence, null collapse, same-signature nonisomorphism, and no-two-sided-recovery corollary.",
+    "Perform independent reconstruction, adversarial review, oracle erasure, and release validation."
+  ]
+}

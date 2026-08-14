@@ -1,0 +1,28 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+  "target_digest": "efe715cba81c2000403811015e6cecb599f4023133543b5cb0ae77288bccc874",
+  "mechanism_families": [
+    {
+      "family_id": "family-operational-counterexample",
+      "core_mechanism": "Compare complete two-sided retained-response signatures for equal-passive-law BSC chains with one common raw signature.",
+      "target_obligation_ids": ["TARGET-PASSIVE-DETERMINES-REDUCED-INTERVENTIONS"],
+      "representation": "Finite partial-assignment monoids under total right override and exact rational retained response tables.",
+      "invariant_or_obstruction": "A response class of the left reduced experiment is absent from the right response image under every admitted typed boundary relabeling.",
+      "obligations": [
+        "Implement and independently test the exact finite witness.",
+        "Prove the two-sided behavioral relation is a monoid congruence.",
+        "Prove the same-signature pair is nonisomorphic after operational reduction."
+      ],
+      "bridge": "No bridge result has been established at this checkpoint.",
+      "failure_test": "Construct an identity-preserving reduced-protocol isomorphism intertwining the two response maps under an admitted boundary relabeling.",
+      "verified_results": [],
+      "open_gaps": [
+        "The exact witness has not yet been implemented.",
+        "No mathematical proof or counterexample has yet been certified."
+      ],
+      "novelty_fingerprint": "finite BSC chain + total right override + two-sided response congruence + unmatched response image + same raw signature",
+      "disposition": "open"
+    }
+  ]
+}
