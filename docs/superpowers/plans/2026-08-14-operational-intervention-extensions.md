@@ -16,13 +16,13 @@
 - Use American English in every added or edited line.
 - Do not modify any prior derivation package; the new package is additive.
 - Do not run the repository pytest suite or any model/GPU workload. Use exact standalone recomputation, release validators, static checks, and TeX builds only.
-- Mathematics closes only by direct derivation. Exact rational and decimal execution is corroborative.
-- The universal quotient is canonical only over a fixed raw protocol monoid and quotient map. Never call it a canonical latent/DAG realization.
-- Target/type-face preservation is explicit and load-bearing for local soft and continuous mediator results.
+- Mathematics closes only by direct derivation. Exact rational and decimal execution is corroborative. A missing proof or unresolved hypothesis mapping yields `INCONCLUSIVE` and blocks release; it does not refute the target.
+- Congruence and factorization are universal for every monoid `A`; minimum cardinality and equality-implies-isomorphism are asserted only when `A` is finite. The quotient is canonical only over a fixed raw protocol monoid and quotient map. Never call it a canonical latent/DAG realization.
+- Target/type-face preservation and external-boundary order are explicit and load-bearing for local soft and continuous mediator results: `R` is the input/parameter boundary, `O` is the output/observation boundary, and no admitted morphism exchanges `R` with `O` or implements time reversal. In the finite soft tier, every `J_v` is a compact subset of its finite-dimensional stochastic-kernel polytope with the Euclidean/evaluation-subspace topology, so every kernel-coordinate evaluation and retained response is continuous.
 - The randomized-protocol theorem requires independent convolution and response-compatible affine unital convolution-monoid isomorphisms. It does not cover correlated sequential randomization.
 - Standard-Borel semantics uses standard-Borel palettes, jointly measurable pointwise kernel evaluation, the evaluation sigma-algebra on retained laws, and finite topological-order Ionescu--Tulcea recursion. It does not infer intervention behavior from almost-sure observational conditionals.
-- The compact-Feller tier uses `A=product_v({bottom_v} disjoint-union J_v)` with compact metrizable palettes, isolated bottom symbols, coordinatewise right override, and jointly continuous multiplication, plus jointly Feller kernels and a continuous response.
-- The circle witness fixes the mediator parameter experiment and circle heat geometry; admitted relabelings must preserve that geometry and explicitly intertwine responses. It does not establish an uncolored arbitrary-kernel no-go.
+- The compact-Feller tier uses the finite-coordinate compact protocol monoid `A=product_v({bottom_v} disjoint-union J_v)` with compact metrizable palettes, isolated bottom symbols, coordinatewise right override, and jointly continuous multiplication, plus jointly Feller kernels and a continuous response. Finite-coordinate does not mean finite cardinality.
+- Every typed relabeling uses invertible typed state maps, their induced compatible protocol-monoid isomorphism `Theta`, and one protocol-independent boundary-response isomorphism `U` satisfying `Phi'(Theta(a))=U(Phi(a))` for every protocol. The circle witness additionally fixes the ordered `R`-to-`O` boundary, mediator parameter experiment, and heat geometry; its state maps intertwine every heat kernel and may not exchange `R` with `O` or implement time reversal. It does not establish an uncolored arbitrary-kernel no-go.
 - New derivation-package files use LF through an exact `.gitattributes` rule. Central theory/status files retain their existing CRLF convention.
 - Any post-ledger tracked edit invalidates formal closure and requires a new artifact revision and ledger validation.
 
@@ -62,7 +62,7 @@ Run:
 
 - [ ] **Step 4: Freeze the conjunction target and its exclusions.**
 
-The target must name the algebraic/coarsest quotient, compact topological quotient, finite target-stratified soft theorem, affine randomized-protocol theorem, compact-Feller standard-Borel tier, and heat-kernel nonidentifiability. It must explicitly exclude canonical raw realization, target-erasing arbitrary soft categories, correlated randomization, uncontrolled regular-conditional versions, noncompact quotient regularity, VFE/ELBO emergence, agency, gauge/RG extension, and ontology.
+The target must name universal algebraic congruence/factorization, finite-only minimum cardinality and equality-isomorphism, the compact topological quotient, finite target-stratified soft theorem with its kernel-polytope topology, affine randomized-protocol theorem, compact-Feller standard-Borel tier, and heat-kernel nonidentifiability. It must explicitly exclude canonical raw realization, target-erasing arbitrary soft categories, correlated randomization, uncontrolled regular-conditional versions, noncompact quotient regularity, VFE/ELBO emergence, agency, gauge/RG extension, and ontology.
 
 - [ ] **Step 5: Validate and commit the frozen input.**
 
@@ -88,15 +88,15 @@ git commit -m "docs: design operational intervention extensions"
 
 - [ ] **Step 1: Prove the syntactic universal property.**
 
-Show that contextual equivalence is the largest congruence in `ker(Phi)`, construct the unique finer-to-coarser factor map, prove finite minimum cardinality, and state uniqueness only over the raw quotient map. Include the four-element flag-monoid automorphism counterexample to bare uniqueness.
+For every monoid `A`, show that contextual equivalence is the largest congruence in `ker(Phi)` and construct the unique finer-to-coarser factor map for algebraic response-compatible triples `(q,B,psi)` with surjective unital `q` and `Phi=psi∘q`. Only when `A` is finite, prove minimum cardinality and equality-implies-isomorphism. State uniqueness only over the raw quotient map and include the four-element flag-monoid automorphism counterexample to bare uniqueness.
 
 - [ ] **Step 2: Prove the compact topological theorem.**
 
-Use a countable dense context set, the continuous signature map, compact-to-Hausdorff quotient topology, and the product quotient map to prove compact metrizability and continuous descended multiplication. State the terminal continuous universal property with exact quotient-map hypotheses.
+Use a countable dense context set, the continuous signature map, compact-to-Hausdorff quotient topology, and the product quotient map to prove compact metrizability and continuous descended multiplication. Define topological response-compatible triples by requiring `q` and `psi` continuous and `q` a quotient map, then state the terminal continuous universal property with those exact hypotheses.
 
 - [ ] **Step 3: Prove finite normalized soft replacement and BSC target-face nonidentifiability.**
 
-Derive normalization, right override, response continuity, the formula `P(O=0|R=r)=b+(1-2b)t_r`, and the exact TV diameter for `0<epsilon<1/2`. For every `epsilon<s_-<s_+<1-epsilon`, prove the interior separation `|1-2b|(s_+-s_-)`; do not use fixed `1/4,3/4` points uniformly in epsilon.
+Place each finite-state palette `J_v` as a compact subset of its finite-dimensional stochastic-kernel polytope with Euclidean/evaluation-subspace topology, and derive response continuity from finite polynomial dependence on continuous kernel coordinates. Then derive normalization, right override, `P(O=0|R=r)=b+(1-2b)t_r`, and the exact TV diameter for `0<epsilon<1/2`. For every `epsilon<s_-<s_+<1-epsilon`, prove the interior separation `|1-2b|(s_+-s_-)`; do not use fixed `1/4,3/4` points uniformly in epsilon. Freeze `R` as input/parameter and `O` as output/observation, and forbid `R`-`O` exchange and time-reversal morphisms.
 
 - [ ] **Step 4: Prove the affine randomized-protocol theorem.**
 
@@ -104,11 +104,11 @@ Define independent simplex convolution and affine response. Derive the contextua
 
 - [ ] **Step 5: Prove standard-Borel and compact-Feller semantics.**
 
-For the Borel tier, use standard-Borel palettes, joint evaluation measurability of the declared normalized kernels, the evaluation sigma-algebra on `P(X_ret)`, and finite topological-order Ionescu--Tulcea recursion. For the compact tier, use compact Polish node spaces and `A=product_v({bottom_v} disjoint-union J_v)` with compact metrizable palettes, isolated bottom symbols, coordinatewise right override, jointly continuous multiplication, and jointly Feller kernels; then prove weak response continuity and apply the compact quotient theorem. State why arbitrary all-kernel parameter spaces and an automatic standard-Borel or noncompact quotient are not claimed.
+For the Borel tier, use standard-Borel palettes, joint evaluation measurability of the declared normalized kernels, the evaluation sigma-algebra on `P(X_ret)`, and finite topological-order Ionescu--Tulcea recursion. For the compact tier, use compact Polish node spaces and the finite-coordinate compact monoid `A=product_v({bottom_v} disjoint-union J_v)` with compact metrizable palettes, isolated bottom symbols, coordinatewise right override, jointly continuous multiplication, and jointly Feller kernels; then prove weak response continuity and apply the compact quotient theorem. State why arbitrary all-kernel parameter spaces and an automatic standard-Borel or noncompact quotient are not claimed.
 
 - [ ] **Step 6: Prove the circle heat-kernel theorem.**
 
-Use `H_s H_t=H_(s+t)` for passive equality and the first Fourier mode for strict one-way Blackwell garbling. Derive strict inclusion of the soft mediator response sets using `0<rho<t-s` and the positive smooth preparation `H_rho`. Fix the mediator parameter experiment and heat geometry; any admitted relabeling must preserve that geometry and explicitly intertwine responses.
+Instantiate the mediator soft palette as `J_E=P(T)` with weak topology and constant-parent kernels `K_nu(dE|R=r)=nu(dE)`; prove compact metrizability and joint Feller continuity. Then use `H_s H_t=H_(s+t)` for passive equality and the first Fourier mode for strict one-way Blackwell garbling. Derive strict inclusion by fixing `x_0`, choosing `0<rho<t-s`, and using the positive smooth preparation law `nu_rho=H_rho(x_0,dot)`, where `dot` denotes the measure argument. Fix `R` as input/parameter and `O` as output/observation, together with the mediator parameter experiment and heat geometry; require compatible `Theta` and one global `U` for every protocol, and forbid `R`-`O` exchange and time reversal.
 
 - [ ] **Step 7: Implement and run the standalone exact recomputation.**
 
@@ -150,7 +150,7 @@ Include raw kernel replacement, syntactic congruence, compact signature coding, 
 
 - [ ] **Step 3: Independently reconstruct and attack the theorem.**
 
-Required attacks include universal-property direction, forgotten quotient maps, target erasure, non-affine randomized maps, correlated randomization, null conditional versions, lack of common domination, noncompact protocol spaces, latent reparameterization, boundary relabeling, response-image convexification, and ontology overreach.
+Required attacks include universal-property direction, forgotten quotient maps, target erasure, non-affine randomized maps, correlated randomization, null conditional versions, lack of common domination, noncompact protocol spaces, latent reparameterization, forbidden `R`-`O` boundary exchange, time reversal, response-image convexification, and ontology overreach.
 
 - [ ] **Step 4: Bind every evidence artifact and release.**
 
@@ -180,7 +180,7 @@ Use “response-compatible” and “contextually fully abstract”; state uniqu
 
 - [ ] **Step 2: Add the soft/randomized and continuous sections before the existing category-independent open problem.**
 
-Keep target-face preservation, affine randomization, compact-Feller hypotheses, and heat-kernel geometric typing visible in theorem statements.
+Keep target-face preservation, ordered `R`-to-`O` boundary typing, prohibition of boundary exchange and time reversal, affine randomization, compact-Feller hypotheses, and heat-kernel geometric typing visible in theorem statements.
 
 - [ ] **Step 3: Propagate the scoped correction.**
 
@@ -214,7 +214,7 @@ Run release validation, recomputation, evidence hashes, three-pass TeX, label/st
 
 - [ ] **Step 3: Create and validate the schema-1.1 closure ledger.**
 
-Bind mathematics claims to current derivations and all four independent views, include one structured skeptic and one structured adjudicator linked to current evidence, and validate with the installed verification gate. Any tracked edit restarts closure.
+Bind mathematics claims to current derivations and all four independent views, include one structured skeptic and one structured adjudicator linked to current evidence, and validate with the installed verification gate. A counterexample within the frozen hypotheses may set `REFUTED`; an unresolved proof or hypothesis-mapping obligation must set `INCONCLUSIVE` and block release. Any tracked edit restarts closure.
 
 - [ ] **Step 4: Publish without force.**
 

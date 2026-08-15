@@ -11,6 +11,8 @@ The released finite hard-intervention theorem proves that equal passive retained
 
 The central discipline is that an operational quotient is canonical only relative to fixed data: a protocol monoid, its retained-response map, its target/type coloring when that coloring is retained, and the admitted morphisms. No result below selects those data ontologically.
 
+An admitted typed relabeling from `(A,Phi:Y)` to `(A',Phi':Y')` consists of invertible typed state maps `f_R,f_E,f_O` that preserve the ordered external roles, a protocol-monoid isomorphism `Theta:A->A'` induced by pushing every baseline and replacement kernel through those state maps, and one protocol-independent boundary-response isomorphism `U:Y->Y'` such that `Phi'(Theta(a))=U(Phi(a))` for every protocol `a`. In topological tiers these maps have the declared continuity, and in the circle tier the state maps also intertwine every heat kernel. A protocol-dependent response relabeling is not admitted.
+
 ## Layer 1: universal operational quotient
 
 Fix a monoid `A`, a response set `Y`, and `Phi : A -> Y`. Define
@@ -21,7 +23,7 @@ a equiv_Phi b iff Phi(u a v) = Phi(u b v) for every u,v in A.
 
 This is the largest two-sided monoid congruence contained in `ker(Phi)`. Let `pi : A -> Syn(Phi)` be the quotient and let `barPhi([a])=Phi(a)`.
 
-A response-compatible quotient is a surjective unital monoid homomorphism `q : A -> B` with a response `psi : B -> Y` such that `Phi=psi q`. Every such quotient admits one unique surjective homomorphism `h : B -> Syn(Phi)` satisfying `pi=h q` and `barPhi h=psi`. Thus `Syn(Phi)` is terminal when arrows point from finer response-compatible quotients to coarser ones.
+An algebraic response-compatible quotient triple is `(q,B,psi)`, where `q : A -> B` is a surjective unital monoid homomorphism, `psi : B -> Y` is a map, and `Phi=psi∘q`. Every such triple admits one unique surjective unital homomorphism `h : B -> Syn(Phi)` satisfying `pi=h∘q` and `barPhi∘h=psi`. Thus `Syn(Phi)` is terminal when arrows point from finer response-compatible quotients to coarser ones.
 
 For finite `A`, `Syn(Phi)` has minimum cardinality. Equality of cardinalities makes `h` an isomorphism. Any two minimum-cardinality quotient triples are uniquely isomorphic **over `A`**, meaning the isomorphism commutes with both quotient maps and responses.
 
@@ -37,17 +39,17 @@ S_D(a) = (Phi(u a v))_(u,v in D).
 
 Continuity and density give `ker(S_D)=equiv_Phi`. The image `S_D(A)` is compact metrizable, and the canonical map `Syn(Phi) -> S_D(A)` is a homeomorphism. Quotient multiplication and the descended response are continuous. The quotient is independent of `D`; only the displayed coding depends on `D`, and its multiplication is induced by `S_D(ab)`, not coordinatewise multiplication.
 
-A continuous response-compatible quotient triple is `(q,B,psi)`, where `q : A -> B` is a surjective continuous unital homomorphism, `psi : B -> Y` is continuous, and `Phi=psi q`. When `B` is compact Hausdorff, `q` is automatically a quotient map; outside that compact-to-Hausdorff case, being a quotient map is an explicit hypothesis. The same terminal universal property then holds by a unique continuous surjection `B -> Syn(Phi)`.
+A topological response-compatible quotient triple is an algebraic response-compatible quotient triple `(q,B,psi)` in which `B` is a topological monoid, both `q` and `psi` are continuous, and `q` is a quotient map. In the compact theorem, `B` is compact Hausdorff; a continuous surjection from compact `A` to Hausdorff `B` is automatically a quotient map, but the quotient-map condition remains explicit in the triple. The same terminal universal property then holds by a unique continuous surjection `B -> Syn(Phi)`.
 
 ## Layer 3: normalized local soft replacements
 
-For a finite DAG presentation `P`, give every node `v` a compact palette `J_v` of normalized replacement kernels, stable under its declared typed relabelings. Adjoin an isolated symbol `bottom_v` meaning “leave the baseline mechanism unchanged” and form the componentwise right-override monoid
+For a finite DAG presentation `P` on finite node state spaces, identify a local kernel with its finitely many stochastic coordinates and give every node `v` a palette `J_v` that is a compact subset of the corresponding finite-dimensional stochastic-kernel polytope, with its Euclidean (equivalently, evaluation-subspace) topology. Thus every kernel-coordinate evaluation is continuous. Require `J_v` to be stable under its declared typed relabelings, adjoin an isolated symbol `bottom_v` meaning “leave the baseline mechanism unchanged,” and form the componentwise right-override monoid
 
 ```text
 M_P^J = product_v ({bottom_v} disjoint-union J_v).
 ```
 
-Kernel replacement preserves DAG normalization and sequential composition. On finite state spaces the response is continuous, so Layer 2 supplies a compact operational quotient and functorial transport under typed kernel isomorphisms.
+Kernel replacement preserves DAG normalization and sequential composition. On finite state spaces every retained-law coordinate is a finite polynomial in the continuously evaluated kernel coordinates, so the response is continuous. Layer 2 therefore supplies a compact operational quotient and functorial transport under typed kernel isomorphisms.
 
 The finite BSC pair from the hard certificate remains a counterexample when the reduced object retains the mediator-replacement face. Fix `0<epsilon<1/2`. For `L(a,b): R -> E -> O`, replace the mediator kernel by
 
@@ -63,7 +65,7 @@ D_b(epsilon) = (1-2 epsilon) |1-2b|.
 
 For `L_1=L(1/4,1/3)` and `L_2=L(1/3,1/4)`, passive crossover is `5/12`, but the diameters are `(1-2 epsilon)/3` and `(1-2 epsilon)/2`. Typed boundary relabelings preserve total variation. For every `epsilon<s_-<s_+<1-epsilon`, the parent-independent interior preparations `t=(s_-,s_-)` and `t'=(s_+,s_+)` have separation `|1-2b|(s_+-s_-)`, so no hard endpoint carries the result.
 
-Preservation of the mediator target/type face is load-bearing. A target-erasing reduced monoid is a different category.
+Preservation of the mediator target/type face and the ordered external boundary is load-bearing: `R` is the input/parameter boundary and `O` is the output/observation boundary. Admitted morphisms may not exchange `R` with `O` or reverse the chain orientation. A target-erasing or time-reversing reduced monoid is a different category.
 
 ## Layer 4: unmarked randomized protocols
 
@@ -85,7 +87,7 @@ For a finite DAG of standard-Borel node spaces, declare standard-Borel replaceme
 
 The set-valued operational quotient always exists algebraically. Standard Borelness alone does not certify a standard-Borel quotient because the contextual relation quantifies over an uncountable protocol set. A measurable quotient needs an explicit smooth classifier or stronger topology.
 
-A sufficient positive tier takes compact Polish node spaces, compact metrizable replacement palettes `J_v`, one isolated `bottom_v` per node, and the finite protocol monoid `A=product_v({bottom_v} disjoint-union J_v)` with coordinatewise right override. This multiplication is jointly continuous. If the baseline and replacement kernels are jointly Feller in state and palette parameter, the response into the weak law space is continuous, so Layer 2 yields a compact metrizable reduced experiment.
+A sufficient positive tier takes compact Polish node spaces, compact metrizable replacement palettes `J_v`, one isolated `bottom_v` per node, and the finite-coordinate compact protocol monoid `A=product_v({bottom_v} disjoint-union J_v)` with coordinatewise right override. The node set is finite, but a palette and hence the monoid may have infinite cardinality. This multiplication is jointly continuous. If the baseline and replacement kernels are jointly Feller in state and palette parameter, the response into the weak law space is continuous, so Layer 2 yields a compact metrizable reduced experiment.
 
 ## Layer 6: smooth continuous nonidentifiability
 
@@ -102,9 +104,11 @@ P_1 = m(dR) H_s(R,dE) H_t(E,dO),
 P_2 = m(dR) H_t(R,dE) H_s(E,dO).
 ```
 
-Their passive retained law is the same: `m(dR) H_(s+t)(R,dO)`. Their marked mediator experiments are `H_t` and `H_s`. Since `H_t=H_s H_(t-s)`, `H_s` Blackwell-dominates `H_t`. Reverse simulation is impossible: if `H_s=H_t L`, applying the first Fourier mode would require a Markov contraction to produce a Fourier coefficient of magnitude `exp(t-s)>1`. The comparison category fixes the mediator parameter experiment; any admitted relabeling must preserve the circle heat geometry and explicitly intertwine every retained response.
+To place the soft circle experiment inside the compact-Feller tier, take the mediator palette `J_E=P(T)` with the weak topology and use the constant-parent replacement kernel `K_nu(dE|R=r)=nu(dE)`. Since `T` is compact metrizable, `P(T)` is compact metrizable; for every continuous test function `f`, `(nu,r) -> integral f dnu` is continuous and independent of `r`, so this family is jointly Feller.
 
-The result remains soft: arbitrary mediator preparation laws have response sets `{nu H_t}` and `{nu H_s}`, with the first strictly contained in the second. Strictness already has a positive smooth witness: choose `0<rho<t-s`; the preparation `H_rho` gives `H_(rho+s)` after `H_s`, while representing that law after `H_t` would require first Fourier coefficient `exp(t-s-rho)>1`. Every kernel has a positive smooth density and is Feller. Retention of the mediator parameter experiment and heat geometry is load-bearing.
+Their passive retained law is the same: `m(dR) H_(s+t)(R,dO)`. Their marked mediator experiments are `H_t` and `H_s`. Since `H_t=H_s H_(t-s)`, `H_s` Blackwell-dominates `H_t`. Reverse simulation is impossible: if `H_s=H_t L`, applying the first Fourier mode would require a Markov contraction to produce a Fourier coefficient of magnitude `exp(t-s)>1`. The comparison category fixes `R` as the input/parameter boundary, `O` as the output/observation boundary, and the mediator parameter experiment. Its typed relabelings use the single global intertwiner `U` and compatible protocol map `Theta` defined above, preserve the circle heat geometry, and may not exchange `R` with `O` or implement time reversal.
+
+The result remains soft: arbitrary mediator preparation laws have response sets `{nu H_t}` and `{nu H_s}`, with the first strictly contained in the second. Strictness already has a positive smooth witness: fix `x_0` on the circle, choose `0<rho<t-s`, and use the preparation law `nu_rho=H_rho(x_0,dot)`, where `dot` denotes the measure argument. Then `nu_rho H_s=H_(rho+s)(x_0,dot)`, while representing that law as `nu H_t` would require a first Fourier coefficient of magnitude `exp(t-s-rho)>1`. Every kernel has a positive smooth density and is Feller. Retention of the ordered `R`-to-`O` boundary, mediator parameter experiment, and heat geometry is load-bearing.
 
 ## Analytic boundaries
 
