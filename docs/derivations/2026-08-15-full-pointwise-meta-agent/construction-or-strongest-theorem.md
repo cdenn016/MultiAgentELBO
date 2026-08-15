@@ -43,7 +43,7 @@ are normalized. The parent observation marginal equals the fine one. A bounded-t
 \qquad E\subseteq\mathsf B_A\times\mathsf O\times\mathsf H_A.
 \]
 
-There are two valid tiers. A selected disintegration of (\mathbb P_A) induces such a family and gives compatibility by construction. A family predeclared independently of (\mathbb P_A) requires the explicit hypothesis that it agrees almost surely with the selected conditional of ((B_A,O,H_A)) given ((M_A,\Xi_A)). Only under one of these tiers does
+There are two valid tiers. First, a selected disintegration of (\mathbb P_A) proves existence of a normalized jointly measurable induced family and gives compatibility by construction; this is the evaluator-existence conclusion. Second, a family predeclared independently of (\mathbb P_A) is supplied as a normalized jointly measurable hypothesis and separately requires the explicit hypothesis that it agrees almost surely with the selected conditional of ((B_A,O,H_A)) given ((M_A,\Xi_A)). Under the induced conclusion or the conditional predeclared seam,
 
 \[
 \mathbb P_A(db_A,do,dh_A\mid\xi_A,m_A,X)
@@ -52,7 +52,7 @@ There are two valid tiers. A selected disintegration of (\mathbb P_A) induces su
 
 hold for the parent ((M_A,\Xi_A)) marginal almost surely. Standard-Borel disintegration does not validate an arbitrary predeclared evaluator, choose its null extension canonically, make evaluation injective, or regularize the quotient of presentations.
 
-3. With (\mathbb P_A^Z(D\mid X)=\mathbb P_A(\mathsf O\times D\mid X)), the recognition marginals (q_A^b,q_A^m), latent-prior marginals (p_A^b,p_A^m), and posterior marginals (\boldsymbol\Pi_{A,o,X}^b,\boldsymbol\Pi_{A,o,X}^m) are exactly the corresponding coordinate pushforwards of (\mathbb Q_{A,o,X}), (\mathbb P_A^Z(\cdot\mid X)), and (\boldsymbol\Pi_{A,o,X}). They are derived only and do not reconstruct dependence or the evaluation conditional.
+3. With (\mathbb P_A^Z(D\mid X)=\mathbb P_A(\mathsf O\times D\mid X)), the recognition marginals (q_A^b,q_A^m), latent-prior marginals (p_A^b,p_A^m), and posterior marginals (\boldsymbol\Pi_{A,o,X}^b,\boldsymbol\Pi_{A,o,X}^m) are exactly the corresponding coordinate pushforwards of (\mathbb Q_{A,o,X}), (\mathbb P_A^Z(\cdot\mid X)), and (\boldsymbol\Pi_{A,o,X}). No converse or reconstruction theorem from these marginal identities is claimed here; the corresponding Task-4 claim remains CANDIDATE.
 
 4. Let the recognition and posterior joint lifts attach the same (C_A), and disintegrate each lift in (Y) conditional on (z). Then the additive identity in ([0,+\infty]) is
 
@@ -91,7 +91,7 @@ as an extended additive identity, without subtracting infinities. If the fine KL
 
 On this finite tier, the zero-defect condition is also equivalent to the existence of one normalized pairwise recovery kernel that recovers both declared fine laws. Family-wide common recovery requires simultaneous hypotheses for every family member; (+\infty=+\infty) has no recovery consequence.
 
-5. A holonomy-blind parent is conditional on typed source/target groupoid actions, covariance of the full fine generative and recognition laws, a jointly compatible selected-posterior version family, (C_A) equivariance, and evaluator covariance. Under all of these hypotheses the parent generative, posterior, and recognition laws are covariant. Same-slice invariance is obtained only for isotropy arrows that fix the declared (o,X) and selected versions. Alternatively, if (\mathsf H_A) and (C_A) retain component roots, raw root-framed holonomy, and dressed boundary marks, the parent full laws retain those records jointly and make no holonomy-blind claim. Marginal stabilization is insufficient for either full-law conclusion.
+5. A holonomy-blind parent is conditional on typed source/target groupoid actions, covariance of the full fine generative and recognition laws, a jointly compatible selected-posterior version family, (C_A) equivariance, and evaluator covariance. Under all of these hypotheses the parent generative, posterior, and recognition laws are covariant. Same-slice invariance is obtained only for isotropy arrows that fix the declared (o,X) and selected versions. Alternatively, if (\mathsf H_A) and (C_A) retain component roots, raw root-framed holonomy, and dressed boundary marks, the parent full laws retain those records jointly and make no holonomy-blind claim. No converse or reconstruction theorem from marginal stabilization is claimed here; the corresponding Task-4 claim remains CANDIDATE.
 
 6. The construction is static. In a separately declared differentiable special case, the exact moving-map defect is
 
@@ -99,7 +99,7 @@ On this finite tier, the zero-defect condition is also equivalent to the existen
 \delta_t=\partial_tc_t+Dc_tV_t-\overline V_t\circ c_t.
 \]
 
-For Markov evolution, exact closure instead requires semigroup intertwining (T_tU=U\overline T_t), or the corresponding generator identity on a common invariant domain. Neither follows from the static theorem. Autonomy, selected membership, Wheelerian feedback, sustained nonequilibrium, and physical time remain OPEN.
+For Markov evolution, exact closure is the semigroup intertwining (T_tU=U\overline T_t). A generator identity is an alternative criterion only on a declared invariant domain or core, with hypotheses that both operators generate the stated semigroups and that the identity lifts uniquely to semigroup intertwining. Neither condition follows from the static theorem. Autonomy, selected membership, Wheelerian feedback, sustained nonequilibrium, and physical time remain OPEN.
 
 ## Proof architecture and evidence
 
@@ -107,7 +107,7 @@ Kernel integration proves normalization and preserves the observation marginal. 
 
 For VFE, the joint-lift Radon--Nikodym derivative is the fine derivative (d\mathbb Q_I/d\boldsymbol\Pi_I). Relative-entropy disintegration factors it into parent and conditional derivatives and produces two nonnegative terms; no infinite quantity is subtracted. KL's zero criterion proves the discarded-conditional equality. The posterior conditional supplies the forward recovery direction, while data processing through a separately assumed common reverse kernel proves the finite converse. Equivariant substitution in the parent defining integrals proves full-law covariance, and ordinary differentiation or operator intertwining gives the typed dynamic formulas.
 
-The direct derivation has SHA-256 `f0cf5cef4a508f372d7cd167e360fa58fd83ee9beb0d70f9455bbd2a27743fdf`. `claim-ledger.json` records thirteen affirmative or scope claims as `EVIDENCE_VERIFIED` by this direct mathematical evidence. Computation and agent agreement are not used to close them.
+The direct derivation has SHA-256 `52015760e5b9ee2f07e983039d93a526a120e51753e95c650cc70303e1f3fa12`. `claim-ledger.json` records thirteen affirmative or scope claims as `EVIDENCE_VERIFIED` by this direct mathematical evidence. Computation and agent agreement are not used to close them.
 
 ## Checkpoint status and unresolved target conjuncts
 

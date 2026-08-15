@@ -70,7 +70,7 @@ q_i^{m;o,X}=(\rho_i^m)_\#\mathbb Q_{I,o,X}.
 \tag{1.3}
 \]
 
-They are marginals of the correlated full law. They are not presumed to determine or lift to that joint law.
+They are marginals of the correlated full law. Only the forward projection identities are used below; no converse or reconstruction theorem is claimed here.
 
 ## 2. The single recognition-independent channel
 
@@ -187,7 +187,7 @@ such that, for Borel (D\subseteq\mathsf M_A\times\boldsymbol\Xi_A) and (E\subset
 \tag{4.3}
 \]
 
-Choosing (K^{X_A}_{A,m_A}(\xi_A;\cdot)=G_A^X(m_A,\xi_A;\cdot)) gives an induced evaluation family at this fixed (X). It is recognition independent because it is selected from the fixed pushed generative law, not from (\mathbb Q) or (\boldsymbol\Pi). The notation (X_A) does not prove cross-(X) factorization: if several fine structural values are later compared, equality of their induced kernels whenever (\chi_A(X)=\chi_A(X')), together with measurability in (X_A), is an additional premise.
+Choosing (K^{X_A}_{A,m_A}(\xi_A;\cdot)=G_A^X(m_A,\xi_A;\cdot)) proves existence of an induced normalized jointly measurable evaluation family at this fixed (X). This existence is a conclusion of disintegration, not an evaluation-family hypothesis. It is recognition independent because it is selected from the fixed pushed generative law, not from (\mathbb Q) or (\boldsymbol\Pi). The notation (X_A) does not prove cross-(X) factorization: if several fine structural values are later compared, equality of their induced kernels whenever (\chi_A(X)=\chi_A(X')), together with measurability in (X_A), is an additional premise.
 
 **Predeclared tier.** If (4.1) is fixed before (\mathbb P_A), standard-Borel disintegration does not force it to equal (G_A^X). One must assume the explicit compatibility
 
@@ -241,7 +241,7 @@ For every bounded measurable (u) on (\mathsf B_A), for example,
 \tag{5.3}
 \]
 
-and the other five projection identities follow identically. Thus all displayed parent marginals are derived from typed full laws. Projection discards dependence, so (5.2) provides no reconstruction of the full (\mathbb Q_{A,o,X}), (\boldsymbol\Pi_{A,o,X}), or (\mathbb P_A^Z), and it provides no conditional such as (4.5).
+and the other five projection identities follow identically. Thus all displayed parent marginals are derived from typed full laws. No converse or reconstruction theorem from these marginal identities is claimed here; the corresponding Task-4 claims remain (\texttt{CANDIDATE}).
 
 ## 6. Extended KL disintegration and finite VFE closure
 
@@ -380,7 +380,7 @@ This is pair-specific recovery. A single recovery kernel for an entire model fam
 
 ## 7. Full-law holonomy alternatives
 
-Marginal stabilization such as (h_\#q_A^x=q_A^x) is a projection statement. A holonomy-blind full parent requires more structure. The distinction is cleanest for a typed holonomy groupoid.
+The Task-3 proof starts from full-law covariance data rather than from marginal stabilization such as (h_\#q_A^x=q_A^x). No converse or reconstruction theorem from marginal identities is claimed here. The forward construction is cleanest for a typed holonomy groupoid.
 
 Let an arrow (g:(o,X)\to(o',X')) have bimeasurable actions
 
@@ -456,7 +456,7 @@ K^{X_A}_{A,m}(\xi;\cdot)
 
 holds on the compatibility domain. Equations (4.4) and (7.6) then make the transformed generative conditional compatible with the transformed evaluator.
 
-Equation (7.5) is covariance between source and target slices. Same-slice invariance follows only for isotropy arrows that fix the declared (X) and admitted (o), preserve the selected versions, and identify the source and target spaces. Full-frame triviality is one sufficient way to make these actions identities, but it is not necessary: a nontrivial action may stabilize the full law. Separate invariance of belief and model marginals is only a consequence of full-law invariance and does not imply it.
+Equation (7.5) is covariance between source and target slices. Same-slice invariance follows only for isotropy arrows that fix the declared (X) and admitted (o), preserve the selected versions, and identify the source and target spaces. Full-frame triviality is one sufficient way to make these actions identities, but it is not necessary: a nontrivial action may stabilize the full law. Forward projection gives marginal invariance whenever full-law invariance holds. No converse or reconstruction theorem from separate marginal invariance is claimed here; the Task-4 marginal-versus-joint claim remains (\texttt{CANDIDATE}).
 
 The alternative is exact retention rather than blindness. Declare (\mathsf H_A) to include measurable component roots, the raw root-framed based-holonomy representation, and dressed boundary marks, and require (C_A) to output those records jointly with ((B_A,M_A,\Xi_A)). Then (3.1) and (3.4) retain their joint distributions and every correlation with the other parent coordinates by definition of full-law pushforward. No quotient by conjugacy, averaged group element, path erasure, or holonomy-blind invariance is asserted. This retained presentation is the default safe alternative when (7.1)--(7.6) have not been established.
 
@@ -487,7 +487,7 @@ T_tU=U\overline T_t.
 \tag{8.2}
 \]
 
-On a common invariant generator domain, (8.2) implies (LU=U\overline L); a generator identity without its domain and semigroup hypotheses is insufficient. Nothing in the static pushforward proves (8.1) or (8.2).
+On a common invariant generator domain, (8.2) implies (LU=U\overline L). Conversely, a generator identity yields (8.2) only with a declared invariant domain or core, hypotheses that (L) and (\overline L) generate the stated semigroups, and the required uniqueness or closure theorem for lifting the generator identity to the semigroups. A bare generator identity is insufficient. Nothing in the static pushforward proves (8.1) or (8.2).
 
 Autonomy, dynamically selected membership, Wheelerian coarse-to-fine feedback, sustained nonequilibrium behavior, and a physical-time interpretation of (t) remain OPEN. Closing any one requires, respectively, a well-posed parent evolution, a measurable or smooth selection law, a typed joint bidirectional composition without VFE double counting, a normed state class and nontrivial interval with a persistence theorem, or an operational clock bridge.
 
