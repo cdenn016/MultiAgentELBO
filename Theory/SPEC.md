@@ -812,9 +812,12 @@ The parent model coordinate has a generative interpretation only through a joint
 normalized evaluator. Standard-Borel disintegration supplies an induced evaluator; a predeclared
 evaluator requires separate almost-sure compatibility with the selected parent conditional. Belief,
 model, prior, and posterior marginals are forward coordinate projections of their typed full laws and
-do not reconstruct those laws. The common-channel KL chain is additive in `[0,+infinity]`. Ordinary
-VFE subtraction, the zero-defect conditional-law criterion, and pairwise common recovery require
-finite fine KL; family-wide recovery requires simultaneous hypotheses for every member.
+do not reconstruct those laws. The common-channel KL chain is additive in `[0,+infinity]`. Adding
+the same finite real `-log p_X(o)` to both KL terms gives an extended-real VFE identity; a finite
+VFE may be negative. Without a finiteness premise, `Delta_A=0` exactly when the discarded
+conditional recognition and posterior laws agree `mathbb Q_A`-almost surely. Finite fine KL is
+required for ordinary subtraction `F_I-F_A=Delta_A` and for the stated two-way pairwise
+common-recovery equivalence; family-wide recovery requires simultaneous hypotheses for every member.
 
 Holonomy blindness is conditional on typed fine and parent actions, full fine-law covariance,
 compatible selected posterior versions, `C_A` equivariance, and evaluator covariance. Same-slice

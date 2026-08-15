@@ -4,7 +4,7 @@
 This is the repository start page for the strongest certified pointwise result. Fix a finite child block $I$ with parent label $A$ and write
 
 $$
-\mathcal U_A:=\bigcap_{i\in I}\mathcal C_i\subseteq\mathcal C
+\mathcal U_A:=\bigcap_{i\in I}\mathcal C_i\subseteq\mathcal C,
 $$
 
 for its overlap patch. The certificate fixes one base point $r_*\in\mathcal U_A$ and works with a finite network in the single fiber over $r_*$. It does not extend the construction across $\mathcal U_A$ or across the contextual base $\mathcal C$.
@@ -378,7 +378,7 @@ The theorem proves normalization, the selected parent posterior identity, absolu
 
 ### Phase 2: static pointwise VFE and holonomy alternatives -- ESTABLISHED
 
-The common channel gives the additive extended KL/VFE identity with defect $\Delta_A(o,X)$. Ordinary VFE differences, the zero-defect conditional-law criterion, and pairwise common recovery hold on the finite-fine-KL tier; extended equality alone has no recovery consequence, and family-wide recovery still needs simultaneous hypotheses. The holonomy-blind branch is conditional on the typed action, channel, evaluator, fine-law, and selected-version hypotheses stated above. The alternative retains raw root-framed holonomy and boundary marks and makes no blindness claim. Neither branch selects membership. Dynamics is not part of this static closure.
+The common-channel KL chain is additive in $[0,+\infty]$ with defect $\Delta_A(o,X)$. Adding the same finite real $-\log p_X(o)$ to both KL terms gives an extended-real VFE identity; a finite VFE may be negative. Without a finiteness premise, $\Delta_A=0$ exactly when the discarded conditional recognition and posterior laws agree $\mathbb Q_{A,o,X}$-almost surely. Finite fine KL is required for ordinary subtraction $\mathcal F_I-\mathcal F_A=\Delta_A$ and for the stated two-way pairwise common-recovery equivalence; family-wide recovery still needs simultaneous hypotheses. A bare equality $+\infty=+\infty$ supplies neither the zero-defect criterion nor a recovery consequence. The holonomy-blind branch is conditional on the typed action, channel, evaluator, fine-law, and selected-version hypotheses stated above. The alternative retains raw root-framed holonomy and boundary marks and makes no blindness claim. Neither branch selects membership. Dynamics is not part of this static closure.
 
 ### Phase 3: comparison theorem -- OPEN/TODO
 

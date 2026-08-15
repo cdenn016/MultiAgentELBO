@@ -315,10 +315,13 @@ predeclared jointly measurable normalized kernel family satisfying the separate 
 compatibility condition. Recognition, prior, and posterior marginals are derived coordinate
 projections; they do not replace or reconstruct the full laws.
 
-The common-channel KL/VFE identity is additive in the extended nonnegative reals. Ordinary VFE
-subtraction, the zero-defect discarded-conditional criterion, and pairwise common recovery require
-finite fine KL. Family-wide common recovery requires simultaneous hypotheses for every family
-member. Holonomy blindness additionally requires typed actions, full fine-law covariance,
+The common-channel KL chain is additive in \([0,+\infty]\). Adding the same finite real
+\(-\log p_X(o)\) to both KL terms gives an extended-real VFE identity; a finite VFE may be negative.
+Without a finiteness premise, \(\Delta_A=0\) exactly when the discarded conditional recognition and
+posterior laws agree \(\mathbb Q_{A,o,X}\)-almost surely. Finite fine KL is required for ordinary
+subtraction \(\mathcal F_I-\mathcal F_A=\Delta_A\) and for the stated two-way pairwise
+common-recovery equivalence. Family-wide common recovery requires simultaneous hypotheses for every
+family member. Holonomy blindness additionally requires typed actions, full fine-law covariance,
 compatible selected posterior versions, \(C_A\) equivariance, evaluator covariance, and
 fixed-\((o,X)\) isotropy for same-slice invariance. The raw-root retention alternative preserves the
 holonomy coordinate and selects no membership.

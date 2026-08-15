@@ -89,16 +89,17 @@ $\mathsf H_A$ be nonempty standard-Borel spaces, and put
 \end{equation}
 Keep $X$ and $X_A$ outside the random channel. Supply the fixed normalized generative joint
 \[
-\mathbb P_I(Do,DY\mid X)
+\mathbb P_I(Do,DY\mid X),
 \]
 and its selected measurable posterior-version kernel $o\mapsto\boldsymbol\Pi_{I,o,X}$.
 At an admitted $o$ with a finite positive evidence representative, supply a normalized correlated recognition law
-$\mathbb Q_{I,o,X}\ll\boldsymbol\Pi_{I,o,X}$. Let
+$\mathbb Q_{I,o,X}\ll\boldsymbol\Pi_{I,o,X}$. Declare one normalized measurable
+Markov-kernel channel:
 \begin{equation}
-C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A
+C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A.
 \label{eq:rg-pointwise-parent-channel}
 \end{equation}
-be one normalized measurable channel fixed independently of recognition, posterior, recognition
+It is fixed independently of recognition, posterior, recognition
 parameters, and realized observation. It acts only on the fine random variables and leaves the
 observation coordinate in $\mathsf O$ unchanged. Define
 \begin{align}
@@ -127,7 +128,7 @@ standard-Borel disintegration, or, for a family declared independently of $\math
 separate almost-sure compatibility hypothesis
 \begin{equation}
 \mathbb P_A(db_A,do,dh_A\mid\xi_A,m_A,X)
-=K^{X_A}_{A,m_A}(\xi_A;db_A,do,dh_A)
+=K^{X_A}_{A,m_A}(\xi_A;db_A,do,dh_A),
 \label{eq:rg-pointwise-parent-evaluator-compatibility}
 \end{equation}
 for the parent $(M_A,\Xi_A)$ marginal almost surely. Disintegration proves existence of the induced
@@ -167,14 +168,14 @@ where
 \right)\mathbb Q_{A,o,X}(dz)\geq0.
 \label{eq:rg-pointwise-parent-defect}
 \end{equation}
-Thus $\Fenergy_I=\Fenergy_A+\Delta_A$ is an extended additive identity without subtraction of
-infinities. If the fine KL is finite, the ordinary difference
-$\Fenergy_I-\Fenergy_A=\Delta_A$ is defined, and $\Delta_A=0$ exactly when the two discarded
-conditional laws in \eqref{eq:rg-pointwise-parent-defect} agree
-$\mathbb Q_{A,o,X}$-almost surely. On that finite tier, zero defect is equivalent to one normalized
-pairwise recovery kernel recovering both declared fine laws. Family-wide common recovery requires
-simultaneous hypotheses for every family member, and equality $+\infty=+\infty$ has no recovery
-consequence. \status{ESTABLISHED}
+Adding the same finite real $-\log p_X(o)$ to both KL terms gives the extended-real identity
+$\Fenergy_I=\Fenergy_A+\Delta_A$; when finite, a VFE may be negative. Without a finite-fine-KL
+premise, $\Delta_A=0$ exactly when the two discarded conditional laws in
+\eqref{eq:rg-pointwise-parent-defect} agree $\mathbb Q_{A,o,X}$-almost surely. Finite fine KL is
+required for the ordinary subtraction $\Fenergy_I-\Fenergy_A=\Delta_A$ and for the stated two-way
+pairwise common-recovery equivalence. Family-wide common recovery requires simultaneous hypotheses
+for every family member. A bare equality $+\infty=+\infty$ supplies neither the zero-defect
+criterion nor a recovery consequence. \status{ESTABLISHED}
 \medskip
 
 This theorem constructs a full normalized, generally lossy pointwise probabilistic datum. The coarse
@@ -1791,7 +1792,7 @@ the parent space $\mathsf Z_A$, the unchanged observation space, and structural 
 fine generative and recognition laws to be covariant; select a posterior-version family compatible
 with those actions; require
 \begin{equation}
-C_A(g\mathbin{\cdot}Y,g\mathbin{\cdot}D)=C_A(Y,D)
+C_A(g\mathbin{\cdot}Y,g\mathbin{\cdot}D)=C_A(Y,D),
 \label{eq:rg-pointwise-parent-holonomy-channel}
 \end{equation}
 for every admitted arrow and measurable parent event; and require evaluator covariance for the

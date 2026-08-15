@@ -542,9 +542,12 @@ the observation unchanged. The parent model evaluator is either induced by disin
 predeclared jointly measurable normalized family satisfying the explicit almost-sure compatibility
 condition. All named parent marginals are derived projections and do not reconstruct the joints.
 
-The KL/VFE chain is additive in the extended nonnegative reals with defect \(\Delta_A(o,X)\).
-Ordinary VFE subtraction, the zero-defect conditional-law criterion, and pairwise common recovery
-require finite fine KL; family-wide recovery still requires simultaneous hypotheses. Holonomy
+The KL chain is additive in \([0,+\infty]\) with defect \(\Delta_A(o,X)\). Adding the same finite
+real \(-\log p_X(o)\) to both KL terms gives an extended-real VFE identity; a finite VFE may be
+negative. Without a finiteness premise, \(\Delta_A=0\) exactly when the discarded conditional
+recognition and posterior laws agree \(\mathbb Q_{A,o,X}\)-almost surely. Finite fine KL is required
+for ordinary subtraction \(\mathcal F_I-\mathcal F_A=\Delta_A\) and for the stated two-way pairwise
+common-recovery equivalence; family-wide recovery still requires simultaneous hypotheses. Holonomy
 blindness additionally requires typed actions, full fine-law covariance, compatible selected
 posterior versions, channel equivariance, evaluator covariance, and fixed-\((o,X)\) isotropy for
 same-slice invariance. Raw root-framed holonomy retention is the alternative and selects no

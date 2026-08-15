@@ -197,10 +197,15 @@ a predeclared evaluator requires separate almost-sure compatibility. All named
 recognition, prior, and posterior marginals are projections of their typed full
 laws and do not reconstruct the corresponding joints.
 
-The KL/VFE chain has the nonnegative conditional-information defect
-\(\Delta_A(o,X)\) as an additive identity in the extended nonnegative reals.
-Ordinary VFE subtraction, the discarded-conditional equality criterion, and
-pairwise common recovery require finite fine KL. Holonomy blindness requires
+The KL chain has the nonnegative conditional-information defect
+\(\Delta_A(o,X)\) as an additive identity in \([0,+\infty]\). Adding the same
+finite real \(-\log p_X(o)\) to both KL terms gives an extended-real VFE
+identity; a finite VFE may be negative. Without a finiteness premise,
+\(\Delta_A=0\) exactly when the discarded conditional recognition and
+posterior laws agree \(\mathbb Q_{A,o,X}\)-almost surely. Finite fine KL is
+required for ordinary subtraction
+\(\Fenergy_I-\Fenergy_A=\Delta_A\) and for the stated two-way pairwise
+common-recovery equivalence. Holonomy blindness requires
 typed actions, full fine-law covariance, compatible selected posterior versions,
 \(C_A\) equivariance, and evaluator covariance; same-slice invariance requires
 fixed-\((o,X)\) isotropy. Raw holonomy retention is the alternative and makes no

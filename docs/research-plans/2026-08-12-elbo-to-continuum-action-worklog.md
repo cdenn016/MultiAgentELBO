@@ -3753,10 +3753,14 @@ remain distinct from the model-law section \(q_i^{m;o,X}\).
 
 ### 12.2 Exact VFE defect and holonomy alternatives
 
-The common channel yields an additive extended-KL identity with conditional-information defect
-\(\Delta_A(o,X)\). Ordinary VFE differences, the zero-defect equality of discarded conditional
-laws, and pairwise common recovery require finite fine KL. Extended equality alone has no recovery
-consequence, and family-wide common recovery requires simultaneous hypotheses.
+The common-channel KL chain is additive in \([0,+\infty]\) with conditional-information defect
+\(\Delta_A(o,X)\). Adding the same finite real \(-\log p_X(o)\) to both KL terms gives an
+extended-real VFE identity; a finite VFE may be negative. Without a finiteness premise,
+\(\Delta_A=0\) exactly when the discarded conditional recognition and posterior laws agree
+\(\mathbb Q_{A,o,X}\)-almost surely. Finite fine KL is required for ordinary subtraction
+\(\mathcal F_I-\mathcal F_A=\Delta_A\) and for the stated two-way pairwise common-recovery
+equivalence. Family-wide common recovery requires simultaneous hypotheses. A bare equality
+\(+\infty=+\infty\) supplies neither the zero-defect criterion nor a recovery consequence.
 
 The holonomy-blind branch requires typed actions on every relevant fine, parent, observation, and
 structural space; full fine-law covariance; compatible selected posterior versions; \(C_A\)
