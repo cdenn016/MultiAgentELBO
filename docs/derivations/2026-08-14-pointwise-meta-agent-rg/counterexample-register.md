@@ -1,7 +1,7 @@
-<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952","schema_version":"rigorous-theory-search/v1","target_digest":"a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952"} -->
+<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06","schema_version":"rigorous-theory-search/v1","target_digest":"48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06"} -->
 # Counterexample register
 
-These witnesses refute eight shortcuts excluded from the frozen theorem. They do not refute TARGET-POINTWISE-RG. The mathematical derivations are in evidence/counterexample-proofs.md (SHA-256 dc375fc39c19e4607c2c8fe63475641dbd0836feb45ac8684fd4bdbe01d3abd9).
+These witnesses refute eight shortcuts excluded from the frozen theorem. They do not refute TARGET-POINTWISE-RG. The mathematical derivations are in evidence/counterexample-proofs.md (SHA-256 a18f11f19bda4935462acf1b3974de59fb44efd341880aa03c082d05003ef883).
 
 ## CE-1: KL-threshold adjacency is not transitive
 

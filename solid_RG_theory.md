@@ -1,4 +1,4 @@
-<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952","schema_version":"rigorous-theory-search/v1","target_digest":"a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952"} -->
+<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06","schema_version":"rigorous-theory-search/v1","target_digest":"48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06"} -->
 # Pointwise meta-agent renormalization
 
 This is the repository start page for the strongest certified pointwise result. It fixes one base point $r_*$ in an overlap region and works with a finite network there. It does not extend the construction across the contextual base $R$.
@@ -16,7 +16,7 @@ At $r_*$, agent $i$ carries normalized marginal laws
 $$
 q_i(r_*)\in\mathcal P(\mathsf Z_i^q),
 \qquad
-m_i(r_*)\in\mathcal P(\mathsf Z_i^m)
+m_i(r_*)\in\mathcal P(\mathsf Z_i^m).
 $$
 
 on standard-Borel fibers. Legacy text may write $s_i$ for the model law $m_i$; this guide uses $m_i$ consistently.
@@ -43,7 +43,7 @@ $$
 \Omega_{v_n v_{n-1}}\cdots\Omega_{v_1v_0}.
 $$
 
-A rooted spanning tree plus every non-tree edge gives a fundamental cycle basis. Checking triangles is sufficient only after declaring a triangulation whose triangle boundaries span the graph cycle space. A chordless square has a cycle and no triangles, so triangle checks alone are not a general flatness test. ESTABLISHED.
+A rooted spanning tree plus every non-tree edge gives a free generating family of based loop words. For nonabelian holonomy, triangle checks suffice only when the based triangle boundary words normally generate the graph fundamental group, for example when attaching the declared triangular 2-cells makes a simply connected filled triangulation. Merely spanning the graph cycle space controls only abelianized holonomy. A chordless square has a based loop and no triangles, so triangle checks alone are not a general flatness test. ESTABLISHED.
 
 For each channel, choose positive normalized receiver weights $\alpha_i^x$ and define the normalized joint directed edge-event laws
 
@@ -75,7 +75,7 @@ $$
 \mathcal D_x
 =\sum_{i,j:\eta_{ij}^x>0}
 \eta_{ij}^x
-\operatorname{KL}\!\left(
+\operatorname{KL}\left(
 p_i^x\mathbin\Vert(T_{ij}^x)_\#p_j^x
 \right).
 $$
@@ -89,10 +89,10 @@ $$
 p_i^x=(T_{ij}^x)_\#p_j^x
 \quad\text{on every positive-support edge}\\
 &\Longleftrightarrow
-\exists!\,Q_x\in\mathcal P(\mathsf Z_r^x):
-(T_{\gamma_i}^x)_\#p_i^x=Q_x\ \forall i,
+\exists! Q_x\in\mathcal P(\mathsf Z_r^x):
+(T_{\gamma_i}^x)_\#p_i^x=Q_x\text{ for every }i,
 \quad
-H_\#Q_x=Q_x\ \forall H\in\operatorname{Hol}_r^x .
+H_\#Q_x=Q_x\text{ for every }H\in\operatorname{Hol}_r^x.
 \end{aligned}
 $$
 
@@ -135,6 +135,8 @@ The proved Gaussian moment-matching and compact-Haar Gaussian specializations re
 
 ## 5. Approximate agreement is a total-variation statement
 
+We use the convention $\operatorname{TV}(P,Q)=\frac12\lVert P-Q\rVert_1$.
+
 Suppose $\mathcal D_x\leq\varepsilon_x<\infty$. Fix one rooted spanning tree $\mathsf T_x$ of the connected undirected positive-support graph and orient each tree edge in a direction whose directed event weight is positive. Define
 
 $$
@@ -149,7 +151,7 @@ $$
 Pinsker gives the selected tree-edge bound
 
 $$
-\operatorname{TV}\!\left(
+\operatorname{TV}\left(
 p_i^x,(T_{ij}^x)_\#p_j^x
 \right)
 \leq\delta_x.
@@ -180,7 +182,7 @@ $$
 K_\otimes(A,B\mid i,j)=C(A\mid i)C(B\mid j).
 $$
 
-Otherwise provide a normalized correlated endpoint kernel $K(A,B\mid i,j)$. Then
+Otherwise provide a normalized correlated endpoint kernel $K(A,B\mid i,j)$. This scalar event-law formula needs no parent root. Then
 
 $$
 \eta^c_{AB}
@@ -188,28 +190,53 @@ $$
 \qquad
 \alpha_A^c=\sum_B\eta^c_{AB},
 \qquad
-a^c_{AB}=\frac{\eta^c_{AB}}{\alpha_A^c}
+a^c_{AB}=\frac{\eta^c_{AB}}{\alpha_A^c},
 $$
 
 on positive receiver mass. Apply this formula separately to $(\eta^q,\beta)$ and $(\eta^m,\gamma)$. Pushing the joint law and then disintegrating is normalized and composes exactly under typed nested kernels. ESTABLISHED.
 
-For a boundary edge $j\to i$ from parent $B$ to parent $A$, retain the dressed channel mark
+Scalar event-law closure above needs only a normalized endpoint kernel and no parent root. For retained marks, strengthen the endpoint datum in each channel $x$ to a kernel $K^x$ supported on the declared membership incidences:
 
 $$
-V_{ij}^x
-=\tau_{A\leftarrow i}^xT_{ij}^x
-(\tau_{B\leftarrow j}^x)^{-1}
+K^x(A,B\mid i,j)>0
+\Longrightarrow
+C(A\mid i)>0\text{ and }C(B\mid j)>0.
 $$
 
-as a conditional distribution under the pushed joint event law. A matrix mean need not lie in the group: opposite quarter-turn rotations average to the zero matrix. Exact closure therefore retains internal based holonomy, root-relative boundary marks, induced hyperedges and shared factors, and path memory or an exact memory kernel. A one-link, pairwise, memoryless replacement is a truncation unless a scope-matched removal theorem is supplied. ESTABLISHED.
+For each parent $A$, set $V_A=\{i:C(A\mid i)>0\}$ and let $\mathcal C_A^x=\pi_0(G_x[V_A])$ be the connected components of the induced channel-$x$ positive-support transport graph. Each incidence $(A,i)$ determines a unique component $c_A^x(i)\in\mathcal C_A^x$. Use component meta-labels $\widehat A=(A,c)$, choose one root and one rooted spanning tree in every component, and let $\tau_{(A,c)\leftarrow i}^x$ be the ordered transport from $i$ to that component root.
+
+With component indicators understood to be zero outside their incidence domains, the component event masses are
+
+$$
+\widehat\eta^x_{(A,c),(B,d)}
+=\sum_{i,j}\eta_{ij}^xK^x(A,B\mid i,j)
+\mathbf1_{\{c=c_A^x(i)\}}
+\mathbf1_{\{d=c_B^x(j)\}},
+\qquad
+\eta_{AB}^{x,c}
+=\sum_{c\in\mathcal C_A^x}\sum_{d\in\mathcal C_B^x}
+\widehat\eta^x_{(A,c),(B,d)}.
+$$
+
+On an assigned component pair, dress the fine boundary transport by
+
+$$
+\widehat V_{ij;(A,c),(B,d)}^x
+=\tau_{(A,c)\leftarrow i}^xT_{ij}^x
+(\tau_{(B,d)\leftarrow j}^x)^{-1}.
+$$
+
+Pushing the joint event-plus-mark law gives a conditional mark law on every positive component event mass. A matrix mean need not lie in the group: opposite quarter-turn rotations average to the zero matrix. Exact certified closure therefore retains each component's internal based holonomy and the component-indexed conditional laws of root-relative boundary marks. Summing component masses recovers the scalar $A,B$ event mass, but collapsing disconnected component roots or mark fibers to one parent root requires another declared coarse channel. ESTABLISHED.
+
+OPEN outside this certificate: induced hyperedge or shared-factor closure requires the separate Theory/07b complete joint-density/factorization hypotheses (or retention of an arbitrary correlated baseline as one global factor with law-level pushforward). Full path-law closure requires a declared joint law on a finite ordered path interval, the normalized pointwise coarse channel, and the required spatial and, for a separately declared dynamical model, parameter-direction transports. An exact linear memory-kernel recurrence additionally requires vector spaces and linear maps T, C, and P with CP=I and a declared fine recursion. None of those data is frozen here, so those richer closures are not target ancestors.
 
 The canonical network source is [Theory/07b_agent_network_rg.tex](Theory/07b_agent_network_rg.tex).
 
 ## 7. Hard partitions, soft memberships, and replicated covers
 
-A hard partition is the deterministic kernel $C(A\mid i)=\mathbf1_{A=h(i)}$. A normalized soft membership satisfies $C(A\mid i)\geq0$ and $\sum_AC(A\mid i)=1$; one child may have several nonzero memberships without duplicating mass. Shared children can still induce correlations or shared effective factors.
+A hard partition is the deterministic kernel $C(A\mid i)=\mathbf1_{A=h(i)}$. A normalized soft membership satisfies $C(A\mid i)\geq0$ and $\sum_AC(A\mid i)=1$; one child may have several nonzero memberships without duplicating mass. For marked closure, every incidence $(A,i)$ is assigned to its channel-specific connected component inside $V_A$; a soft parent is not assumed connected and receives no single root. Shared children can require a correlated endpoint kernel supported on the declared incidences. Any shared-factor claim requires a separately declared joint-factor model.
 
-A literal replicated cover instead uses incidences $R(A\mid i)\in\{0,1\}$ with several ones allowed. Its column sum can exceed one, so it is not a Markov kernel and retains multiplicity. Treating it as normalized doubles child mass and shared factors in the simplest two-parent example. Literal full membership in several parents is not certified here. ESTABLISHED boundary.
+A literal replicated cover instead uses incidences $R(A\mid i)\in\{0,1\}$ with several ones allowed. Its column sum can exceed one, so it is not a Markov kernel and retains multiplicity. Treating it as normalized doubles child mass and incident event contributions in the simplest two-parent example. Literal full membership in several parents is not certified here. ESTABLISHED boundary.
 
 Nested normalized memberships compose by
 
@@ -227,7 +254,7 @@ Fix an observation $o$, posterior $\Pi_o$, recognition law $Q_o$, and one normal
 $$
 \operatorname{KL}(Q_o\Vert\Pi_o)
 =\operatorname{KL}(Q_o^c\Vert\Pi_o^c)
-+\int\operatorname{KL}\!\left(
++\int\operatorname{KL}\left(
 Q_o(\cdot\mid z)\Vert\Pi_o(\cdot\mid z)
 \right)Q_o^c(dz).
 $$
@@ -287,20 +314,20 @@ The contained register proves the following exact failures:
 | Belief agreement implies trivial holonomy | Nonidentity $\operatorname{diag}(1,-1,-1)$ stabilizing an isotropic Gaussian |
 | A spectral gap is an intrinsic agreement scale | Two-node gap $2c$, independent of laws and arbitrary under $c$-rescaling |
 | One-way KL controls reverse KL | Point mass versus fair bit: $\log2$ forward and $+\infty$ reverse |
-| Gaussian projection preserves nonlinear boundary actions exactly | Equal children $\mathcal N(\pm a,1)$ and $H(x)=\lambda x^4$ leave residual $2\lambda a^4$ |
+| Gaussian projection preserves nonlinear boundary actions exactly | Equally weighted children $\mathcal N(\pm a,1)$ and $H(x)=\lambda x^4$ leave signed residual $2\lambda a^4$ |
 | Overlapping full parents preserve mass | One child fully replicated into two parents has total mass $2$ |
 
 See [counterexample-proofs.md](docs/derivations/2026-08-14-pointwise-meta-agent-rg/evidence/counterexample-proofs.md). The deterministic recomputation is DIAGNOSTIC corroboration only.
 
 ## 11. Certified boundary and repository map
 
-ESTABLISHED: fixed-point types; fundamental-cycle holonomy bookkeeping; two-channel zero distortion; unrestricted full-law mixture identity and uniqueness; finite-holonomy orbit averaging; rooted-tree total-variation control; normalized joint-event pushforward and disintegration; retained mark laws; common-channel VFE chain rule; normalized nested composition; moving-map chain rule; and the eight counterexamples.
+ESTABLISHED: fixed-point types; fundamental-cycle holonomy bookkeeping; two-channel zero distortion; unrestricted full-law mixture identity and uniqueness; finite-holonomy orbit averaging; rooted-tree total-variation control; normalized joint-event pushforward and disintegration; incidence-supported component-indexed retained mark laws; common-channel VFE chain rule; normalized nested composition; moving-map chain rule; and the eight counterexamples.
 
-CONDITIONAL: compact continuous holonomy averaging under explicit domination and finite-KL assumptions; the frozen constant-metric Gaussian or feature stability corollary; and any exact removal of marks, hyperedges, shared factors, or memory under a theorem stated for that removal.
+CONDITIONAL: compact continuous holonomy averaging under explicit domination and finite-KL assumptions; the frozen constant-metric Gaussian or feature stability corollary; the richer Theory/07b hypergraph, path-law, and memory closures under their separately stated joint-factor, full-path-law/transport, and linear-dynamic hypotheses; and any exact removal of the certified marks or holonomy under a theorem stated for that removal.
 
 DIAGNOSTIC: raw connection spectral gaps, KL thresholds, and finite symbolic or numerical checks. They can test a proposed construction but do not select a partition or prove a theorem.
 
-OPEN/TODO: extension across $R$; patch gluing; active-set changes; canonical partition selection; literal replicated-parent semantics; autonomous agency; physical time; continuum limits; an intrinsic threshold; general noncompact holonomy averaging; adaptive attention dynamics; nonlinear full-law VFE semiconjugacy; and dynamically selected memberships.
+OPEN/TODO: hyperedge, shared-factor, and path-memory closure absent the separate imported hypotheses; extension across $R$; patch gluing; active-set changes; canonical partition selection; literal replicated-parent semantics; autonomous agency; physical time; continuum limits; an intrinsic threshold; general noncompact holonomy averaging; adaptive attention dynamics; nonlinear full-law VFE semiconjugacy; and dynamically selected memberships.
 
 | Location | Role |
 |---|---|

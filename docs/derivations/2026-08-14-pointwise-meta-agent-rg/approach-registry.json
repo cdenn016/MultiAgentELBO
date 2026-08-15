@@ -1,14 +1,14 @@
 {
   "schema_version": "rigorous-theory-search/v1",
-  "contract_id": "contract-sha256-a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
-  "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+  "contract_id": "contract-sha256-48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06",
+  "target_digest": "48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06",
   "mechanism_families": [
     {
       "family_id": "FAM-GROUPOID-HOLONOMY",
       "core_mechanism": "Represent reciprocal edge transports as a path groupoid and reduce all loop constraints to a rooted spanning tree plus fundamental cycles.",
       "target_obligation_ids": ["TYPE-GROUPOIDS"],
       "representation": "Finite connected support graph, typed bimeasurable arrows, rooted tree transports, and represented holonomy fixed spaces.",
-      "invariant_or_obstruction": "Root-frame laws and vectors must be invariant under every based holonomy; chordless cycles obstruct triangle-only tests.",
+      "invariant_or_obstruction": "Root-frame laws and vectors must be invariant under every based holonomy; nonabelian triangle reduction requires normal generation by based triangle loop words, while chordless cycles obstruct triangle-only tests.",
       "obligations": [
         "Check the j-to-i composition convention.",
         "Prove fundamental-cycle generation.",
@@ -96,25 +96,27 @@
     },
     {
       "family_id": "FAM-MARKED-EVENT-PUSHFORWARD",
-      "core_mechanism": "Push the normalized joint endpoint-event law through a declared endpoint kernel, disintegrate it, and retain the full conditional distribution of dressed boundary marks.",
+      "core_mechanism": "Push the normalized joint endpoint-event law through a declared endpoint kernel and disintegrate it; for marks, restrict assignments to declared incidences, split each parent support into channelwise connected components, and retain component-indexed conditional laws of dressed boundary marks.",
       "target_obligation_ids": ["EVENT-LAW-RENORMALIZATION", "RETAINED-MARKS"],
-      "representation": "Scalar joint event measures augmented by typed group-valued marks, normalized endpoint kernels, hyperedges, shared factors, and path memory.",
+      "representation": "Scalar joint event measures augmented by typed group-valued boundary marks, normalized endpoint kernels, incidence-supported component labels, one rooted tree per induced support component, and each component's internal based-holonomy presentation.",
       "invariant_or_obstruction": "Scalar mass is conserved by normalized kernels, whereas an arithmetic mark mean can be singular and erase mark-feature correlations.",
       "obligations": [
         "Distinguish receiver rows from normalized joint event laws.",
         "Expose conditional independence when a product endpoint kernel is used.",
-        "Retain holonomy, mark laws, induced shared structure, and memory absent a removal theorem."
+        "Require correlated marked endpoint kernels to be supported on declared membership incidences and refine each induced parent support into rooted connected components.",
+        "Retain component-indexed conditional boundary-mark laws and internal based holonomy; do not infer hypergraph or path-memory closure from pointwise event data."
       ],
-      "bridge": "Finite-kernel pushforward preserves total mass and regular disintegration recovers coarse receiver laws and conditional rows.",
-      "failure_test": "A normalized endpoint kernel whose pushed joint mass is not one, or a group theorem making the zero mean of opposite quarter-turns invertible, would falsify the mechanism.",
+      "bridge": "Finite-kernel pushforward preserves scalar mass; incidence support assigns each selected endpoint to a unique induced component, so component-event pushforward is normalized and its component sums recover the scalar parent-pair masses.",
+      "failure_test": "A normalized endpoint kernel whose pushed scalar mass is not one, an incidence-supported component refinement whose masses do not sum back to the scalar parent-pair mass, or a group theorem making the zero mean of opposite quarter-turns invertible would falsify the mechanism.",
       "verified_results": [
         "Scalar network renormalization is exact for normalized joint endpoint events.",
+        "Incidence-supported component-indexed marked masses sum exactly to the scalar parent-pair masses.",
         "A single averaged matrix is not an exact replacement for a conditional mark law."
       ],
       "open_gaps": [
-        "No universal removal theorem for induced hyperedges, shared factors, or memory is supplied."
+        "Hyperedge, shared-factor, full path-law, and memory-kernel closure require separate Theory/07b joint-factor, path-law, or linear-dynamic hypotheses and remain outside target ancestry."
       ],
-      "novelty_fingerprint": "Marked-measure closure rather than elementwise averaging of conditional attention rows or transports.",
+      "novelty_fingerprint": "Component-indexed marked-measure closure rather than a nonexistent single root for disconnected parent supports or elementwise averaging of transports.",
       "disposition": "certified_in_scope"
     },
     {

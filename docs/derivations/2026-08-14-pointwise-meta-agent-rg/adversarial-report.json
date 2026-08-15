@@ -1,16 +1,16 @@
 {
   "schema_version": "rigorous-theory-search/v1",
-  "contract_id": "contract-sha256-a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
-  "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+  "contract_id": "contract-sha256-48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06",
+  "target_digest": "48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06",
   "attacks": [
     {
       "id": "ATTACK-TRIANGLE-INCOMPLETENESS",
       "claim_ids": ["TYPE-GROUPOIDS"],
       "attack": "Triangle products do not detect curvature on a chordless cycle, so a triangle-only flatness argument would be incomplete.",
-      "response": "The proof uses a rooted spanning tree and every non-tree fundamental cycle. It permits triangle reduction only after a triangle-span or triangulation hypothesis is declared.",
+      "response": "The proof uses a rooted spanning tree and every non-tree fundamental cycle. For nonabelian holonomy it permits triangle reduction only when the based triangle loop words normally generate the graph fundamental group, for example for a simply connected filled triangulation; cycle-space spanning alone suffices only for abelian holonomy.",
       "disposition": "REJECTED",
       "artifact_path": "evidence/adversarial-attacks.md",
-      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+      "artifact_sha256": "b7d0765f6f11acc65528fce096a988756d193af2784f1796c99e3efd12abad93"
     },
     {
       "id": "ATTACK-FLATNESS-CONSENSUS-CONFLATION",
@@ -19,7 +19,7 @@
       "response": "Frame fixed spaces and state-law stabilization are proved separately. CE-3 and CE-4 refute both attempted identifications, while zero distortion follows directly from KL positivity.",
       "disposition": "REJECTED",
       "artifact_path": "evidence/adversarial-attacks.md",
-      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+      "artifact_sha256": "b7d0765f6f11acc65528fce096a988756d193af2784f1796c99e3efd12abad93"
     },
     {
       "id": "ATTACK-DIRECTED-SUPPORT",
@@ -28,7 +28,7 @@
       "response": "Every undirected support edge has at least one positive orientation and a reciprocal bimeasurable transport. Pushing an equality through the inverse supplies the reverse-oriented equality.",
       "disposition": "REJECTED",
       "artifact_path": "evidence/adversarial-attacks.md",
-      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+      "artifact_sha256": "b7d0765f6f11acc65528fce096a988756d193af2784f1796c99e3efd12abad93"
     },
     {
       "id": "ATTACK-EXTENDED-KL-ARITHMETIC",
@@ -37,7 +37,7 @@
       "response": "The derivation separates support failure, infinite mixture-to-comparison KL, and the finite integrable case. Algebra is used only in the finite case; the other cases close by support and convexity.",
       "disposition": "REJECTED",
       "artifact_path": "evidence/adversarial-attacks.md",
-      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+      "artifact_sha256": "b7d0765f6f11acc65528fce096a988756d193af2784f1796c99e3efd12abad93"
     },
     {
       "id": "ATTACK-HOLONOMY-AVERAGE",
@@ -46,7 +46,7 @@
       "response": "Finite holonomy uses normalized counting measure. Compact continuous holonomy is explicitly conditional on measurable domination and finite-integral hypotheses. The general noncompact extension is left open.",
       "disposition": "REJECTED",
       "artifact_path": "evidence/adversarial-attacks.md",
-      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+      "artifact_sha256": "b7d0765f6f11acc65528fce096a988756d193af2784f1796c99e3efd12abad93"
     },
     {
       "id": "ATTACK-KL-TRIANGLE",
@@ -55,25 +55,25 @@
       "response": "One rooted spanning tree is fixed for every transport. Pinsker is applied on selected tree-edge orientations and only total variation is telescoped along the unique tree paths, with the tree diameter as the constant.",
       "disposition": "REJECTED",
       "artifact_path": "evidence/adversarial-attacks.md",
-      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+      "artifact_sha256": "b7d0765f6f11acc65528fce096a988756d193af2784f1796c99e3efd12abad93"
     },
     {
       "id": "ATTACK-HIDDEN-ENDPOINT-INDEPENDENCE",
       "claim_ids": ["EVENT-LAW-RENORMALIZATION"],
       "attack": "Using a product of two membership kernels could erase correlations in the endpoint assignment.",
-      "response": "The product is labeled as the conditional-independence specialization. The general theorem accepts an explicitly normalized correlated endpoint kernel and pushes the full joint event law.",
+      "response": "The product is labeled as the conditional-independence specialization. The scalar theorem accepts any explicitly normalized correlated endpoint kernel and pushes the full joint event law. The marked tier additionally requires support on declared membership incidences.",
       "disposition": "REJECTED",
       "artifact_path": "evidence/adversarial-attacks.md",
-      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+      "artifact_sha256": "b7d0765f6f11acc65528fce096a988756d193af2784f1796c99e3efd12abad93"
     },
     {
       "id": "ATTACK-MEAN-NOT-GROUP",
       "claim_ids": ["RETAINED-MARKS"],
       "attack": "Replacing conditional transport marks by an arithmetic mean can leave the group and lose mark-feature correlation.",
-      "response": "The exact state retains the conditional mark law or raw marked edges. Opposite quarter-turns average to the singular zero matrix, so no averaged-link claim is made.",
+      "response": "The exact state retains component-indexed conditional mark laws or raw marked edges after rooting every induced support component separately. Opposite quarter-turns average to the singular zero matrix, so no averaged-link claim is made.",
       "disposition": "REJECTED",
       "artifact_path": "evidence/adversarial-attacks.md",
-      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+      "artifact_sha256": "b7d0765f6f11acc65528fce096a988756d193af2784f1796c99e3efd12abad93"
     },
     {
       "id": "ATTACK-RECOGNITION-DEPENDENT-CHANNEL",
@@ -82,7 +82,7 @@
       "response": "Recognition independence and one common channel for both laws are frozen premises. The theorem retains the conditional-KL defect and asserts equality only at almost-sure conditional-law equality.",
       "disposition": "REJECTED",
       "artifact_path": "evidence/adversarial-attacks.md",
-      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+      "artifact_sha256": "b7d0765f6f11acc65528fce096a988756d193af2784f1796c99e3efd12abad93"
     },
     {
       "id": "ATTACK-REPLICATED-MASS",
@@ -91,7 +91,7 @@
       "response": "Soft membership is normalized; literal replication is a separate nonnormalized type. CE-8 records parent mass two and replicated self-edge mass four.",
       "disposition": "REJECTED",
       "artifact_path": "evidence/adversarial-attacks.md",
-      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+      "artifact_sha256": "b7d0765f6f11acc65528fce096a988756d193af2784f1796c99e3efd12abad93"
     },
     {
       "id": "ATTACK-MOVING-MAP-TERM",
@@ -100,7 +100,7 @@
       "response": "The certified identity contains partial_t C_t. The frozen equation is only a specialization, and dynamically selected memberships remain open.",
       "disposition": "REJECTED",
       "artifact_path": "evidence/adversarial-attacks.md",
-      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+      "artifact_sha256": "b7d0765f6f11acc65528fce096a988756d193af2784f1796c99e3efd12abad93"
     },
     {
       "id": "ATTACK-FINITE-CHECK-AS-PROOF",
@@ -109,7 +109,16 @@
       "response": "Every mathematical dependency has direct DERIVATION evidence. The script and output close only a separate NUMERICAL_OBSERVATION and explicitly declare theorem_proof false.",
       "disposition": "REJECTED",
       "artifact_path": "evidence/adversarial-attacks.md",
-      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+      "artifact_sha256": "b7d0765f6f11acc65528fce096a988756d193af2784f1796c99e3efd12abad93"
+    },
+    {
+      "id": "ATTACK-DISCONNECTED-PARENT-SUPPORT",
+      "claim_ids": ["EVENT-LAW-RENORMALIZATION", "RETAINED-MARKS"],
+      "attack": "A hard or soft parent support can be disconnected, so one within-parent root and transport need not exist.",
+      "response": "Scalar event-law pushforward needs no parent root. The marked tier requires incidence-supported assignments, refines each channel-specific parent support into connected components, roots every component separately, and retains component-indexed endpoint marks; summing component masses recovers the scalar parent-pair mass.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "b7d0765f6f11acc65528fce096a988756d193af2784f1796c99e3efd12abad93"
     }
   ],
   "independent_reconstruction": {
@@ -129,7 +138,7 @@
     "result": "PASS",
     "conclusion": "Every target dependency reconstructs under the recorded side conditions; role separation is not independent-agent agreement.",
     "artifact_path": "evidence/independent-reconstruction.md",
-    "artifact_sha256": "fc53e5de7d4592a193dd665c39e1b2cba1555a76c321d1dfc96a132ea823434a"
+    "artifact_sha256": "17c5c40a2727c226d18f17f0d3e0e97a3d2e06a9544b36f57232fa4742902957"
   },
   "oracle_erasure": {
     "claim_ids": [
@@ -148,6 +157,6 @@
     "result": "PASS",
     "conclusion": "No target conjunct or dependency requires the erased preference; the mathematical derivations remain the closure evidence.",
     "artifact_path": "evidence/oracle-erasure.md",
-    "artifact_sha256": "18dd942f9f8b999bc4686b73b64e7c4f1b4ca391ff782e4df640b53cc7274a4d"
+    "artifact_sha256": "a489b4f8f73b1596a0bae9dd960bf415f296c1ed4ed2f826122c402176fda3e7"
   }
 }

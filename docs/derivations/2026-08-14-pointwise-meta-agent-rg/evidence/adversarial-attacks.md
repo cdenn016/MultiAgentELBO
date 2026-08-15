@@ -1,11 +1,11 @@
-<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952","schema_version":"rigorous-theory-search/v1","target_digest":"a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952"} -->
+<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06","schema_version":"rigorous-theory-search/v1","target_digest":"48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06"} -->
 # Adversarial attacks and responses
 
 ## ATTACK-1: triangle checks may miss curvature
 
 Attack: A proof that checks only triangle products can declare a chordless four-cycle flat.
 
-Disposition: `REJECTED`. The certified type claim uses a rooted spanning tree and every non-tree fundamental cycle. It explicitly states the extra triangle-span or triangulation hypothesis needed to replace that basis.
+Disposition: `REJECTED`. The certified type claim uses a rooted spanning tree and every non-tree fundamental cycle. For nonabelian holonomy it permits triangle reduction only when the based triangle loop words normally generate the graph fundamental group, for example when the filled triangular complex is simply connected. Cycle-space spanning alone is sufficient only for abelian holonomy.
 
 ## ATTACK-2: full-frame flatness may have been substituted for law agreement
 
@@ -41,13 +41,13 @@ Disposition: `REJECTED`. The proof fixes a rooted spanning tree, applies Pinsker
 
 Attack: The formula (C(A\mid i)C(B\mid j)) assumes conditionally independent endpoint assignments and can erase shared assignment noise.
 
-Disposition: `REJECTED`. The package names that product as the conditional-independence specialization. Its general exact formula uses a normalized correlated endpoint kernel (K(A,B\mid i,j)), pushes the joint edge-event law, and only then disintegrates.
+Disposition: `REJECTED`. The package names that product as the conditional-independence specialization. Its general scalar formula uses a normalized correlated endpoint kernel (K(A,B\mid i,j)), pushes the joint edge-event law, and only then disintegrates. The marked tier additionally requires that correlated kernel to be supported on the declared membership incidences.
 
 ## ATTACK-8: averaging transport matrices may leave the group
 
 Attack: A coarse link defined by an arithmetic matrix mean can be singular and lose mark-feature correlation.
 
-Disposition: `REJECTED`. The certified state retains the conditional law of dressed marks or raw marked edges. The zero mean of opposite quarter-turns and the correlated mark-feature witness are included as attacks on the unclaimed averaged-link truncation.
+Disposition: `REJECTED`. After refining every induced parent support into rooted connected components, the certified state retains component-indexed conditional laws of dressed marks or raw marked edges. The zero mean of opposite quarter-turns and the correlated mark-feature witness attack the unclaimed averaged-link truncation.
 
 ## ATTACK-9: coarse VFE equality may be manufactured by a recognition-dependent map
 
@@ -63,7 +63,7 @@ Disposition: `REJECTED`. Soft membership is normalized columnwise. Literal repli
 
 ## ATTACK-11: a moving coarse map may invalidate semiconjugacy
 
-Attack: The familiar condition (DC\,X=\bar X\circ C) omits movement of the partition or coarse map.
+Attack: The familiar condition (D C[X]=\bar X\circ C) omits movement of the partition or coarse map.
 
 Disposition: `REJECTED`. The certified equation contains (partial_tC_t). The frozen-map formula is identified as a specialization, and dynamically selected memberships remain open.
 
@@ -72,6 +72,12 @@ Disposition: `REJECTED`. The certified equation contains (partial_tC_t). The fro
 Attack: The recomputation script checks only selected finite values and decimal logarithms.
 
 Disposition: `REJECTED`. No mathematical claim depends on the script. The ledger labels it `SYMBOLIC_CHECK`; exact rational/integer checks and decimal corroboration are separated. Direct derivations close the theorems.
+
+## ATTACK-13: a hard or soft parent support may be disconnected
+
+Attack: One root and one within-parent transport are undefined when the vertices with positive membership in a parent occupy several disconnected components.
+
+Disposition: `REJECTED`. Scalar event-law pushforward uses no parent root and remains exact for every normalized endpoint kernel. The marked tier requires endpoint assignments supported on declared membership incidences, refines each channel-specific parent support into connected components, and roots every component separately. Each incidence determines its component; component-indexed marked masses sum to the scalar parent-pair mass, and no transport between disconnected components is asserted.
 
 ## Attack coverage result
 

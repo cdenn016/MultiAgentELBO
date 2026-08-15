@@ -1,4 +1,4 @@
-<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952","schema_version":"rigorous-theory-search/v1","target_digest":"a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952"} -->
+<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06","schema_version":"rigorous-theory-search/v1","target_digest":"48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06"} -->
 # Direct derivation
 
 ## 1. Frozen pointwise types
@@ -35,7 +35,7 @@ H_c^x
 =T_{v_0v_{n-1}}^x\circ\cdots\circ T_{v_1v_0}^x.
 \]
 
-The formal paths, inverses, and cancellation relations form a reciprocal path groupoid. A rooted spanning tree and its non-tree edges give fundamental cycles; their holonomies generate all based graph-loop holonomies. Triangles generate all graph cycles only when triangle boundaries span the cycle space, as in a declared triangulation. A bare graph can contain a chordless cycle of length four or more, so checking all available triangles is not a flatness test in general.
+The formal paths, inverses, and cancellation relations form a reciprocal path groupoid. A rooted spanning tree and its non-tree edges give fundamental cycles; their holonomies generate all based graph-loop holonomies. For nonabelian holonomy, triangles may replace this free basis only when their based boundary loop words normally generate the graph fundamental group, for example when the attached triangular 2-cells form a simply connected filled triangulation. Spanning the graph cycle space alone controls only the abelianization and is sufficient only for abelian holonomy. A bare graph can contain a chordless cycle of length four or more, so checking all available triangles is not a flatness test in general.
 
 For each channel, choose positive normalized barycenter weights (w_i^x>0), (sum_iw_i^x=1). These vertex weights are independent of the joint edge-event weights (eta_{ij}^x).
 
@@ -134,9 +134,9 @@ so both sides of the boxed identity are (+infty). If (operatorname{KL}(M\Vert R)
 \[
 \begin{aligned}
 \sum_iw_i\operatorname{KL}(P_i\Vert R)
-&=\sum_iw_i\int\log(f_ig)\,dP_i\\
-&=\sum_iw_i\int\log f_i\,dP_i
-+\int\log g\,d\left(\sum_iw_iP_i\right)\\
+&=\sum_iw_i\int\log(f_ig)dP_i\\
+&=\sum_iw_i\int\log f_i dP_i
++\int\log g d\left(\sum_iw_iP_i\right)\\
 &=\sum_iw_i\operatorname{KL}(P_i\Vert M)
 +\operatorname{KL}(M\Vert R).
 \end{aligned}
@@ -160,6 +160,8 @@ For a compact continuous holonomy closure, the analogous Haar average is conditi
 The full-Gaussian moment-matching formula and the compact-Haar Gaussian specialization have already been proved in `Theory/09_coarsegraining.tex`. They are specializations of the law-level statement, not evidence that arbitrary nonlinear law fibers are Gaussian closed.
 
 ## 5. Approximate total-variation theorem
+
+Use the convention (\operatorname{TV}(P,Q)=\frac12\lVert P-Q\rVert_1).
 
 Fix a channel and suppose (\mathcal D_x\leq\varepsilon_x<\infty). Fix a rooted spanning tree (\mathsf T_x) of the connected undirected positive-support graph, orienting each tree edge in a direction whose directed event weight is positive. Let
 
@@ -215,7 +217,7 @@ Let (C(A\mid i)\geq0) be a normalized membership kernel, (sum_A C(A\mid i)=1). I
 K_\otimes(A,B\mid i,j)=C(A\mid i)C(B\mid j).
 \]
 
-More generally, use any explicitly declared normalized correlated endpoint kernel (K(A,B\mid i,j)). Push the joint event law first:
+More generally, use any explicitly declared normalized correlated endpoint kernel (K(A,B\mid i,j)). The scalar theorem needs only normalization; the marked refinement in section 7 additionally requires support on the declared membership incidences. Push the joint event law first:
 
 \[
 \eta^c_{AB}
@@ -235,7 +237,7 @@ a^c_{AB}=\frac{\eta^c_{AB}}{\alpha_A^c}
 
 A row on a zero-mass receiver is an immaterial conditional version. The formula applies to ((\alpha^q,\beta,\eta^q)) and ((\alpha^m,\gamma,\eta^m)) separately. Writing (C(A\mid i)C(B\mid j)) without declaring conditional independence would discard possible correlated endpoint assignments; the correct datum in that case is (K(A,B\mid i,j)).
 
-For a hard partition (h:V\to\mathcal A), (C(A\mid i)=\mathbf1_{A=h(i)}). A normalized soft membership permits several nonzero values for one child while preserving unit mass. A literal replicated cover instead has incidence (R(A\mid i)\in\{0,1\}) with (sum_AR(A\mid i)>1) allowed. It is not a Markov kernel and retains multiplicity; treating it as (C) double-counts mass and shared factors.
+For a hard partition (h:V\to\mathcal A), (C(A\mid i)=\mathbf1_{A=h(i)}). A normalized soft membership permits several nonzero values for one child while preserving unit mass. A literal replicated cover instead has incidence (R(A\mid i)\in\{0,1\}) with (sum_AR(A\mid i)>1) allowed. It is not a Markov kernel and retains multiplicity; treating it as (C) double-counts mass and joint event contributions.
 
 Nested normalized memberships compose as typed Markov kernels:
 
@@ -244,36 +246,80 @@ C_{20}(B\mid i)
 =\sum_A C_{21}(B\mid A)C_{10}(A\mid i).
 \]
 
-The same statement for endpoint events requires composition of the declared joint endpoint kernels. Product endpoint kernels compose as products only while their conditional-independence hypotheses remain true. Shared children generally induce correlated parents or shared effective factors.
+The same statement for endpoint events requires composition of the declared joint endpoint kernels. Product endpoint kernels compose as products only while their conditional-independence hypotheses remain true. Shared children generally require a correlated endpoint kernel. Any claim about induced shared effective factors additionally needs a declared joint-factor model and lies outside this target.
 
-## 7. Boundary marks and exact retained state
+## 7. Boundary marks and exact component-indexed retained state
 
-Choose rooted trees inside coarse blocks. For a fine boundary edge (j\to i) from source block (B) to receiver block (A), define the channel-typed dressed mark
-
-\[
-V_{ij}^x
-=\tau_{A\leftarrow i}^xT_{ij}^x
-(\tau_{B\leftarrow j}^x)^{-1}.
-\]
-
-The exact coarse marked measure is
+The scalar theorem in section 6 accepts every normalized endpoint kernel and uses no parent root. The marked theorem adds the incidence-support condition
 
 \[
-\Xi_{AB}^x(D)
-=\sum_{i,j}\eta_{ij}^xK(A,B\mid i,j)
-\mathbf1_{\{V_{ij}^x\in D\}},
+K^x(A,B\mid i,j)>0
+\quad\Longrightarrow\quad
+C(A\mid i)>0\text{ and }C(B\mid j)>0.
 \]
 
-and, on (eta_{AB}^{x,c}>0), its conditional mark law is
+For channel (x), define (V_A=\{i:C(A\mid i)>0\}) and let (\mathcal C_A^x=\pi_0(G_x[V_A])) be the connected components of the induced positive-support transport graph. Each incidence ((A,i)) has a unique component (c_A^x(i)). Replace the parent label by the component meta-label ((A,c)), choose a root (r_{A,c}^x) and rooted spanning tree in each component, and let (\tau_{(A,c)\leftarrow i}^x) be the ordered channel transport from (i) to that root. This construction applies equally to disconnected hard blocks and to soft parents; a child with several memberships carries a separate incidence for each parent and hence a component label within each such parent support.
+
+Set the component endpoint kernel to zero off the declared incidence support and, on that support, define it by
 
 \[
-\kappa_{AB}^x(D)
-=\frac{\Xi_{AB}^x(D)}{\eta_{AB}^{x,c}}.
+\widehat K^x((A,c),(B,d)\mid i,j)
+=K^x(A,B\mid i,j)
+\mathbf1_{\{c=c_A^x(i)\}}
+\mathbf1_{\{d=c_B^x(j)\}}.
 \]
+
+Incidence support and uniqueness of the endpoint components give (\sum_{A,c,B,d}\widehat K^x((A,c),(B,d)\mid i,j)=1). Thus the component masses
+
+\[
+\widehat\eta^x_{(A,c),(B,d)}
+=\sum_{i,j}\eta_{ij}^x\widehat K^x((A,c),(B,d)\mid i,j),
+\]
+
+are normalized, and summing components proves the exact recovery identity
+
+\[
+\sum_{c\in\mathcal C_A^x}\sum_{d\in\mathcal C_B^x}
+\widehat\eta^x_{(A,c),(B,d)}
+=\sum_{i,j}\eta_{ij}^xK^x(A,B\mid i,j)
+=\eta_{AB}^{x,c}.
+\]
+
+On the component pair selected by an endpoint assignment, define the channel-typed dressed mark
+
+\[
+\widehat V_{ij;(A,c),(B,d)}^x
+=\tau_{(A,c)\leftarrow i}^xT_{ij}^x
+(\tau_{(B,d)\leftarrow j}^x)^{-1}.
+\]
+
+The exact component-indexed marked measure is
+
+\[
+\widehat\Xi_{(A,c),(B,d)}^x(D)
+=\sum_{i,j}\eta_{ij}^x\widehat K^x((A,c),(B,d)\mid i,j)
+\mathbf1_{\{\widehat V_{ij;(A,c),(B,d)}^x\in D\}},
+\]
+
+and, on (\widehat\eta^x_{(A,c),(B,d)}>0), its conditional mark law is
+
+\[
+\widehat\kappa_{(A,c),(B,d)}^x(D)
+=\frac{\widehat\Xi_{(A,c),(B,d)}^x(D)}
+{\widehat\eta^x_{(A,c),(B,d)}}.
+\]
+
+This is an ordinary finite pushforward and disintegration, so the mark law and its correlations are retained exactly. Each component also retains its own internal based holonomy representation. A disconnected parent support has no asserted transport between its components; collapsing their roots or mark fibers to one parent root requires another declared coarse channel.
 
 Conditional expectations of a linear representation (R_x(V)) may be derived under Bochner integrability, but the result need not lie in (R_x(G)). For example, the arithmetic mean of the two planar rotations by (\pi/2) and (-\pi/2) is the zero matrix. It is neither invertible nor a group element. Separate means of marks and features also fail to determine the mean product when they are correlated.
 
-Exact coarse state therefore retains the internal based holonomy representation, the boundary-mark conditional law or raw marked edges, all induced hyperedges and shared factors, and path memory or an exact memory kernel. Any removal needs a theorem matched to the declared scope; a scalar average or memoryless pairwise ansatz is a truncation otherwise.
+The EVIDENCE_VERIFIED conclusion is atomic: on the incidence-supported component-rooted tier, exact pointwise coarse marked state retains component-indexed boundary-mark conditional laws or raw marked edges and every component's internal based holonomy. Component masses sum to the scalar parent-pair masses. Any single-root collapse or replacement by one averaged matrix needs a scope-matched theorem; neither is inferred here.
+
+### Conditional 07b closure boundary (OPEN here; outside target ancestry)
+
+Hyperedge and shared-factor closure do not follow from marked-event pushforward alone. The pinned 07b construction obtains them only after supplying a complete nonnegative joint density, including its baseline, factorized against a product or block-product reference; with an arbitrary correlated baseline it instead retains the baseline as one global factor and uses the law-level pushforward. The finite-valued Mobius representation also requires a finite meta-agent set and an anchored finite-valued effective action.
+
+Full path-law closure likewise requires a declared joint law on a finite ordered path interval, the pointwise normalized coarse channel, the required spatial transports, and parameter-direction transports for a separately declared dynamical model. Its exact linear memory recurrence separately assumes vector spaces X and W, linear maps T, C, and P with CP=I, Q=I-PC, and a fine recursion x_(n+1)=Tx_n. None of these joint-factor, path-law, or linear-dynamic data is frozen here, so hyperedge, shared-factor, and path-memory closure is OPEN in this package and is not a TARGET-POINTWISE-RG ancestor.
 
 ## 8. Exact VFE closure and its residual
 
@@ -324,7 +370,7 @@ The moving map semiconjugates the fine flow to (dot z=\overline X_t(z)) exactly 
 
 \[
 \partial_tC_t+D C_tX_t
-=\overline X_t\circ C_t
+=\overline X_t\circ C_t,
 \]
 
 on the declared domain. Omitting (partial_tC_t) is valid only for a frozen coarse map. The parameter (t) here is not a coordinate on the contextual base, physical time, or RG depth.
