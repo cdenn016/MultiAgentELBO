@@ -253,3 +253,44 @@ released as **COMPLETE_AFFIRMATIVE**.
 | Circle heat-kernel witness | **R/P.** The ordered chains `m(dR)H_s(R,dE)H_t(E,dO)` and `m(dR)H_t(R,dE)H_s(E,dO)` have the same passive retained law. Yet `H_s` strictly Blackwell-dominates `H_t`, and `{nu H_t}` is a proper subset of `{nu H_s}`, with positive smooth witness `nu_rho=H_rho(x_0,dot)` for `0<rho<t-s`. Identification from the passive retained law is refuted in the frozen compact-Feller heat category. |
 | Morphism boundary | **D/typed.** Every admitted typed BSC or circle experiment comparison uses one global tuple of compatible typed state maps, protocol map, and protocol-independent response intertwiner. The ordered roles are `R` input/parameter and `O` output/observation. Target/type coloring is retained where declared and, on the circle, heat geometry is retained. Target erasure, boundary exchange, and time reversal define different categories. |
 | Supersession and remaining scope | **O.** Blanket claims that every soft, stochastic, or continuous extension is open are superseded only by the preceding frozen results. Correlated/shared-noise or adaptive selectors and identification of null-version point interventions from almost-sure passive observational conditionals remain open, as do noncompact quotients, category canonicity, arbitrary latent dilation, raw minimal realization, fixed-observation ELBO/VFE recovery, autonomous agency, base-manifold continuum/gauge/RG dynamics, and every physical or ontological identification. |
+
+---
+
+## 13. 2026-08-15 full meta-agent construction roadmap -- OPEN/TODO
+
+This section records the next dependency order only. It proves no theorem, modifies no release, and
+does not promote the certified fixed-$r_*$ pair of parent marginals to a full pointwise probabilistic
+meta-agent datum. The pointwise certificate remains authoritative for exactly its frozen
+conjunction; the full datum still requires generative, recognition, and posterior objects plus the
+VFE and model interfaces. Even that completed fixed-point datum is not a geometric meta-agent;
+geometric language requires patchwise local sections and gluing in Phase 4.
+
+**Phase 0 -- notation standard, before new mathematics.** The base is $\mathcal C$, agent supports
+are $\mathcal C_i$, and the overlap patch for a candidate block $A$ is
+$\mathcal U_A=\bigcap_{i\in A}\mathcal C_i$. Bare $R$ is not an overlap region; intervention text
+retains the typed roles $R$ input/parameter, $E$ mediator, and $O$ output/observation. A principal
+bundle is $\mathscr P_G\to\mathcal C$; full generative and recognition laws are $\mathbb P$ and
+$\mathbb Q$; and the posterior is $\boldsymbol\Pi$. The symbol $\varpi$ remains reserved for the
+established projection notation. Receiver occupancy remains $\alpha_i^x$, with
+$\eta_{ij}^q=\alpha_i^q\beta_{ij}$ and $\eta_{ij}^m=\alpha_i^m\gamma_{ij}$; these $\alpha_i^x$ are
+external occupancy or sampling weights, not new transformer attention parameters. New full-law
+work uses $q_i^b$ and $q_i^m$. The symbol $m_i$ remains a model sample or presentation wherever so
+typed; only explicitly law-valued frozen-RG occurrences may receive the local alias $q_i^m$.
+Preserve the distinct dependencies $s_i^{o,X}$ and $q_i^{o,X}$; bare $s_i$ is not globally renamed.
+A model point $m$ becomes a generative mechanism only through a declared normalized-kernel
+evaluation map $m\mapsto K_m$. General statistical model spaces are primary; multivariate Gaussians remain optional
+computational realizations. The phase closes only with one authoritative symbol table, migration
+table, and collision scan. The normalized pointwise coarse channel is $C_A$; a moving deterministic
+coarse map is $c_t$.
+
+| Order | OPEN deliverable | Exit condition before the next phase |
+|---|---|---|
+| 1 | Full pointwise probabilistic meta-agent datum at fixed $r_*$ | Type $\mathbb Q_I$, $\mathbb P_I$, and $\boldsymbol\Pi_I$; declare one normalized recognition-independent coarse channel $C_A$ while keeping the structural $X_A=\chi_A(X)$ outside that channel; construct $\mathbb Q_A$, $\mathbb P_A$, and $\boldsymbol\Pi_A$; derive belief/model marginals rather than treating them as a substitute for the joint laws. This is not yet a geometric meta-agent. |
+| 2 | Pointwise VFE and holonomy closure | Prove the common-channel conditional-KL defect and normalization; declare the joint holonomy actions; prove coarse-channel equivariance and the appropriate covariance or invariance of $\mathbb P_A$, $\mathbb Q_A$, and $\boldsymbol\Pi_A$. A relation $h_\#q_A^x=q_A^x$ is only marginal compatibility. A holonomy-blind path-independent parent needs full-law compatibility, while a richer parent may retain holonomy as internal state. A dynamical statement must also prove the relevant sector is flow-invariant. |
+| 3 | Comparison-category theorem | After the full pointwise probabilistic meta-agent datum closes, prove how target erasure, boundary exchange, time reversal, protocol-dependent relabeling, and latent dilation change the comparison problem. Interventions remain analyst-declared probes, not ontic actions inserted into the dynamics. |
+| 4 | Extension across $\mathcal U_A$ | Promote pointwise laws to local sections and prove gluing, cocycle, regularity, and path-consistency conditions while treating active-set changes, soft or multiple membership, and rank/stabilizer jumps. Only after this exit gate is geometric meta-agent language eligible. |
+| 5 | Participatory and cross-scale nonequilibrium | **OPEN.** Derive reciprocal scale coupling from one typed action or controlled reduction. Frozen gradient flow may equilibrate; Wheelerian feedback, moving coarse maps, open flux, stochastic driving, or antisymmetric sectors require separate proofs and must not be inferred from the pointwise certificate. |
+
+The detailed ordered roadmap is in `solid_RG_theory.md`, Section 12. Central theorem chapters and
+release metadata remain unchanged until the relevant exit conditions are proved and independently
+verified.

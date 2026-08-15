@@ -3573,3 +3573,159 @@ Response equality also does not imply fixed-observation ELBO equality, posterior
 factorization equality. Nothing in this certificate identifies protocols with agents, supplies
 autonomous agency, extends the theorem over a base-manifold overlap region, derives gauge or RG
 dynamics, or supports a physical or ontological promotion. Those obligations remain **OPEN**.
+
+---
+
+## 11. 2026-08-15 ordered TODO -- from pointwise marginals to a full meta-agent
+
+This is a chronological planning record, not a governing theorem correction. It leaves every
+certified result and release boundary above unchanged. In particular, Section 9 establishes a
+frozen fixed-$r_*$ result for two parent marginals and normalized network data; it does not yet
+construct a full pointwise probabilistic meta-agent datum with generative law, recognition law,
+posterior, model interface, and VFE. Closing that pointwise typing gap still does not produce a
+geometric meta-agent, which requires patchwise local sections and gluing in Phase 4.
+
+### 11.1 Phase 0 -- notation cleanup and standardization
+
+Notation is a load-bearing first phase, not end-stage copyediting. Historical sections remain
+unchanged as an audit trail; new work uses the following standard and supplies an explicit migration
+table.
+
+1. The contextual base is $\mathcal C$, agent $i$ has support $\mathcal C_i$, and a candidate block
+   $A$ has overlap patch
+   $\mathcal U_A:=\bigcap_{i\in A}\mathcal C_i$. Bare $R$ is no longer used for an overlap region.
+   In the intervention construction, $R$, $E$, and $O$ retain their typed meanings as retained
+   input/parameter, intervened mediator, and retained output/observation.
+2. Use $\mathscr P_G\to\mathcal C$ for a principal bundle. Reserve $\mathbb P$ for a full
+   generative law, $\mathbb Q$ for a full recognition law, and $\boldsymbol\Pi$ for a posterior.
+   Bare $P$ and $Q$ require a nearby local type declaration; they are not allowed to carry several
+   global meanings in one theorem.
+3. Reserve $\varpi$ for the established projection notation. Receiver occupancy is
+   $\alpha_i^x$, and the joint edge-event laws remain
+   $\eta_{ij}^q=\alpha_i^q\beta_{ij}$ and
+   $\eta_{ij}^m=\alpha_i^m\gamma_{ij}$. These $\alpha_i^x$ are external occupancy or sampling
+   weights. They are not learned attention coefficients and do not require adding an $\alpha_i$ to
+   the Gauge-VFE Transformer. Uniform receiver sampling is a permitted declared special case.
+4. In the new full construction, $q_i^b$ denotes a belief law and $q_i^m$ a law over generative
+   models. The symbol $m_i$ remains a model sample or presentation wherever it is so typed; it is
+   not a general alias for $q_i^m$. Only explicitly law-valued $m_i$ occurrences in the frozen
+   pointwise RG certificate may receive the local migration alias $q_i^m$. Preserve the distinct
+   dependency notation $s_i^{o,X}$ and $q_i^{o,X}$; bare legacy $s_i$ is not globally renamed. A
+   point $m\in\mathsf M_i$ is connected to an operative generative mechanism through a declared
+   evaluation map $\operatorname{ev}_i:m\mapsto K_m$ into normalized kernels.
+5. The general tier uses measurable model spaces and, when differential claims are needed, general
+   smooth statistical manifolds. Multivariate Gaussian families are optional computational
+   realizations only. No theorem may make Gaussianity part of the definition of an agent,
+   meta-agent, or model fiber.
+6. The normalized pointwise coarse Markov channel is $C_A$. A moving deterministic coarse map in a
+   dynamical closure problem is $c_t$, not $C_t$.
+
+Phase 0 closes only after one authoritative symbol dictionary, an old-to-new alias table, and a
+mechanical collision scan of the governing sources exist.
+
+### 11.2 Phase 1 -- construct the full pointwise probabilistic meta-agent datum at fixed $r_*$
+
+The model-fiber intuition is retained with one necessary type distinction. The fiber may be a space
+of generative models or model presentations $\mathsf M_i$, while $q_i^m$ is a normalized law on that
+space and $m\mapsto K_m$ evaluates a model point as a normalized generative kernel. The sharp-model
+case is $q_i^m=\delta_m$. This permits humans, bacteria, universities, and other scales to carry
+different and slowly evolving generative-model laws without requiring one unique microscopic
+physics or one unique latent DAG.
+
+Declare the fine full recognition law $\mathbb Q_I$, generative law $\mathbb P_I$, and posterior
+$\boldsymbol\Pi_I$, including their observation and latent/model interfaces. Then declare one
+normalized, recognition-independent coarse channel $C_A$. The structural coarse variable
+$X_A=\chi_A(X)$ remains separately typed and outside $C_A$. Define
+
+\[
+\mathbb Q_A=(C_A)_\#\mathbb Q_I,
+\qquad
+\mathbb P_A=(\operatorname{id}_O\times C_A)_\#\mathbb P_I,
+\qquad
+\boldsymbol\Pi_A=(C_A)_\#\boldsymbol\Pi_I.
+\]
+
+The parent belief and model laws $q_A^b$ and $q_A^m$ are derived marginals or disintegrations of
+these full objects. Independently chosen marginal pairs do not determine the parent joint law.
+Likewise, separate primitive $P_q$ and $P_m$ objects are not introduced: $\mathbb P_A$ is primary,
+and any generative belief/model marginals or factors must be derived from it under stated
+factorization hypotheses.
+
+The channel may be deliberately lossy. A university-scale parent need not retain every student's
+or faculty member's microscopic state; it must retain the declared boundary interface and expose the
+discarded conditional information through the exact VFE defect. Required controls are
+normalization, measurability, independence of $C_A$ from the current recognition law, common-channel
+typing, and a generative kernel that cannot read the recognition law as an undeclared input.
+
+Phase 1 closes only with a full pointwise probabilistic meta-agent datum. It is not yet a geometric
+meta-agent; that designation requires the local-section and gluing obligations in Phase 4.
+
+### 11.3 Phase 2 -- pointwise VFE and holonomy closure
+
+Apply the same $C_A$ to recognition and posterior and prove the conditional-KL chain rule. The
+discarded-information defect must be explicit and may vanish only under its exact conditional-law
+criterion; agreement of selected marginals is insufficient.
+
+Declare the joint holonomy actions on the fine and retained parent variables. Prove that $C_A$
+intertwines those actions, or quantify a controlled equivariance defect, and then prove the
+appropriate covariance or invariance statements for $\mathbb P_A$, $\mathbb Q_A$, and
+$\boldsymbol\Pi_A$. A relation such as $h_\#q_A^x=q_A^x$ is only a marginal compatibility condition;
+it does not establish full-law or channel compatibility. A parent that forgets path or frame data
+requires the applicable full-law invariance for path independence. This is not necessary for every
+possible parent: a richer parent can retain a holonomy mark or representation as internal state. If
+renormalization is called dynamical, compatibility at one parameter value is insufficient; the
+declared flow must preserve the equivariant or invariant sector or quantify its defect.
+
+Phase 2 closes only with a verified pointwise VFE theorem for the full pointwise probabilistic
+meta-agent datum. Until then, "meta-agent" in the fixed-point certificate remains shorthand for a
+candidate coarse parent, not a completed recursive agent type.
+
+### 11.4 Phase 3 -- comparison theorem, after the full pointwise probabilistic datum closes
+
+After Phase 2, build the promised comparison theorem. It must state how the result changes when the
+admitted morphisms permit target erasure, boundary exchange, time reversal, protocol-dependent
+relabeling, or latent dilation, and prove the appropriate monotonicity under enlargement of the
+comparison category. It must also distinguish passive retained-law equality from equality of
+posterior, VFE, factorization, and meta-agent structure.
+
+Interventions in this theorem are analyst-declared probes used to distinguish mechanisms. They do
+not assert that ontic actions, plans, or controls are primitive ingredients of the universe. The
+underlying program may continue to seek agency as an emergent property of coupled variational
+evolution.
+
+### 11.5 Phase 4 -- extend from $r_*$ across $\mathcal U_A$
+
+Only after the pointwise datum closes, promote it to local sections over $\mathcal U_A$. Required
+obligations include patchwise measurability or smoothness, gluing and cocycle conditions,
+path-consistency, changing active sets, soft and multiple memberships, stabilizer or rank jumps, and
+the possibility that no single global parent section exists. One fine agent may participate in
+multiple normalized coarse channels; literal replication into several full parents has different
+mass semantics and remains separately typed. This phase is also where persistence and dynamically
+changing membership must be addressed. Only after this exit gate is geometric meta-agent language
+eligible.
+
+### 11.6 Phase 5 -- participatory nonequilibrium and emergent agency -- OPEN
+
+Ordinary frozen dissipative gradient flow often relaxes toward equilibrium, so gradient descent
+alone does not establish sustained nonequilibrium or agency. Start from declared fine dynamics
+$\dot y=V_t(y)$, a moving deterministic coarse map $c_t$, and a coarse vector field
+$\overline V_t$. The exact semiconjugacy defect is
+
+\[
+\delta_t=\partial_t c_t+D c_tV_t-\overline V_t\circ c_t.
+\]
+
+Investigate whether one coupled tower action or constrained reduction can derive both upward and
+downward scale coupling without double counting. Candidate nonequilibrium mechanisms include moving
+coarse maps, open boundary flux, stochastic driving, an antisymmetric or kinetic sector, and
+Wheelerian participatory feedback in which emergent meta-agents alter the fine dynamics that sustain
+them. Cross-scale feedback is a hypothesis until its operators, flux accounting, and closure error
+are derived. "All scales evolve variationally" and "agency emerges" are distinct claims and require
+separate falsifiers.
+
+### 11.7 Dependency gate
+
+The execution order is strict: notation standard; full fixed-point $\mathbb P/\mathbb Q/
+\boldsymbol\Pi$ construction; pointwise VFE and holonomy closure; comparison theorem; gluing over
+$\mathcal U_A$; and only then participatory or cross-scale nonequilibrium. No phase inherits a theorem
+status merely because it appears in this roadmap.
