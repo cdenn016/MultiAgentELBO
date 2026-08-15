@@ -37,15 +37,15 @@
     },
     {
       "artifact_path": "evidence/finite-nongaussian-output.json",
-      "artifact_sha256": "7092ec0a0dce059c2fcfc177ec288b0b708481aa9eace7a6ee657e3a1dc21e0c"
+      "artifact_sha256": "ca79ea94822e74ad1e7fb3257d0ea852a609a9102be0e49a302687ad1612c062"
     },
     {
       "artifact_path": "evidence/finite_nongaussian_witness.py",
-      "artifact_sha256": "204effc256fcc89d9b6cbaa80d33b88eac845b7bfe2694653b0e204eb4760b48"
+      "artifact_sha256": "15a9eea5a01cb19150babc85f26cb6b663528e7f189cf088cda1ade4cbf78835"
     },
     {
       "artifact_path": "evidence/notation-collision-report.json",
-      "artifact_sha256": "11499c353b6b32ed783629302690877e337054a7e5c61a74cb9aa35224363684"
+      "artifact_sha256": "67a8c6a20d7583b86fb5fac740fd03987f2456e65a29ccfd9b9a38f1db536a87"
     },
     {
       "artifact_path": "evidence/notation-registry.json",
@@ -108,7 +108,7 @@
       "review_id": "VIEW-DYNAMICS-SCOPE",
       "role": "dynamics and scope",
       "artifact_path": "evidence/reviews/view-dynamics-scope.md",
-      "artifact_sha256": "d55a69454e8377ae3de156640471d777730caa21e0f569c68330d717d04d9938",
+      "artifact_sha256": "71401ff15af3c1ce033ddbd9b01cace311f04c1eeef17a09d13b7f8125b8461b",
       "binding_state": "BOUND_CURRENT_APPROVE",
       "disposition": "APPROVE",
       "severity_counts": {
@@ -146,6 +146,22 @@
     "stage_1": "Each domain review binds the corrected pre-review snapshot above.",
     "stage_2": "Final assembly, ledger, and release bind the resulting review hashes and therefore have distinct post-review metadata hashes.",
     "non_circularity": "No mutual raw-hash fixed point is claimed; evidence/release-provenance.json records the final one-way snapshot."
+  },
+  "fix_round_1_review_input_snapshot": {
+    "snapshot_id": "final-release-sha256-7479e84d3999e41324d25af80e41ea6f53ab4e204d4462f747d24054befa5c1c",
+    "git_head": "1b18842d6f853ee32c2b4f8a1741b1738ce9890e",
+    "fingerprint_sha256": "7479e84d3999e41324d25af80e41ea6f53ab4e204d4462f747d24054befa5c1c",
+    "review_result": "WITHHOLD",
+    "severity_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 2
+    },
+    "required_repairs": [
+      "M1: refresh the notation report from the exact final design bytes and cascade its binding.",
+      "M2: add required artifact metadata to the deterministic witness output and the dynamics/scope review."
+    ],
+    "binding_rule": "This is the immutable input snapshot examined by the post-commit Fix Round 1 reviewer; the repaired final-release snapshot is recorded one-way in evidence/release-provenance.json."
   },
   "final_certification_evidence": [
     {

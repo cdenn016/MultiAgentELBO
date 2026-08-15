@@ -56,7 +56,7 @@ Status: exact finite non-Gaussian instance of the Task-3 construction; symbolic 
 
 ## Task-5 release binding
 
-The direct proof artifact is bound at SHA-256 `59c38ed4181b2f8fbf2b573c79cb7257516c7e2d91e44dbea870c953406de6fc`; the deterministic arithmetic corroboration is bound at SHA-256 `7092ec0a0dce059c2fcfc177ec288b0b708481aa9eace7a6ee657e3a1dc21e0c` and its source at SHA-256 `204effc256fcc89d9b6cbaa80d33b88eac845b7bfe2694653b0e204eb4760b48`.
+The direct proof artifact is bound at SHA-256 `59c38ed4181b2f8fbf2b573c79cb7257516c7e2d91e44dbea870c953406de6fc`; the deterministic arithmetic corroboration is bound at SHA-256 `ca79ea94822e74ad1e7fb3257d0ea852a609a9102be0e49a302687ad1612c062` and its source at SHA-256 `15a9eea5a01cb19150babc85f26cb6b663528e7f189cf088cda1ade4cbf78835`.
 
 All five negative claims are existential and are therefore supported by `DERIVATION` evidence with `supports: true`; none is labeled `COUNTEREXAMPLE` evidence in the verification schema. CE-2 and CE-3 refute theorems obtained by deleting the common-channel or compatibility premises, not the conditional theorem proved under those premises. CE-5 distinguishes marginal invariance from full-law invariance. CE-4 distinguishes trivial transport holonomy from equality of node laws.
 

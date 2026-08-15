@@ -100,7 +100,7 @@
         "The script is corroboration and is not mathematical closure evidence."
       ],
       "artifact_path": "evidence/finite_nongaussian_witness.py",
-      "artifact_sha256": "204effc256fcc89d9b6cbaa80d33b88eac845b7bfe2694653b0e204eb4760b48"
+      "artifact_sha256": "15a9eea5a01cb19150babc85f26cb6b663528e7f189cf088cda1ade4cbf78835"
     },
     {
       "id": "EV-TASK4-FINITE-WITNESS-OUTPUT",
@@ -112,7 +112,7 @@
         "Decimal log values are readability-only corroboration; symbolic log(2), log(3)/2, zero, and +infinity labels are primary."
       ],
       "artifact_path": "evidence/finite-nongaussian-output.json",
-      "artifact_sha256": "7092ec0a0dce059c2fcfc177ec288b0b708481aa9eace7a6ee657e3a1dc21e0c"
+      "artifact_sha256": "ca79ea94822e74ad1e7fb3257d0ea852a609a9102be0e49a302687ad1612c062"
     },
     {
       "id": "EV-TASK5-INDEPENDENT-RECONSTRUCTION",
@@ -201,7 +201,7 @@
         "This is a domain-only approval; final target promotion requires all four current approvals and release-mode validation."
       ],
       "artifact_path": "evidence/reviews/view-dynamics-scope.md",
-      "artifact_sha256": "d55a69454e8377ae3de156640471d777730caa21e0f569c68330d717d04d9938"
+      "artifact_sha256": "71401ff15af3c1ce033ddbd9b01cace311f04c1eeef17a09d13b7f8125b8461b"
     }
   ],
   "claims": [

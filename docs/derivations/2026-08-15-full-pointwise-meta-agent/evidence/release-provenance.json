@@ -55,15 +55,16 @@
     },
     "VIEW-DYNAMICS-SCOPE": {
       "artifact_path": "evidence/reviews/view-dynamics-scope.md",
-      "artifact_sha256": "d55a69454e8377ae3de156640471d777730caa21e0f569c68330d717d04d9938",
+      "artifact_sha256": "71401ff15af3c1ce033ddbd9b01cace311f04c1eeef17a09d13b7f8125b8461b",
       "disposition": "APPROVE",
       "critical": 0,
       "high": 0,
       "medium": 0
     }
   },
-  "final_release_snapshot": {
+  "fix_round_1_review_input_snapshot": {
     "snapshot_id": "final-release-sha256-7479e84d3999e41324d25af80e41ea6f53ab4e204d4462f747d24054befa5c1c",
+    "git_head": "1b18842d6f853ee32c2b4f8a1741b1738ce9890e",
     "fingerprint_sha256": "7479e84d3999e41324d25af80e41ea6f53ab4e204d4462f747d24054befa5c1c",
     "artifact_sha256": {
       "adversarial-report.json": "a2f0c1f7767b7e73479abf353f11502e2bce2393fcc8769b8ba923a9140a5450",
@@ -91,6 +92,49 @@
       "final-report.md": "d3a5cae2eee88155387b85d6337cca015f2c725b9f56a4852c2ace4bb85d369c",
       "problem-contract.json": "e74764ab2db321fe269b48f3e45dca2e16a713df58a83c14d17233f26ab00e08",
       "release.json": "458cb9b724e5e7c2b20bd0fc2e68b28f36d2545df08a1ede699e9b39e1aec369",
+      "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md": "a302a046e886f0a777226d667202437a6e371eac36dbfa203e8b201131afc16f"
+    },
+    "review_result": "WITHHOLD",
+    "severity_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 2
+    },
+    "finding_ids": [
+      "M1-NOTATION-EVIDENCE-FRESHNESS",
+      "M2-ARTIFACT-METADATA-CONTRACT"
+    ],
+    "scope": "Exact committed Task-5 release payload examined by the post-commit Fix Round 1 reviewer."
+  },
+  "final_release_snapshot": {
+    "snapshot_id": "final-release-sha256-5d3703b39303bece791dc20d0f59ca9e3a363b7fedbab691413b99d91cbb5bb0",
+    "fingerprint_sha256": "5d3703b39303bece791dc20d0f59ca9e3a363b7fedbab691413b99d91cbb5bb0",
+    "artifact_sha256": {
+      "adversarial-report.json": "6f7f0a684c419121566f9f8889564241db20f4dc6f3f8ee800e86a7b245ff82a",
+      "approach-registry.json": "d9f92621d421002341bc711d4a4da63496cc7f0c38c6fae5be9af2872644b8c5",
+      "claim-ledger.json": "042ffe41147a82c902a1c76a9ddb1033b6254bb0ab7353f624a88615714a8c54",
+      "construction-or-strongest-theorem.md": "7a4fe2cfa7cc6d0d30b30503fde28bb49d39f022e4c19a06b423eb41d6055bb6",
+      "counterexample-register.md": "7cf6aa9e2c56ff84872a0da23aed42763f37a28f4a066cc2b5e63f2435de75fc",
+      "dependency-dag.json": "ac28d44546eb576fa3816282200b79ff481bd74934cacebaaab50b13dfa21246",
+      "evidence/adversarial-attacks.md": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546",
+      "evidence/counterexample-proofs.md": "59c38ed4181b2f8fbf2b573c79cb7257516c7e2d91e44dbea870c953406de6fc",
+      "evidence/direct-derivation.md": "2aa70b07751d07712a3d9395f77817317d48d77d97c3fd5fb8cd1a3f6fda226a",
+      "evidence/finite-nongaussian-output.json": "ca79ea94822e74ad1e7fb3257d0ea852a609a9102be0e49a302687ad1612c062",
+      "evidence/finite_nongaussian_witness.py": "15a9eea5a01cb19150babc85f26cb6b663528e7f189cf088cda1ade4cbf78835",
+      "evidence/independent-reconstruction.md": "f74f74bb93c240f28016b550fe58a4643d487ee8a517d40faa77d69cacde0df9",
+      "evidence/notation-collision-report.json": "67a8c6a20d7583b86fb5fac740fd03987f2456e65a29ccfd9b9a38f1db536a87",
+      "evidence/notation-registry.json": "c4ee4c4ccfbf88689539f318a6b850dc0e1b2e00b5f4c08d04655561feb21813",
+      "evidence/notation-standard.md": "cfe662fa42a3e4aed5c55d14851604cfd24f2579c8188d7bda00f579f4be3695",
+      "evidence/notation_scan.py": "0c11294e10b8a832e6e0f6fc88eacda7865f12e994a8a6ea7ddb56a19d7f6a62",
+      "evidence/oracle-erasure.md": "c957a17307ed7839b77fb804be83e9e721f0f8d64cc46a67e36b532625b50c72",
+      "evidence/release-assembly.json": "e8ac599a278e80945391a3c6767328fb2fc8ca62ba4ef337861c29c7c4c10a2c",
+      "evidence/reviews/view-dynamics-scope.md": "71401ff15af3c1ce033ddbd9b01cace311f04c1eeef17a09d13b7f8125b8461b",
+      "evidence/reviews/view-gauge-holonomy.md": "431a63b06b90277ce2697d6d57a86054346564d2bb449cf11fe3673bd6fb42ba",
+      "evidence/reviews/view-information-vfe.md": "c291869ccb7d518f2df85c43f60319e59654c2769e0fdc8b07373a53430525d4",
+      "evidence/reviews/view-probability-kernel.md": "14f7f00fdbc0a3e2f67357c249aa631eae336940f7ea99d9aad3b164f423b27e",
+      "final-report.md": "ff6953985b9752c403bd95e28c2024127a5113e1ab43f84de6862da149be8321",
+      "problem-contract.json": "e74764ab2db321fe269b48f3e45dca2e16a713df58a83c14d17233f26ab00e08",
+      "release.json": "36a4458d09bd8f2f18599511be145e97f37b00c3fe513b71009c1513db07210d",
       "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md": "a302a046e886f0a777226d667202437a6e371eac36dbfa203e8b201131afc16f"
     },
     "excluded_self_path": "evidence/release-provenance.json"

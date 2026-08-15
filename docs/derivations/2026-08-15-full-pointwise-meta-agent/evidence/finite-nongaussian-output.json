@@ -53,6 +53,7 @@
     "main_total_defect_symbolic_log_2": true
   },
   "command": "C:/Python314/python.exe docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/finite_nongaussian_witness.py",
+  "contract_id": "contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
   "counterexamples": {
     "evaluation_mismatch": {
       "generative_model_marginal": [
@@ -158,6 +159,7 @@
     "theorem_proof": false
   },
   "interpreter": "C:/Python314/python.exe",
+  "schema_version": "rigorous-theory-search/v1",
   "status": "PASS",
   "summary": {
     "check_count": 51,
@@ -165,6 +167,7 @@
     "negative_claim_count": 5,
     "passed_check_count": 51
   },
+  "target_digest": "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
   "witness": {
     "C_A": "deterministic projection retaining (B,M); structural X remains fixed outside",
     "Delta_A": "log(2)",

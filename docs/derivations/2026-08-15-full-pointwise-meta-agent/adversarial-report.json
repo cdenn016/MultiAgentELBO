@@ -292,7 +292,7 @@
       {
         "review_id": "VIEW-DYNAMICS-SCOPE",
         "artifact_path": "evidence/reviews/view-dynamics-scope.md",
-        "artifact_sha256": "d55a69454e8377ae3de156640471d777730caa21e0f569c68330d717d04d9938",
+        "artifact_sha256": "71401ff15af3c1ce033ddbd9b01cace311f04c1eeef17a09d13b7f8125b8461b",
         "disposition": "APPROVE",
         "critical": 0,
         "high": 0,

@@ -17,6 +17,9 @@ getcontext().prec = 80
 
 BITS = (0, 1)
 OUTPUT_PATH = Path(__file__).with_name("finite-nongaussian-output.json")
+SCHEMA_VERSION = "rigorous-theory-search/v1"
+TARGET_DIGEST = "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87"
+CONTRACT_ID = f"contract-sha256-{TARGET_DIGEST}"
 
 
 def fraction_text(value: Fraction) -> str:
@@ -348,6 +351,9 @@ def main() -> int:
     log_two_decimal = Decimal(2).ln()
     half_log_three_decimal = Decimal(3).ln() / Decimal(2)
     payload = {
+        "schema_version": SCHEMA_VERSION,
+        "contract_id": CONTRACT_ID,
+        "target_digest": TARGET_DIGEST,
         "checks": checks,
         "command": "C:/Python314/python.exe docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/finite_nongaussian_witness.py",
         "counterexamples": {
