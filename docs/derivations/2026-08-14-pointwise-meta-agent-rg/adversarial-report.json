@@ -1,0 +1,153 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+  "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+  "attacks": [
+    {
+      "id": "ATTACK-TRIANGLE-INCOMPLETENESS",
+      "claim_ids": ["TYPE-GROUPOIDS"],
+      "attack": "Triangle products do not detect curvature on a chordless cycle, so a triangle-only flatness argument would be incomplete.",
+      "response": "The proof uses a rooted spanning tree and every non-tree fundamental cycle. It permits triangle reduction only after a triangle-span or triangulation hypothesis is declared.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+    },
+    {
+      "id": "ATTACK-FLATNESS-CONSENSUS-CONFLATION",
+      "claim_ids": ["TYPE-GROUPOIDS", "ZERO-DISTORTION", "COUNTEREXAMPLES"],
+      "attack": "The connection-Laplacian kernel theorem could have been used illegitimately as a probability-law agreement theorem.",
+      "response": "Frame fixed spaces and state-law stabilization are proved separately. CE-3 and CE-4 refute both attempted identifications, while zero distortion follows directly from KL positivity.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+    },
+    {
+      "id": "ATTACK-DIRECTED-SUPPORT",
+      "claim_ids": ["ZERO-DISTORTION"],
+      "attack": "A zero reverse attention weight could prevent the orientation needed for path propagation.",
+      "response": "Every undirected support edge has at least one positive orientation and a reciprocal bimeasurable transport. Pushing an equality through the inverse supplies the reverse-oriented equality.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+    },
+    {
+      "id": "ATTACK-EXTENDED-KL-ARITHMETIC",
+      "claim_ids": ["FULL-LAW-BARYCENTER"],
+      "attack": "Splitting Radon-Nikodym logarithms may hide an undefined infinity-minus-infinity operation.",
+      "response": "The derivation separates support failure, infinite mixture-to-comparison KL, and the finite integrable case. Algebra is used only in the finite case; the other cases close by support and convexity.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+    },
+    {
+      "id": "ATTACK-HOLONOMY-AVERAGE",
+      "claim_ids": ["FULL-LAW-BARYCENTER"],
+      "attack": "A formal group average may not exist or may fail the KL interchange for continuous or noncompact holonomy.",
+      "response": "Finite holonomy uses normalized counting measure. Compact continuous holonomy is explicitly conditional on measurable domination and finite-integral hypotheses. The general noncompact extension is left open.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+    },
+    {
+      "id": "ATTACK-KL-TRIANGLE",
+      "claim_ids": ["TV-STABILITY"],
+      "attack": "The approximate agreement argument may have summed KL values along incompatible shortest paths.",
+      "response": "One rooted spanning tree is fixed for every transport. Pinsker is applied on selected tree-edge orientations and only total variation is telescoped along the unique tree paths, with the tree diameter as the constant.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+    },
+    {
+      "id": "ATTACK-HIDDEN-ENDPOINT-INDEPENDENCE",
+      "claim_ids": ["EVENT-LAW-RENORMALIZATION"],
+      "attack": "Using a product of two membership kernels could erase correlations in the endpoint assignment.",
+      "response": "The product is labeled as the conditional-independence specialization. The general theorem accepts an explicitly normalized correlated endpoint kernel and pushes the full joint event law.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+    },
+    {
+      "id": "ATTACK-MEAN-NOT-GROUP",
+      "claim_ids": ["RETAINED-MARKS"],
+      "attack": "Replacing conditional transport marks by an arithmetic mean can leave the group and lose mark-feature correlation.",
+      "response": "The exact state retains the conditional mark law or raw marked edges. Opposite quarter-turns average to the singular zero matrix, so no averaged-link claim is made.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+    },
+    {
+      "id": "ATTACK-RECOGNITION-DEPENDENT-CHANNEL",
+      "claim_ids": ["VFE-CHAIN-RULE"],
+      "attack": "A coarse channel chosen after seeing the recognition law could manufacture zero VFE defect.",
+      "response": "Recognition independence and one common channel for both laws are frozen premises. The theorem retains the conditional-KL defect and asserts equality only at almost-sure conditional-law equality.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+    },
+    {
+      "id": "ATTACK-REPLICATED-MASS",
+      "claim_ids": ["EVENT-LAW-RENORMALIZATION", "RETAINED-MARKS", "COUNTEREXAMPLES"],
+      "attack": "Calling a replicated cover soft can duplicate one child's mass and shared factors across several full parents.",
+      "response": "Soft membership is normalized; literal replication is a separate nonnormalized type. CE-8 records parent mass two and replicated self-edge mass four.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+    },
+    {
+      "id": "ATTACK-MOVING-MAP-TERM",
+      "claim_ids": ["HIERARCHY-SEMICONJUGACY"],
+      "attack": "The frozen semiconjugacy equation omits motion of a time-dependent partition or coarse map.",
+      "response": "The certified identity contains partial_t C_t. The frozen equation is only a specialization, and dynamically selected memberships remain open.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+    },
+    {
+      "id": "ATTACK-FINITE-CHECK-AS-PROOF",
+      "claim_ids": ["TARGET-POINTWISE-RG"],
+      "attack": "The affirmative conjunction may rest only on selected finite Python checks and decimal logarithms.",
+      "response": "Every mathematical dependency has direct DERIVATION evidence. The script and output close only a separate NUMERICAL_OBSERVATION and explicitly declare theorem_proof false.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "bfd750df587c42fbf46f52da4f0f5146ae2b34253394aa1ab084e60cc9df221d"
+    }
+  ],
+  "independent_reconstruction": {
+    "claim_ids": [
+      "TARGET-POINTWISE-RG",
+      "TYPE-GROUPOIDS",
+      "ZERO-DISTORTION",
+      "FULL-LAW-BARYCENTER",
+      "TV-STABILITY",
+      "EVENT-LAW-RENORMALIZATION",
+      "RETAINED-MARKS",
+      "VFE-CHAIN-RULE",
+      "HIERARCHY-SEMICONJUGACY",
+      "COUNTEREXAMPLES"
+    ],
+    "method": "Sequentially reconstruct every dependency from the frozen contract and atomic claim statements without using the root guide or the direct derivation's prose order as a premise.",
+    "result": "PASS",
+    "conclusion": "Every target dependency reconstructs under the recorded side conditions; role separation is not independent-agent agreement.",
+    "artifact_path": "evidence/independent-reconstruction.md",
+    "artifact_sha256": "fc53e5de7d4592a193dd665c39e1b2cba1555a76c321d1dfc96a132ea823434a"
+  },
+  "oracle_erasure": {
+    "claim_ids": [
+      "TARGET-POINTWISE-RG",
+      "TYPE-GROUPOIDS",
+      "ZERO-DISTORTION",
+      "FULL-LAW-BARYCENTER",
+      "TV-STABILITY",
+      "EVENT-LAW-RENORMALIZATION",
+      "RETAINED-MARKS",
+      "VFE-CHAIN-RULE",
+      "HIERARCHY-SEMICONJUGACY",
+      "COUNTEREXAMPLES"
+    ],
+    "method": "Remove the affirmative search preference from the logical context, rescan every premise for direct or paraphrased target assumptions, and recompute the dependency closure from typed premises alone.",
+    "result": "PASS",
+    "conclusion": "No target conjunct or dependency requires the erased preference; the mathematical derivations remain the closure evidence.",
+    "artifact_path": "evidence/oracle-erasure.md",
+    "artifact_sha256": "18dd942f9f8b999bc4686b73b64e7c4f1b4ca391ff782e4df640b53cc7274a4d"
+  }
+}

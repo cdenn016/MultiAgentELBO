@@ -1,0 +1,234 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+  "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+  "assumptions": [
+    {
+      "id": "ASM-FROZEN-TYPES",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "The base point, finite two-channel standard-Borel law fibers, normalized laws and weights, connected positive-support graphs, and reciprocal bimeasurable edge transports are frozen exactly as specified by the contract."
+    },
+    {
+      "id": "ASM-POSITIVE-FRAME-WEIGHTS",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "Only the full fixed-K connection-Laplacian statement assumes reciprocal invertible links and positive-definite represented edge weights."
+    },
+    {
+      "id": "ASM-EXTENDED-KL",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "Relative entropy is extended valued with failure of absolute continuity assigned positive infinity, and all support cases are separated before algebra."
+    },
+    {
+      "id": "ASM-ROOTED-TV-TREE",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "For the approximate estimate, one rooted spanning tree is fixed and each tree edge is oriented in a direction with positive joint event weight."
+    },
+    {
+      "id": "ASM-NORMALIZED-ENDPOINT-KERNEL",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "Scalar network coarsening uses normalized receiver laws, normalized joint edge-event laws, and a normalized possibly correlated endpoint kernel."
+    },
+    {
+      "id": "ASM-COMMON-VFE-CHANNEL",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "The VFE comparison applies one fixed recognition-independent normalized Markov channel to posterior and recognition laws without changing the observation or evidence representative."
+    },
+    {
+      "id": "ASM-DECLARED-SMOOTH-FLOW",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "The dynamic statement is made only after finite-dimensional differentiable fine and coarse flows and a C1 moving coarse map are declared."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "EV-DIRECT-DERIVATION",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Direct proof of the graph typing, fixed-space boundary, zero-distortion equivalence, unrestricted full-law mixture theorem, rooted-tree total-variation estimate, normalized event pushforward, retained mark law, common-channel VFE chain rule, nested composition, moving-map semiconjugacy, and exact scope boundary.",
+      "side_conditions": [
+        "Applies only at the fixed base point and under the contract's typed hypotheses.",
+        "Compact continuous holonomy is conditional on the stated domination and integrability assumptions.",
+        "The noncompact invariant-barycenter extension remains open."
+      ],
+      "artifact_path": "evidence/direct-derivation.md",
+      "artifact_sha256": "dbb886bc8756e90b90b04059e33cbc6c7411851b59de03095c8f58f2a90e42ab"
+    },
+    {
+      "id": "EV-COUNTEREXAMPLE-DERIVATIONS",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Exact derivations showing that each of the eight named shortcut claims has the stated finite, support-theoretic, matrix, or Gaussian witness.",
+      "side_conditions": [
+        "The witnesses refute excluded shortcuts, not the frozen affirmative conjunction.",
+        "The quartic residual is parent minus child-average expectation after Gaussian moment projection."
+      ],
+      "artifact_path": "evidence/counterexample-proofs.md",
+      "artifact_sha256": "dc375fc39c19e4607c2c8fe63475641dbd0836feb45ac8684fd4bdbe01d3abd9"
+    },
+    {
+      "id": "EV-RECOMPUTE-SCRIPT",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Deterministic executable transcription checks using Fraction for exact rational identities and Decimal only for logarithmic corroboration.",
+      "side_conditions": [
+        "The script is corroboration and not theorem evidence.",
+        "C:/Python314/python.exe is sufficient because the script imports no torch and makes no CUDA claim."
+      ],
+      "artifact_path": "evidence/recompute.py",
+      "artifact_sha256": "37c10d994085b9e45d7dbf01e1d36c58e6edd661d70ba9721df4f35710c32b28"
+    },
+    {
+      "id": "EV-RECOMPUTE-OUTPUT",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Captured PASS output for all eleven deterministic checks, including the exact Fraction quartic residual.",
+      "side_conditions": [
+        "Decimal residuals test only the displayed finite instance.",
+        "The output declares theorem_proof false."
+      ],
+      "artifact_path": "evidence/recompute-output.json",
+      "artifact_sha256": "85bcdbb3c7b6f71d06bd25778be0ea0e990def14d09795d9c172e765d1a742ee"
+    }
+  ],
+  "claims": [
+    {
+      "id": "TARGET-POINTWISE-RG",
+      "statement": "At one fixed base point r* and for every finite two-channel agent network satisfying the frozen typed hypotheses, establish the exact pointwise meta-agent RG package: channelwise zero weighted edge distortion is equivalent to a unique holonomy-stabilized common root marginal; the unrestricted forward-KL barycenter is the unique mixture with the stated holonomy qualifications; small edge distortion yields the stated total-variation diameter bounds; normalized scalar attention coarsens exactly only by pushing joint endpoint-event laws and disintegrating while retaining mark distributions and generated structure; a recognition-independent common coarse Markov channel obeys the exact VFE conditional-KL defect; nested memberships and a declared moving inference flow obey their typed composition and semiconjugacy laws; and the eight named shortcut claims are refuted by contained counterexamples. The result constructs only paired marginal parents and asserts no extension across R.",
+      "quantifiers": "For every fixed base point r*; every finite nonempty vertex set; each of the separately typed belief and model support graphs satisfying the frozen connected reciprocal-groupoid hypotheses; every family of normalized vertex laws, positive normalized vertex and barycenter weights, conditional attention rows, and bimeasurable invertible edge transports; every comparison law for which the displayed extended KL quantities are defined; and every declared normalized membership or common coarse channel satisfying the stated side conditions, the exact identities, equivalences, bounds, and composition laws in the target hold. For the explicitly named invalid shortcuts, there exists the contained finite or Gaussian counterexample. Compact and noncompact holonomy and dynamic conclusions are restricted exactly as stated.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [
+        "ASM-FROZEN-TYPES",
+        "ASM-EXTENDED-KL",
+        "ASM-ROOTED-TV-TREE",
+        "ASM-NORMALIZED-ENDPOINT-KERNEL",
+        "ASM-COMMON-VFE-CHANNEL",
+        "ASM-DECLARED-SMOOTH-FLOW"
+      ],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-COUNTEREXAMPLE-DERIVATIONS"],
+      "bridge_premise_ids": [],
+      "falsifier": "Any in-scope network violating one conjunct, any invalid extended-support identity, or any failed dependency derivation refutes the conjunction."
+    },
+    {
+      "id": "TYPE-GROUPOIDS",
+      "statement": "The reciprocal edge transports form separately typed belief and model path groupoids with the repository's j-to-i product order; a rooted spanning tree and all non-tree fundamental cycles generate the loop constraints, and the full represented K-sector equals the holonomy fixed space only under the positive-definite connection-Laplacian hypotheses.",
+      "quantifiers": "For each frozen channel support graph and represented finite K-sector satisfying ASM-FROZEN-TYPES and ASM-POSITIVE-FRAME-WEIGHTS.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FROZEN-TYPES", "ASM-POSITIVE-FRAME-WEIGHTS"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "A reciprocal connected support graph whose parallel sections are not in bijection with the holonomy fixed space under positive-definite weights."
+    },
+    {
+      "id": "ZERO-DISTORTION",
+      "statement": "In each channel, zero positive weighted edge KL is equivalent to every positive-support edge law agreeing after transport and equivalent to one unique common root law stabilized by every based holonomy; the two-channel result is their typed product and supplies only paired marginals.",
+      "quantifiers": "For every separately typed belief or model channel satisfying ASM-FROZEN-TYPES and ASM-EXTENDED-KL.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FROZEN-TYPES", "ASM-EXTENDED-KL"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "A positive-support edge with unequal transported laws at zero total distortion, or nonuniqueness of the root law."
+    },
+    {
+      "id": "FULL-LAW-BARYCENTER",
+      "statement": "For every finite positive mixture M of full probability laws, the aggregate forward KL to any comparison law equals the source-to-mixture aggregate plus KL(M||R) in the extended sense, so M is the unique unrestricted minimizer; finite holonomy admits orbit averaging, compact continuous holonomy is conditional, and general noncompact holonomy remains open.",
+      "quantifiers": "For every finite family of probability laws with strictly positive normalized weights and every comparison law, subject to ASM-EXTENDED-KL and the separately stated holonomy conditions.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-EXTENDED-KL"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "A support case violating the extended mixture identity or a second unrestricted minimizer distinct from M."
+    },
+    {
+      "id": "TV-STABILITY",
+      "statement": "If channel distortion is finite, then after fixing one rooted positive-support spanning tree, every selected edge has the Pinsker bound and every root-transported law lies within tree diameter times that bound of the root-frame mixture.",
+      "quantifiers": "For every frozen channel with finite distortion and a rooted spanning tree satisfying ASM-ROOTED-TV-TREE.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FROZEN-TYPES", "ASM-ROOTED-TV-TREE"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "An in-scope rooted tree and law family for which an actual total-variation distance exceeds the claimed d_x delta_x bound."
+    },
+    {
+      "id": "EVENT-LAW-RENORMALIZATION",
+      "statement": "Normalized scalar attention renormalizes exactly by forming a receiver-weighted joint edge-event law, pushing it through a declared normalized endpoint kernel, and disintegrating the pushed joint law; correlated endpoints require a correlated kernel.",
+      "quantifiers": "For every finite normalized joint edge-event law and normalized hard, soft, product-under-independence, or explicitly correlated endpoint kernel satisfying ASM-NORMALIZED-ENDPOINT-KERNEL.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-NORMALIZED-ENDPOINT-KERNEL"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "A normalized endpoint kernel whose pushforward fails to conserve total joint event mass or disintegrate on positive receiver mass."
+    },
+    {
+      "id": "RETAINED-MARKS",
+      "statement": "Exact coarse marked state retains the conditional law of dressed boundary transports, internal based holonomy, generated hyperedges or shared factors, and path memory unless a matched removal theorem applies; an averaged matrix is not generally a group element or exact link.",
+      "quantifiers": "For every marked fine edge-event law and rooted within-block transport choice satisfying ASM-FROZEN-TYPES and ASM-NORMALIZED-ENDPOINT-KERNEL.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FROZEN-TYPES", "ASM-NORMALIZED-ENDPOINT-KERNEL"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "A theorem showing that arbitrary conditional group-valued marks and their correlations are exactly determined by one averaged group element without retained structure."
+    },
+    {
+      "id": "VFE-CHAIN-RULE",
+      "statement": "Applying one fixed recognition-independent common coarse Markov channel to posterior and recognition laws gives fine VFE equal to coarse VFE plus the nonnegative conditional-KL defect, which vanishes exactly at almost-sure conditional-law equality when the fine KL is finite.",
+      "quantifiers": "For every standard-Borel posterior-recognition pair and common channel satisfying ASM-COMMON-VFE-CHANNEL and ASM-EXTENDED-KL.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-COMMON-VFE-CHANNEL", "ASM-EXTENDED-KL"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "An in-scope common channel violating the relative-entropy disintegration or its finite zero-defect criterion."
+    },
+    {
+      "id": "HIERARCHY-SEMICONJUGACY",
+      "statement": "Normalized hard and soft memberships compose as typed Markov kernels, replicated covers remain a distinct nonnormalized type, and a declared moving coarse map semiconjugates a declared inference flow exactly only when partial_t C_t + D C_t X_t equals the coarse vector field after C_t.",
+      "quantifiers": "For every nested normalized membership pair and every declared differentiable flow satisfying ASM-DECLARED-SMOOTH-FLOW.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-NORMALIZED-ENDPOINT-KERNEL", "ASM-DECLARED-SMOOTH-FLOW"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION"],
+      "bridge_premise_ids": [],
+      "falsifier": "A normalized kernel composition violating the tower law or a moving-map trajectory violating the ordinary chain-rule identity."
+    },
+    {
+      "id": "COUNTEREXAMPLES",
+      "statement": "The eight named shortcut claims fail by explicit contained witnesses: KL-threshold transitivity, marginal-to-joint VFE control, both identifications of holonomy with belief agreement, intrinsic spectral-gap scale, reverse control by one-way KL, exact nonlinear Gaussian-boundary closure, and mass conservation under literal overlapping replication.",
+      "quantifiers": "There exists the specific finite, support-theoretic, matrix, or Gaussian witness recorded for each of the eight shortcut claims.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-COUNTEREXAMPLE-DERIVATIONS"],
+      "bridge_premise_ids": [],
+      "falsifier": "Failure of any recorded witness to have the stated KL, support, holonomy, moment, spectral, or mass property."
+    },
+    {
+      "id": "RECOMPUTATION-CORROBORATION",
+      "statement": "The deterministic recomputation script returns true for all eleven finite checks and records the exact quartic residual 405/56 at a=3/2 and lambda=5/7.",
+      "quantifiers": "For the fixed script, inputs, CPU interpreter, and captured output bound by the two evidence hashes.",
+      "kind": "NUMERICAL_OBSERVATION",
+      "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-RECOMPUTE-SCRIPT", "EV-RECOMPUTE-OUTPUT"],
+      "bridge_premise_ids": [],
+      "falsifier": "A rerun with the bound script and interpreter that returns nonzero, emits a false check, or differs from the captured exact values."
+    }
+  ]
+}

@@ -1,0 +1,207 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+  "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+  "mechanism_families": [
+    {
+      "family_id": "FAM-GROUPOID-HOLONOMY",
+      "core_mechanism": "Represent reciprocal edge transports as a path groupoid and reduce all loop constraints to a rooted spanning tree plus fundamental cycles.",
+      "target_obligation_ids": ["TYPE-GROUPOIDS"],
+      "representation": "Finite connected support graph, typed bimeasurable arrows, rooted tree transports, and represented holonomy fixed spaces.",
+      "invariant_or_obstruction": "Root-frame laws and vectors must be invariant under every based holonomy; chordless cycles obstruct triangle-only tests.",
+      "obligations": [
+        "Check the j-to-i composition convention.",
+        "Prove fundamental-cycle generation.",
+        "Separate full-frame fixed sectors from state-specific law stabilization."
+      ],
+      "bridge": "Root evaluation identifies parallel sections with the represented holonomy fixed space under positive-definite connection-Laplacian weights.",
+      "failure_test": "A reciprocal connected graph whose non-tree constraint is not represented by its fundamental-cycle holonomy would falsify the reduction.",
+      "verified_results": [
+        "The reciprocal path groupoid and cycle ordering are typed.",
+        "Full K-sector flatness and law stabilization are proved distinct."
+      ],
+      "open_gaps": [
+        "Patch gluing and transport variation across the contextual base R are outside the frozen contract."
+      ],
+      "novelty_fingerprint": "Graph-groupoid normal form; structural fixed-space theorem only, with no substitution of frame flatness for law agreement.",
+      "disposition": "certified_in_scope"
+    },
+    {
+      "family_id": "FAM-ZERO-KL",
+      "core_mechanism": "Use positivity of every weighted extended-KL summand and reciprocal path propagation to characterize exact channel agreement.",
+      "target_obligation_ids": ["ZERO-DISTORTION"],
+      "representation": "Two separately typed directed edge-event laws with positive support coefficients and bimeasurable reciprocal transports.",
+      "invariant_or_obstruction": "The common root marginal must be fixed by the entire channel holonomy group.",
+      "obligations": [
+        "Prove zero sum if and only if every positive-support edge KL vanishes.",
+        "Prove root-law existence, uniqueness, and the converse edge reconstruction.",
+        "Apply the theorem independently to belief and model channels."
+      ],
+      "bridge": "KL zero is equality of laws; reciprocal transport turns a supported orientation into the reverse equality needed for path propagation.",
+      "failure_test": "A positive-support edge with nonidentical transported laws at total distortion zero would refute the theorem.",
+      "verified_results": [
+        "Each channel has the three-way zero-distortion equivalence.",
+        "The paired result produces two marginal parents and no unproved joint lift."
+      ],
+      "open_gaps": [
+        "Disconnected support requires a separate root law per component."
+      ],
+      "novelty_fingerprint": "Exact law-level agreement theorem separated from connection-Laplacian geometry.",
+      "disposition": "certified_in_scope"
+    },
+    {
+      "family_id": "FAM-RADON-NIKODYM-MIXTURE",
+      "core_mechanism": "Factor source-to-comparison Radon-Nikodym derivatives through the full-law mixture and split all support cases before algebra.",
+      "target_obligation_ids": ["FULL-LAW-BARYCENTER"],
+      "representation": "Finite positive mixture of arbitrary probability laws on one measurable space, with extended relative entropy.",
+      "invariant_or_obstruction": "The residual is KL from the mixture to the comparison law; noncompact holonomy can obstruct any normalized invariant average.",
+      "obligations": [
+        "Prove the extended-value mixture identity without undefined subtraction.",
+        "Prove uniqueness of the unrestricted forward-KL minimizer.",
+        "State finite, compact, and noncompact holonomy qualifications separately."
+      ],
+      "bridge": "Finite-mixture domination makes each source-to-mixture KL finite, while common-pushforward invariance permits finite orbit averaging.",
+      "failure_test": "A comparison law violating the identity in any absolute-continuity case would refute the result.",
+      "verified_results": [
+        "The unrestricted unique mixture theorem is proved.",
+        "Finite orbit averaging is exact; compact averaging is conditional; the general noncompact case remains open."
+      ],
+      "open_gaps": [
+        "No invariant-barycenter theorem is claimed for a general noncompact holonomy group."
+      ],
+      "novelty_fingerprint": "Unrestricted law theorem with an explicit extended-value proof, not a Gaussian extrapolation.",
+      "disposition": "certified_in_scope"
+    },
+    {
+      "family_id": "FAM-PINSKER-TREE",
+      "core_mechanism": "Convert selected tree-edge KL bounds to total variation by Pinsker, transport every law along one rooted spanning tree, and telescope only total variation.",
+      "target_obligation_ids": ["TV-STABILITY"],
+      "representation": "A rooted spanning tree of each finite connected positive-support graph, with a positive orientation selected for every tree edge.",
+      "invariant_or_obstruction": "The valid constant depends on the minimum selected tree-edge event weight and the spanning-tree diameter.",
+      "obligations": [
+        "Bound every selected edge term by total distortion divided by the minimum selected weight.",
+        "Use unique root paths consistently for all transported laws.",
+        "Use no KL triangle inequality."
+      ],
+      "bridge": "Bimeasurable pushforward preserves total variation, whose triangle inequality and convexity control the root mixture.",
+      "failure_test": "A selected tree edge with zero event weight or an attempted bound using inconsistent paths invalidates the stated constant.",
+      "verified_results": [
+        "Every transported law is within the tree-diameter Pinsker bound of the root mixture."
+      ],
+      "open_gaps": [
+        "Optimizing over spanning trees is not part of the theorem."
+      ],
+      "novelty_fingerprint": "Root-consistent tree estimate with an explicit weight floor and no metric claim for KL.",
+      "disposition": "certified_in_scope"
+    },
+    {
+      "family_id": "FAM-MARKED-EVENT-PUSHFORWARD",
+      "core_mechanism": "Push the normalized joint endpoint-event law through a declared endpoint kernel, disintegrate it, and retain the full conditional distribution of dressed boundary marks.",
+      "target_obligation_ids": ["EVENT-LAW-RENORMALIZATION", "RETAINED-MARKS"],
+      "representation": "Scalar joint event measures augmented by typed group-valued marks, normalized endpoint kernels, hyperedges, shared factors, and path memory.",
+      "invariant_or_obstruction": "Scalar mass is conserved by normalized kernels, whereas an arithmetic mark mean can be singular and erase mark-feature correlations.",
+      "obligations": [
+        "Distinguish receiver rows from normalized joint event laws.",
+        "Expose conditional independence when a product endpoint kernel is used.",
+        "Retain holonomy, mark laws, induced shared structure, and memory absent a removal theorem."
+      ],
+      "bridge": "Finite-kernel pushforward preserves total mass and regular disintegration recovers coarse receiver laws and conditional rows.",
+      "failure_test": "A normalized endpoint kernel whose pushed joint mass is not one, or a group theorem making the zero mean of opposite quarter-turns invertible, would falsify the mechanism.",
+      "verified_results": [
+        "Scalar network renormalization is exact for normalized joint endpoint events.",
+        "A single averaged matrix is not an exact replacement for a conditional mark law."
+      ],
+      "open_gaps": [
+        "No universal removal theorem for induced hyperedges, shared factors, or memory is supplied."
+      ],
+      "novelty_fingerprint": "Marked-measure closure rather than elementwise averaging of conditional attention rows or transports.",
+      "disposition": "certified_in_scope"
+    },
+    {
+      "family_id": "FAM-COMMON-CHANNEL-VFE",
+      "core_mechanism": "Lift recognition and posterior laws through the same fixed recognition-independent Markov channel and disintegrate the relative entropy.",
+      "target_obligation_ids": ["VFE-CHAIN-RULE"],
+      "representation": "Standard-Borel posterior and recognition laws, one common coarse channel, and their regular conditional laws over the coarse variable.",
+      "invariant_or_obstruction": "The exact nonnegative obstruction is the conditional-KL defect; marginal agreement alone does not control it.",
+      "obligations": [
+        "Apply one channel to both laws without changing the observation or evidence representative.",
+        "Prove the KL chain rule and the zero-defect almost-sure criterion.",
+        "Keep recognition-dependent or separately fitted channels outside the conclusion."
+      ],
+      "bridge": "The lifted joint laws preserve the fine KL, and standard-Borel disintegration splits it into coarse KL plus conditional KL.",
+      "failure_test": "A common normalized channel for which the chain rule fails under the stated standard-Borel and support hypotheses would refute the claim.",
+      "verified_results": [
+        "Fine VFE equals coarse VFE plus the explicit conditional-KL defect."
+      ],
+      "open_gaps": [
+        "Low singleton-marginal distortion does not imply exact full VFE closure."
+      ],
+      "novelty_fingerprint": "Exact common-channel data-processing defect, with zero residual stated as a condition rather than inferred.",
+      "disposition": "certified_in_scope"
+    },
+    {
+      "family_id": "FAM-TYPED-HIERARCHY-FLOW",
+      "core_mechanism": "Compose normalized membership kernels and differentiate a declared moving coarse map along a declared fine inference flow.",
+      "target_obligation_ids": ["HIERARCHY-SEMICONJUGACY"],
+      "representation": "Hard and soft Markov kernels, replicated incidences as a separate type, and finite-dimensional C1 moving maps and vector fields.",
+      "invariant_or_obstruction": "Normalized kernels conserve mass; exact dynamics require the partial-time term and a semiconjugacy identity.",
+      "obligations": [
+        "Prove typed nested channel composition.",
+        "Exclude replicated covers from probability-kernel claims.",
+        "Include the partial_t C_t term and restrict the spectral corollary to frozen constant-metric dynamics."
+      ],
+      "bridge": "The tower property proves nested kernel composition; the ordinary chain rule proves the moving-map equation.",
+      "failure_test": "A moving map satisfying only the frozen equation while partial_t C_t is nonzero falsifies exact semiconjugacy.",
+      "verified_results": [
+        "Normalized nesting and moving-map semiconjugacy are exact under their declared hypotheses.",
+        "The existing Gaussian spectral estimate is only a conditional frozen corollary."
+      ],
+      "open_gaps": [
+        "Dynamically selected memberships, adaptive rows, and nonlinear full-law autonomous dynamics remain open."
+      ],
+      "novelty_fingerprint": "Typed separation of stochastic hierarchy, replicated cover, and optional inference dynamics.",
+      "disposition": "certified_in_scope"
+    },
+    {
+      "family_id": "FAM-EXACT-COUNTEREXAMPLES",
+      "core_mechanism": "Search minimal finite, support-theoretic, and Gaussian witnesses against every tempting shortcut excluded by the theorem.",
+      "target_obligation_ids": ["COUNTEREXAMPLES"],
+      "representation": "Rational Bernoulli laws, parity laws, two-node Laplacians, Gaussian moments, orthogonal holonomy, and replicated incidences.",
+      "invariant_or_obstruction": "Support singularity, state blindness, nontransitivity, nonlinear moment residuals, and loss of normalization obstruct the shortcuts.",
+      "obligations": [
+        "Provide eight explicit witnesses with exact calculations.",
+        "Distinguish witnesses against shortcuts from counterexamples to the frozen affirmative target.",
+        "Keep numerical recomputation corroborative."
+      ],
+      "bridge": "Each displayed finite or Gaussian calculation directly establishes the negation of its shortcut claim.",
+      "failure_test": "Failure of any witness to satisfy its stated laws, moments, support, or mass accounting would reopen that shortcut.",
+      "verified_results": [
+        "All eight named shortcuts have contained exact counterexamples, including the quartic residual 2 lambda a^4."
+      ],
+      "open_gaps": [],
+      "novelty_fingerprint": "Minimal obstruction portfolio spanning topology, probability support, geometry, and normalized coarse assignment.",
+      "disposition": "certified_in_scope"
+    },
+    {
+      "family_id": "FAM-DETERMINISTIC-CORROBORATION",
+      "core_mechanism": "Recompute finite witnesses and representative algebra with exact Fraction arithmetic, separating Decimal logarithms from proof.",
+      "target_obligation_ids": ["RECOMPUTATION-CORROBORATION"],
+      "representation": "A deterministic CPU-only Python script and captured JSON output.",
+      "invariant_or_obstruction": "Every exact rational identity must compare equal and every recorded diagnostic check must return true.",
+      "obligations": [
+        "Use exact rational arithmetic wherever applicable.",
+        "Label Decimal checks and finite instances as corroboration only."
+      ],
+      "bridge": "The script checks transcription and arithmetic but is not a universal derivation.",
+      "failure_test": "Any false check or mismatch between captured output and current script invalidates the corroboration record.",
+      "verified_results": [
+        "Eleven checks pass, including the exact quartic residual 405/56 at a=3/2 and lambda=5/7."
+      ],
+      "open_gaps": [
+        "Finite execution does not prove quantified mathematical claims."
+      ],
+      "novelty_fingerprint": "Evidence-bound diagnostic lane explicitly isolated from mathematical certification.",
+      "disposition": "corroborated_nonproof"
+    }
+  ]
+}

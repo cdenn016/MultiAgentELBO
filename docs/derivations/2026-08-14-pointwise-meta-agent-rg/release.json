@@ -1,0 +1,17 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+  "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+  "checkpoint": "release after direct proof, exact counterexamples, independent reconstruction, oracle erasure, and adversarial attack closure",
+  "target_claim": "TARGET-POINTWISE-RG",
+  "terminal_status": "COMPLETE_AFFIRMATIVE",
+  "certificate_claim": "TARGET-POINTWISE-RG",
+  "strongest_result": "The full frozen pointwise conjunction is proved for every in-scope finite two-channel network: exact law agreement, unrestricted full-law mixture barycenters with stated holonomy qualifications, rooted-tree total-variation control, normalized marked-event renormalization, common-channel VFE defect, typed hierarchy and moving-map identities, and eight exact shortcut refutations. It constructs paired marginal parents only and makes no cross-base claim.",
+  "unresolved_obligations": [
+    "Extension over the contextual base R, including patch gluing and active-set changes.",
+    "A canonical partition selector, literal replicated-parent probability semantics, and autonomous agency.",
+    "Physical-time and continuum-limit interpretations and an intrinsic threshold.",
+    "A general noncompact invariant-barycenter theorem.",
+    "Adaptive attention dynamics, nonlinear full-law VFE semiconjugacy, and dynamically selected memberships."
+  ]
+}

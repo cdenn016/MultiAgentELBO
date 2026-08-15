@@ -1,0 +1,53 @@
+{
+  "checks": {
+    "CE-1_nontransitive_threshold": true,
+    "CE-2_equal_marginals_disjoint_joint_support": true,
+    "CE-3_trivial_holonomy_large_gaussian_KL": true,
+    "CE-4_nontrivial_orthogonal_holonomy_stabilizes_isotropic_covariance": true,
+    "CE-5_two_node_gap_exact": true,
+    "CE-6_forward_finite_reverse_support_failure": true,
+    "CE-7_quartic_gaussian_barycenter_residual_exact": true,
+    "CE-8_replicated_cover_mass": true,
+    "forward_KL_mixture_identity_decimal_corroboration": true,
+    "moving_map_chain_rule_exact_polynomial": true,
+    "normalized_event_pushforward_mass_exact": true
+  },
+  "command": "C:/Python314/python.exe evidence/recompute.py",
+  "exactness_boundary": {
+    "decimal_logarithmic_corroboration_only": [
+      "CE-1",
+      "CE-6",
+      "forward-KL mixture instance"
+    ],
+    "rational_and_integer_checks": [
+      "CE-2",
+      "CE-3 at a=3",
+      "CE-4 covariance invariance",
+      "CE-5 at c=7/5",
+      "CE-7 quartic residual at a=3/2 and lambda=5/7",
+      "CE-8",
+      "joint-event normalization",
+      "moving-map polynomial chain rule"
+    ],
+    "theorem_proof": false
+  },
+  "interpreter": "C:/Python314/python.exe",
+  "status": "PASS",
+  "values": {
+    "CE-1_KL_PQ": "0.368064207168497069910682093234358628839881649812431291209802",
+    "CE-1_KL_PR": "1.75777966186897550623239237907604112743598489251639912277551",
+    "CE-1_KL_QR": "0.510825623765990683205514096303661934878110796445768270177955",
+    "CE-3_KL_at_a_3": "18",
+    "CE-5_gap_at_c_7_over_5": "14/5",
+    "CE-6_forward_KL": "0.693147180559945309417232121458176568075500134360255254120680",
+    "CE-7_cubic_matched_Gaussian_fourth_moment": "675",
+    "CE-7_cubic_pushforward_fourth_moment": "10395",
+    "CE-7_expected_quartic_residual": "405/56",
+    "CE-7_quartic_residual_at_a_3_over_2_lambda_5_over_7": "405/56",
+    "CE-8_replicated_edge_mass": "4",
+    "CE-8_replicated_vertex_mass": "2",
+    "coarse_event_mass": "1",
+    "forward_KL_identity_absolute_residual": "5E-60",
+    "moving_map_derivative": "44"
+  }
+}

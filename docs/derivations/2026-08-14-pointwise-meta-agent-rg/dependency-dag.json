@@ -1,0 +1,43 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+  "target_digest": "a0d61fb082b9632a9aac685fced7bf4a82f1a9f115a72b9583a6ed96f636c952",
+  "edges": [
+    {
+      "from": "TARGET-POINTWISE-RG",
+      "to": "TYPE-GROUPOIDS"
+    },
+    {
+      "from": "TARGET-POINTWISE-RG",
+      "to": "ZERO-DISTORTION"
+    },
+    {
+      "from": "TARGET-POINTWISE-RG",
+      "to": "FULL-LAW-BARYCENTER"
+    },
+    {
+      "from": "TARGET-POINTWISE-RG",
+      "to": "TV-STABILITY"
+    },
+    {
+      "from": "TARGET-POINTWISE-RG",
+      "to": "EVENT-LAW-RENORMALIZATION"
+    },
+    {
+      "from": "TARGET-POINTWISE-RG",
+      "to": "RETAINED-MARKS"
+    },
+    {
+      "from": "TARGET-POINTWISE-RG",
+      "to": "VFE-CHAIN-RULE"
+    },
+    {
+      "from": "TARGET-POINTWISE-RG",
+      "to": "HIERARCHY-SEMICONJUGACY"
+    },
+    {
+      "from": "TARGET-POINTWISE-RG",
+      "to": "COUNTEREXAMPLES"
+    }
+  ]
+}
