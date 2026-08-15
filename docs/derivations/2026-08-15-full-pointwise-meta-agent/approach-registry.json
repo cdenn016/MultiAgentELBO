@@ -4,21 +4,87 @@
   "target_digest": "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
   "mechanism_families": [
     {
-      "family_id": "kernel-integration",
-      "core_mechanism": "One normalized recognition-independent Markov channel pushes fixed generation, posterior, and correlated recognition laws together.",
-      "target_obligation_ids": ["target"],
-      "representation": "Standard-Borel probability laws and Markov kernels at fixed (r_*,X,o).",
-      "invariant_or_obstruction": "A common channel preserves normalization and supports the exact conditional-KL decomposition; split channels need not do so.",
-      "obligations": [
-        "Derive the normalized parent laws, posterior identity, absolute-continuity consequences, and VFE chain under the frozen premises."
-      ],
-      "bridge": "The required bridge is standard-Borel disintegration with finite KL terms.",
-      "failure_test": "A Task-4 finite categorical split-channel witness must refute an unconditional split-channel identity.",
+      "family_id": "FAM-COMMON-CHANNEL-PUSHFORWARD",
+      "representation": "Observation-indexed standard-Borel laws and one recognition-independent Markov channel at fixed (r_*,X), with X_A outside the channel.",
+      "core_mechanism": "Integrate the same normalized C_A against fixed generation, selected posterior versions, and correlated recognition.",
+      "invariant_or_obstruction": "Normalization, observation marginal, posterior version status, and absolute continuity survive one common channel; split channels are outside the mechanism.",
+      "target_obligation_ids": ["PARENT-NORMALIZATION","POSTERIOR-PUSHFORWARD","COMMON-CHANNEL-ABSOLUTE-CONTINUITY","DERIVED-MARGINALS"],
+      "obligations": ["Prove the parent regular-conditional identity at the observation-kernel level, not from one fixed slice."],
+      "bridge": "Bounded test functions, Tonelli, and standard-Borel kernel composition.",
+      "failure_test": "A pushed posterior that fails the global test-function disintegration or a parent null event made positive by recognition.",
+      "verified_results": ["POINTWISE-TYPING","PARENT-NORMALIZATION","POSTERIOR-PUSHFORWARD","COMMON-CHANNEL-ABSOLUTE-CONTINUITY","DERIVED-MARGINALS"],
+      "open_gaps": ["No cross-X factorization through X_A and no patchwise family are proved."],
+      "novelty_fingerprint": "observation-indexed laws + one common Markov channel + global RCP test-function bridge + fixed-X structural separation + full parent datum",
+      "disposition": "certified_in_scope"
+    },
+    {
+      "family_id": "FAM-EVALUATION-SEAM",
+      "representation": "Jointly measurable normalized kernel family (m_A,xi_A,E)->K^{X_A}_{A,m_A}(xi_A;E).",
+      "core_mechanism": "Either select the evaluator from the pushed generative disintegration or impose explicit almost-sure compatibility on a predeclared evaluator.",
+      "invariant_or_obstruction": "Standard-Borel disintegration produces only an almost-sure conditional version; it does not validate an arbitrary predeclared family or regularize its presentation quotient.",
+      "target_obligation_ids": ["MODEL-FAMILY-NORMALIZATION","EVALUATION-COMPATIBILITY"],
+      "obligations": ["Keep induced and predeclared tiers separate and preserve the null-version caveat."],
+      "bridge": "Disintegration of (B_A,O,H_A) conditional on (M_A,Xi_A) under the pushed parent law.",
+      "failure_test": "Task 4 swaps the evaluator on positive model mass while preserving a normalized model marginal.",
+      "verified_results": ["MODEL-FAMILY-NORMALIZATION","EVALUATION-COMPATIBILITY"],
+      "open_gaps": ["Injectivity, standard-Borel quotient structure, smooth quotient structure, and cross-X sufficiency remain unproved."],
+      "novelty_fingerprint": "kernel-family presentation + induced-or-compatible conditional mechanism + a.s. seam obstruction + fixed-X evaluator bridge + evaluation obligations",
+      "disposition": "certified_in_scope"
+    },
+    {
+      "family_id": "FAM-CONDITIONAL-KL-DISINTEGRATION",
+      "representation": "Two joint channel lifts of the fine recognition/posterior pair on Y_I x Z_A.",
+      "core_mechanism": "Factor the joint-lift Radon-Nikodym derivative and disintegrate relative entropy into parent and discarded-conditional terms.",
+      "invariant_or_obstruction": "The extended identity is additive in [0,+infinity]; ordinary differences and pairwise recovery equivalence require finite fine KL and one unchanged finite evidence representative.",
+      "target_obligation_ids": ["VFE-CHAIN-EXTENDED","VFE-FINITE-ZERO-DEFECT-RECOVERY"],
+      "obligations": ["Avoid infinity-minus-infinity and state the exact a.s. zero-defect condition."],
+      "bridge": "Standard-Borel conditional laws, Radon-Nikodym factorization, and KL disintegration.",
+      "failure_test": "A common channel violating the additive chain rule, or a finite-KL zero defect with unequal discarded conditionals.",
+      "verified_results": ["VFE-CHAIN-EXTENDED","VFE-FINITE-ZERO-DEFECT-RECOVERY"],
+      "open_gaps": ["One family-wide recovery kernel needs simultaneous experiment-level hypotheses."],
+      "novelty_fingerprint": "joint lifts + conditional KL chain + extended-additive invariant + finite-tier recovery bridge + VFE obligations",
+      "disposition": "certified_in_scope"
+    },
+    {
+      "family_id": "FAM-FULL-LAW-HOLONOMY-DICHOTOMY",
+      "representation": "Typed source/target holonomy groupoid actions on complete fine and parent random spaces, or raw root-framed records in H_A.",
+      "core_mechanism": "Intertwine full laws, selected versions, C_A, and evaluation for covariance, or retain roots, based holonomy, and boundary marks without quotienting.",
+      "invariant_or_obstruction": "General arrows yield covariance between slices; same-slice invariance requires the fixed-(o,X) stabilizer. Marginal stabilization does not control joint dependence.",
+      "target_obligation_ids": ["HOLONOMY-BLIND-FULL-LAW","HOLONOMY-RETENTION","HOLONOMY-ALTERNATIVE"],
+      "obligations": ["A concrete parent declares one branch and supplies every branch hypothesis."],
+      "bridge": "Equivariant kernel integration and joint record pushforward.",
+      "failure_test": "A fully equivariant source datum whose pushed full law is not covariant, or a retained H_A record whose joint law is not pushed forward.",
+      "verified_results": ["HOLONOMY-BLIND-FULL-LAW","HOLONOMY-RETENTION","HOLONOMY-ALTERNATIVE"],
+      "open_gaps": ["Neither branch selects membership; Task 4 still owes the marginal-versus-joint counterexample."],
+      "novelty_fingerprint": "typed groupoid/full-law action or raw record space + equivariance/retention mechanism + marginal-joint obstruction + evaluation bridge + holonomy obligations",
+      "disposition": "certified_in_scope"
+    },
+    {
+      "family_id": "FAM-DYNAMIC-INTERTWINING-BOUNDARY",
+      "representation": "Differentiable deterministic moving-map special case or observable operators for Markov semigroups.",
+      "core_mechanism": "Use the full moving-map chain rule or require semigroup/generator intertwining on a declared domain.",
+      "invariant_or_obstruction": "Static law pushforward does not produce semiconjugacy, autonomy, selected membership, feedback, persistence, or physical time.",
+      "target_obligation_ids": ["DYNAMICS-SCOPE"],
+      "obligations": ["Later approximate results must declare a norm, state class, interval, residual bound, and propagation estimate."],
+      "bridge": "Ordinary chain rule or Markov operator intertwining.",
+      "failure_test": "A purported adaptive closure omitting partial_t c_t or a generator identity lacking domains and semigroup closure.",
+      "verified_results": ["DYNAMICS-SCOPE"],
+      "open_gaps": ["Autonomy, dynamic membership, Wheelerian feedback, sustained nonequilibrium, and operational time remain OPEN."],
+      "novelty_fingerprint": "moving deterministic map or Markov observables + semiconjugacy/intertwining mechanism + static-dynamic obstruction + declared-domain bridge + scope obligation",
+      "disposition": "certified_in_scope"
+    },
+    {
+      "family_id": "FAM-FINITE-CATEGORICAL-REFUTATIONS",
+      "representation": "Finite non-Gaussian probability tables within the frozen parent types.",
+      "core_mechanism": "Construct direct witnesses for marginal nonuniqueness, split-channel failure, evaluator mismatch, and holonomy overreaches.",
+      "invariant_or_obstruction": "The five negative conjuncts require direct counterexamples and cannot be closed by the affirmative proof.",
+      "target_obligation_ids": ["NEG-MARGINAL-DETERMINATION","NEG-SPLIT-CHANNEL-VFE","NEG-MODEL-MARGINAL-EVALUATION","NEG-TRIVIAL-HOLONOMY-AGREEMENT","NEG-MARGINAL-HOLONOMY-JOINT"],
+      "obligations": ["Task 4 must provide exact in-domain derivations and deterministic corroboration."],
+      "bridge": "Finite categorical probability algebra.",
+      "failure_test": "Any proposed witness fails its frozen normalization, marginal, conditional, KL, or action property.",
       "verified_results": [],
-      "open_gaps": [
-        "No affirmative derivation has been certified at this checkpoint."
-      ],
-      "novelty_fingerprint": "standard-Borel laws + common channel + conditional-KL identity + frozen recognition-independence premises + normalized parent construction",
+      "open_gaps": ["All five Task-4 counterexample claims remain CANDIDATE."],
+      "novelty_fingerprint": "finite categorical tables + direct counterexample mechanism + five universal-overreach obstructions + frozen-type bridge + negative obligations",
       "disposition": "open"
     }
   ]
