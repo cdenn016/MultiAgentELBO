@@ -508,6 +508,12 @@
       "detail": "registered canonical token",
       "line": 6,
       "path": "Theory/03_probability.tex",
+      "token": "\\mathscr P_G"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 6,
+      "path": "Theory/03_probability.tex",
       "token": "\\mathscr S"
     },
     {
@@ -596,6 +602,18 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 365,
+      "path": "Theory/04_generative.tex",
+      "token": "\\mathscr P_G"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 366,
+      "path": "Theory/04_generative.tex",
+      "token": "\\mathscr P_G"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 367,
       "path": "Theory/04_generative.tex",
       "token": "\\mathcal C"
@@ -647,6 +665,12 @@
       "line": 270,
       "path": "Theory/05a_expfamily.tex",
       "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 642,
+      "path": "Theory/05b_local_collective_elbo.tex",
+      "token": "\\beta_{ij}"
     },
     {
       "detail": "registered canonical token",
@@ -803,6 +827,12 @@
       "line": 890,
       "path": "Theory/05c_pullback_geometry.tex",
       "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 917,
+      "path": "Theory/05c_pullback_geometry.tex",
+      "token": "\\mathscr P_G"
     },
     {
       "detail": "registered canonical token",
@@ -1094,6 +1124,12 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 238,
+      "path": "Theory/05d_relational_inference.tex",
+      "token": "\\mathscr P_G"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 242,
       "path": "Theory/05d_relational_inference.tex",
       "token": "\\mathcal C"
@@ -1274,6 +1310,30 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 347,
+      "path": "Theory/06_general_coarsegraining.tex",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 380,
+      "path": "Theory/06_general_coarsegraining.tex",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 382,
+      "path": "Theory/06_general_coarsegraining.tex",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 385,
+      "path": "Theory/06_general_coarsegraining.tex",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 141,
       "path": "Theory/06a_generative_gaussian.tex",
       "token": "\\mathcal C"
@@ -1286,6 +1346,12 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 142,
+      "path": "Theory/06a_generative_gaussian.tex",
+      "token": "\\mathscr P_G"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 143,
       "path": "Theory/06a_generative_gaussian.tex",
       "token": "\\mathcal C"
@@ -1319,6 +1385,18 @@
       "line": 148,
       "path": "Theory/06a_generative_gaussian.tex",
       "token": "\\mathcal C_i"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 154,
+      "path": "Theory/06a_generative_gaussian.tex",
+      "token": "\\mathscr P_G"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 170,
+      "path": "Theory/06a_generative_gaussian.tex",
+      "token": "\\mathscr P_G"
     },
     {
       "detail": "registered canonical token",
@@ -1409,6 +1487,24 @@
       "line": 800,
       "path": "Theory/07b_agent_network_rg.tex",
       "token": "\\mathscr S"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 1748,
+      "path": "Theory/07b_agent_network_rg.tex",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 1753,
+      "path": "Theory/07b_agent_network_rg.tex",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 1800,
+      "path": "Theory/07b_agent_network_rg.tex",
+      "token": "\\beta_{ij}"
     },
     {
       "detail": "registered canonical token",
@@ -1534,6 +1630,96 @@
       "detail": "registered canonical token",
       "line": 209,
       "path": "Theory/09_coarsegraining.tex",
+      "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 475,
+      "path": "Theory/10_renormalization.tex",
+      "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 497,
+      "path": "Theory/10_renormalization.tex",
+      "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 507,
+      "path": "Theory/10_renormalization.tex",
+      "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 422,
+      "path": "Theory/11_obstructions.tex",
+      "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 21,
+      "path": "Theory/12_philosophy.tex",
+      "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 23,
+      "path": "Theory/12_philosophy.tex",
+      "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 23,
+      "path": "Theory/12_philosophy.tex",
+      "token": "\\mathcal C_i"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 24,
+      "path": "Theory/12_philosophy.tex",
+      "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 24,
+      "path": "Theory/12_philosophy.tex",
+      "token": "\\mathcal C_i"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 26,
+      "path": "Theory/12_philosophy.tex",
+      "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 26,
+      "path": "Theory/12_philosophy.tex",
+      "token": "\\mathcal C_i"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 27,
+      "path": "Theory/12_philosophy.tex",
+      "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 27,
+      "path": "Theory/12_philosophy.tex",
+      "token": "\\mathcal C_i"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 35,
+      "path": "Theory/12_philosophy.tex",
+      "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 48,
+      "path": "Theory/12_philosophy.tex",
       "token": "\\mathcal C"
     },
     {
@@ -1736,6 +1922,12 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 210,
+      "path": "Theory/SPEC.md",
+      "token": "\\xi_A"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 211,
       "path": "Theory/SPEC.md",
       "token": "\\boldsymbol\\Xi_A"
@@ -1769,6 +1961,18 @@
       "line": 213,
       "path": "Theory/SPEC.md",
       "token": "\\mathbb P_A"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 214,
+      "path": "Theory/SPEC.md",
+      "token": "P_A"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 214,
+      "path": "Theory/SPEC.md",
+      "token": "Q_A"
     },
     {
       "detail": "registered canonical token",
@@ -1813,34 +2017,76 @@
       "token": "q_A^m"
     },
     {
+      "detail": "registered canonical token",
+      "line": 222,
+      "path": "Theory/SPEC.md",
+      "token": "\\boldsymbol\\Pi_{A,o,X}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 222,
+      "path": "Theory/SPEC.md",
+      "token": "\\boldsymbol\\Pi_{A,o,X}^b"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 222,
+      "path": "Theory/SPEC.md",
+      "token": "\\boldsymbol\\Pi_{A,o,X}^m"
+    },
+    {
       "detail": "active collision rule",
-      "line": 224,
+      "line": 226,
       "path": "Theory/SPEC.md",
       "token": "m_i"
     },
     {
       "detail": "registered canonical token",
-      "line": 238,
+      "line": 240,
       "path": "Theory/SPEC.md",
       "token": "\\alpha_i^x"
     },
     {
       "detail": "registered canonical token",
-      "line": 332,
+      "line": 241,
+      "path": "Theory/SPEC.md",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 242,
+      "path": "Theory/SPEC.md",
+      "token": "\\gamma_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 334,
       "path": "Theory/SPEC.md",
       "token": "\\mathcal C"
     },
     {
       "detail": "registered canonical token",
-      "line": 524,
+      "line": 522,
+      "path": "Theory/SPEC.md",
+      "token": "\\mathscr P_G"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 523,
+      "path": "Theory/SPEC.md",
+      "token": "\\mathscr P_G"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 526,
       "path": "Theory/SPEC.md",
       "token": "\\mathcal C"
     },
     {
       "detail": "registered canonical token",
-      "line": 604,
+      "line": 530,
       "path": "Theory/SPEC.md",
-      "token": "\\mathcal C"
+      "token": "\\mathscr P_G"
     },
     {
       "detail": "registered canonical token",
@@ -1850,7 +2096,13 @@
     },
     {
       "detail": "registered canonical token",
-      "line": 606,
+      "line": 608,
+      "path": "Theory/SPEC.md",
+      "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 608,
       "path": "Theory/SPEC.md",
       "token": "\\mathcal C_i"
     },
@@ -1922,6 +2174,18 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 35,
+      "path": "Theory/appendix_notation.tex",
+      "token": "\\xi_A"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 37,
+      "path": "Theory/appendix_notation.tex",
+      "token": "\\xi_A"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 39,
       "path": "Theory/appendix_notation.tex",
       "token": "\\mathsf M_A"
@@ -1969,6 +2233,18 @@
       "token": "C_A"
     },
     {
+      "detail": "active collision rule",
+      "line": 53,
+      "path": "Theory/appendix_notation.tex",
+      "token": "P_A"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 53,
+      "path": "Theory/appendix_notation.tex",
+      "token": "Q_A"
+    },
+    {
       "detail": "registered canonical token",
       "line": 54,
       "path": "Theory/appendix_notation.tex",
@@ -1985,6 +2261,18 @@
       "line": 55,
       "path": "Theory/appendix_notation.tex",
       "token": "\\boldsymbol\\Pi_{A,o,X}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 55,
+      "path": "Theory/appendix_notation.tex",
+      "token": "\\boldsymbol\\Pi_{A,o,X}^b"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 55,
+      "path": "Theory/appendix_notation.tex",
+      "token": "\\boldsymbol\\Pi_{A,o,X}^m"
     },
     {
       "detail": "registered canonical token",
@@ -2222,6 +2510,18 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 347,
+      "path": "Theory/appendix_notation.tex",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 348,
+      "path": "Theory/appendix_notation.tex",
+      "token": "\\gamma_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 352,
       "path": "Theory/appendix_notation.tex",
       "token": "\\mathcal C"
@@ -2309,6 +2609,18 @@
       "line": 275,
       "path": "docs/STATUS.md",
       "token": "\\alpha_i^x"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 275,
+      "path": "docs/STATUS.md",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 275,
+      "path": "docs/STATUS.md",
+      "token": "\\gamma_{ij}"
     },
     {
       "detail": "active collision rule",
@@ -2480,6 +2792,12 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 21,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "\\xi_A"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 22,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
       "token": "\\boldsymbol\\Xi_A"
@@ -2515,10 +2833,22 @@
       "token": "\\mathbb P_I"
     },
     {
+      "detail": "active collision rule",
+      "line": 26,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "P_A"
+    },
+    {
       "detail": "registered canonical token",
       "line": 26,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
       "token": "\\mathbb P_A"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 27,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "Q_A"
     },
     {
       "detail": "registered canonical token",
@@ -2540,133 +2870,199 @@
     },
     {
       "detail": "registered canonical token",
-      "line": 30,
+      "line": 31,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "\\boldsymbol\\Pi_{A,o,X}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 31,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "\\boldsymbol\\Pi_{A,o,X}^b"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 31,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "\\boldsymbol\\Pi_{A,o,X}^m"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 32,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
       "token": "\\boldsymbol\\Xi_A"
     },
     {
       "detail": "registered canonical token",
-      "line": 30,
+      "line": 32,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
       "token": "\\operatorname{ev}_A"
     },
     {
       "detail": "active collision rule",
-      "line": 31,
+      "line": 33,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
       "token": "C_A"
-    },
-    {
-      "detail": "registered canonical token",
-      "line": 31,
-      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "\\mathsf Z_A"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 32,
-      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "C_A"
-    },
-    {
-      "detail": "registered canonical token",
-      "line": 32,
-      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "c_t"
     },
     {
       "detail": "registered canonical token",
       "line": 33,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "\\alpha_i^x"
+      "token": "\\mathsf Z_A"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 34,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "C_A"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 34,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "c_t"
     },
     {
       "detail": "registered canonical token",
       "line": 35,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "R\\to E\\to O"
+      "token": "\\alpha_i^x"
     },
     {
       "detail": "registered canonical token",
       "line": 36,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "\\mathscr S"
+      "token": "\\beta_{ij}"
     },
     {
       "detail": "registered canonical token",
-      "line": 40,
+      "line": 36,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "\\mathscr P_G"
+      "token": "\\gamma_{ij}"
     },
     {
       "detail": "registered canonical token",
-      "line": 42,
+      "line": 37,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "\\mathsf M_i"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 42,
-      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "m_i"
+      "token": "\\beta_{ij}"
     },
     {
       "detail": "registered canonical token",
-      "line": 42,
+      "line": 37,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "q_A^b"
+      "token": "\\gamma_{ij}"
     },
     {
       "detail": "registered canonical token",
-      "line": 42,
-      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "q_A^m"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 44,
-      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "C_A"
-    },
-    {
-      "detail": "registered canonical token",
-      "line": 44,
+      "line": 38,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
       "token": "R\\to E\\to O"
     },
     {
       "detail": "registered canonical token",
-      "line": 44,
+      "line": 39,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "\\mathscr S"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 43,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "\\mathscr P_G"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 45,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "Q_m"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 45,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "Q_q"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 45,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "\\mathsf M_i"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 45,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "m_i"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 45,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "q_A^b"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 45,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "q_A^m"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 47,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "C_A"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 47,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "R\\to E\\to O"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 47,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
       "token": "\\alpha_i^x"
     },
     {
       "detail": "active collision rule",
-      "line": 44,
+      "line": 47,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
       "token": "\\varpi_i"
     },
     {
       "detail": "registered canonical token",
-      "line": 44,
+      "line": 47,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
       "token": "c_t"
     },
     {
       "detail": "active collision rule",
-      "line": 50,
+      "line": 53,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
       "token": "C_A"
     },
     {
       "detail": "active collision rule",
-      "line": 50,
+      "line": 53,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "P_A"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 53,
+      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "token": "Q_A"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 53,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
       "token": "\\varpi_i"
     },
     {
       "detail": "active collision rule",
-      "line": 50,
+      "line": 53,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
       "token": "m_i"
     },
@@ -2720,9 +3116,21 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 3605,
+      "path": "docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 3606,
       "path": "docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md",
       "token": "\\alpha_i^x"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 3606,
+      "path": "docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md",
+      "token": "\\gamma_{ij}"
     },
     {
       "detail": "active collision rule",
@@ -2753,6 +3161,12 @@
       "line": 3620,
       "path": "docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md",
       "token": "C_A"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 3621,
+      "path": "docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md",
+      "token": "C_t"
     },
     {
       "detail": "registered canonical token",
@@ -3070,7 +3484,25 @@
       "detail": "active collision rule",
       "line": 120,
       "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
+      "token": "Q_m"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 120,
+      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
+      "token": "Q_q"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 120,
+      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
       "token": "m_i"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 127,
+      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
+      "token": "P_A"
     },
     {
       "detail": "registered canonical token",
@@ -3082,7 +3514,25 @@
       "detail": "active collision rule",
       "line": 140,
       "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
+      "token": "P_A"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 140,
+      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
+      "token": "Q_A"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 140,
+      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
       "token": "\\varpi_i"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 144,
+      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
+      "token": "P (principal bundle)"
     },
     {
       "detail": "active collision rule",
@@ -3095,6 +3545,12 @@
       "line": 148,
       "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
       "token": "C_A"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 148,
+      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
+      "token": "P_A"
     },
     {
       "detail": "active collision rule",
@@ -3173,6 +3629,18 @@
       "line": 203,
       "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
       "token": "\\boldsymbol\\Pi_{A,o,X}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 203,
+      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
+      "token": "\\boldsymbol\\Pi_{A,o,X}^b"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 203,
+      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
+      "token": "\\boldsymbol\\Pi_{A,o,X}^m"
     },
     {
       "detail": "registered canonical token",
@@ -3259,6 +3727,18 @@
       "token": "\\mathcal U_A"
     },
     {
+      "detail": "active collision rule",
+      "line": 15,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "Q_m"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 15,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "Q_q"
+    },
+    {
       "detail": "registered canonical token",
       "line": 63,
       "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
@@ -3299,6 +3779,12 @@
       "line": 66,
       "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
       "token": "\\mathcal U_A"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 68,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "P (principal bundle)"
     },
     {
       "detail": "registered canonical token",
@@ -3353,6 +3839,12 @@
       "line": 75,
       "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
       "token": "\\mathsf Z_A"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 75,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "\\xi_A"
     },
     {
       "detail": "registered canonical token",
@@ -3422,6 +3914,18 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 86,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "\\boldsymbol\\Pi_{A,o,X}^b"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 86,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "\\boldsymbol\\Pi_{A,o,X}^m"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 87,
       "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
       "token": "\\boldsymbol\\Xi_A"
@@ -3452,9 +3956,33 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 89,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 89,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "\\gamma_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 90,
       "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
       "token": "\\alpha_i^x"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 91,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 91,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "\\gamma_{ij}"
     },
     {
       "detail": "registered canonical token",
@@ -3491,6 +4019,12 @@
       "line": 108,
       "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
       "token": "\\mathscr P_G"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 111,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "m_i"
     },
     {
       "detail": "registered canonical token",
@@ -3716,9 +4250,27 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 234,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "\\xi_A"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 235,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "\\xi_A"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 238,
       "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
       "token": "\\mathbb P_A"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 238,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "\\xi_A"
     },
     {
       "detail": "active collision rule",
@@ -3731,6 +4283,18 @@
       "line": 243,
       "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
       "token": "\\boldsymbol\\Pi_{A,o,X}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 243,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "\\boldsymbol\\Pi_{A,o,X}^b"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 243,
+      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "token": "\\boldsymbol\\Pi_{A,o,X}^m"
     },
     {
       "detail": "registered canonical token",
@@ -3896,6 +4460,30 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 44,
+      "path": "overview.md",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 44,
+      "path": "overview.md",
+      "token": "\\gamma_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 48,
+      "path": "overview.md",
+      "token": "\\gamma_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 49,
+      "path": "overview.md",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 289,
       "path": "overview.md",
       "token": "\\mathcal C"
@@ -3953,6 +4541,12 @@
       "line": 569,
       "path": "overview.md",
       "token": "\\mathcal C"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 582,
+      "path": "overview.md",
+      "token": "\\beta_{ij}"
     },
     {
       "detail": "registered canonical token",
@@ -4022,9 +4616,33 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 33,
+      "path": "solid_RG_theory.md",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 35,
+      "path": "solid_RG_theory.md",
+      "token": "\\gamma_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 54,
       "path": "solid_RG_theory.md",
       "token": "\\alpha_i^x"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 57,
+      "path": "solid_RG_theory.md",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 59,
+      "path": "solid_RG_theory.md",
+      "token": "\\gamma_{ij}"
     },
     {
       "detail": "registered canonical token",
@@ -4045,7 +4663,7 @@
       "token": "\\eta_{ij}^x"
     },
     {
-      "detail": "active collision rule",
+      "detail": "registered canonical token",
       "line": 212,
       "path": "solid_RG_theory.md",
       "token": "C_A"
@@ -4063,7 +4681,7 @@
       "token": "\\eta_{ij}^x"
     },
     {
-      "detail": "active collision rule",
+      "detail": "registered canonical token",
       "line": 223,
       "path": "solid_RG_theory.md",
       "token": "C_A"
@@ -4148,6 +4766,18 @@
     },
     {
       "detail": "registered canonical token",
+      "line": 357,
+      "path": "solid_RG_theory.md",
+      "token": "\\beta_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
+      "line": 357,
+      "path": "solid_RG_theory.md",
+      "token": "\\gamma_{ij}"
+    },
+    {
+      "detail": "registered canonical token",
       "line": 358,
       "path": "solid_RG_theory.md",
       "token": "\\mathsf M_i"
@@ -4169,6 +4799,12 @@
       "line": 359,
       "path": "solid_RG_theory.md",
       "token": "C_A"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 359,
+      "path": "solid_RG_theory.md",
+      "token": "C_t"
     },
     {
       "detail": "registered canonical token",
@@ -4299,24 +4935,12 @@
   ],
   "contract_id": "contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
   "counts": {
-    "canonical": 716,
-    "documented_legacy": 39,
-    "immutable_evidence": 78,
+    "canonical": 822,
+    "documented_legacy": 15,
+    "immutable_evidence": 91,
     "unclassified_collision": 0
   },
   "documented_legacy": [
-    {
-      "detail": "active collision rule",
-      "line": 214,
-      "path": "Theory/SPEC.md",
-      "token": "P_A"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 214,
-      "path": "Theory/SPEC.md",
-      "token": "Q_A"
-    },
     {
       "detail": "active collision rule",
       "line": 215,
@@ -4325,39 +4949,15 @@
     },
     {
       "detail": "active collision rule",
-      "line": 221,
+      "line": 223,
       "path": "Theory/SPEC.md",
       "token": "Q_m"
     },
     {
       "detail": "active collision rule",
-      "line": 221,
+      "line": 223,
       "path": "Theory/SPEC.md",
       "token": "Q_q"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 520,
-      "path": "Theory/SPEC.md",
-      "token": "P (principal bundle)"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 521,
-      "path": "Theory/SPEC.md",
-      "token": "P (principal bundle)"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 53,
-      "path": "Theory/appendix_notation.tex",
-      "token": "P_A"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 53,
-      "path": "Theory/appendix_notation.tex",
-      "token": "Q_A"
     },
     {
       "detail": "active collision rule",
@@ -4373,117 +4973,15 @@
     },
     {
       "detail": "active collision rule",
-      "line": 26,
-      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "P_A"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 27,
-      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "Q_A"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 40,
+      "line": 43,
       "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
       "token": "P,Q (local dummy measures)"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 42,
-      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "Q_m"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 42,
-      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "Q_q"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 50,
-      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "P_A"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 50,
-      "path": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
-      "token": "Q_A"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 3599,
-      "path": "docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md",
-      "token": "P (principal bundle)"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 3621,
-      "path": "docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md",
-      "token": "C_t"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 19,
-      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
-      "token": "P (principal bundle)"
     },
     {
       "detail": "active collision rule",
       "line": 120,
       "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
       "token": "P,Q (local dummy measures)"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 120,
-      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
-      "token": "Q_m"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 120,
-      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
-      "token": "Q_q"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 127,
-      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
-      "token": "P_A"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 140,
-      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
-      "token": "P_A"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 140,
-      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
-      "token": "Q_A"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 148,
-      "path": "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
-      "token": "P_A"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 15,
-      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
-      "token": "Q_m"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 15,
-      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
-      "token": "Q_q"
     },
     {
       "detail": "active collision rule",
@@ -4493,12 +4991,6 @@
     },
     {
       "detail": "active collision rule",
-      "line": 111,
-      "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
-      "token": "m_i"
-    },
-    {
-      "detail": "active collision rule",
       "line": 113,
       "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
       "token": "Q_m"
@@ -4508,6 +5000,12 @@
       "line": 113,
       "path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
       "token": "Q_q"
+    },
+    {
+      "detail": "active collision rule",
+      "line": 25,
+      "path": "solid_RG_theory.md",
+      "token": "m_i"
     },
     {
       "detail": "active collision rule",
@@ -4532,15 +5030,15 @@
       "line": 356,
       "path": "solid_RG_theory.md",
       "token": "P,Q (local dummy measures)"
-    },
-    {
-      "detail": "active collision rule",
-      "line": 359,
-      "path": "solid_RG_theory.md",
-      "token": "C_t"
     }
   ],
   "immutable_evidence": [
+    {
+      "detail": "immutable released or audit occurrence",
+      "line": 79,
+      "path": "Theory/PIFB2.tex",
+      "token": "P (principal bundle)"
+    },
     {
       "detail": "immutable released or audit occurrence",
       "line": 659,
@@ -4576,6 +5074,18 @@
       "line": 3755,
       "path": "Theory/PIFB2.tex",
       "token": "m_i"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
+      "line": 50,
+      "path": "docs/audits/2026-08-11-ultradeep-expert-audit.md",
+      "token": "P (principal bundle)"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
+      "line": 45,
+      "path": "docs/audits/2026-08-12-ultradeep-expert-audit-wave-2.md",
+      "token": "P (principal bundle)"
     },
     {
       "detail": "immutable released or audit occurrence",
@@ -4621,6 +5131,12 @@
     },
     {
       "detail": "immutable released or audit occurrence",
+      "line": 146,
+      "path": "docs/audits/roadmap-review-2026-08-12/rm-01-audit-reconciliation.md",
+      "token": "P (principal bundle)"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
       "line": 456,
       "path": "docs/audits/roadmap-review-2026-08-12/rm-02-existence-analysis.md",
       "token": "P (principal bundle)"
@@ -4639,8 +5155,38 @@
     },
     {
       "detail": "immutable released or audit occurrence",
+      "line": 89,
+      "path": "docs/audits/roadmap-review-2026-08-12/rm-04-gauge-kinematics.md",
+      "token": "P (principal bundle)"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
+      "line": 941,
+      "path": "docs/audits/roadmap-review-2026-08-12/rm-04-gauge-kinematics.md",
+      "token": "P (principal bundle)"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
       "line": 55,
       "path": "docs/audits/roadmap-review-2026-08-12/rm-06-prior-art.md",
+      "token": "P (principal bundle)"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
+      "line": 95,
+      "path": "docs/audits/ultradeep-2026-08-11/audit-01-geometry.md",
+      "token": "P (principal bundle)"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
+      "line": 112,
+      "path": "docs/audits/ultradeep-2026-08-11/audit-01-geometry.md",
+      "token": "P (principal bundle)"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
+      "line": 124,
+      "path": "docs/audits/ultradeep-2026-08-11/audit-01-geometry.md",
       "token": "P (principal bundle)"
     },
     {
@@ -4675,6 +5221,12 @@
     },
     {
       "detail": "immutable released or audit occurrence",
+      "line": 52,
+      "path": "docs/audits/ultradeep-wave2-2026-08-12/wave2-01-constructions.md",
+      "token": "P (principal bundle)"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
       "line": 69,
       "path": "docs/audits/ultradeep-wave2-2026-08-12/wave2-01-constructions.md",
       "token": "P (principal bundle)"
@@ -4687,13 +5239,43 @@
     },
     {
       "detail": "immutable released or audit occurrence",
+      "line": 565,
+      "path": "docs/audits/ultradeep-wave2-2026-08-12/wave2-01-constructions.md",
+      "token": "P (principal bundle)"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
+      "line": 575,
+      "path": "docs/audits/ultradeep-wave2-2026-08-12/wave2-01-constructions.md",
+      "token": "P (principal bundle)"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
       "line": 758,
       "path": "docs/audits/ultradeep-wave2-2026-08-12/wave2-01-constructions.md",
       "token": "P (principal bundle)"
     },
     {
       "detail": "immutable released or audit occurrence",
+      "line": 845,
+      "path": "docs/audits/ultradeep-wave2-2026-08-12/wave2-01-constructions.md",
+      "token": "P (principal bundle)"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
       "line": 47,
+      "path": "docs/audits/ultradeep-wave2-2026-08-12/wave2-02-proofs.md",
+      "token": "P (principal bundle)"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
+      "line": 67,
+      "path": "docs/audits/ultradeep-wave2-2026-08-12/wave2-02-proofs.md",
+      "token": "P (principal bundle)"
+    },
+    {
+      "detail": "immutable released or audit occurrence",
+      "line": 112,
       "path": "docs/audits/ultradeep-wave2-2026-08-12/wave2-02-proofs.md",
       "token": "P (principal bundle)"
     },
@@ -4897,18 +5479,6 @@
     },
     {
       "detail": "immutable released or audit occurrence",
-      "line": 261,
-      "path": "docs/derivations/2026-08-14-pointwise-meta-agent-rg/evidence/direct-derivation.md",
-      "token": "C_A"
-    },
-    {
-      "detail": "immutable released or audit occurrence",
-      "line": 282,
-      "path": "docs/derivations/2026-08-14-pointwise-meta-agent-rg/evidence/direct-derivation.md",
-      "token": "C_A"
-    },
-    {
-      "detail": "immutable released or audit occurrence",
       "line": 361,
       "path": "docs/derivations/2026-08-14-pointwise-meta-agent-rg/evidence/direct-derivation.md",
       "token": "C_t"
@@ -5012,9 +5582,60 @@
   ],
   "registry": "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-registry.json",
   "registry_errors": [],
-  "registry_sha256": "cdf385fe44d322d92bf0d54ef1d094fdfe5398cc215cbb4f22c32b309e2412ca",
+  "registry_sha256": "e0866f1002289e4aa1f02db461ffc371965f4ec88c851c41bf01b7519699449d",
   "root": ".",
   "schema_version": "notation-collision-report/v1",
+  "source_coverage": {
+    "active_file_count": 33,
+    "active_files": [
+      "README.md",
+      "Theory/01_introduction.tex",
+      "Theory/02_geometry.tex",
+      "Theory/03_probability.tex",
+      "Theory/04_generative.tex",
+      "Theory/05_elbo.tex",
+      "Theory/05a_expfamily.tex",
+      "Theory/05b_local_collective_elbo.tex",
+      "Theory/05c_pullback_geometry.tex",
+      "Theory/05d_relational_inference.tex",
+      "Theory/06_gaussian.tex",
+      "Theory/06_general_coarsegraining.tex",
+      "Theory/06a_generative_gaussian.tex",
+      "Theory/07_general_renormalization.tex",
+      "Theory/07_restrictions.tex",
+      "Theory/07b_agent_network_rg.tex",
+      "Theory/08_infogeometry.tex",
+      "Theory/09_coarsegraining.tex",
+      "Theory/10_renormalization.tex",
+      "Theory/11_obstructions.tex",
+      "Theory/12_philosophy.tex",
+      "Theory/SPEC.md",
+      "Theory/appendix_claim_ledger.tex",
+      "Theory/appendix_notation.tex",
+      "Theory/appendix_numerical_provenance.tex",
+      "Theory/main.tex",
+      "docs/STATUS.md",
+      "docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/notation-standard.md",
+      "docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md",
+      "docs/superpowers/plans/2026-08-15-full-pointwise-meta-agent.md",
+      "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+      "overview.md",
+      "solid_RG_theory.md"
+    ],
+    "required_roots": [
+      {
+        "file_count": 1,
+        "root": "README.md",
+        "status": "PASS"
+      },
+      {
+        "file_count": 25,
+        "root": "Theory",
+        "status": "PASS"
+      }
+    ],
+    "status": "PASS"
+  },
   "status": "PASS",
   "target_digest": "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
   "unclassified_collision": []

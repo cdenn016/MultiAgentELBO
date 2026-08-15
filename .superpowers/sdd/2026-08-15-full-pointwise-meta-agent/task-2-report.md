@@ -2,7 +2,7 @@
 
 ## Status
 
-Complete. Phase 0 now has a digest-bound canonical notation standard, a typed JSON registry, and a deterministic fail-closed active-source collision scanner.
+Complete after review repair. Phase 0 now has a digest-bound canonical notation standard, a typed JSON registry, and a deterministic fail-closed active-source collision scanner.
 
 ## Authority and frozen target
 
@@ -35,7 +35,9 @@ The first self-test passed. The first full scan failed, as required, with exactl
 
 The scanner was not weakened. It now validates and applies the plan-defined active worklog boundary beginning at line 3588, classifying earlier worklog prose as immutable pre-Phase-0 evidence. The token boundary rejects the `\sum_i` false match. Geometric `\varpi_i` is canonical only in typed geometric contexts, while the occupancy self-test still fails. The active moving map was migrated semantically. A second scan exposed one additional `Theory/SPEC.md:204` line-wrap collision where sample `m_i` shared a line with the next sentence's word “law”; separating the sentences resolved it without adding an exception.
 
-## Final verification
+## Initial verification (superseded)
+
+The following results describe commit `18018a3ca380bb57bc9570e4533c134dc4b01e1a` and are superseded by the review-repair evidence below.
 
 - Scanner self-test: PASS.
 - Full scan: PASS with `0` unclassified collisions, `39` documented legacy occurrences, and `78` immutable-evidence occurrences.
@@ -50,5 +52,29 @@ The scanner was not weakened. It now validates and applies the plan-defined acti
 - Per task constraints, no pytest, Torch, GPU, model, or TeX command was run.
 
 ## Concerns and handoff
+
+## Review repair and superseding evidence
+
+The Task-2 review returned `C=0/I=2/M=1`. It identified active principal-bundle bare `P` occurrences missed by the narrow source roots, false-negative collision rules, and an incomplete approved-symbol registry.
+
+The repair:
+
+- migrated every identified active principal-bundle bare `P` in `Theory/03_probability.tex`, `Theory/04_generative.tex`, `Theory/05c_pullback_geometry.tex`, `Theory/05d_relational_inference.tex`, `Theory/06a_generative_gaussian.tex`, and the later notation block of `Theory/SPEC.md` to `\mathscr P_G`;
+- expanded active coverage to `README.md` and the full `Theory` tree, with `Theory/PIFB2.tex` and `Theory/verification` explicitly excluded from active scanning and retained as immutable evidence;
+- made active principal `P` fail unless an exact path/range-scoped, typed registry declaration matches, while separately testing immutable acceptance;
+- made `C_A` fail when untyped or assigned a forbidden type, and added typed-use, untyped-use, dual-type, and active operation fixtures;
+- recognized law-valued `m_i` expressed through `\mathcal P`, retained the frozen pointwise-RG occurrence only through an exact typed legacy declaration, and preserved typed samples;
+- added a 39-symbol expected manifest, including `r_*`, `\xi_A`, parent prior and posterior marginals, and both conditional attention rows;
+- validated every symbol field, allowed status, source existence, digest binding, exact manifest equality, required-root coverage, typed alias declaration, and path/range bounds; and
+- added adversarial fixtures for the reviewer false negatives, missing roots, missing sources, malformed values, incomplete manifests, active-versus-immutable behavior, and scoped legacy acceptance.
+
+Superseding verification at the repair revision:
+
+- Scanner self-test: PASS.
+- Full scan: PASS with `0` unclassified collisions, `15` documented legacy occurrences, and `91` immutable-evidence occurrences.
+- Expected-symbol manifest: `39`; source coverage: PASS over `33` active files, including `README.md` and `25` active `Theory` text sources.
+- Collision-report SHA-256: `0096B2668F53D7F21BBC6F0FA610C6240E371AF4D1B4940B49A60DAA16182C57`; a second scan reproduced identical bytes.
+- Registry/report JSON, rigorous-theory checkpoint, UTF-8, BOM, C0, LF/EOL, American-English, diff, exact-scope, and prior-package immutability gates: PASS.
+- Per task constraints, no pytest, Torch, GPU, model, or TeX command was run.
 
 The scanner is intentionally a bounded lexical-semantic gate, not a theorem prover. Its active-line boundary is the approved Phase-0 chronology boundary, not an occurrence allowlist. Released historical bytes remain immutable and visible in the generated inventory. Task 3 may consume this registry and must preserve the frozen target digest, use the single recognition-independent `C_A`, and retain all declared dependencies.

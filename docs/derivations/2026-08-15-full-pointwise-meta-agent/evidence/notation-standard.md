@@ -26,11 +26,14 @@ This standard is normative for the full pointwise parent program. It fixes symbo
 | Parent generative joint | $\mathbb P_A(Do,Dz\mid X)$ | Observation-preserving common-channel pushforward. Bare global $P_A$ is forbidden. |
 | Parent recognition law | $\mathbb Q_{A,o,X}$ | Common-channel pushforward of $\mathbb Q_{I,o,X}$. Bare global $Q_A$ is forbidden. |
 | Parent posterior | $\boldsymbol\Pi_{A,o,X}$ | Common-channel pushforward of the selected fine posterior. |
-| Parent belief/model marginals | $q_A^b,q_A^m$ | Derived projections of $\mathbb Q_{A,o,X}$ at locally fixed $(o,X)$; never substitutes for the correlated full law. |
+| Parent recognition marginals | $q_A^b,q_A^m$ | Derived projections of $\mathbb Q_{A,o,X}$ at locally fixed $(o,X)$; never substitutes for the correlated full law. |
+| Parent prior marginals | $p_A^b,p_A^m$ | Derived projections of the typed parent generative conditional; not independently chosen priors. |
+| Parent posterior marginals | $\boldsymbol\Pi_{A,o,X}^b,\boldsymbol\Pi_{A,o,X}^m$ | Derived projections of the selected parent posterior; not recognition marginals. |
 | Parent evaluation | $\operatorname{ev}_A(m_A)=K^{X_A}_{A,m_A}$ | Measurable normalized kernel in $\operatorname{Kern}(\boldsymbol\Xi_A,\mathsf B_A\times\mathsf O_A\times\mathsf H_A)$. |
 | Coarse channel | $C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A$ | One normalized recognition-independent Markov kernel. It is not an aggregation matrix or deterministic moving map. |
 | Moving deterministic map | $c_t$ | Smooth special case used only after a dynamics is declared; it is not $C_A$. |
 | Receiver occupancy | $\alpha_i^x$ | External positive normalized receiver mass for channel $x$; not a learned attention parameter or logit. |
+| Conditional attention rows | $\beta_{ij},\gamma_{ij}$ | Belief- and model-channel conditional source rows; neither row determines receiver occupancy. |
 | Joint edge event | $\eta_{ij}^q=\alpha_i^q\beta_{ij}$ and $\eta_{ij}^m=\alpha_i^m\gamma_{ij}$ | Normalized marked edge-event laws; exact attention RG pushes these laws, not rows alone. |
 | Intervention chain | $R\to E\to O$ | Retained input or parameter, intervened target, and retained output or observation. |
 | Action | $\mathscr S$ | Variational action; lowercase behavioral action requires a later declaration. |

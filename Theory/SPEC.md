@@ -218,7 +218,9 @@ The pointwise coarse object is one normalized recognition-independent Markov ker
 \(C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A\), not a matrix or deterministic map. A moving
 deterministic map is \(c_t\) only after a flow is declared. The parent model evaluation is
 \(\operatorname{ev}_A:m_A\mapsto K^{X_A}_{A,m_A}\). At locally fixed \((o,X)\),
-\(q_A^b,q_A^m\) are derived marginals; historical root \(Q_q,Q_m\) are scoped legacy aliases only.
+\(q_A^b,q_A^m\), \(p_A^b,p_A^m\), and
+\(\boldsymbol\Pi_{A,o,X}^b,\boldsymbol\Pi_{A,o,X}^m\) are derived marginals of their typed full
+laws or conditionals; historical root \(Q_q,Q_m\) are scoped legacy aliases only.
 
 **Population.** Agents `i\in V=\{1,\dots,N\}`. Design `D=\{c_a\}_{a=1}^M`, design index `a`.
 State latent `k_i\in\mathbb R^{K}`, model latent `m_i\in\mathbb R^{d_m}`, observation `o_i`.
@@ -517,15 +519,15 @@ fiber, and do not infer a manifold, common dominating measure, affine chart, nat
 convex cone, boundary, or Fisher metric merely because the elements are beliefs or models.
 
 The two law fibers are carried by the separate associated bundles
-`\mathcal E_b=P\times_{\widehat\rho_b}\mathcal B_b` and
-`\mathcal E_m=P\times_{\widehat\rho_m}\mathcal B_m`. The representations of the common group `G`
+`\mathcal E_b=\mathscr P_G\times_{\widehat\rho_b}\mathcal B_b` and
+`\mathcal E_m=\mathscr P_G\times_{\widehat\rho_m}\mathcal B_m`. The representations of the common group `G`
 may be inequivalent and may act on different-dimensional fibers. The cross maps `\Phi` and
 `\widetilde\Phi` are declared morphisms of these associated bundles over
 `\operatorname{id}_{\mathcal C}`. Their existence is additional structure: the relative principal
 frame `h_i` does not supply them, and inequivalent linear representations admit a nonzero linear
 cross map only when an appropriate intertwiner exists. Neither map forces equal ranks, inverse
 maps, or parallelness. A shared-frame model imposes `u_i^b=u_i^m`; it does not follow merely from
-using one `P`. Compatibility with either of the two connections remains a separate condition.
+using one `\mathscr P_G`. Compatibility with either of the two connections remains a separate condition.
 
 The selected differential tier is a finite-dimensional smooth **parametrized-measure model**. State
 its parameter manifold and require differentiability in quadratic mean, square-integrable score
