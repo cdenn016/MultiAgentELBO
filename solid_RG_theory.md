@@ -280,21 +280,21 @@ The canonical sources are [Theory/06_general_coarsegraining.tex](Theory/06_gener
 
 ## 9. Inference flow is optional and typed after the fact
 
-Only after declaring a fine flow $\dot y=X_t(y)$ may $t$ be called an inference-flow parameter. For a $C^1$ moving coarse map $C_t$ and $z(t)=C_t(y(t))$,
+Only after declaring a fine flow $\dot y=X_t(y)$ may $t$ be called an inference-flow parameter. For a $C^1$ moving coarse map $c_t$ and $z(t)=c_t(y(t))$,
 
 $$
 \dot z
-=\partial_tC_t(y)+DC_t(y)X_t(y).
+=\partial_t c_t(y)+D c_t(y)X_t(y).
 $$
 
 Exact dynamic semiconjugacy to $\dot z=\overline X_t(z)$ is the equation
 
 $$
-\partial_tC_t+DC_tX_t
-=\overline X_t\circ C_t.
+\partial_t c_t+D c_tX_t
+=\overline X_t\circ c_t.
 $$
 
-The $\partial_tC_t$ term disappears only for a frozen coarse map. The parameter $t$ is not a base coordinate, physical time, or RG depth. ESTABLISHED.
+The $\partial_t c_t$ term disappears only for a frozen coarse map. The parameter $t$ is not a base coordinate, physical time, or RG depth. ESTABLISHED.
 
 For frozen memberships and the constant-metric Gaussian or feature flow
 
