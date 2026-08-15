@@ -79,13 +79,13 @@
       "core_mechanism": "Construct direct witnesses for marginal nonuniqueness, split-channel failure, evaluator mismatch, and holonomy overreaches.",
       "invariant_or_obstruction": "The five negative conjuncts require direct counterexamples and cannot be closed by the affirmative proof.",
       "target_obligation_ids": ["NEG-MARGINAL-DETERMINATION","NEG-SPLIT-CHANNEL-VFE","NEG-MODEL-MARGINAL-EVALUATION","NEG-TRIVIAL-HOLONOMY-AGREEMENT","NEG-MARGINAL-HOLONOMY-JOINT"],
-      "obligations": ["Task 4 must provide exact in-domain derivations and deterministic corroboration."],
+      "obligations": ["Task 5 must independently reconstruct and adversarially challenge the exact finite derivations before release."],
       "bridge": "Finite categorical probability algebra.",
       "failure_test": "Any proposed witness fails its frozen normalization, marginal, conditional, KL, or action property.",
-      "verified_results": [],
-      "open_gaps": ["All five Task-4 counterexample claims remain CANDIDATE."],
+      "verified_results": ["NEG-MARGINAL-DETERMINATION","NEG-MARGINAL-HOLONOMY-JOINT","NEG-MODEL-MARGINAL-EVALUATION","NEG-SPLIT-CHANNEL-VFE","NEG-TRIVIAL-HOLONOMY-AGREEMENT"],
+      "open_gaps": ["No Task-4 mathematical gap remains; Task-5 independent reconstruction and release remain pending."],
       "novelty_fingerprint": "finite categorical tables + direct counterexample mechanism + five universal-overreach obstructions + frozen-type bridge + negative obligations",
-      "disposition": "open"
+      "disposition": "certified_in_scope"
     }
   ]
 }

@@ -30,6 +30,45 @@
       ],
       "artifact_path": "evidence/direct-derivation.md",
       "artifact_sha256": "52015760e5b9ee2f07e983039d93a526a120e51753e95c650cc70303e1f3fa12"
+    },
+    {
+      "id": "EV-TASK4-COUNTEREXAMPLE-DERIVATIONS",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Direct finite categorical derivations of the exact lossy common-channel witness and all five existential negative claims: marginal nonuniqueness, split-channel VFE failure, evaluator mismatch on positive generative model mass, trivial holonomy without agreement, and invariant marginals with noninvariant joint dependence.",
+      "side_conditions": [
+        "All probability spaces are finite and categorical; no Gaussian assumption or approximation is used.",
+        "Structural X is fixed outside C_A; O, Xi_A, and H_A are singletons in the main witness, and C_A retains only random (B,M).",
+        "The VFE orientation is KL(Q||Pi): fine log(2), coarse zero, and Delta_A log(2); the reverse fine KL is infinite and is not substituted.",
+        "The split-channel witness violates the common-channel hypothesis and therefore refutes only an unconditional split-channel identity.",
+        "The evaluator mismatch is measured on the generative P_A model marginal, not inferred from q_A^m."
+      ],
+      "artifact_path": "evidence/counterexample-proofs.md",
+      "artifact_sha256": "59c38ed4181b2f8fbf2b573c79cb7257516c7e2d91e44dbea870c953406de6fc"
+    },
+    {
+      "id": "EV-TASK4-FINITE-WITNESS-SCRIPT",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Deterministic standard-library transcription checks using Fraction for every finite probability calculation, with symbolic logarithmic labels primary and Decimal values corroborative only.",
+      "side_conditions": [
+        "The script contains no bare assert and runs identically under normal execution and python -O.",
+        "The script is corroboration and is not mathematical closure evidence."
+      ],
+      "artifact_path": "evidence/finite_nongaussian_witness.py",
+      "artifact_sha256": "204effc256fcc89d9b6cbaa80d33b88eac845b7bfe2694653b0e204eb4760b48"
+    },
+    {
+      "id": "EV-TASK4-FINITE-WITNESS-OUTPUT",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Captured deterministic PASS output for 51 exact finite checks, including the parent table, forward and reverse KL orientations, all five counterexamples, and the exact witness totals.",
+      "side_conditions": [
+        "Two successive runs, one normal and one under python -O, produced this identical SHA-256.",
+        "Decimal log values are readability-only corroboration; symbolic log(2), log(3)/2, zero, and +infinity labels are primary."
+      ],
+      "artifact_path": "evidence/finite-nongaussian-output.json",
+      "artifact_sha256": "7092ec0a0dce059c2fcfc177ec288b0b708481aa9eace7a6ee657e3a1dc21e0c"
     }
   ],
   "claims": [
@@ -58,10 +97,10 @@
     {"id":"HOLONOMY-RETENTION","statement":"When H_A and C_A explicitly retain roots, raw root-framed holonomy, and boundary marks, full parent pushforwards retain their joint laws and correlations, with no quotient, averaged-link, or holonomy-blind claim.","quantifiers":"For every parent channel satisfying ASM-HOLONOMY-RETENTION-DATA.","kind":"MATHEMATICAL","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","state":"EVIDENCE_VERIFIED","assumption_ids":["ASM-HOLONOMY-RETENTION-DATA","ASM-COMMON-CHANNEL"],"evidence_ids":["EV-TASK3-DIRECT-DERIVATION"],"bridge_premise_ids":[],"falsifier":"A retained record measurable in H_A whose joint parent distribution is not its pushforward through C_A."},
     {"id":"HOLONOMY-ALTERNATIVE","statement":"A concrete parent may declare either the fully hypothesis-backed holonomy-blind covariance branch or the raw-retention branch. No converse or reconstruction theorem from marginal data is claimed here; membership selection remains OPEN.","quantifiers":"For every concrete parent that declares one branch with that branch's hypotheses.","kind":"MATHEMATICAL","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","state":"EVIDENCE_VERIFIED","assumption_ids":["ASM-HOLONOMY-ALTERNATIVE-DECLARATION"],"evidence_ids":["EV-TASK3-DIRECT-DERIVATION"],"bridge_premise_ids":[],"falsifier":"A declared branch satisfying its full hypotheses but not its stated full-law conclusion."},
     {"id":"DYNAMICS-SCOPE","statement":"For a separately declared differentiable moving-map special case the exact semiconjugacy defect is partial_t c_t + D c_t V_t - Vbar_t o c_t. For Markov evolution exact closure is semigroup intertwining; a generator identity is sufficient only with the declared invariant domain or core, semigroup-generation hypotheses, and uniqueness or closure theorem that lifts it to semigroup intertwining. The static construction proves neither.","quantifiers":"For every separately declared special case satisfying ASM-DYNAMIC-SPECIAL-CASE.","kind":"MATHEMATICAL","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","state":"EVIDENCE_VERIFIED","assumption_ids":["ASM-DYNAMIC-SPECIAL-CASE"],"evidence_ids":["EV-TASK3-DIRECT-DERIVATION"],"bridge_premise_ids":[],"falsifier":"A differentiable trajectory violating the moving-map chain rule, or a claimed Markov closure lacking semigroup intertwining or the stated generator-to-semigroup hypotheses."},
-    {"id":"NEG-MARGINAL-DETERMINATION","statement":"There exist finite parent laws with identical belief and model marginals but distinct dependence, refuting universal reconstruction of the full parent from those marginals.","quantifiers":"There exists the Task-4 finite categorical witness within the frozen types.","kind":"MATHEMATICAL","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","state":"CANDIDATE","assumption_ids":[],"evidence_ids":[],"bridge_premise_ids":[],"falsifier":"Failure of the Task-4 witness to have identical marginals and distinct joints."},
-    {"id":"NEG-SPLIT-CHANNEL-VFE","statement":"There exist finite data for which different recognition and posterior/generative channels violate the unconditional common-channel contraction and VFE identity.","quantifiers":"There exists the Task-4 finite categorical split-channel witness within the frozen types.","kind":"MATHEMATICAL","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","state":"CANDIDATE","assumption_ids":[],"evidence_ids":[],"bridge_premise_ids":[],"falsifier":"Failure of the Task-4 split-channel witness to produce the stated coarse mismatch."},
-    {"id":"NEG-MODEL-MARGINAL-EVALUATION","statement":"There exist normalized model marginals and a predeclared evaluation family that disagree with the pushed parent generative conditional, refuting model-marginal sufficiency for evaluation compatibility.","quantifiers":"There exists the Task-4 finite categorical evaluation-mismatch witness within the frozen types.","kind":"MATHEMATICAL","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","state":"CANDIDATE","assumption_ids":[],"evidence_ids":[],"bridge_premise_ids":[],"falsifier":"Failure of the Task-4 predeclared evaluator to disagree on positive parent mass."},
-    {"id":"NEG-TRIVIAL-HOLONOMY-AGREEMENT","statement":"There exist trivial-holonomy data with unequal transported laws, refuting trivial holonomy as sufficient for belief or model agreement.","quantifiers":"There exists the Task-4 finite tree witness within the frozen types.","kind":"MATHEMATICAL","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","state":"CANDIDATE","assumption_ids":[],"evidence_ids":[],"bridge_premise_ids":[],"falsifier":"Failure of the Task-4 trivial-holonomy witness to retain unequal laws."},
-    {"id":"NEG-MARGINAL-HOLONOMY-JOINT","statement":"There exist full parent laws with invariant coordinate marginals but noninvariant joint dependence, refuting marginal holonomy invariance as sufficient for full-law invariance.","quantifiers":"There exists the Task-4 finite correlated/anticorrelated witness within the frozen types.","kind":"MATHEMATICAL","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","state":"CANDIDATE","assumption_ids":[],"evidence_ids":[],"bridge_premise_ids":[],"falsifier":"Failure of the Task-4 witness to have invariant marginals and a changed joint under the declared action."}
+    {"id":"NEG-MARGINAL-DETERMINATION","statement":"There exist finite parent laws with identical belief and model marginals but distinct dependence, refuting universal reconstruction of the full parent from those marginals.","quantifiers":"There exists the Task-4 finite categorical witness within the frozen types.","kind":"MATHEMATICAL","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","state":"EVIDENCE_VERIFIED","assumption_ids":[],"evidence_ids":["EV-TASK4-COUNTEREXAMPLE-DERIVATIONS","EV-TASK4-FINITE-WITNESS-SCRIPT","EV-TASK4-FINITE-WITNESS-OUTPUT"],"bridge_premise_ids":[],"falsifier":"Failure of the Task-4 witness to have identical marginals and distinct joints."},
+    {"id":"NEG-SPLIT-CHANNEL-VFE","statement":"There exist finite data for which different recognition and posterior/generative channels violate the unconditional common-channel contraction and VFE identity.","quantifiers":"There exists the Task-4 finite categorical split-channel witness within the frozen types.","kind":"MATHEMATICAL","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","state":"EVIDENCE_VERIFIED","assumption_ids":[],"evidence_ids":["EV-TASK4-COUNTEREXAMPLE-DERIVATIONS","EV-TASK4-FINITE-WITNESS-SCRIPT","EV-TASK4-FINITE-WITNESS-OUTPUT"],"bridge_premise_ids":[],"falsifier":"Failure of the Task-4 split-channel witness to produce the stated coarse mismatch."},
+    {"id":"NEG-MODEL-MARGINAL-EVALUATION","statement":"There exist normalized model marginals and a predeclared evaluation family that disagree with the pushed parent generative conditional, refuting model-marginal sufficiency for evaluation compatibility.","quantifiers":"There exists the Task-4 finite categorical evaluation-mismatch witness within the frozen types.","kind":"MATHEMATICAL","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","state":"EVIDENCE_VERIFIED","assumption_ids":[],"evidence_ids":["EV-TASK4-COUNTEREXAMPLE-DERIVATIONS","EV-TASK4-FINITE-WITNESS-SCRIPT","EV-TASK4-FINITE-WITNESS-OUTPUT"],"bridge_premise_ids":[],"falsifier":"Failure of the Task-4 predeclared evaluator to disagree on positive parent mass."},
+    {"id":"NEG-TRIVIAL-HOLONOMY-AGREEMENT","statement":"There exist trivial-holonomy data with unequal transported laws, refuting trivial holonomy as sufficient for belief or model agreement.","quantifiers":"There exists the Task-4 finite tree witness within the frozen types.","kind":"MATHEMATICAL","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","state":"EVIDENCE_VERIFIED","assumption_ids":[],"evidence_ids":["EV-TASK4-COUNTEREXAMPLE-DERIVATIONS","EV-TASK4-FINITE-WITNESS-SCRIPT","EV-TASK4-FINITE-WITNESS-OUTPUT"],"bridge_premise_ids":[],"falsifier":"Failure of the Task-4 trivial-holonomy witness to retain unequal laws."},
+    {"id":"NEG-MARGINAL-HOLONOMY-JOINT","statement":"There exist full parent laws with invariant coordinate marginals but noninvariant joint dependence, refuting marginal holonomy invariance as sufficient for full-law invariance.","quantifiers":"There exists the Task-4 finite correlated/anticorrelated witness within the frozen types.","kind":"MATHEMATICAL","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","state":"EVIDENCE_VERIFIED","assumption_ids":[],"evidence_ids":["EV-TASK4-COUNTEREXAMPLE-DERIVATIONS","EV-TASK4-FINITE-WITNESS-SCRIPT","EV-TASK4-FINITE-WITNESS-OUTPUT"],"bridge_premise_ids":[],"falsifier":"Failure of the Task-4 witness to have invariant marginals and a changed joint under the declared action."}
   ]
 }
