@@ -1,0 +1,11 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-031dc5f56a5463bf4069357adca9a9dd896defa0aadd87fa342eb2d5e4eb7a4f",
+  "target_digest": "031dc5f56a5463bf4069357adca9a9dd896defa0aadd87fa342eb2d5e4eb7a4f",
+  "checkpoint": "frozen target",
+  "target_claim": "target",
+  "terminal_status": null,
+  "certificate_claim": null,
+  "strongest_result": "No theorem, construction, or counterexample has been established.",
+  "unresolved_obligations": ["Prove or refute every conjunct of the frozen operational-intervention target under its exact hypotheses."]
+}
