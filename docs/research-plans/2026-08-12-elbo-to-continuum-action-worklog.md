@@ -3244,3 +3244,150 @@ existence or uniqueness of a minimal realization, arbitrary latent-dilation equi
 soft/stochastic/continuous interventions, autonomous agency, continuum/bundle/gauge/RG extensions,
 VFE emergence, and any informational identification with physical geometry, action, time, units,
 constants, or ontology remain **OPEN**.
+
+---
+
+## 9. 2026-08-14 governing correction -- fixed-\(r_*\) pointwise meta-agent RG
+
+This chronological correction preserves the investigation above while making
+[solid_RG_theory.md](../../solid_RG_theory.md) and
+docs/derivations/2026-08-14-pointwise-meta-agent-rg/ governing for the exact pointwise result.
+The certificate target digest is
+48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06, with terminal status
+**COMPLETE_AFFIRMATIVE** for its frozen conjunction. The result fixes one base point \(r_*\); it is
+not a theorem over an overlap region \(R\).
+
+### 9.1 Exact channelwise agreement and the parent law
+
+For each channel \(x\in\{q,m\}\), use its own positive-support graph, reciprocal transports
+\(T_{ij}^q=\Omega_{ij}\) or \(T_{ij}^m=\widetilde\Omega_{ij}\), and normalized directed event law
+
+\[
+\eta_{ij}^q=\alpha_i^q\beta_{ij},
+\qquad
+\eta_{ij}^m=\alpha_i^m\gamma_{ij}.
+\]
+
+On a connected underlying positive-support graph, the exact theorem is
+
+\[
+\sum_{i,j:\eta_{ij}^x>0}\eta_{ij}^x
+D_{\mathrm{KL}}\!\left(p_i^x\middle\Vert(T_{ij}^x)_\#p_j^x\right)=0
+\]
+
+if and only if every positive-support edge agrees after transport, if and only if transport to a
+chosen root gives one unique common root law \(Q_x\) stabilized by every based holonomy:
+\(H_\#Q_x=Q_x\). Applied separately, the two channels yield only the typed marginal pair
+\((Q_q,Q_m)\); they do not determine a joint belief-model law, a recognition law, or a VFE agent.
+
+Full-frame flatness \(H=I\) and law stabilization \(H_\#Q_x=Q_x\) are different conditions.
+Flatness is not sufficient for agreement, since laws on a tree can disagree, and it is not
+necessary, since nonidentity holonomy can stabilize a law. Based loops must be checked on a
+fundamental generating family. Triangles suffice only under the additional normal-generation or
+filled-complex hypothesis; they do not suffice on a generic graph.
+
+After transporting full laws \(P_i\) to one root, the unique unrestricted forward-KL parent is the
+mixture \(M=\sum_iw_iP_i\), by the exact identity
+
+\[
+\sum_iw_iD_{\mathrm{KL}}(P_i\Vert R)
+=\sum_iw_iD_{\mathrm{KL}}(P_i\Vert M)+D_{\mathrm{KL}}(M\Vert R).
+\]
+
+Approximate agreement has a fixed-tree total-variation bound, not a KL triangle inequality. Choose
+one rooted spanning tree \(\mathsf T_x\) of the connected undirected support graph and orient every
+selected edge in a direction with positive event weight. Transport each channel law to the root
+along its unique tree path, write the result as \(P_i^x\), set
+\(M_x=\sum_jw_j^xP_j^x\), let \(\eta_{\min}^x\) be the minimum selected directed event weight, and
+let \(d_x\) be the tree diameter. If \(\mathcal D_x\leq\varepsilon_x\),
+
+\[
+\operatorname{TV}(P_u^x,P_v^x)
+\leq d_x\sqrt{\frac{\varepsilon_x}{2\eta_{\min}^x}},
+\qquad
+\operatorname{TV}(P_i^x,M_x)
+\leq d_x\sqrt{\frac{\varepsilon_x}{2\eta_{\min}^x}}.
+\]
+
+Here \(d_x\) and \(\eta_{\min}^x\) belong to that one selected tree; changing the tree changes the
+valid constant.
+
+### 9.2 Exact scalar RG and the marked closure boundary
+
+Coarse-graining pushes the normalized joint event law \(\eta^x\), never a bare conditional row
+\(\beta\) or \(\gamma\). For any normalized endpoint kernel \(K^x(A,B\mid i,j)\), including but not
+requiring a conditionally independent product kernel,
+
+\[
+\eta_{AB}^{x,c}=\sum_{i,j}\eta_{ij}^xK^x(A,B\mid i,j),
+\qquad
+\alpha_A^{x,c}=\sum_B\eta_{AB}^{x,c},
+\qquad
+a_{AB}^{x,c}=\eta_{AB}^{x,c}/\alpha_A^{x,c}
+\]
+
+on positive receiver mass. This endpoint pushforward followed by disintegration is normalized and
+composes exactly under typed nested kernels. It applies separately to the belief and model channels.
+
+Marked closure is certified only on the incidence-supported, component-rooted tier. For every parent
+incidence set \(V_A=\{i:C(A\mid i)>0\}\), take the connected components of the induced
+positive-support graph separately in each channel. Each induced component has its own root and rooted
+spanning tree. The exact state retains component-indexed event masses and conditional root-relative
+boundary-mark laws; separately, it retains each component's internal based holonomy. Summing
+over the source and receiver component indices recovers the scalar \((A,B)\) event mass. Collapsing
+disconnected components to one parent root needs another declared coarse channel.
+
+Hyperedge and shared-factor closure remain **OPEN** without the complete joint-density/factorization hypotheses of Theory/07b_agent_network_rg.tex, or retention of an arbitrary correlated baseline as one global factor with law-level pushforward. Path-law and memory closure likewise
+remain **OPEN** without the separately declared full path law, transports, and, for an exact linear
+memory recurrence, the additional linear-dynamic hypotheses in that chapter.
+
+### 9.3 Memberships, exact VFE closure, and the parameter \(t\)
+
+Hard partitions and normalized soft memberships are Markov kernels and compose by
+
+\[
+C_{20}(B\mid i)=\sum_A C_{21}(B\mid A)C_{10}(A\mid i).
+\]
+
+A child may have several nonzero soft memberships without duplicating mass. A literal replicated
+cover with several unit incidences in one column is not normalized, retains multiplicity, and is not
+certified by this construction.
+
+Exact VFE closure requires one common, normalized, recognition-independent Markov channel \(C\)
+applied to both the recognition law \(Q_o\) and posterior \(\Pi_o\). The exact chain rule is
+
+\[
+\mathcal F_o(Q_o)=\mathcal F_o^c(Q_oC)+\Delta_C(Q_o,\Pi_o),
+\qquad
+\Delta_C=\int D_{\mathrm{KL}}\!\left(
+Q_o(\cdot\mid z)\middle\Vert\Pi_o(\cdot\mid z)
+\right)(Q_oC)(dz)\geq0.
+\]
+
+For finite fine KL, \(\Delta_C=0\) exactly when the discarded conditional recognition and posterior
+laws agree \((Q_oC)\)-almost surely. Marginal agreement alone does not close this defect.
+
+The symbol \(t\) denotes an inference-flow parameter only after such a flow is explicitly declared.
+For a moving coarse map, \(\dot z=\partial_tC_t+DC_tX_t\); the first term cannot be omitted unless the
+coarse map is frozen. This \(t\) is not a base coordinate, physical time, or RG depth.
+
+### 9.4 Exact supersession boundary and retained open obligations
+
+This section supersedes only the historical overclaims in §3e.2(ii), (iv), and (vi), and the
+synthesis following §3e.2(iv): holonomy stabilization makes the exactly aligned root marginal
+path-independent, but it does not by itself close the marked network, select a partition, make a raw
+spectral gap an intrinsic order parameter, reduce a structure group, or define a dynamical RG flow.
+It also supersedes §3h.3's universal order-parameter reading, the
+\(\lambda_0\)/flat/meta-agent/dynamical equivalence chain in §3h.4, and §3i.3's claim that
+free-energy descent derives meta-agent formation. Raw connection spectra and KL thresholds remain
+finite diagnostics.
+
+Preserved are §3e.2(i)'s correct stabilizer implication, §3h.2's warning that non-triangular cycles
+must not be ignored, the later corrections in §§3f and 5.3, and §3i.2's Gibbs-Haar model only as an
+exact conditional construction after declaring a new compact-group random-link generative law. That
+conditional model is not a derivation of curvature dynamics from the current fixed-link ELBO.
+
+Still **OPEN/TODO** are extension over \(R\), patch gluing, active-set changes, canonical partition
+selection, adaptive or dynamically selected memberships, autonomous agency, nonlinear full-law VFE
+semiconjugacy, physical time, and continuum limits. Nothing in this pointwise certificate resolves
+those obligations.
