@@ -1,7 +1,7 @@
 {
   "schema_version": "rigorous-theory-search/v1",
-  "contract_id": "contract-sha256-473310227c0819e1dd23a495970893d5c5b0bac60aae77584884104d5043e3c7",
-  "target_digest": "473310227c0819e1dd23a495970893d5c5b0bac60aae77584884104d5043e3c7",
+  "contract_id": "contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
+  "target_digest": "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
   "execution_identity": {
     "worktree": "C:/tmp/MultiAgentELBO-full-meta-agent-implementation-20260815",
     "branch": "codex/full-meta-agent-implementation-20260815",
@@ -34,7 +34,9 @@
     "boundary_conditions": [
       "The construction is pointwise at fixed r_* and fixed X.",
       "The observation coordinate is unchanged by C_A, so O_A=O and o_A=o.",
-      "No overlap-patch, base-manifold, dynamical, or physical boundary condition is asserted."
+      "This pointwise target excludes a full geometric meta-agent and patchwise gluing over overlap or base regions.",
+      "It excludes canonical membership or channel selection and reconstruction of a full parent law from its marginals.",
+      "It excludes Gaussian generality and the downstream comparison theorem."
     ],
     "symmetries": [
       "For the holonomy-blind alternative, declared joint fine and parent holonomy actions, C_A equivariance, full-law covariance or invariance, and evaluation compatibility are required.",
@@ -49,7 +51,8 @@
       "The bridge disintegrations, support conditions, and integrability needed for the exact VFE chain identity are declared before the identity is used."
     ],
     "modeling_postulates": [
-      "Calling the completed pointwise datum a candidate parent is a naming convention only; it does not postulate agency, autonomy, ontology, or physical interpretation."
+      "Calling the completed pointwise datum a candidate parent is a naming convention only; it does not postulate autonomy, agency, ontology, or physical interpretation.",
+      "The target declines to treat analyst-declared interventions as ontic actions and declines sustained nonequilibrium or unique recovered physics."
     ],
     "search_priors": [],
     "permitted_theorems": [
@@ -58,7 +61,7 @@
       "KL data processing and the common-channel conditional-KL chain rule under the recorded finiteness hypotheses."
     ],
     "negative_certificate_kind": "COUNTEREXAMPLE",
-    "falsification_criterion": "A single direct finite categorical counterexample within the stated types refutes any universal negative conjunct. Any failure to derive the affirmative construction from all frozen premises leaves the affirmative conjunct unresolved rather than proved by examples.",
+    "falsification_criterion": "Each direct finite categorical witness within the stated types establishes its existential negative conjunct by refuting the corresponding universal overreach. An affirmative conjunct is falsified only by an in-domain datum satisfying every frozen premise but violating a stated affirmative conclusion. Inability to derive the affirmative construction leaves that conjunct unresolved.",
     "literature_policy": "Use only checked primary sources or released repository derivations for invoked theorems; record exact statements and hypothesis mappings. No novelty or priority claim is made."
   }
 }

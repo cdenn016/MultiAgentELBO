@@ -1,7 +1,7 @@
 {
   "schema_version": "rigorous-theory-search/v1",
-  "contract_id": "contract-sha256-473310227c0819e1dd23a495970893d5c5b0bac60aae77584884104d5043e3c7",
-  "target_digest": "473310227c0819e1dd23a495970893d5c5b0bac60aae77584884104d5043e3c7",
+  "contract_id": "contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
+  "target_digest": "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
   "assumptions": [],
   "evidence": [],
   "claims": [
@@ -10,12 +10,12 @@
       "statement": "Mixed target. Conditional-universal affirmative conjunct: for every declared standard-Borel fine and parent datum satisfying the frozen premises, construct the full normalized pointwise parent probabilistic datum by one normalized recognition-independent channel, derive its parent posterior and recognition laws and their projections, prove the exact VFE chain identity with its nonnegative conditional-KL defect and equality criterion, and establish exactly one declared full-law holonomy alternative. Negative conjuncts: Task 4 must give direct in-domain counterexamples to marginal determination of a full parent law, unconditional split-channel VFE identities, model-marginal sufficiency for evaluation compatibility, trivial-holonomy sufficiency for agreement, and marginal invariance sufficiency for joint-law invariance.",
       "quantifiers": "Affirmative: for every finite nonempty active set I at one fixed r_*, every declared standard-Borel fine random space Y_I and parent factors B_A, M_A, Xi_A, H_A, every fixed structural datum X with X_A=chi_A(X), every admitted regular observation o with finite unchanged evidence, every normalized fixed generative law P_I(do,dY|X), every selected posterior Pi_{I,o,X} derived from that law, every normalized correlated recognition law Q_{I,o,X} absolutely continuous with respect to Pi_{I,o,X}, every normalized measurable recognition-independent Markov kernel C_A:Y_I~>Z_A=B_A x M_A x Xi_A x H_A, every normalized measurable parent evaluation ev_A:M_A->Kern(Xi_A,B_A x O_A x H_A), and every almost-sure evaluation-compatible parent conditional, the stated parent-law, posterior, projection, VFE, and declared holonomy-alternative conclusions hold. Negative: there exist declared finite categorical data within the frozen types witnessing each listed overreach failure.",
       "kind": "MATHEMATICAL",
-      "target_digest": "473310227c0819e1dd23a495970893d5c5b0bac60aae77584884104d5043e3c7",
+      "target_digest": "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
       "state": "CANDIDATE",
       "assumption_ids": [],
       "evidence_ids": [],
       "bridge_premise_ids": [],
-      "falsifier": "A direct finite categorical witness within the frozen types for any listed universal overreach, or a failed affirmative derivation from the frozen premises."
+      "falsifier": "Each direct finite categorical witness establishes its existential negative conjunct by refuting the corresponding listed universal overreach. An affirmative conjunct is falsified only by an in-domain datum satisfying every frozen premise but violating a stated affirmative conclusion; inability to derive it remains unresolved."
     }
   ]
 }
