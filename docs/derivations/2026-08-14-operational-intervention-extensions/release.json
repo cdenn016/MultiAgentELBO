@@ -2,10 +2,17 @@
   "schema_version": "rigorous-theory-search/v1",
   "contract_id": "contract-sha256-af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
   "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
-  "checkpoint": "frozen target",
+  "checkpoint": "release after direct proof, exact symbolic determinant and counterexamples, imported-theorem hypothesis mapping, atomic dependency closure, independent reconstruction, oracle erasure, and twenty-one adversarial attacks",
   "target_claim": "target",
-  "terminal_status": null,
-  "certificate_claim": null,
-  "strongest_result": "No theorem, construction, or counterexample has been established.",
-  "unresolved_obligations": ["Prove or refute every conjunct of the frozen operational-intervention target under its exact hypotheses."]
+  "terminal_status": "COMPLETE_AFFIRMATIVE",
+  "certificate_claim": "target",
+  "strongest_result": "The complete frozen operational-intervention conjunction is proved: arbitrary-monoid contextual quotient universality with finite-only cardinality minimality; compact continuous quotient realization; normalized finite soft right-override semantics and exact marked BSC separation; independent affine randomized semantics with full contextual rank, a separately certified hard q-star response-orbit obstruction, and randomized nonisomorphism; declared standard-Borel response measurability and a compact-Feller quotient tier; and circle heat passive equality with strict one-way Blackwell order and proper soft response-set inclusion. All conclusions retain the ordered typed boundary and one global response intertwiner.",
+  "unresolved_obligations": [
+    "Target-erasing arbitrary-soft comparison requires a different frozen morphism category and new invariants.",
+    "Correlated or shared-noise randomization requires joint selector or coupling semantics beyond independent convolution.",
+    "Point interventions inferred from observational conditionals require controlled pointwise versions; measurability alone does not supply quotient smoothness.",
+    "Useful noncompact quotient regularity requires additional hypotheses beyond the compact theorem.",
+    "Canonical raw latent/DAG realization requires a realization category, morphisms, complexity, reachability, observability, and gauge controls.",
+    "Fixed-observation ELBO, posterior, factorization, agency, gauge/RG, continuum, and ontology claims require separate contracts and evidence."
+  ]
 }

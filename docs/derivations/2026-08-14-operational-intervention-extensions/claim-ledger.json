@@ -2,18 +2,311 @@
   "schema_version": "rigorous-theory-search/v1",
   "contract_id": "contract-sha256-af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
   "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
-  "assumptions": [],
-  "evidence": [],
+  "assumptions": [
+    {
+      "id": "ASM-ALGEBRAIC-RESPONSE-SYSTEM",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "A is a total unital monoid, Phi:A->Y is a total response map, and every compared algebraic response-compatible triple has a surjective unital q with Phi=psi q."
+    },
+    {
+      "id": "ASM-COMPACT-CONTINUOUS-RESPONSE",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "For the compact theorem, A is compact metrizable with jointly continuous multiplication, Y is metrizable Hausdorff, Phi is continuous, and every compared topological triple has compact Hausdorff B with q and psi continuous and q a quotient map."
+    },
+    {
+      "id": "ASM-FINITE-SOFT-DAG",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "The finite soft tier uses a finite DAG on finite state spaces, normalized baseline kernels, compact typed palettes inside finite-dimensional stochastic-kernel polytopes with their Euclidean evaluation topology, isolated bottom symbols, and coordinatewise right override."
+    },
+    {
+      "id": "ASM-TYPED-GLOBAL-COMPARISON",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "Every admitted comparison is induced by invertible typed state maps preserving ordered R-input, E-mediator, and O-output roles, one compatible protocol-monoid map Theta, and one protocol-independent global boundary-response map U intertwining every protocol; time reversal, R-O exchange, and target erasure are excluded."
+    },
+    {
+      "id": "ASM-FIXED-HARD-BSC-SEMANTICS",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "The released fifteen hard protocol classes and their fixed right-override response semantics are used for L(1/4,1/3) and L(1/3,1/4) at passive crossover 5/12; hard nonisomorphism is not assumed and is separately proved or mapped."
+    },
+    {
+      "id": "ASM-INDEPENDENT-RANDOMIZATION",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "Sequential randomized selectors are sampled independently, compose by convolution on the finite hard monoid, and have affine unmarked retained-law response; admitted randomized isomorphisms are affine, unital, convolution preserving, and use the single global U."
+    },
+    {
+      "id": "ASM-DECLARED-BOREL-MECHANISMS",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "The finite standard-Borel tier starts from explicitly declared pointwise normalized kernels and standard-Borel palettes with jointly measurable evaluations; no pointwise mechanism is inferred from an almost-sure observational conditional version."
+    },
+    {
+      "id": "ASM-COMPACT-FELLER-TIER",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "The positive topological measurable tier has compact Polish node spaces, compact metrizable palettes, isolated bottom symbols, finite-coordinate right override, and jointly Feller baseline and replacement kernels."
+    },
+    {
+      "id": "ASM-CIRCLE-HEAT-EXPERIMENT",
+      "kind": "MATHEMATICAL_HYPOTHESIS",
+      "statement": "The circle carries normalized Haar law and heat kernels H_r with H_r H_q=H_(r+q) and Fourier eigenvalues exp(-n^2 r); 0<s<t, the mediator palette is P(T) with weak topology, preparations are K_nu(dE|R=r)=nu(dE), and comparisons preserve ordered boundary roles, the mediator experiment, heat geometry, Theta, and one global U."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "EV-DIRECT-DERIVATION",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Direct proofs of the largest contextual congruence, terminal factorization and finite cardinality corollary, compact signature quotient, finite soft right-override semantics, affine convolution and contextual-rank theorem, declared Borel response, compact-Feller response, and circle heat Blackwell and soft-inclusion results.",
+      "side_conditions": ["Every theorem is restricted to the frozen algebraic, topological, probabilistic, and morphism hypotheses.", "The randomized final contradiction additionally uses the separately certified hard BSC ancestor.", "Executable recomputation is not a proof premise."],
+      "artifact_path": "evidence/direct-derivation.md",
+      "artifact_sha256": "e1177d3bacfdeeabe169c6ed27b763b79833a196277665dfec0ec387278736a3"
+    },
+    {
+      "id": "EV-COUNTEREXAMPLE-DERIVATIONS",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Exact BSC soft-face calculation, full symbolic fifteen-by-fifteen contextual minor and Bareiss determinant certificate, hard-response columns, and exact scope controls for bare quotient rigidity, correlated selectors, null versions, general measurable quotient regularity, noncompactness, circle reversal, and raw realization.",
+      "side_conditions": ["The E0 example is a broader standard-Borel-monoid control and is not claimed to be a finite-DAG right-override witness.", "Negative controls outside the frozen hypotheses do not refute the target."],
+      "artifact_path": "evidence/counterexample-proofs.md",
+      "artifact_sha256": "51dd7ae4fbb6afdfd0f5bd5dbe1e3c8a16e716375dc60b079779cae0294cd054"
+    },
+    {
+      "id": "EV-PRIOR-HARD-APPLICABLE-THEOREM",
+      "kind": "APPLICABLE_THEOREM",
+      "supports": true,
+      "scope": "Imported byte-identical prior derivation whose lines 292-339 establish the q-star two-element boundary-flip orbit, exhaust the complete second hard response image, and prove reduced hard nonisomorphism.",
+      "side_conditions": ["This annex intentionally retains metadata from its prior contract and is not presented as a current-contract artifact binding.", "The current fixed BSC classes, ordered R-to-O boundary, typed binary boundary maps, protocol bijection, and one global response intertwiner satisfy the theorem hypotheses as mapped in evidence/independent-reconstruction.md.", "The current reconstruction also rederives the obstruction from the displayed current-package response columns."],
+      "artifact_path": "evidence/prior-hard-operational-reduction-proof.md",
+      "artifact_sha256": "99488608db91c5d4de0b5ebe363cfa7d62225d396dde77778c653af3a59b0621"
+    },
+    {
+      "id": "EV-INDEPENDENT-RECONSTRUCTION",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Current-contract independent reconstruction of every target ancestor, including the hard q-star/four-flip obstruction and the compact-Feller joint-integrand continuity bridge.",
+      "side_conditions": ["The pass begins from the frozen definitions and atomic dependency graph rather than the desired conclusion.", "It makes no claim of independent-agent consensus and does not use numerical output as mathematical evidence."],
+      "artifact_path": "evidence/independent-reconstruction.md",
+      "artifact_sha256": "96c9454cc79bf2b2ffad9565ff605ed1b3ec1aa2e9ec15a93e789ea1a14cdd2a"
+    },
+    {
+      "id": "EV-RECOMPUTE-SCRIPT",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Standard-library exact arithmetic and Decimal diagnostic script for the finite BSC identities, two independent determinant algorithms, mixture and simplex checks, and selected circle Fourier margins.",
+      "side_conditions": ["The script is corroborative only for mathematical claims.", "It uses explicit fail-closed checks that remain active under optimized Python."],
+      "artifact_path": "evidence/recompute.py",
+      "artifact_sha256": "9c73bd4267ce5cef10d618f3134361083d9f0f235bbc3959b4bcf5e561ab3171"
+    },
+    {
+      "id": "EV-RECOMPUTE-OUTPUT",
+      "kind": "SYMBOLIC_CHECK",
+      "supports": true,
+      "scope": "Captured deterministic output matching normal and optimized runs of the bound script, including exact rational determinant values and scope.exact_rational_values_are_corroborative_not_proofs=true.",
+      "side_conditions": ["The output is valid only for the bound script, interpreter semantics, and fixed inputs.", "The Fourier Decimal diagnostics are numerical corroboration, not universal proof."],
+      "artifact_path": "evidence/recompute-output.json",
+      "artifact_sha256": "ee15ea61d6e6993289bc1eccdf8aa3f4546432558c89199ab9417a9563211848"
+    }
+  ],
   "claims": [
+    {
+      "id": "OIE-CONTEXTUAL-CONGRUENCE",
+      "statement": "For every response system, two protocols are contextually equivalent exactly when every two-sided context has the same response; this relation is the largest two-sided monoid congruence contained in ker(Phi).",
+      "quantifiers": "For every monoid A, set Y, total Phi:A->Y, and every two-sided congruence on A contained in ker(Phi).",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-ALGEBRAIC-RESPONSE-SYSTEM"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "An in-scope pair violating equivalence or congruence, or a response-compatible congruence not contained in contextual equivalence."
+    },
+    {
+      "id": "OIE-TERMINAL-QUOTIENT",
+      "statement": "Every response-compatible quotient triple has one unique surjective unital factor from its quotient monoid to the contextual quotient, commuting with both the raw quotient map and descended response.",
+      "quantifiers": "For every algebraic response-compatible triple (q,B,psi) satisfying ASM-ALGEBRAIC-RESPONSE-SYSTEM, with no finiteness assumption.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-ALGEBRAIC-RESPONSE-SYSTEM"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "An in-scope response-compatible triple for which h(q(a))=[a] is ill-defined, not a unique surjective unital homomorphism, or fails either commuting identity."
+    },
+    {
+      "id": "OIE-FINITE-MINIMALITY",
+      "statement": "When A is finite, the contextual quotient has minimum cardinality among response-compatible quotient triples, and equality of cardinalities makes the unique factor an isomorphism; minimum triples are uniquely isomorphic over A.",
+      "quantifiers": "For every finite monoid A and every algebraic response-compatible quotient triple over the same response system.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-ALGEBRAIC-RESPONSE-SYSTEM"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "A finite in-scope quotient triple smaller than the contextual quotient, or an equal-cardinality factor that is not an isomorphism over A."
+    },
+    {
+      "id": "OIE-COMPACT-QUOTIENT",
+      "statement": "Under the frozen compact-continuous hypotheses, a countable contextual signature realizes the contextual quotient as a compact metrizable monoid with continuous multiplication and response, and every compact-Hausdorff topological response-compatible triple factors continuously onto it.",
+      "quantifiers": "For every compact metrizable response monoid and every topological response-compatible triple satisfying ASM-COMPACT-CONTINUOUS-RESPONSE.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-ALGEBRAIC-RESPONSE-SYSTEM", "ASM-COMPACT-CONTINUOUS-RESPONSE"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "An in-scope compact response system whose dense signature misses a contextual distinction, whose quotient is not compact metrizable, or whose descended structure is discontinuous."
+    },
+    {
+      "id": "OIE-SOFT-MONOID",
+      "statement": "Finite normalized local-kernel palettes with isolated bottoms form a compact metrizable right-override protocol monoid; every protocol induces a normalized DAG law and the retained-law response is continuous, so its operational quotient is compact metrizable.",
+      "quantifiers": "For every finite normalized finite-state DAG and compact evaluation-continuous palette satisfying ASM-FINITE-SOFT-DAG.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FINITE-SOFT-DAG"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "An in-scope right-override failure of the monoid laws or continuity, a nonnormalized replaced DAG law, or a discontinuous retained atom probability."
+    },
+    {
+      "id": "OIE-BSC-SOFT-SEPARATION",
+      "statement": "The passively equal BSC pair has exact marked mediator-face total-variation diameters (1-2epsilon)/3 and (1-2epsilon)/2, with strict-interior separation |1-2b|(s_+-s_-), so no admitted typed ordered-boundary soft-experiment isomorphism exists.",
+      "quantifiers": "For L(1/4,1/3) and L(1/3,1/4), every 0<epsilon<1/2, every epsilon<s_-<s_+<1-epsilon, and every comparison satisfying ASM-TYPED-GLOBAL-COMPARISON.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FINITE-SOFT-DAG", "ASM-TYPED-GLOBAL-COMPARISON", "ASM-FIXED-HARD-BSC-SEMANTICS"],
+      "evidence_ids": ["EV-COUNTEREXAMPLE-DERIVATIONS", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "An arithmetic failure of the total-variation formula or an admitted target-preserving global intertwiner between faces with unequal diameters."
+    },
+    {
+      "id": "OIE-RANDOMIZED-MONOID",
+      "statement": "Independent selector laws on a finite hard protocol monoid form a unital associative convolution monoid and their unmarked retained-law response is affine.",
+      "quantifiers": "For every finite hard monoid S, probability laws p,q on S, independently sampled sequential selectors, and deterministic response into a real vector space.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-INDEPENDENT-RANDOMIZATION"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "A finite independent-selector instance violating convolution associativity, the Dirac unit, or affine response."
+    },
+    {
+      "id": "OIE-RANDOMIZED-RANK",
+      "statement": "For both released fifteen-class BSC monoids, the complete deterministic contextual vectors have full rank because the selected minor has determinant (2b-1)^6(2delta-1)^3/32, so randomized behavioral equivalence is literal equality.",
+      "quantifiers": "For the fixed fifteen-class order at delta=5/12 and b in {1/3,1/4}, with every deterministic two-sided context included in the complete signature.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FIXED-HARD-BSC-SEMANTICS", "ASM-INDEPENDENT-RANDOMIZATION"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-COUNTEREXAMPLE-DERIVATIONS", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "A mismatch in the displayed selected matrix or determinant derivation, or a nonzero selector difference with zero complete contextual signature at either released parameter."
+    },
+    {
+      "id": "OIE-HARD-NONISOMORPHISM",
+      "statement": "The two released hard BSC response experiments are nonisomorphic under typed binary state relabelings preserving ordered R-to-O roles, a unital protocol-monoid bijection, and one global response intertwiner, because the q-star response orbit is absent from the complete second response image.",
+      "quantifiers": "For every one of the four typed binary boundary flips and every bijection of the fixed fifteen hard classes compatible with their monoid structure and one global response map.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FIXED-HARD-BSC-SEMANTICS", "ASM-TYPED-GLOBAL-COMPARISON"],
+      "evidence_ids": ["EV-PRIOR-HARD-APPLICABLE-THEOREM", "EV-COUNTEREXAMPLE-DERIVATIONS", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": ["ASM-FIXED-HARD-BSC-SEMANTICS", "ASM-TYPED-GLOBAL-COMPARISON"],
+      "falsifier": "A hard L2 class and admitted boundary flip whose relabeled response equals q-star, or a failed mapping from the current global-intertwiner category to the four typed hard boundary flips."
+    },
+    {
+      "id": "OIE-RANDOMIZED-NONISOMORPHISM",
+      "statement": "No response-compatible affine unital convolution-monoid isomorphism with one global ordered-boundary response map exists between the two independently randomized BSC experiments, despite their equal passive retained law.",
+      "quantifiers": "For every affine bijection between the two released selector simplices preserving convolution, unit, ordered typed roles, and the single global response intertwiner.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-FIXED-HARD-BSC-SEMANTICS", "ASM-INDEPENDENT-RANDOMIZATION", "ASM-TYPED-GLOBAL-COMPARISON"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": ["ASM-TYPED-GLOBAL-COMPARISON"],
+      "falsifier": "An admitted affine randomized isomorphism, or a failure of its Dirac restriction to satisfy the separately proved hard comparison hypotheses."
+    },
+    {
+      "id": "OIE-BOREL-RESPONSE",
+      "statement": "Finite topological-order recursion of declared normalized standard-Borel kernels gives a normalized joint law for every protocol and a Borel retained-law response into the evaluation sigma-algebra.",
+      "quantifiers": "For every finite standard-Borel DAG and declared jointly evaluation-measurable normalized pointwise mechanism family satisfying ASM-DECLARED-BOREL-MECHANISMS.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-DECLARED-BOREL-MECHANISMS"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "An in-scope declared kernel family whose finite recursion is nonnormalized or whose retained-set evaluation is nonmeasurable."
+    },
+    {
+      "id": "OIE-FELLER-QUOTIENT",
+      "statement": "In the compact-Polish jointly Feller finite-coordinate tier, the right-override protocol monoid is compact metrizable, the retained-law response is weakly continuous, and the contextual quotient is compact metrizable with continuous multiplication and response.",
+      "quantifiers": "For every finite DAG instance satisfying ASM-COMPACT-FELLER-TIER, without requiring finite palette cardinality.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-COMPACT-FELLER-TIER"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "An in-scope jointly Feller compact instance with a discontinuous retained continuous-test expectation or a failure of the compact contextual quotient conclusion."
+    },
+    {
+      "id": "OIE-CIRCLE-PALETTE",
+      "statement": "The weak probability palette P(T) is compact metrizable and every constant-parent kernel K_nu(dE|R=r)=nu(dE) is jointly Feller; arbitrary palette elements need not have smooth densities.",
+      "quantifiers": "For the compact circle T, every probability measure nu on T, every r, and every continuous test function.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-CIRCLE-HEAT-EXPERIMENT"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Failure of weak compact metrizability of P(T) or discontinuity of nu -> integral f dnu for an admitted continuous f."
+    },
+    {
+      "id": "OIE-CIRCLE-BLACKWELL",
+      "statement": "For every 0<s<t, the two ordered circle heat chains have the same passive retained law, H_s Blackwell-dominates H_t through H_(t-s), and no reverse Markov garbling exists.",
+      "quantifiers": "For every 0<s<t and every candidate Markov kernel L from the output of H_t to that of H_s in the fixed mediator parameter experiment.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-CIRCLE-HEAT-EXPERIMENT", "ASM-TYPED-GLOBAL-COMPARISON"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-COUNTEREXAMPLE-DERIVATIONS", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "Unequal passive H_(s+t) laws, failure of forward heat garbling, or an arbitrary reverse Markov kernel satisfying H_s=H_t L."
+    },
+    {
+      "id": "OIE-CIRCLE-SOFT-INCLUSION",
+      "statement": "For every 0<s<t, the soft response set {nu H_t} is a proper subset of {nu H_s}; for each fixed x_0 and 0<rho<t-s, the positive smooth preparation H_rho(x_0,dot) supplies strictness.",
+      "quantifiers": "For every 0<s<t, every fixed x_0 on the circle, and every 0<rho<t-s, with nu ranging over all probability laws on T.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-CIRCLE-HEAT-EXPERIMENT", "ASM-TYPED-GLOBAL-COMPARISON"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-COUNTEREXAMPLE-DERIVATIONS", "EV-INDEPENDENT-RECONSTRUCTION"],
+      "bridge_premise_ids": [],
+      "falsifier": "A probability nu whose H_t response equals the stated H_(rho+s) witness, or a failure of the semigroup inclusion."
+    },
+    {
+      "id": "OIE-RECOMPUTATION-CORROBORATION",
+      "statement": "The deterministic standard-library recomputation produces the captured exact finite BSC identities, two matching determinant calculations, mixture and simplex checks, and recorded Fourier diagnostics under both normal and optimized Python execution.",
+      "quantifiers": "For the fixed script bytes, fixed inputs, Python 3.14 standard-library semantics, and captured output bytes.",
+      "kind": "NUMERICAL_OBSERVATION",
+      "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": [],
+      "evidence_ids": ["EV-RECOMPUTE-SCRIPT", "EV-RECOMPUTE-OUTPUT"],
+      "bridge_premise_ids": [],
+      "falsifier": "A nonzero rerun, a mismatch between normal and optimized output, a mismatch with the captured bytes, or disagreement between the two exact determinant algorithms."
+    },
     {
       "id": "target",
       "statement": "For the fixed operational data declared below, establish the conjunction that (i) for every monoid A the two-sided contextual relation is the coarsest response-compatible congruence and its quotient has the terminal finer-to-coarser factorization property, while only for finite A it has minimum cardinality and equality of quotient cardinalities forces an isomorphism over A; (ii) under compact-metrizable continuity and quotient-map hypotheses this quotient is compact metrizable with continuous multiplication and response; (iii) finite normalized typed local-kernel replacement with palettes compact in finite-dimensional stochastic-kernel polytopes supports a compact right-override soft protocol monoid with continuous response, and the retained mediator target face of the released BSC pair has unequal exact total-variation diameters despite the same passive law; (iv) independent randomized hard protocols form an affine convolution monoid whose released BSC contextual signatures have full rank, so equal passive laws do not determine the randomized response experiment under response-compatible affine unital convolution-monoid isomorphism; (v) declared finite standard-Borel DAG kernels give Borel protocol responses and the compact-Polish jointly Feller finite-coordinate right-override tier gives a compact metrizable operational quotient; and (vi) with mediator palette `P(T)` in the weak topology and constant-parent kernels `K_nu(dE|R=r)=nu(dE)`, the circle heat-kernel pair has the same passive retained law but strict one-way Blackwell comparison and strict soft response-set inclusion. Every admitted typed relabeling is induced by invertible typed state maps, a compatible protocol-monoid isomorphism `Theta`, and one protocol-independent boundary-response isomorphism `U` satisfying `Phi'(Theta(a))=U(Phi(a))` for every protocol. The BSC and circle comparison categories fix `R` as the input/parameter boundary and `O` as the output/observation boundary and forbid `R`-`O` exchange and time-reversal morphisms. No canonical raw latent/DAG realization, target-erasing arbitrary-soft result, correlated-randomization result, uncontrolled regular-conditional identification, noncompact topological quotient theorem, VFE/ELBO emergence, agency, gauge/RG extension, or ontology claim is in the target.",
       "quantifiers": "For every monoid A, response set Y, response map Phi:A->Y, and algebraic response-compatible quotient triple (q,B,psi) in which q:A->B is a surjective unital monoid homomorphism, psi:B->Y is a map, and Phi=psi∘q, the algebraic contextual congruence and unique finer-to-coarser factorization conjunct is universal. Only when A is finite, the quotient has minimum cardinality among response-compatible quotient triples, and equality of cardinalities makes the factor map an isomorphism over A. For every compact metrizable monoid A with jointly continuous multiplication, metrizable Hausdorff Y, and continuous Phi, and every topological response-compatible quotient triple with B a compact Hausdorff topological monoid, q and psi continuous, and q a quotient map, the compact-quotient conjunct is universal. For every finite DAG presentation with finite state spaces and declared typed palettes J_v that are compact subsets of the corresponding finite-dimensional stochastic-kernel polytopes with Euclidean/evaluation-subspace topology, the normalized soft-replacement semantics and response continuity are universal; the unequal target-face diameters are asserted for the specified BSC models L(1/4,1/3) and L(1/3,1/4), every epsilon with 0<epsilon<1/2, and every interior pair epsilon<s_-<s_+<1-epsilon, with `R` fixed as input/parameter and `O` fixed as output/observation. For the released fifteen-class hard BSC monoids and independently randomized selectors, the affine-convolution and full-contextual-rank conjunct is asserted at passive crossover delta=5/12 under response-compatible affine unital convolution-monoid isomorphisms that preserve that ordered boundary. For every finite standard-Borel DAG with standard-Borel protocol palettes and declared jointly evaluation-measurable normalized pointwise kernel families, the Borel-response conjunct is universal; for every compact-Polish jointly Feller instance whose protocol monoid is the finite-coordinate right-override product of compact metrizable palettes and isolated bottom symbols, the compact operational quotient conjunct is universal. For the circle heat-kernel models and every 0<s<t, set `J_E=P(T)` with weak topology and `K_nu(dE|R=r)=nu(dE)`; the passive-equality, strict one-way Blackwell, compact-Feller, and strict soft-response-set conjuncts are universal in s and t, with a positive smooth strictness witness `nu_rho=H_rho(x_0,dot)` for every fixed circle point `x_0` and every 0<rho<t-s, where `dot` denotes the measure argument. Every admitted typed comparison is induced by invertible typed state maps, the compatible pushforward protocol-monoid isomorphism `Theta`, and one protocol-independent boundary-response isomorphism `U` satisfying `Phi'(Theta(a))=U(Phi(a))` for every protocol `a`. Every BSC and circle experiment comparison preserves the ordered `R`-to-`O` external boundary, declared target/type coloring, response codomain, mediator parameter experiment, circle heat geometry where applicable, and admitted morphism class; `R`-`O` exchange, time reversal, and protocol-dependent boundary intertwiners are forbidden.",
       "kind": "MATHEMATICAL",
       "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
-      "state": "CANDIDATE",
-      "assumption_ids": [],
-      "evidence_ids": [],
+      "state": "EVIDENCE_VERIFIED",
+      "assumption_ids": ["ASM-ALGEBRAIC-RESPONSE-SYSTEM", "ASM-COMPACT-CONTINUOUS-RESPONSE", "ASM-FINITE-SOFT-DAG", "ASM-TYPED-GLOBAL-COMPARISON", "ASM-FIXED-HARD-BSC-SEMANTICS", "ASM-INDEPENDENT-RANDOMIZATION", "ASM-DECLARED-BOREL-MECHANISMS", "ASM-COMPACT-FELLER-TIER", "ASM-CIRCLE-HEAT-EXPERIMENT"],
+      "evidence_ids": ["EV-DIRECT-DERIVATION", "EV-COUNTEREXAMPLE-DERIVATIONS", "EV-PRIOR-HARD-APPLICABLE-THEOREM", "EV-INDEPENDENT-RECONSTRUCTION"],
       "bridge_premise_ids": [],
       "falsifier": "A counterexample within a conjunct's frozen hypotheses to its stated conclusion. An unresolved proof or hypothesis-mapping gap is not a falsifier."
     }

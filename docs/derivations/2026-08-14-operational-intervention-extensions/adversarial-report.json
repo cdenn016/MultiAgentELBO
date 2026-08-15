@@ -2,21 +2,211 @@
   "schema_version": "rigorous-theory-search/v1",
   "contract_id": "contract-sha256-af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
   "target_digest": "af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1",
-  "attacks": [],
+  "attacks": [
+    {
+      "id": "ATTACK-QUOTIENT-ARROW-DIRECTION",
+      "claim_ids": ["OIE-CONTEXTUAL-CONGRUENCE", "OIE-TERMINAL-QUOTIENT"],
+      "attack": "The claimed universal arrow may point from the contextual quotient into every response-compatible quotient rather than from each finer quotient to the contextual quotient.",
+      "response": "The proved inclusion is ker(q) contained in contextual equivalence, so only h(q(a))=[a] is automatically well-defined. It is a unique surjection B->Syn(Phi); the reverse direction would require the unavailable opposite kernel inclusion.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-MISSING-QUOTIENT-DATA",
+      "claim_ids": ["OIE-TERMINAL-QUOTIENT"],
+      "attack": "Without surjectivity, unitality, or exact response factorization, the factor map can be nonunique, nonunital, or ill-defined.",
+      "response": "All three are explicit frozen quotient-triple hypotheses. Surjectivity supplies uniqueness and onto-ness, unitality supplies a unital factor, and Phi=psi q supplies the needed kernel inclusion. No deletion of these hypotheses is claimed.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-BARE-QUOTIENT-AUTOMORPHISM",
+      "claim_ids": ["OIE-CONTEXTUAL-CONGRUENCE", "OIE-FINITE-MINIMALITY"],
+      "attack": "A minimum contextual quotient may still have a nontrivial response-preserving automorphism, defeating unique rigidity.",
+      "response": "The four-element power-set union monoid supplies exactly that bare automorphism. The theorem is narrower: minimum triples are unique over their raw map from A, which forces the comparison to commute with q and removes that automorphism.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-INFINITE-CARDINALITY-OVERREACH",
+      "claim_ids": ["OIE-FINITE-MINIMALITY"],
+      "attack": "Equal cardinalities of infinite quotient sets do not make a surjective factor bijective.",
+      "response": "The largest-congruence and terminal-factor theorems are arbitrary-monoid results, but the minimum-cardinality and equality-implies-isomorphism statements are explicitly finite-only.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-DENSE-SIGNATURE-INCOMPLETE",
+      "claim_ids": ["OIE-COMPACT-QUOTIENT"],
+      "attack": "A countable dense context set may miss a distinction visible only at a nondense context.",
+      "response": "Joint continuity of multiplication and continuity of Phi let dense context sequences converge to arbitrary left and right contexts, so equal dense signatures imply equal full contextual responses. The claim is not made without continuity.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-QUOTIENT-MULTIPLICATION-DISCONTINUOUS",
+      "claim_ids": ["OIE-COMPACT-QUOTIENT", "OIE-TERMINAL-QUOTIENT"],
+      "attack": "Algebraic quotient multiplication need not be continuous in an arbitrary quotient topology.",
+      "response": "The signature image makes the quotient compact metrizable, and pi x pi is a compact-to-Hausdorff continuous surjection, hence a quotient map. The identity mbar(pi x pi)=pi m then descends continuity; compared triples also assume q is quotient.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-PALETTE-EVALUATION-DISCONTINUITY",
+      "claim_ids": ["OIE-SOFT-MONOID"],
+      "attack": "Compactness of an abstract kernel palette alone does not make retained-law coordinates continuous.",
+      "response": "The finite soft theorem uses the Euclidean evaluation-subspace topology of a finite stochastic-kernel polytope. Every retained atom is a finite polynomial in those continuous evaluations, and bottom is isolated.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-TARGET-ERASURE",
+      "claim_ids": ["OIE-BSC-SOFT-SEPARATION"],
+      "attack": "If protocols may be permuted without preserving the mediator target face, its total-variation diameter is not an experiment invariant.",
+      "response": "Correct for the enlarged category, which is outside the frozen theorem. In the admitted typed category, one protocol map preserves the marked face and one boundary bijection preserves total variation, so unequal diameters obstruct isomorphism.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-CONVEXIFICATION-ERASES-HARD-IMAGE",
+      "claim_ids": ["OIE-RANDOMIZED-MONOID", "OIE-RANDOMIZED-NONISOMORPHISM"],
+      "attack": "The hard unmatched response becomes a mixture after randomization, so the old response-image obstruction fails.",
+      "response": "The exact 5/6 and 1/6 mixture confirms that failure. The randomized theorem instead uses full contextual rank, independent convolution, affine extreme points, and the separately certified hard restriction; it does not reuse the invalidated image argument on mixtures.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-DETERMINANT-ONLY-COMPUTED",
+      "claim_ids": ["OIE-RANDOMIZED-RANK"],
+      "attack": "The nonzero contextual determinant may be trusted only because a script reports it.",
+      "response": "The proof displays the full minor, Bareiss recurrence, row swaps, pivot sequence, and polynomial factorization. The generic identity extends to all specializations as a polynomial identity; executable elimination is explicitly corroborative only.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-RANK-NOT-NONISOMORPHISM",
+      "claim_ids": ["OIE-RANDOMIZED-RANK", "OIE-HARD-NONISOMORPHISM", "OIE-RANDOMIZED-NONISOMORPHISM"],
+      "attack": "Full contextual rank in both experiments does not itself rule out an isomorphism between them.",
+      "response": "The hard q-star/four-flip obstruction is independently hash-bound and reconstructed. Any affine randomized isomorphism maps Dirac vertices to vertices; convolution, unit, ordered types, and the one global U make that restriction an impossible hard response-experiment isomorphism.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-SHARED-NOISE-AS-CONVOLUTION",
+      "claim_ids": ["OIE-RANDOMIZED-MONOID"],
+      "attack": "Marginal selector laws might determine sequential composition even when the selectors share noise.",
+      "response": "The two-coordinate override witness gives three distinct composite laws for the same selector marginals under independent, equal-bit, and complementary-bit couplings. The theorem is explicitly independent; correlated protocols require a joint coupling object.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-NULL-CONDITIONAL-INTERVENTION",
+      "claim_ids": ["OIE-BOREL-RESPONSE"],
+      "attack": "Almost-sure observational conditionals may not determine a point intervention at a null parent value.",
+      "response": "The theorem starts from declared pointwise kernels. Two Borel Bernoulli kernels differing only at r=1/2 have the same observational law but opposite point responses, proving why an uncontrolled conditional version cannot replace that data.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-AUTOMATIC-BOREL-QUOTIENT",
+      "claim_ids": ["OIE-BOREL-RESPONSE"],
+      "attack": "Standard-Borel protocols and a Borel response might automatically make the contextual quotient standard Borel.",
+      "response": "A broader standard-Borel monoid with the finite-support response has contextual relation E0, which is nonsmooth. This control shows measurability alone is insufficient; it is not claimed as a witness inside the finite-DAG subclass, whose positive theorem asserts response measurability only.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-NONCOMPACT-COMPACT-QUOTIENT",
+      "claim_ids": ["OIE-COMPACT-QUOTIENT"],
+      "attack": "Compactness of A may be unnecessary for a compact contextual quotient.",
+      "response": "For A=(R,+) and identity response, contextual equivalence is equality and the quotient is noncompact R. The theorem retains compactness and makes no unqualified noncompact conclusion.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-FELLER-JOINT-INTEGRAND-GAP",
+      "claim_ids": ["OIE-FELLER-QUOTIENT"],
+      "attack": "Nodewise Feller continuity may not justify integrating a continuous function that also depends on parents, other nodes, and protocol parameters.",
+      "response": "On compact products, Stone-Weierstrass uniformly approximates a joint integrand by finite sums of parent-parameter and child factors. Weak kernel continuity handles each factor and normalization controls uniform error, so reverse topological induction is valid.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-REVERSE-BLACKWELL-NONEQUIVARIANT",
+      "claim_ids": ["OIE-CIRCLE-BLACKWELL"],
+      "attack": "The strict Blackwell result may exclude only equivariant reverse garblings, leaving an arbitrary Markov reverse kernel possible.",
+      "response": "The contradiction assumes an arbitrary Markov L. Positivity and normalization give |L e1|<=1, while H_s=H_t L forces a first Fourier coefficient exp(t-s)>1. No equivariance hypothesis is used.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-SINGULAR-CIRCLE-WITNESS",
+      "claim_ids": ["OIE-CIRCLE-PALETTE", "OIE-CIRCLE-SOFT-INCLUSION"],
+      "attack": "Proper soft inclusion may rely on a singular boundary preparation rather than a regular palette element.",
+      "response": "The witness nu_rho=H_rho(x0,dot), with 0<rho<t-s, has a positive smooth density. An H_t preimage would require a probability Fourier coefficient exp(t-s-rho)>1. The full palette permits singular laws, but strictness does not need one.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-TIME-REVERSAL-CATEGORY-DRIFT",
+      "claim_ids": ["OIE-BSC-SOFT-SEPARATION", "OIE-HARD-NONISOMORPHISM", "OIE-CIRCLE-BLACKWELL", "OIE-CIRCLE-SOFT-INCLUSION"],
+      "attack": "Reversibility and exchange of R with O can map each passive chain presentation into the other.",
+      "response": "That equality is a time-reversed baseline path-law statement, not an isomorphism of the frozen active category. The theorem fixes R as input, O as output, mediator target, protocol direction, heat geometry where applicable, and one global U.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-RAW-REALIZATION-ONTOLOGY",
+      "claim_ids": ["target", "OIE-FINITE-MINIMALITY"],
+      "attack": "Operational protocol minimality may uniquely select a raw latent DAG or imply ELBO, agency, gauge/RG, or ontology conclusions.",
+      "response": "Inert unretained-node padding changes the raw DAG and kernels without changing any response, so the contextual quotient forgets it. Raw realization needs a new category and complexity/reachability assumptions; all listed physical and ontological extensions remain outside the target.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    },
+    {
+      "id": "ATTACK-COMPUTATION-AS-THEOREM",
+      "claim_ids": ["target", "OIE-RANDOMIZED-RANK", "OIE-CIRCLE-BLACKWELL", "OIE-CIRCLE-SOFT-INCLUSION"],
+      "attack": "The affirmative conjunction may depend on selected Python calculations or Decimal Fourier margins.",
+      "response": "Every mathematical ancestor has DERIVATION or mapped APPLICABLE_THEOREM evidence. The script and output support only a separate numerical-observation claim; deleting them leaves the target dependency closure unchanged.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "521d7be3d281c2143788a6013439daaff09fc3969edc24248c839e4b574f4ea2"
+    }
+  ],
   "independent_reconstruction": {
-    "claim_ids": [],
-    "method": "Independent reconstruction has not been performed.",
-    "result": "NOT_RUN",
-    "conclusion": "No reconstruction conclusion is available.",
-    "artifact_path": null,
-    "artifact_sha256": null
+    "claim_ids": ["target", "OIE-CONTEXTUAL-CONGRUENCE", "OIE-TERMINAL-QUOTIENT", "OIE-FINITE-MINIMALITY", "OIE-COMPACT-QUOTIENT", "OIE-SOFT-MONOID", "OIE-BSC-SOFT-SEPARATION", "OIE-RANDOMIZED-MONOID", "OIE-RANDOMIZED-RANK", "OIE-HARD-NONISOMORPHISM", "OIE-RANDOMIZED-NONISOMORPHISM", "OIE-BOREL-RESPONSE", "OIE-FELLER-QUOTIENT", "OIE-CIRCLE-PALETTE", "OIE-CIRCLE-BLACKWELL", "OIE-CIRCLE-SOFT-INCLUSION"],
+    "method": "Reconstruct every atomic ancestor from the frozen definitions and directed DAG, including the imported hard theorem's current-contract hypothesis map, without using the desired outcome or executable output as a premise.",
+    "result": "PASS",
+    "conclusion": "Every target ancestor rederives under its recorded assumptions; the hard randomized bridge, compact-Feller joint-integrand lemma, and broader-only E0 control are explicit.",
+    "artifact_path": "evidence/independent-reconstruction.md",
+    "artifact_sha256": "96c9454cc79bf2b2ffad9565ff605ed1b3ec1aa2e9ec15a93e789ea1a14cdd2a"
   },
   "oracle_erasure": {
-    "claim_ids": [],
-    "method": "Oracle erasure has not been performed.",
-    "result": "NOT_RUN",
-    "conclusion": "No oracle-erasure conclusion is available.",
-    "artifact_path": null,
-    "artifact_sha256": null
+    "claim_ids": ["target", "OIE-CONTEXTUAL-CONGRUENCE", "OIE-TERMINAL-QUOTIENT", "OIE-FINITE-MINIMALITY", "OIE-COMPACT-QUOTIENT", "OIE-SOFT-MONOID", "OIE-BSC-SOFT-SEPARATION", "OIE-RANDOMIZED-MONOID", "OIE-RANDOMIZED-RANK", "OIE-HARD-NONISOMORPHISM", "OIE-RANDOMIZED-NONISOMORPHISM", "OIE-BOREL-RESPONSE", "OIE-FELLER-QUOTIENT", "OIE-CIRCLE-PALETTE", "OIE-CIRCLE-BLACKWELL", "OIE-CIRCLE-SOFT-INCLUSION"],
+    "method": "Remove the affirmative search preference, semantically scan every premise and proof interface for direct or paraphrased conclusion assumptions, and recompute the full target dependency closure.",
+    "result": "PASS",
+    "conclusion": "No ancestor depends on the erased preference or a disguised target premise; all mathematical support remains derivational or hypothesis-mapped.",
+    "artifact_path": "evidence/oracle-erasure.md",
+    "artifact_sha256": "4ce1981e6f7c93ed4da259f137229ccaa26789ba63494900c96da9964918244a"
   }
 }

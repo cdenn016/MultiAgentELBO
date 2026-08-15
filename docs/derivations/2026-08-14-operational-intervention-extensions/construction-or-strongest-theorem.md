@@ -146,6 +146,6 @@ latent/DAG/generative realization.  It also makes no equality claim for
 fixed-observation ELBOs, latent posteriors, or factorizations and no claim
 about agency, gauge/RG dynamics, continuum physics, or ontology.
 
-The exact recomputation is corroborative only.  Formal release status remains
-pending the package-wide independent reconstruction, adversarial checks,
-hash-bound evidence ledger, and release validator.
+The exact recomputation is corroborative only.  The hash-bound package closes
+the exact frozen conjunction as `COMPLETE_AFFIRMATIVE` after independent
+reconstruction, oracle erasure, adversarial attack closure, and release validation.

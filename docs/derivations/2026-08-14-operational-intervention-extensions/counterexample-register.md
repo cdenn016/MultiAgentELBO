@@ -84,7 +84,8 @@ randomized invariant.  The frozen randomized theorem instead uses full
 contextual rank, convolution, affine structure, and the fact that affine
 simplex isomorphisms preserve hard vertices.  Any admitted randomized
 isomorphism would therefore restrict to a response-compatible hard-monoid
-isomorphism, contradicting the released hard reduced nonisomorphism.
+isomorphism, contradicting the hash-bound and independently reconstructed hard
+q-star/four-flip nonisomorphism ancestor.
 
 ## CE-OIE-005: selector marginals do not determine shared-noise composition
 
