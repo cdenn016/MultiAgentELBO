@@ -1,0 +1,25 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-473310227c0819e1dd23a495970893d5c5b0bac60aae77584884104d5043e3c7",
+  "target_digest": "473310227c0819e1dd23a495970893d5c5b0bac60aae77584884104d5043e3c7",
+  "mechanism_families": [
+    {
+      "family_id": "kernel-integration",
+      "core_mechanism": "One normalized recognition-independent Markov channel pushes fixed generation, posterior, and correlated recognition laws together.",
+      "target_obligation_ids": ["target"],
+      "representation": "Standard-Borel probability laws and Markov kernels at fixed (r_*,X,o).",
+      "invariant_or_obstruction": "A common channel preserves normalization and supports the exact conditional-KL decomposition; split channels need not do so.",
+      "obligations": [
+        "Derive the normalized parent laws, posterior identity, absolute-continuity consequences, and VFE chain under the frozen premises."
+      ],
+      "bridge": "The required bridge is standard-Borel disintegration with finite KL terms.",
+      "failure_test": "A Task-4 finite categorical split-channel witness must refute an unconditional split-channel identity.",
+      "verified_results": [],
+      "open_gaps": [
+        "No affirmative derivation has been certified at this checkpoint."
+      ],
+      "novelty_fingerprint": "standard-Borel laws + common channel + conditional-KL identity + frozen recognition-independence premises + normalized parent construction",
+      "disposition": "open"
+    }
+  ]
+}

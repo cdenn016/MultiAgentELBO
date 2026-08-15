@@ -1,0 +1,11 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-473310227c0819e1dd23a495970893d5c5b0bac60aae77584884104d5043e3c7",
+  "target_digest": "473310227c0819e1dd23a495970893d5c5b0bac60aae77584884104d5043e3c7",
+  "checkpoint": "Task 1 frozen contract",
+  "target_claim": "target",
+  "terminal_status": null,
+  "certificate_claim": null,
+  "strongest_result": "No theorem, construction, or counterexample has been established at this contract-freezing checkpoint.",
+  "unresolved_obligations": ["Derive, certify, and adversarially test every affirmative and negative conjunct from this frozen target."]
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-473310227c0819e1dd23a495970893d5c5b0bac60aae77584884104d5043e3c7",
+  "target_digest": "473310227c0819e1dd23a495970893d5c5b0bac60aae77584884104d5043e3c7",
+  "attacks": [],
+  "independent_reconstruction": {
+    "claim_ids": [],
+    "method": "Not run at this checkpoint.",
+    "result": "NOT_RUN",
+    "conclusion": "No reconstruction conclusion is available before the derivation artifacts exist.",
+    "artifact_path": null,
+    "artifact_sha256": null
+  },
+  "oracle_erasure": {
+    "claim_ids": [],
+    "method": "Not run at this checkpoint.",
+    "result": "NOT_RUN",
+    "conclusion": "No oracle-erasure conclusion is available before the proof closure exists.",
+    "artifact_path": null,
+    "artifact_sha256": null
+  }
+}

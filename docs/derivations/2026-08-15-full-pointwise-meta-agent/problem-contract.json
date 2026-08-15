@@ -1,0 +1,64 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-473310227c0819e1dd23a495970893d5c5b0bac60aae77584884104d5043e3c7",
+  "target_digest": "473310227c0819e1dd23a495970893d5c5b0bac60aae77584884104d5043e3c7",
+  "execution_identity": {
+    "worktree": "C:/tmp/MultiAgentELBO-full-meta-agent-implementation-20260815",
+    "branch": "codex/full-meta-agent-implementation-20260815",
+    "approved_planning_commit": "ceffda2d0682b85395421635cabb5e951c888ba7",
+    "fetched_origin_main": "8c0f4d5b4116ac3883665756a451e025f0712b97",
+    "baseline_ruling": "Execute from ceffda2, whose parent is the fetched origin/main, because the approved spec and plan are required tracked inputs. This is the sole pre-Task-1 dependency beyond origin/main."
+  },
+  "target": {
+    "statement": "Mixed target. Conditional-universal affirmative conjunct: for every declared standard-Borel fine and parent datum satisfying the frozen premises, construct the full normalized pointwise parent probabilistic datum by one normalized recognition-independent channel, derive its parent posterior and recognition laws and their projections, prove the exact VFE chain identity with its nonnegative conditional-KL defect and equality criterion, and establish exactly one declared full-law holonomy alternative. Negative conjuncts: Task 4 must give direct in-domain counterexamples to marginal determination of a full parent law, unconditional split-channel VFE identities, model-marginal sufficiency for evaluation compatibility, trivial-holonomy sufficiency for agreement, and marginal invariance sufficiency for joint-law invariance.",
+    "kind": "MATHEMATICAL",
+    "quantifier_class": "MIXED",
+    "quantifiers": "Affirmative: for every finite nonempty active set I at one fixed r_*, every declared standard-Borel fine random space Y_I and parent factors B_A, M_A, Xi_A, H_A, every fixed structural datum X with X_A=chi_A(X), every admitted regular observation o with finite unchanged evidence, every normalized fixed generative law P_I(do,dY|X), every selected posterior Pi_{I,o,X} derived from that law, every normalized correlated recognition law Q_{I,o,X} absolutely continuous with respect to Pi_{I,o,X}, every normalized measurable recognition-independent Markov kernel C_A:Y_I~>Z_A=B_A x M_A x Xi_A x H_A, every normalized measurable parent evaluation ev_A:M_A->Kern(Xi_A,B_A x O_A x H_A), and every almost-sure evaluation-compatible parent conditional, the stated parent-law, posterior, projection, VFE, and declared holonomy-alternative conclusions hold. Negative: there exist declared finite categorical data within the frozen types witnessing each listed overreach failure.",
+    "domains": [
+      "A finite nonempty active set I at one fixed point r_*.",
+      "Declared standard-Borel spaces Y_I, B_A, M_A, Xi_A, H_A, and a common observation space O_A=O.",
+      "Fixed structural data X and retained structural data X_A=chi_A(X), outside the random channel.",
+      "Admitted regular observations o with finite unchanged evidence."
+    ],
+    "codomains": [
+      "The parent random space Z_A=B_A x M_A x Xi_A x H_A.",
+      "Normalized parent laws P_A(do,dz|X), Pi_{A,o,X}, and Q_{A,o,X}.",
+      "The parent evaluation family ev_A:M_A->Kern(Xi_A,B_A x O_A x H_A)."
+    ],
+    "regularity": "The primary tier uses standard-Borel measurability, normalized laws and kernels, selected regular conditionals at admitted observations, absolute continuity, and finite terms wherever KL or VFE expressions are displayed. Any smooth, Gaussian, quotient, or bundle regularity is an additional later hypothesis and is not an ambient premise.",
+    "measures": [
+      "All displayed probability laws are normalized on their declared standard-Borel measurable spaces.",
+      "The recognition law Q_{I,o,X} is absolutely continuous with respect to Pi_{I,o,X}.",
+      "The evidence and every displayed KL or conditional-KL term are finite where the affirmative VFE identity is asserted."
+    ],
+    "boundary_conditions": [
+      "The construction is pointwise at fixed r_* and fixed X.",
+      "The observation coordinate is unchanged by C_A, so O_A=O and o_A=o.",
+      "No overlap-patch, base-manifold, dynamical, or physical boundary condition is asserted."
+    ],
+    "symmetries": [
+      "For the holonomy-blind alternative, declared joint fine and parent holonomy actions, C_A equivariance, full-law covariance or invariance, and evaluation compatibility are required.",
+      "For the retention alternative, roots, raw root-framed holonomy, and boundary records remain in H_A; no holonomy-blind invariance claim is made."
+    ],
+    "equivalence": "Equality is equality of the declared normalized full laws or kernels up to their stated almost-sure versions. Equality of recognition marginals is not equality of full parent laws. The holonomy-blind alternative is evaluated on full laws, not on projected marginal stabilization.",
+    "premises": [
+      "P_I(do,dY|X) is fixed and normalized before recognition or posterior data are chosen and no generative kernel reads Q_{I,o,X} or Pi_{I,o,X}.",
+      "Pi_{I,o,X} is a selected posterior derived from P_I at an admitted regular observation o.",
+      "C_A is one fixed normalized measurable Markov kernel on random fine variables only and is independent of recognition, posterior, and realized observation.",
+      "The parent evaluation is normalized and measurable, and the induced parent generative conditional agrees with ev_A almost surely on the relevant (Xi_A,M_A) marginal.",
+      "The bridge disintegrations, support conditions, and integrability needed for the exact VFE chain identity are declared before the identity is used."
+    ],
+    "modeling_postulates": [
+      "Calling the completed pointwise datum a candidate parent is a naming convention only; it does not postulate agency, autonomy, ontology, or physical interpretation."
+    ],
+    "search_priors": [],
+    "permitted_theorems": [
+      "Normalized Markov-kernel pushforward and composition on standard-Borel spaces.",
+      "Existence and use of declared regular conditional probabilities and disintegrations on the stated standard-Borel tier.",
+      "KL data processing and the common-channel conditional-KL chain rule under the recorded finiteness hypotheses."
+    ],
+    "negative_certificate_kind": "COUNTEREXAMPLE",
+    "falsification_criterion": "A single direct finite categorical counterexample within the stated types refutes any universal negative conjunct. Any failure to derive the affirmative construction from all frozen premises leaves the affirmative conjunct unresolved rather than proved by examples.",
+    "literature_policy": "Use only checked primary sources or released repository derivations for invoked theorems; record exact statements and hypothesis mappings. No novelty or priority claim is made."
+  }
+}
