@@ -314,6 +314,10 @@ def classify_occurrence(path: str, line: int, token: str, registry: dict[str, ob
         if _registered_alias(registry, "P") and _matching_legacy_declaration(registry, path, line, "P"):
             return "documented_legacy"
         return "unclassified_collision"
+    if token == "\\mathscr P_G (scale redefinition)":
+        if negative:
+            return "canonical"
+        return "unclassified_collision"
     if token == "P,Q (local dummy measures)":
         return "documented_legacy"
     if token == "C_t":
@@ -370,6 +374,8 @@ def _hazards(text: str) -> list[str]:
     for token in ("P_A", "Q_A"):
         if re.search(rf"(?<!\\mathbb )(?<!mathbb )\b{token}\b", text):
             tokens.append(token)
+    if "\\mathscr P_G" in text and "\\mathcal C_\\ell" in text:
+        tokens.append("\\mathscr P_G (scale redefinition)")
     if re.search(
         r"\\pi\s*:\s*P\b|\\mathcal E_[bm x]+\s*=\s*P\\times_|"
         r"principal (?:bundle|connection).{0,50}(?<!\\mathbb )(?<!\\mathcal )(?<!\\mathscr )(?<!\\bar )\bP\b|(?<!\\mathbb )(?<!\\mathcal )(?<!\\mathscr )(?<!\\bar )\bP\b.{0,50}principal (?:bundle|connection)|"
@@ -535,6 +541,8 @@ def _self_test() -> int:
         "untyped_channel": ("Use C_A here.", True),
         "typed_channel": ("C_A is a normalized Markov kernel.", False),
         "active_principal_p": ("The principal bundle has total space P.", True),
+        "root_bundle_at_scale": ("\\mathscr P_G=\\mathcal C_\\ell\\times G is a principal bundle.", True),
+        "typed_scale_bundle": ("\\mathscr P_\\ell=\\mathcal C_\\ell\\times G is a principal bundle.", False),
         "typed_sample": ("A model sample m_i\\in\\mathsf M_i is a coordinate.", False),
         "active_associated_p": ("\\mathcal E_b=P\\times_{\\rho}\\mathcal B_b is an associated bundle.", True),
         "local_dummy": ("Let P and Q be local dummy probability measures in this lemma.", False),

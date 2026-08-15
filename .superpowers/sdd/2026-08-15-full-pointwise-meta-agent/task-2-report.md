@@ -2,13 +2,15 @@
 
 ## Status
 
-Complete after review repair. Phase 0 now has a digest-bound canonical notation standard, a typed JSON registry, and a deterministic fail-closed active-source collision scanner.
+Complete after scale-bundle review repair. Phase 0 now has a digest-bound canonical notation standard, a typed JSON registry, and a deterministic fail-closed active-source collision scanner.
 
 ## Authority and frozen target
 
 - Preceding approved commits: `c2fe2977f76784774591d664ed8ba9de338a817f` and `e058bab052cbbe44d3500da481f8e0647e2964fc`.
 - Consumed target digest: `15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87`.
 - Commit subject: `docs: standardize meta-agent notation`.
+
+- Review-repair commits: `077a6dd0fced7dbf0b61261d905c2d460c97cfa4` (`docs: harden meta-agent notation scan`) followed by `docs: correct scale-bundle notation`.
 
 ## Implementation
 
@@ -78,3 +80,23 @@ Superseding verification at the repair revision:
 - Per task constraints, no pytest, Torch, GPU, model, or TeX command was run.
 
 The scanner is intentionally a bounded lexical-semantic gate, not a theorem prover. Its active-line boundary is the approved Phase-0 chronology boundary, not an occurrence allowlist. Released historical bytes remain immutable and visible in the generated inventory. Task 3 may consume this registry and must preserve the frozen target digest, use the single recognition-independent `C_A`, and retain all declared dependencies.
+
+## Scale-bundle review repair and final superseding evidence
+
+A focused re-review closed all earlier findings and identified one remaining scale-typing defect. The repair:
+
+- renamed the finite-dimensional scale-local bundle in `Theory/05d_relational_inference.tex` from the root symbol `\mathscr P_G` to `\mathscr P_\ell` over `\mathcal C_\ell`;
+- made the generic scale theorem in `Theory/05c_pullback_geometry.tex` type its principal map explicitly as `\mathcal P:\mathscr P\to\bar{\mathscr P}` over `f:\mathcal C\to\bar{\mathcal C}`, consistently using the generic source in the defect form and the generic target in the descended adjoint bundle;
+- added `\mathscr P_\ell` as the fortieth expected registry symbol, typed as the scale principal bundle and sourced to the canonical renormalization and notation passages; and
+- made any active same-line association of root `\mathscr P_G` with scale base `\mathcal C_\ell` fail closed unless the line explicitly states the negative distinction, with adversarial rejection and correctly typed scale-bundle acceptance fixtures.
+
+Final superseding verification at this repair revision:
+
+- Scanner self-test: PASS. The first attempt caught a patch-placement `IndentationError`; after correcting only that placement, the complete self-test passed.
+- Full scan: PASS with `0` unclassified collisions, `15` documented legacy occurrences, `91` immutable-evidence occurrences, and `837` canonical occurrences.
+- Expected-symbol manifest: `40`; source coverage: PASS over `33` active files, including `README.md` and `25` active `Theory` text sources.
+- Collision-report SHA-256: `11499C353B6B32ED783629302690877E337054A7E5C61A74CB9AA35224363684`; a second scan reproduced identical bytes.
+- Registry/report JSON, rigorous-theory checkpoint, UTF-8, BOM, C0, LF/EOL, American-English, diff, exact-scope, and prior-package immutability gates: PASS.
+- Per task constraints, no pytest, Torch, GPU, model, or TeX command was run.
+
+The earlier verification sections are retained as development history; this section is the final superseding evidence for Task 2.

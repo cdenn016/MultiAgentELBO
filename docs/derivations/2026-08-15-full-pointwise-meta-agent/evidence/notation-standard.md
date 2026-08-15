@@ -12,6 +12,7 @@ This standard is normative for the full pointwise parent program. It fixes symbo
 | Common overlap | $\mathcal U_A=\bigcap_{i\in A}\mathcal C_i$ | Shared patch for $A$; ordinary $R$ is not an overlap region. |
 | Pointwise context | $r_*\in\mathcal U_A$ | One fixed base point for this program. |
 | Principal bundle | $\mathscr P_G\to\mathcal C$ | Common principal $G$-bundle; bare $P$ is forbidden for this global object. |
+| Scale principal bundle | $\mathscr P_\ell\to\mathcal C_\ell$ | Bundle at RG scale $\ell$; it is distinct from the root bundle $\mathscr P_G\to\mathcal C$. |
 | Associated projection | $\varpi_x:\mathcal E_x\to\mathcal C$ | Bundle projection only; $\varpi_i$ is never receiver occupancy. |
 | Belief-law section | $q_i^{b;o,X}$ | Normalized law-valued local section with admitted $o$ and fixed $X$ visible. Established $q_i^{o,X}$ remains valid typed source notation. |
 | Model-law section | $q_i^{m;o,X}$ | Normalized law on $\mathsf M_i$ with admitted $o$ and fixed $X$ visible. Established $s_i^{o,X}$ remains valid typed source notation. |
