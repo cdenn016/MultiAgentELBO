@@ -1,7 +1,7 @@
 <!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","schema_version":"rigorous-theory-search/v1","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87"} -->
 # Construction or strongest theorem
 
-## Task-3 common-channel pointwise parent theorem
+## Task-5 strongest verified pre-release theorem
 
 Fix a nonempty finite active set (I), one (r_*\in\mathcal U_A), one structural datum (X), and (X_A=\chi_A(X)). Let (\mathsf O,\mathsf Y_I,\mathsf B_A,\mathsf M_A,\boldsymbol\Xi_A,\mathsf H_A) be nonempty standard-Borel spaces and put
 
@@ -52,7 +52,7 @@ There are two valid tiers. First, a selected disintegration of (\mathbb P_A) pro
 
 hold for the parent ((M_A,\Xi_A)) marginal almost surely. Standard-Borel disintegration does not validate an arbitrary predeclared evaluator, choose its null extension canonically, make evaluation injective, or regularize the quotient of presentations.
 
-3. With (\mathbb P_A^Z(D\mid X)=\mathbb P_A(\mathsf O\times D\mid X)), the recognition marginals (q_A^b,q_A^m), latent-prior marginals (p_A^b,p_A^m), and posterior marginals (\boldsymbol\Pi_{A,o,X}^b,\boldsymbol\Pi_{A,o,X}^m) are exactly the corresponding coordinate pushforwards of (\mathbb Q_{A,o,X}), (\mathbb P_A^Z(\cdot\mid X)), and (\boldsymbol\Pi_{A,o,X}). No converse or reconstruction theorem from these marginal identities is claimed here; the corresponding Task-4 claim remains CANDIDATE.
+3. With (\mathbb P_A^Z(D\mid X)=\mathbb P_A(\mathsf O\times D\mid X)), the recognition marginals (q_A^b,q_A^m), latent-prior marginals (p_A^b,p_A^m), and posterior marginals (\boldsymbol\Pi_{A,o,X}^b,\boldsymbol\Pi_{A,o,X}^m) are exactly the corresponding coordinate pushforwards of (\mathbb Q_{A,o,X}), (\mathbb P_A^Z(\cdot\mid X)), and (\boldsymbol\Pi_{A,o,X}). These identities do not reconstruct a joint law: the exact finite witnesses in `evidence/counterexample-proofs.md` and `evidence/finite-nongaussian-output.json` verify marginal nonuniqueness and the failure of marginal invariance to imply joint invariance.
 
 4. Let the recognition and posterior joint lifts attach the same (C_A), and disintegrate each lift in (Y) conditional on (z). Then the additive identity in ([0,+\infty]) is
 
@@ -91,7 +91,7 @@ as an extended additive identity, without subtracting infinities. If the fine KL
 
 On this finite tier, the zero-defect condition is also equivalent to the existence of one normalized pairwise recovery kernel that recovers both declared fine laws. Family-wide common recovery requires simultaneous hypotheses for every family member; (+\infty=+\infty) has no recovery consequence.
 
-5. A holonomy-blind parent is conditional on typed source/target groupoid actions, covariance of the full fine generative and recognition laws, a jointly compatible selected-posterior version family, (C_A) equivariance, and evaluator covariance. Under all of these hypotheses the parent generative, posterior, and recognition laws are covariant. Same-slice invariance is obtained only for isotropy arrows that fix the declared (o,X) and selected versions. Alternatively, if (\mathsf H_A) and (C_A) retain component roots, raw root-framed holonomy, and dressed boundary marks, the parent full laws retain those records jointly and make no holonomy-blind claim. No converse or reconstruction theorem from marginal stabilization is claimed here; the corresponding Task-4 claim remains CANDIDATE.
+5. The frozen target declares a holonomy branch; it does not assert logical exclusivity, because blindness and retention can coexist for different retained coordinates or quotient levels. On the blindness branch, covariance is conditional on typed source/target groupoid actions, covariance of the full fine generative and recognition laws, a jointly compatible selected-posterior version family, (C_A) equivariance, and evaluator covariance. Under those hypotheses the parent generative, posterior, and recognition laws are covariant. Same-slice invariance follows only for isotropy arrows fixing the declared (o,X) and selected versions. On the retention branch, if (\mathsf H_A) and (C_A) retain component roots, raw root-framed holonomy, and dressed boundary marks, the parent full laws retain those records jointly and make no holonomy-blind claim. Exact finite witnesses separately verify that trivial holonomy does not force agent agreement and that invariant marginals do not force invariant dependence.
 
 6. The construction is static. In a separately declared differentiable special case, the exact moving-map defect is
 
@@ -107,10 +107,12 @@ Kernel integration proves normalization and preserves the observation marginal. 
 
 For VFE, the joint-lift Radon--Nikodym derivative is the fine derivative (d\mathbb Q_I/d\boldsymbol\Pi_I). Relative-entropy disintegration factors it into parent and conditional derivatives and produces two nonnegative terms; no infinite quantity is subtracted. KL's zero criterion proves the discarded-conditional equality. The posterior conditional supplies the forward recovery direction, while data processing through a separately assumed common reverse kernel proves the finite converse. Equivariant substitution in the parent defining integrals proves full-law covariance, and ordinary differentiation or operator intertwining gives the typed dynamic formulas.
 
-The direct derivation has SHA-256 `52015760e5b9ee2f07e983039d93a526a120e51753e95c650cc70303e1f3fa12`. `claim-ledger.json` records thirteen affirmative or scope claims as `EVIDENCE_VERIFIED` by this direct mathematical evidence. Computation and agent agreement are not used to close them.
+The direct derivation has SHA-256 `2aa70b07751d07712a3d9395f77817317d48d77d97c3fd5fb8cd1a3f6fda226a`; the finite counterexample proof has SHA-256 `59c38ed4181b2f8fbf2b573c79cb7257516c7e2d91e44dbea870c953406de6fc`; and the deterministic arithmetic witness has SHA-256 `7092ec0a0dce059c2fcfc177ec288b0b708481aa9eace7a6ee657e3a1dc21e0c`. `claim-ledger.json` records all seventeen static target ancestors plus the dynamics boundary claim as `EVIDENCE_VERIFIED`. The extended-valued KL chain rule is a strengthening; the frozen target's finite-KL identity and equality/recovery statement are its explicit corollary. Computation and agent agreement are not used as mathematical closure.
 
-## Checkpoint status and unresolved target conjuncts
+## Final release status
 
-This is a non-release Task-3 checkpoint. The mixed target remains `CANDIDATE`, and `release.json` retains `terminal_status: null`. Task 4 still owns five direct finite counterexamples: marginal nonuniqueness, split-channel VFE failure, evaluator mismatch despite a normalized model marginal, trivial-holonomy failure to imply agreement, and marginal-invariance failure to imply joint invariance. Those five claims are atomized as `CANDIDATE` dependencies of the target.
+The mixed claim `target` is `EVIDENCE_VERIFIED`, and `release.json` records `COMPLETE_AFFIRMATIVE` with `certificate_claim` equal to `target`. Direct derivation and exact counterexamples close every static ancestor; independent reconstruction, semantic oracle erasure, and sixteen adversarial attacks all pass. The four corrected-byte domain reviews are current `APPROVE` records with Critical/High/Medium counts of zero.
 
-The theorem is pointwise in one fixed (X). It makes no claim of cross-(X) sufficiency through (X_A), a smooth or Gaussian ambient family, a canonical presentation quotient, membership selection, patchwise gluing over (\mathcal U_A), a pair of parent sections, a full geometric meta-agent, autonomy, nonequilibrium, ontic action, unique DAG or physics, or physical time.
+Review provenance is two-stage. The domain reviews bind the corrected pre-review mathematical/payload snapshot at Git `HEAD add1a69f2b83550d13abd330c13f4b4e8e9138b9`. The final ledger, release, and assembly then bind the review hashes, so their post-review metadata hashes necessarily differ. `evidence/release-provenance.json` records both snapshots without asserting a mutual raw-hash fixed point.
+
+The theorem is pointwise in one fixed (X). It makes no claim of cross-(X) sufficiency through (X_A), a smooth or Gaussian ambient family, a canonical presentation quotient, membership selection, patchwise gluing over (\mathcal U_A), a pair of parent sections, a full geometric meta-agent, canonical coarse-channel or partition selection, the downstream comparison theorem, autonomy, nonequilibrium, ontic action, a unique latent DAG or unique microscopic physics, or physical time. `DYNAMICS-SCOPE` is a verified boundary/nonclaim, not a target ancestor, because the frozen target explicitly excludes dynamics from its static closure.

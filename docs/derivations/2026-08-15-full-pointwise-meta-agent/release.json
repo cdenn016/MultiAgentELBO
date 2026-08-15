@@ -2,10 +2,62 @@
   "schema_version": "rigorous-theory-search/v1",
   "contract_id": "contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
   "target_digest": "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
-  "checkpoint": "Task 1 frozen contract",
+  "checkpoint": "Task 5 final certified release after corrected-byte same-view domain review and release-mode validation",
   "target_claim": "target",
-  "terminal_status": null,
-  "certificate_claim": null,
-  "strongest_result": "No theorem, construction, or counterexample has been established at this contract-freezing checkpoint.",
-  "unresolved_obligations": ["Derive, certify, and adversarially test every affirmative and negative conjunct from this frozen target."]
+  "terminal_status": "COMPLETE_AFFIRMATIVE",
+  "certificate_claim": "target",
+  "strongest_result": "The mixed pointwise target and all seventeen static ancestors are EVIDENCE_VERIFIED by direct Task-3 and Task-4 derivations, independent reconstruction, semantic oracle erasure, final adversarial dispositions, and four current corrected-byte domain approvals. DYNAMICS-SCOPE remains a verified non-ancestor boundary.",
+  "unresolved_obligations": [],
+  "review_bindings": [
+    {
+      "review_id": "VIEW-PROBABILITY-KERNEL",
+      "artifact_path": "evidence/reviews/view-probability-kernel.md",
+      "artifact_sha256": "14f7f00fdbc0a3e2f67357c249aa631eae336940f7ea99d9aad3b164f423b27e",
+      "disposition": "APPROVE",
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0
+      }
+    },
+    {
+      "review_id": "VIEW-INFORMATION-VFE",
+      "artifact_path": "evidence/reviews/view-information-vfe.md",
+      "artifact_sha256": "c291869ccb7d518f2df85c43f60319e59654c2769e0fdc8b07373a53430525d4",
+      "disposition": "APPROVE",
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0
+      }
+    },
+    {
+      "review_id": "VIEW-GAUGE-HOLONOMY",
+      "artifact_path": "evidence/reviews/view-gauge-holonomy.md",
+      "artifact_sha256": "431a63b06b90277ce2697d6d57a86054346564d2bb449cf11fe3673bd6fb42ba",
+      "disposition": "APPROVE",
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0
+      }
+    },
+    {
+      "review_id": "VIEW-DYNAMICS-SCOPE",
+      "artifact_path": "evidence/reviews/view-dynamics-scope.md",
+      "artifact_sha256": "d55a69454e8377ae3de156640471d777730caa21e0f569c68330d717d04d9938",
+      "disposition": "APPROVE",
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0
+      }
+    }
+  ],
+  "provenance_model": {
+    "review_input_snapshot": "corrected-pre-review-add1a69",
+    "final_release_snapshot_record": "evidence/release-provenance.json",
+    "binding_direction": "reviews bind corrected pre-review payload bytes; final metadata binds review hashes",
+    "non_circularity": "No mutual raw-hash fixed point is claimed or required."
+  }
 }

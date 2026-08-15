@@ -312,10 +312,13 @@ $$
 =\partial_tc_t+Dc_t\,V_t-\overline V_t\circ c_t.
 $$
 
-Exact autonomous closure is $\delta_t=0$. Approximate closure requires a declared norm, state
-class, time interval, and error bound. For stochastic or kernel dynamics, replace this display by
-the proper generator, lumpability, or path-law condition rather than treating a Markov channel as
-a differentiable map.
+Exact trajectory semiconjugacy on the declared state class is $\delta_t=0$. Autonomous closure
+additionally requires declared autonomous fine and parent vector fields, a fixed coarse map (or a
+correctly typed autonomous extension that incorporates the map's evolution), and well-posed fine
+and parent flows on their stated existence domains. Approximate closure requires a declared norm,
+state class, time interval, and error bound. For stochastic or kernel dynamics, replace this
+display by the proper generator, lumpability, or path-law condition rather than treating a Markov
+channel as a differentiable map.
 
 The $\partial_tc_t$ term is mandatory for adaptive memberships or a changing coarse map. The
 parameter $t$ acquires no physical or ontological interpretation merely from this equation.

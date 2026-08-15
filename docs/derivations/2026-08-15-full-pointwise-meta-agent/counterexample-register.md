@@ -53,3 +53,11 @@ q_A^b=q_A^m=\operatorname{Bernoulli}(1/2),
 The reverse fine divergence is (+\infty) and is not interchangeable with the VFE orientation. The derived prior marginals (p_A^b,p_A^m) are also fair in this singleton-observation instance but remain separately typed from the recognition marginals.
 
 Status: exact finite non-Gaussian instance of the Task-3 construction; symbolic logarithmic values are primary.
+
+## Task-5 release binding
+
+The direct proof artifact is bound at SHA-256 `59c38ed4181b2f8fbf2b573c79cb7257516c7e2d91e44dbea870c953406de6fc`; the deterministic arithmetic corroboration is bound at SHA-256 `7092ec0a0dce059c2fcfc177ec288b0b708481aa9eace7a6ee657e3a1dc21e0c` and its source at SHA-256 `204effc256fcc89d9b6cbaa80d33b88eac845b7bfe2694653b0e204eb4760b48`.
+
+All five negative claims are existential and are therefore supported by `DERIVATION` evidence with `supports: true`; none is labeled `COUNTEREXAMPLE` evidence in the verification schema. CE-2 and CE-3 refute theorems obtained by deleting the common-channel or compatibility premises, not the conditional theorem proved under those premises. CE-5 distinguishes marginal invariance from full-law invariance. CE-4 distinguishes trivial transport holonomy from equality of node laws.
+
+The witnesses do not establish an impossibility theorem for every coarsening, a converse to data processing, evaluator uniqueness on null fibers, quotient regularity, dynamics, autonomy, ontology, or gluing. They close exactly the registered existential negative ancestors.

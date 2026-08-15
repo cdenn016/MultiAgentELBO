@@ -283,7 +283,7 @@ Standard-Borel disintegration gives selected conditional kernels
 \widehat{\boldsymbol\Pi}_{I,o,X}(dY\mid z).
 \]
 
-The relative-entropy chain rule, obtained by factorizing the Radon--Nikodym derivative into its (z)-marginal density and conditional density and applying monotone truncation to the nonnegative relative-entropy integrands, gives the additive identity
+The relative-entropy chain rule, obtained by factorizing the Radon--Nikodym derivative into its (z)-marginal density and conditional density and invoking the standard extended-valued chain theorem through the nonnegative generator (\phi_0(t)=t\log t-t+1) and its monotone truncations, rather than treating the raw (t\log t) integrand as pointwise nonnegative, gives the additive identity
 
 \[
 \begin{aligned}

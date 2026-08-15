@@ -9,6 +9,15 @@
     "fetched_origin_main": "8c0f4d5b4116ac3883665756a451e025f0712b97",
     "baseline_ruling": "Execute from ceffda2, whose parent is the fetched origin/main, because the approved spec and plan are required tracked inputs. This is the sole pre-Task-1 dependency beyond origin/main."
   },
+  "release_assembly": {
+    "assembly_source_revision": "add1a69f2b83550d13abd330c13f4b4e8e9138b9",
+    "release_state": "COMPLETE_AFFIRMATIVE",
+    "review_binding_artifact": "evidence/release-assembly.json",
+    "review_input_snapshot": "corrected-pre-review-add1a69",
+    "final_release_snapshot": "evidence/release-provenance.json",
+    "target_state": "EVIDENCE_VERIFIED",
+    "terminal_status": "COMPLETE_AFFIRMATIVE"
+  },
   "target": {
     "statement": "Mixed target. Conditional-universal affirmative conjunct: for every declared standard-Borel fine and parent datum satisfying the frozen premises, construct the full normalized pointwise parent probabilistic datum by one normalized recognition-independent channel, derive its parent posterior and recognition laws and their projections, prove the exact VFE chain identity with its nonnegative conditional-KL defect and equality criterion, and establish exactly one declared full-law holonomy alternative. Negative conjuncts: Task 4 must give direct in-domain counterexamples to marginal determination of a full parent law, unconditional split-channel VFE identities, model-marginal sufficiency for evaluation compatibility, trivial-holonomy sufficiency for agreement, and marginal invariance sufficiency for joint-law invariance.",
     "kind": "MATHEMATICAL",

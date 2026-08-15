@@ -7,7 +7,6 @@
     {"from":"target","to":"DERIVED-MARGINALS"},
     {"from":"target","to":"VFE-FINITE-ZERO-DEFECT-RECOVERY"},
     {"from":"target","to":"HOLONOMY-ALTERNATIVE"},
-    {"from":"target","to":"DYNAMICS-SCOPE"},
     {"from":"target","to":"NEG-MARGINAL-DETERMINATION"},
     {"from":"target","to":"NEG-SPLIT-CHANNEL-VFE"},
     {"from":"target","to":"NEG-MODEL-MARGINAL-EVALUATION"},
