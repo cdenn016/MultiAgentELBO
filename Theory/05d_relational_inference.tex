@@ -1079,6 +1079,86 @@ representative independent.  Taking \(u=v=\varnothing\) in
 \eqref{eq:hist-intervention-behavioral-equivalence} proves that
 \(\bar\Phi_P\) is well-defined.  \(\square\)
 
+\propositionheading{Universal property of the contextual operational quotient}{prop:hist-operational-quotient-universal-property}
+Let \(A\) be any monoid with identity \(1\), let \(Y\) be a response set,
+and let \(\Phi:A\to Y\).  Define
+\begin{equation}
+a\sim_\Phi b
+\quad\Longleftrightarrow\quad
+\Phi(uav)=\Phi(ubv)
+\quad\text{for every }u,v\in A.
+\label{eq:hist-operational-contextual-equivalence}
+\end{equation}
+Then \(\sim_\Phi\) is the largest two-sided monoid congruence contained in
+the kernel relation of \(\Phi\).  Write
+\(\operatorname{Syn}(\Phi)=A/{\sim_\Phi}\), with quotient map \(\pi\) and
+response \(\bar\Phi([a])=\Phi(a)\).  If
+\(q:A\to B\) is a surjective unital monoid homomorphism and
+\(\Phi=\psi q\), there is one unique surjective unital homomorphism
+\begin{equation}
+h:B\longrightarrow\operatorname{Syn}(\Phi),
+\qquad
+\pi=hq,
+\qquad
+\bar\Phi h=\psi.
+\label{eq:hist-operational-quotient-factor}
+\end{equation}
+Thus the contextual quotient is terminal when arrows point from finer
+response-compatible quotients to coarser ones, and is contextually fully
+abstract relative to the fixed data \((A,\Phi,Y)\).  If \(A\) is finite, it
+has minimum protocol-class cardinality; equality of cardinalities makes
+\(h\) an isomorphism uniquely over \(A\).  The cardinality conclusion is
+finite-only and does not minimize a latent state space, DAG, kernel family,
+parameterization, or computational realization.  After forgetting the map
+from \(A\), a bare response monoid need not be rigid.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Equation \eqref{eq:hist-operational-contextual-equivalence} is an equivalence
+relation, and associativity shows that \(a\sim_\Phi b\) implies
+\(xay\sim_\Phi xby\).  Taking \(u=v=1\) places it inside the kernel of
+\(\Phi\).  Conversely, if \(\approx\) is a two-sided congruence contained in
+that kernel and \(a\approx b\), then \(uav\approx ubv\) for all \(u,v\), so
+\(a\sim_\Phi b\).  Hence it is the largest such congruence.  The kernel
+congruence of \(q\) is therefore contained in \(\sim_\Phi\), and
+\(h(q(a))=[a]\) is well-defined, unital, multiplicative, surjective, and the
+only map satisfying \(hq=\pi\).  The response identity follows from
+\(\Phi=\psi q\).  When \(A\) is finite, \(q\) makes \(B\) finite and the
+surjection \(h\) gives
+\(|B|\geq|\operatorname{Syn}(\Phi)|\); equality makes \(h\) bijective.
+Uniqueness over \(A\) follows from surjectivity of \(q\).  \(\square\)
+
+\theoremheading{Compact operational quotient}{thm:hist-compact-operational-quotient}
+Suppose that \(A\) is a compact metrizable monoid with jointly continuous
+multiplication, \(Y\) is metrizable Hausdorff, and \(\Phi:A\to Y\) is
+continuous.  For any countable dense \(D\subseteq A\) containing \(1\), the
+signature
+\begin{equation}
+S_D(a)=\bigl(\Phi(uav)\bigr)_{(u,v)\in D\times D}
+\label{eq:hist-operational-countable-signature}
+\end{equation}
+has kernel \(\sim_\Phi\).  Its compact metrizable image is homeomorphic to
+\(\operatorname{Syn}(\Phi)\), whose descended multiplication and response
+are continuous.  Only the coding depends on \(D\); multiplication on the
+image is induced by \(S_D(ab)\), not coordinatewise multiplication.  If a
+topological response-compatible triple has compact Hausdorff monoid \(B\),
+continuous \(q\) and \(\psi\), and quotient map \(q:A\to B\), then the
+factor \(h\) in \eqref{eq:hist-operational-quotient-factor} is the unique
+continuous surjection with those identities.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Contextual equivalence implies equal signatures.  Conversely, approximate
+arbitrary \(u,v\in A\) by sequences in \(D\); continuity of multiplication
+and \(\Phi\) promotes equality on \(D\times D\) to equality in all contexts.
+The signature therefore factors to a continuous bijection from the compact
+quotient onto the Hausdorff image \(S_D(A)\), hence a homeomorphism.  The
+image is compact metrizable.  The product quotient map
+\(\pi\times\pi\) is quotient because it is a continuous surjection from a
+compact space to a Hausdorff space, so
+\(\bar m(\pi\times\pi)=\pi m\) proves continuity of quotient
+multiplication; \(\bar\Phi\pi=\Phi\) proves continuity of the response.
+Finally, \(hq=\pi\) and the quotient property of \(q\) prove continuity of
+the algebraically unique factor.  \(\square\)
+
 \propositionheading{Functorial operational reduction}{prop:hist-intervention-reduction-functor}
 Typed transport of nodes and states carries contexts, right override, and
 complete retained responses compatibly.  It therefore descends through
@@ -1223,16 +1303,229 @@ Apply \Cref{prop:hist-conditional-intervention-recovery-nogo} to the equal
 passive images and nonisomorphic reduced experiments in
 \Cref{thm:hist-finite-typed-intervention-nonidentifiability}.  \(\square\)
 
+The operational extensions below are bound to the released certificate with
+target digest
+\texttt{af08539e}\allowbreak%
+\texttt{8868b09e}\allowbreak%
+\texttt{5165943d}\allowbreak%
+\texttt{91c488c6}\allowbreak%
+\texttt{e06a00ac}\allowbreak%
+\texttt{7a00b1d4}\allowbreak%
+\texttt{08ae22dd}\allowbreak%
+\texttt{ca6ee7e1}.  They retain one ordered external boundary,
+target/type coloring where retained, and one protocol-independent response intertwiner.
+They do not make those choices canonical.  \status{ESTABLISHED}
+
+\definitionheading{Normalized soft-intervention monoid}{def:hist-normalized-soft-intervention-monoid}
+For a finite DAG on finite state spaces, let \(J_v\) be a compact subset of
+the normalized stochastic-kernel polytope at node \(v\), with its Euclidean,
+equivalently evaluation-subspace, topology.  Adjoin an isolated symbol
+\(\bot_v\) selecting the baseline kernel and set
+\begin{equation}
+\mathcal A_J=\prod_v\bigl(\{\bot_v\}\sqcup J_v\bigr),
+\qquad
+(a\star b)_v=
+\begin{cases}
+b_v,&b_v\ne\bot_v,\\
+a_v,&b_v=\bot_v.
+\end{cases}
+\label{eq:hist-normalized-soft-right-override}
+\end{equation}
+This is a compact metrizable topological monoid.  Every replacement is a
+normalized kernel, and every coordinate of the retained response is a finite
+sum of finite products of continuous kernel evaluations.  Hence its response
+is continuous and
+\Cref{thm:hist-compact-operational-quotient} supplies a compact operational
+quotient.  \status{ESTABLISHED}
+
+\theoremheading{Marked soft BSC nonidentifiability}{thm:hist-soft-bsc-target-face-nonidentifiability}
+Retain the mediator-replacement face, the ordered roles \(R\) as
+input/parameter and \(O\) as output/observation, and one global typed response
+intertwiner for every protocol.  For \(0<\epsilon<1/2\), replace the mediator
+kernel in \(L(a,b)\) by
+\begin{equation}
+K_t(E=0\mid R=r)=t_r,
+\qquad
+t\in[\epsilon,1-\epsilon]^2,
+\label{eq:hist-soft-bsc-mediator-face}
+\end{equation}
+and write \(Q_b(t)\) for the retained \((R,O)\)-law.  Then
+\begin{equation}
+\operatorname{TV}\!\left(Q_b(t),Q_b(t')\right)
+=\frac{|1-2b|}{2}\bigl(|t_0-t'_0|+|t_1-t'_1|\bigr),
+\label{eq:hist-soft-bsc-tv}
+\end{equation}
+so the marked-face diameters for \(L_1=L(1/4,1/3)\) and
+\(L_2=L(1/3,1/4)\) are respectively
+\begin{equation}
+\frac{1-2\epsilon}{3}
+\qquad\text{and}\qquad
+\frac{1-2\epsilon}{2}.
+\label{eq:hist-soft-bsc-diameters}
+\end{equation}
+The passive retained laws agree, but the marked soft experiments are nonisomorphic in
+this category.  The obstruction is not confined to hard endpoints: for every
+\(\epsilon<s_-<s_+<1-\epsilon\), the two parent-independent interior
+preparations have separation \(|1-2b|(s_+-s_-)\).  Target erasure, exchange
+of \(R\) with \(O\), and time reversal are not admitted.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Conditionally on \(R=r\), one has
+\(Q_b(t)(O=0\mid R=r)=b+(1-2b)t_r\).  Since \(R\) is uniform, summing the
+absolute changes in both output atoms of each row gives
+\eqref{eq:hist-soft-bsc-tv}.  Its diameter gives
+\eqref{eq:hist-soft-bsc-diameters}.  A typed boundary bijection preserves
+total variation and an admitted protocol map preserves the marked mediator
+face, so unequal diameters forbid an isomorphism.  Substituting the two
+constant interior preparations gives the final formula.  \(\square\)
+
+\definitionheading{Affine independently randomized interventions}{def:hist-affine-randomized-intervention-monoid}
+For a finite hard reduced protocol monoid \(S\), put
+\(\operatorname{Rand}(S)=\Delta(S)\).  Independent sequential selectors
+compose by convolution and the unobserved response is affine:
+\begin{equation}
+(p*q)(z)=\sum_{xy=z}p(x)q(y),
+\qquad
+\Phi_{\mathrm R}(p)=\sum_{x\in S}p(x)\phi(x).
+\label{eq:hist-affine-randomized-convolution}
+\end{equation}
+The unit is the point mass at the hard identity.  This semantics assumes
+independent selector draws; a correlated or shared-noise selector requires a
+joint selector object.  \status{DEFINITION}
+
+\theoremheading{Randomized hard-intervention nonidentifiability}{thm:hist-randomized-hard-intervention-nonidentifiability}
+For each released fifteen-class BSC monoid, the deterministic complete
+two-sided contextual vectors are linearly independent.  An exact
+fifteen-coordinate minor, with \(\delta\) denoting passive crossover, has
+\begin{equation}
+\det M(b,\delta)
+=\frac{(2b-1)^6(2\delta-1)^3}{32},
+\label{eq:hist-randomized-contextual-minor}
+\end{equation}
+which is nonzero for both models at \(\delta=5/12\).  Therefore randomized
+contextual equivalence is equality.  Any admitted response-compatible affine
+unital convolution-monoid isomorphism maps simplex vertices to vertices and
+restricts to a response-compatible hard-monoid isomorphism, already ruled out
+by \Cref{thm:hist-finite-typed-intervention-nonidentifiability}.  Equal
+passive retained laws therefore do not identify the independently randomized response
+experiment.  Convexification does invalidate the old unmatched-response
+invariant: the response in \eqref{eq:hist-intervention-unmatched-response} is
+the mixture with weights \(5/6\) and \(1/6\) of the two mediator-point
+responses of \(L_2\).  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Equality in every deterministic left and right context gives
+\(\sum_x(p(x)-q(x))c_x=0\), where \(c_x\) is the complete contextual vector.
+The nonzero determinant in
+\eqref{eq:hist-randomized-contextual-minor} forces \(p=q\).  An affine
+bijection of finite simplices preserves their extreme points; convolution
+and unit preservation then make its vertex permutation a unital hard-monoid
+isomorphism.  The single global response intertwiner makes that restriction
+response-compatible, giving the contradiction.  \(\square\)
+
+\propositionheading{Standard-Borel intervention semantics}{prop:hist-standard-borel-intervention-semantics}
+Let a finite DAG have standard-Borel node spaces and standard-Borel
+replacement palettes.  Assume that every baseline and replacement mechanism
+is a declared normalized pointwise kernel and that, for every measurable
+output set \(C\), its evaluation
+\((\theta,x_{\operatorname{pa}(v)})\mapsto
+K_v(\theta,x_{\operatorname{pa}(v)};C)\) is jointly measurable.  Finite
+topological-order recursion then produces a normalized joint law for every
+protocol and a Borel retained response when the retained-law space carries
+its evaluation sigma-algebra.  The construction supplies an algebraic
+contextual quotient but does not by itself establish a standard-Borel
+quotient; that requires an exhibited smooth classifier or stronger
+topological hypotheses.  No conditional on a passive-law null set is inferred
+by this construction.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Iterate the declared kernels in topological order.  The standard monotone
+class argument for parameterized kernel integration makes the integral of
+every bounded measurable cylinder function measurable in the protocol.
+Finite induction gives a normalized joint kernel, and retained-set
+evaluations remain measurable.  These evaluations generate the declared law
+sigma-algebra.  Standard Borelness alone does not make the uncountable
+contextual equivalence relation smooth.  \(\square\)
+
+\corollaryheading{Compact-Feller operational quotient}{cor:hist-compact-feller-operational-quotient}
+If the node spaces are compact Polish, the palettes are compact metrizable,
+each \(\bot_v\) is isolated, and all baseline and replacement kernels are
+jointly Feller in state and palette parameter, then the finite-coordinate
+right-override monoid in
+\eqref{eq:hist-normalized-soft-right-override} has weakly continuous retained
+response.  Its contextual quotient is compact metrizable with continuous
+multiplication and response.  Finite-coordinate does not mean finite
+cardinality.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Successive reverse-topological integration sends every continuous test
+function to a continuous function of the remaining state and palette
+parameters.  Thus protocol evaluation of every continuous retained test
+function is continuous, which is weak continuity.  Apply
+\Cref{thm:hist-compact-operational-quotient}.  \(\square\)
+
+\theoremheading{Circle heat-intervention nonidentifiability}{thm:hist-circle-heat-intervention-nonidentifiability}
+Let \(\mathbb T=\mathbb R/(2\pi\mathbb Z)\), let \(m\) be normalized Haar
+law, and let \(H_\tau e_n=e^{-n^2\tau}e_n\) be its heat kernels.  For
+\(0<s<t\), the ordered chains
+\begin{equation}
+P_1=m(dR)H_s(R,dE)H_t(E,dO),
+\qquad
+P_2=m(dR)H_t(R,dE)H_s(E,dO)
+\label{eq:hist-circle-heat-chains}
+\end{equation}
+have the same passive retained law
+\(m(dR)H_{s+t}(R,dO)\).  Give the marked mediator the palette
+\(\mathcal P(\mathbb T)\) in the weak topology and constant-parent
+replacements \(K_\nu(dE\mid R=r)=\nu(dE)\).  The palette is compact
+metrizable, and the family \((K_\nu)_{\nu\in\mathcal P(\mathbb T)}\) is
+jointly Feller.  Nevertheless,
+\begin{equation}
+H_t=H_sH_{t-s},
+\qquad
+\text{but no Markov kernel }L\text{ satisfies }H_s=H_tL,
+\label{eq:hist-circle-heat-blackwell}
+\end{equation}
+and the soft output sets obey
+\begin{equation}
+\{\nu H_t:\nu\in\mathcal P(\mathbb T)\}
+\subsetneq
+\{\nu H_s:\nu\in\mathcal P(\mathbb T)\}.
+\label{eq:hist-circle-heat-response-inclusion}
+\end{equation}
+For every fixed \(x_0\) and \(0<\rho<t-s\), the positive smooth law
+\(\nu_\rho=H_\rho(x_0,\mathord\cdot)\) supplies a strictness witness.
+Hence passive retained-law equality does not identify this compact-Feller mediator
+experiment under maps that preserve the marked mediator, circle heat
+geometry, ordered \(R\)-to-\(O\) roles, compatible protocol map, and one
+global response intertwiner.  Boundary exchange and time reversal are not
+admitted.  \status{ESTABLISHED}
+
+\paragraph{Proof.}
+The heat-semigroup law proves passive retained-law equality and the forward garbling in
+\eqref{eq:hist-circle-heat-blackwell}.  If \(H_s=H_tL\), put
+\(g=Le_1\).  Markov positivity gives \(|g|\leq1\), while the first Fourier
+coefficient of \(H_tg=e^{-s}e_1\) would satisfy
+\(|\widehat g(1)|=e^{t-s}>1\), a contradiction.  The forward garbling gives
+the inclusion in \eqref{eq:hist-circle-heat-response-inclusion}.  If
+\(H_{\rho+s}(x_0,\mathord\cdot)=\nu H_t\), comparison of first Fourier
+magnitudes gives \(|\widehat\nu(1)|=e^{t-s-\rho}>1\), again impossible.
+Since \(\rho>0\), the witness has a positive smooth heat density.  \(\square\)
+
 \openproblemheading{Category-independent typed-intervention recovery}{open:hist-typed-intervention-recovery}
-The preceding theorem supersedes the earlier inconclusive status only for
-the frozen finite BSC category, all partial hard assignments, its two-sided
-behavioral quotient, and the admitted typed boundary flips.  It does not
-choose that category canonically, prove a minimal realization, compare every
-latent dilation, or cover soft, stochastic, continuous, continuum, gauge, or
-renormalization-scale interventions.  It supplies no criterion for autonomous
-agency and no bridge from the reduced experiment to VFE emergence, physical
-geometry, time, units, constants, or ontology.  Those category-independent
-and interpretive recovery questions remain open.  \status{OPEN}
+The hard theorem and its extensions establish protocol-class minimality
+relative to fixed operational data, finite normalized marked-soft and
+independently randomized no-go results, declared standard-Borel response
+semantics, a compact-Feller positive tier, and the frozen circle heat-kernel
+no-go.  They do not choose the protocol category, targets, or ordered boundary
+canonically; prove a target-erasing soft theorem; cover correlated,
+shared-noise, or adaptive selectors; identify point interventions from
+almost-sure observational conditionals; supply a noncompact quotient theorem;
+compare every latent dilation; or construct a minimal raw DAG/generative
+realization.  They give no fixed-observation ELBO or VFE equality, no
+criterion for autonomous agency, and no continuum base-manifold, gauge/RG,
+or physical bridge.  Those category-independent and interpretive recovery
+questions remain open.  \status{OPEN}
 
 \theoremheading{Finite reference-relative I-projection}{thm:hist-reference-relative-iprojection}
 Let \(A\) be finite, let \(p\in\Delta(A)\), let
@@ -1396,9 +1689,16 @@ absolute split-selector target depends only on
 \Cref{thm:hist-correlated-refinement-nogo}; none of the positive replacements
 is a premise.  Arbitrary-family coarse-preserving nonproduct selection,
 autonomous agency, continuum and renormalization limits, physical geometry,
-units, and time remain open.  The finite BSC recovery target is refuted by
-\Cref{thm:hist-finite-typed-intervention-nonidentifiability}, while
-category-independent intervention semantics remains open as stated in
+units, and time remain open.  The finite hard BSC recovery target is refuted
+by \Cref{thm:hist-finite-typed-intervention-nonidentifiability}.  Relative to
+fixed target coloring where retained, ordered boundary roles, and admitted morphisms, its
+operational quotient is universal and minimal as stated in
+\Cref{prop:hist-operational-quotient-universal-property}; marked soft and
+independently randomized extensions remain nonidentifiable by
+\Cref{thm:hist-soft-bsc-target-face-nonidentifiability,thm:hist-randomized-hard-intervention-nonidentifiability},
+and \Cref{thm:hist-circle-heat-intervention-nonidentifiability} supplies a
+compact-Feller continuous witness.  Category-independent intervention
+semantics remains open as stated in
 \Cref{open:hist-typed-intervention-recovery}.
 
 \section{Natural-gradient selection of an oriented orbit}

@@ -73,24 +73,53 @@ the retained Fisher tensor and every common \(C^1\) pullback descend. Arbitrary 
 full-latent VFE and full-joint Fisher tensors do not factor through those retained data, and node
 inventories do not descend under the certified observational equivalence.
 
-The typed-intervention boundary is now exact in one declared finite category. Raw normalized typed
-DAG presentations form \(\mathsf{FinTIP}_{R,O}^{\mathrm{iso}}\); all partial hard assignments form
-a total right-override monoid; and equality of complete two-sided contextual response signatures
-defines its operational quotient. This yields
+The operational-intervention boundary is now exact in several declared categories, always relative
+to fixed protocol data, target/type coloring where retained, ordered external roles, and admitted
+morphisms. For any fixed monoid \(A\) and response \(\Phi\), write
+\(\pi:A\twoheadrightarrow\operatorname{Syn}(\Phi)\). Every response-compatible
+\(q:A\twoheadrightarrow B\) with \(\Phi=\psi q\) admits one unique surjective unital homomorphism
+\(h:B\twoheadrightarrow\operatorname{Syn}(\Phi)\) satisfying
+\(\pi=hq\) and \(\bar\Phi h=\psi\). When \(A\) is finite this
+minimizes protocol-class cardinality only. Under compact-metrizable monoid and continuous-response
+hypotheses, a countable dense contextual signature realizes a compact metrizable quotient with
+continuous multiplication and response. Neither result selects a raw DAG or latent realization.
+
+Raw finite normalized typed DAG presentations still form
+\(\mathsf{FinTIP}_{R,O}^{\mathrm{iso}}\), all partial hard assignments form a total
+right-override monoid, and reduction gives
 \(\operatorname{Red}:\mathsf{FinTIP}\to\mathsf{FinRIE}\) and
-\(\overline U_{\mathrm{pass}}:\mathsf{FinRIE}\to\mathsf{FinObs}\).
-The same-signature chains \(L(1/4,1/3)\) and \(L(1/3,1/4)\) have the same passive retained law
-but nonisomorphic fifteen-class reduced experiments because one complete response-image element
-remains unmatched under every admitted boundary flip. Thus no universal
-\(R\overline U_{\mathrm{pass}}\cong\operatorname{id}\) recovers every reduced experiment in
-that BSC subcategory, although a conventional
-\(\overline U_{\mathrm{pass}}R\cong\operatorname{id}\) may choose a representative. Independent
-null-node collapse is a control, and unequal mediator total variation is diagnostic rather than the
-proof invariant. This supersedes the earlier broad **INCONCLUSIVE** wording only inside the frozen
-finite hard-intervention category. On the tier \(Q_R\ll P_R(\cdot\mid o)\), posterior completion,
-or minimization over auxiliary lifts at fixed \(Q_R\), removes the expected conditional-KL defect.
-These finite informational invariants do not canonically agentize an environment node. Category
-canonicity, autonomous agency, richer interventions, and the continuum/physical bridge remain open.
+\(\overline U_{\mathrm{pass}}:\mathsf{FinRIE}\to\mathsf{FinObs}\). The chains with equal passive retained law
+\(L(1/4,1/3)\) and \(L(1/3,1/4)\) have nonisomorphic fifteen-class hard experiments, so no
+universal \(R\overline U_{\mathrm{pass}}\cong\operatorname{id}\) recovers every reduced
+experiment there; \(\overline U_{\mathrm{pass}}R\cong\operatorname{id}\) may still choose a
+representative. Independent null-node collapse is a control.
+
+The same BSC pair remains nonidentifiable for normalized marked-soft mediator replacements: its
+exact face diameters are \((1-2\epsilon)/3\) and \((1-2\epsilon)/2\), with strict-interior
+witnesses. It also remains nonidentifiable after independent affine randomization, where a nonzero
+fifteen-coordinate contextual determinant forces randomized equivalence to be equality and every
+admitted affine convolution isomorphism restricts to the forbidden hard isomorphism. This second
+proof is needed because convexification destroys the old unmatched-response invariant.
+
+On a finite DAG, declared normalized standard-Borel kernel families with jointly measurable
+evaluations give a Borel retained response. The construction supplies an algebraic quotient but does
+not by itself establish a standard-Borel quotient; that requires an exhibited smooth classifier or
+stronger topology. Compact-Polish state spaces, compact palettes, isolated baseline symbols,
+and jointly Feller kernels give a compact metrizable quotient with weakly continuous response. On
+the circle, the ordered heat chains \(H_sH_t\) and \(H_tH_s\) have the same passive retained law,
+yet \(H_s\) strictly Blackwell-dominates \(H_t\) and their soft response sets are strictly
+nested. Where declared, the marked-soft and circle comparisons retain the mediator target. Every
+BSC and circle comparison retains \(R\) as input/parameter, \(O\) as output/observation, and one global response
+map; only the circle comparison retains heat geometry. Target erasure, boundary exchange, and time
+reversal are not admitted in those frozen categories.
+
+On the tier \(Q_R\ll P_R(\cdot\mid o)\), posterior completion, or minimization over auxiliary
+lifts at fixed \(Q_R\), removes the expected conditional-KL defect. None of these operational
+invariants canonically agentizes an environment node. Correlated or adaptive interventions and
+identification of null-version point interventions from almost-sure passive observational
+conditionals remain open, as do noncompact quotients, raw minimal realization, category canonicity,
+autonomous agency, base-manifold continuum/gauge/RG dynamics, fixed-observation VFE recovery, and
+the physical bridge.
 
 The finite selector boundary is sharper. Under fixed-arity coordinatewise finite Markov kernels
 whose channel randomness is independently tensored, preparation maps uniquely force the product
@@ -645,19 +674,23 @@ return and not yet reproduced in `Theory/`."
 ## 9. Open decisions
 
 1. **Agent-only closure after finite presentation descent.** Collapsed retained-variable VFE and
-   strictly positive \(C^2\) parameterwise retained Fisher tensors descend. Arbitrary uncompleted
-   full-latent VFE and full-joint Fisher tensors do not factor through the retained data, and node
-   inventories do not descend under the certified observational equivalence. In the frozen finite
-   BSC category, equal passive law does not determine the reduced hard-intervention experiment:
-   the same-signature pair has incompatible complete response images under every admitted boundary
-   flip. Hence universal \(R\overline U_{\mathrm{pass}}\cong\operatorname{id}\) recovery fails
-   there, while a conventional \(\overline U_{\mathrm{pass}}R\cong\operatorname{id}\) may still
-   select a representative. The null-node control collapses operationally and does not carry the
-   no-go. The absolute marginal selector under the declared two-split contract is separately
-   refuted, while reference-relative selectors require added data and do not agentize a node. What
-   category, minimal-realization rule, or equivalence-enriched criterion, if any, canonically
-   agentizes operational environment nodes? Which of \(\mathcal C,P,G,\omega\), incidence, and
-   interaction kernels must be reconstructed from the agents themselves?
+   strictly positive \(C^2\) parameterwise retained Fisher tensors descend; arbitrary uncompleted
+   full-latent VFE, full-joint Fisher tensors, and node inventories do not. Relative to fixed
+   operational data, the contextual protocol quotient is terminal and, for finite protocol monoids,
+   has minimum class cardinality over the raw quotient map. This is not raw-realization minimality.
+   In the frozen BSC category, equal passive retained law determines neither the reduced hard experiment, the
+   normalized marked-soft mediator face, nor the independently randomized affine experiment. The
+   compact-Feller circle pair supplies the corresponding smooth continuous no-go under preserved
+   heat geometry and ordered boundary roles. On a finite DAG, declared normalized standard-Borel
+   kernel families with jointly measurable evaluations give a Borel retained response. Measurability
+   alone does not establish a standard-Borel quotient; that requires an exhibited smooth classifier or
+   stronger topology.
+   The null-node control collapses operationally; the absolute marginal selector under the declared
+   two-split contract is separately refuted; and reference-relative selectors require added data.
+   What protocol category, target typing, raw realization category, complexity rule, or
+   equivalence-enriched criterion, if any, canonically agentizes operational environment nodes?
+   Which of \(\mathcal C,P,G,\omega\), incidence, and interaction kernels must be reconstructed
+   from the agents themselves?
 2. **Physicalization rule.** Which individual or collective joint-law section, connection, quotient,
    channel combination, and cross-agent aggregation define a shared candidate geometry? What supplies
    nondegeneracy, Lorentzian signature, causal cones, and operational rods and clocks?
@@ -698,22 +731,33 @@ Say this, and not more:
 > retained-variable VFE and strictly positive \(C^2\), parameterwise retained-family Fisher tensors descend;
 > arbitrary uncompleted full-latent VFE and full-joint Fisher tensors do not factor through those
 > retained data, and node inventories do not descend under the certified observational equivalence.
-> In the declared finite hard-intervention category, raw presentations reduce through the total
-> right-override monoid and its two-sided behavioral congruence. The same-signature BSC pair has one
-> passive law but incompatible complete reduced response images under all admitted boundary flips,
-> so universal \(R\overline U_{\mathrm{pass}}\cong\operatorname{id}\) recovery fails there.
-> A conventional \(\overline U_{\mathrm{pass}}R\cong\operatorname{id}\) may still select one
-> representative. Null-node collapse is a control and mediator total variation is diagnostic, not
-> the proof invariant. On the support-qualified tier, posterior completion or minimization over
-> auxiliary lifts removes the conditional-KL defect. These finite category-relative invariants do
-> not establish canonical agency or ontological identity. Connection-relative Fisher pullbacks supply
-> gauge-invariant positive-semidefinite informational semigeometries. Their identification with shared
-> physical geometry, units, constants, causal structure, or physical time requires additional bridge
-> theorems. \(P\), \(G\), \(\omega\), the interaction incidence, and the record kernels are presently
-> **declared inputs**, not derived from the agents. The absolute marginal selector under the declared
-> two-split contract is **REFUTED**, while reference-relative selection exists only with added data.
-> Category canonicity, richer intervention semantics, reconstruction of autonomous agency, and
-> reclassification of \(\omega\) remain open, and the
+> Relative to one fixed protocol monoid, response, target coloring where retained, and morphism category, the
+> two-sided contextual quotient is terminal from finer to coarser response-compatible quotients.
+> Finite protocol monoids have minimum class cardinality over the raw quotient map; compact
+> topological hypotheses give a compact metrizable quotient. Neither statement minimizes a raw DAG.
+> In the declared BSC category, one passive retained law determines neither the reduced hard experiment, the
+> normalized marked-soft mediator face, nor the independently randomized affine experiment. The
+> hard response-image mismatch, soft face-diameter mismatch, and randomized contextual-rank
+> obstruction are distinct invariants. On a finite DAG, declared normalized standard-Borel kernel
+> families with jointly measurable evaluations give a Borel retained response. Measurability alone
+> does not establish a standard-Borel quotient; that requires an exhibited smooth classifier or
+> stronger topology. Compact-Feller hypotheses do. The ordered circle heat pair
+> has the same passive retained law but strict Blackwell and soft response-set separation. Where
+> declared, the marked-soft and circle comparisons retain the mediator target. Every BSC and circle comparison
+> retains the ordered \(R\)-to-\(O\) boundary and one global response map; only the circle comparison
+> retains heat geometry. They do not cover target erasure, correlated/adaptive selectors, or identification
+> of null-version point interventions from almost-sure passive observational conditionals. They also
+> do not cover noncompact quotients or raw minimal realization.
+> On the support-qualified tier, posterior completion or minimization over auxiliary lifts removes
+> the conditional-KL defect. These category-relative invariants do not establish canonical agency or
+> ontological identity. Connection-relative Fisher pullbacks supply gauge-invariant
+> positive-semidefinite informational semigeometries. Their identification with shared physical
+> geometry, units, constants, causal structure, or physical time requires additional bridge
+> theorems. \(P\), \(G\), \(\omega\), the interaction incidence, and the record kernels are
+> presently **declared inputs**, not derived from the agents. The absolute marginal selector under
+> the declared two-split contract is **REFUTED**, while reference-relative selection exists only
+> with added data. Category canonicity, reconstruction of autonomous agency, continuum gauge/RG
+> semantics, fixed-observation VFE recovery, and reclassification of \(\omega\) remain open, and the
 > connection is state-bearing wherever §8's curve construction or PIFB2's Regime II is in force.
 
 Do **not** say: that the complete PIFB2/MAgent action has been derived from the exact ELBO; that

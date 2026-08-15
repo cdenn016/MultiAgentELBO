@@ -3391,3 +3391,185 @@ Still **OPEN/TODO** are extension over \(R\), patch gluing, active-set changes, 
 selection, adaptive or dynamically selected memberships, autonomous agency, nonlinear full-law VFE
 semiconjugacy, physical time, and continuum limits. Nothing in this pointwise certificate resolves
 those obligations.
+
+---
+
+## 10. 2026-08-15 governing correction -- operational intervention extensions
+
+This chronological correction preserves the finite hard-intervention certificate in Section 8 and
+supersedes only its blanket statement that soft, stochastic, and continuous intervention semantics
+remain open. The governing package is
+docs/derivations/2026-08-14-operational-intervention-extensions/, with target digest
+
+af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1.
+
+Its frozen conjunction is released as **COMPLETE_AFFIRMATIVE**. Every statement below is relative
+to fixed operational data, target/type coloring where retained, ordered external roles, and the
+admitted morphisms. Nothing here chooses those data ontologically.
+
+### 10.1 Universal and compact operational quotients
+
+For an arbitrary monoid \(A\), response set \(Y\), and response
+\(\Phi:A\to Y\), define
+
+\[
+a\equiv_\Phi b
+\quad\Longleftrightarrow\quad
+\Phi(uav)=\Phi(ubv)
+\quad\text{for every }u,v\in A.
+\]
+
+This is the largest two-sided monoid congruence contained in
+\(\ker\Phi\). Writing \(\operatorname{Syn}(\Phi)=A/{\equiv_\Phi}\) and
+\(\pi:A\to\operatorname{Syn}(\Phi)\), every response-compatible triple
+\((q:A\twoheadrightarrow B,\psi)\) with \(\Phi=\psi q\) has one unique
+surjective unital homomorphism
+
+\[
+h:B\longrightarrow\operatorname{Syn}(\Phi),
+\qquad
+\pi=hq,
+\qquad
+\bar\Phi h=\psi.
+\]
+
+Thus the quotient is terminal when arrows point from finer compatible quotients to coarser ones and
+is contextually fully abstract relative to \((A,\Phi,Y)\). If \(A\) is finite,
+\(\operatorname{Syn}(\Phi)\) has minimum protocol-class cardinality; equality of cardinalities makes
+\(h\) the unique isomorphism over \(A\). Finiteness is used only for cardinality. After forgetting
+the raw quotient map, a bare response monoid may have nontrivial response-preserving automorphisms.
+No node, edge, latent state, kernel family, parameter count, or computational realization is
+minimized.
+
+If \(A\) is compact metrizable with jointly continuous multiplication, \(Y\) is metrizable
+Hausdorff, and \(\Phi\) is continuous, a countable dense context set \(D\) gives the complete
+signature
+
+\[
+S_D(a)=\bigl(\Phi(uav)\bigr)_{(u,v)\in D\times D}.
+\]
+
+Its kernel is \(\equiv_\Phi\), and its compact metrizable image is homeomorphic to the quotient.
+The descended multiplication and response are continuous. The same terminal factor is continuous
+among compact-Hausdorff response-compatible triples for which \(q\) and \(\psi\) are continuous and
+\(q\) is a quotient map. Compactness, continuity, and quotient-map hypotheses are load-bearing.
+
+### 10.2 Normalized marked-soft and independently randomized BSC no-go results
+
+For a finite DAG on finite state spaces, choose at each node a compact palette \(J_v\) inside the
+finite-dimensional normalized stochastic-kernel polytope, with its evaluation topology. Adjoin an
+isolated baseline symbol \(\bot_v\) and use componentwise total right override on
+
+\[
+\mathcal A_J=\prod_v\bigl(\{\bot_v\}\sqcup J_v\bigr).
+\]
+
+This is a compact metrizable topological monoid. Kernel replacement preserves normalization, and
+every retained-law coordinate is a finite polynomial in continuous kernel evaluations, so the
+response is continuous and the compact quotient theorem applies.
+
+For the chains \(L_1=L(1/4,1/3)\) and \(L_2=L(1/3,1/4)\) with equal passive retained law, retain the marked mediator
+face
+
+\[
+K_t(E=0\mid R=r)=t_r,
+\qquad
+t\in[\epsilon,1-\epsilon]^2,
+\qquad
+0<\epsilon<\tfrac12.
+\]
+
+If \(Q_b(t)\) is the retained \((R,O)\)-law, then
+
+\[
+\operatorname{TV}\!\left(Q_b(t),Q_b(t')\right)
+=\frac{|1-2b|}{2}\left(|t_0-t'_0|+|t_1-t'_1|\right).
+\]
+
+The exact marked-face diameters are \((1-2\epsilon)/3\) and
+\((1-2\epsilon)/2\). Every
+\(\epsilon<s_-<s_+<1-\epsilon\) gives the strict-interior separation
+\(|1-2b|(s_+-s_-)\), so hard endpoints do not carry the result. The no-go preserves the mediator
+target, \(R\) as input/parameter, \(O\) as output/observation, and one global response map.
+Target erasure, boundary exchange, and time reversal are different categories.
+
+For each released fifteen-class hard protocol monoid \(S\), independently randomized selectors
+form the affine convolution monoid \(\Delta(S)\). The complete contextual vectors are linearly
+independent because an exact fifteen-coordinate minor has
+
+\[
+\det M(b,\delta)=\frac{(2b-1)^6(2\delta-1)^3}{32},
+\]
+
+which is nonzero for both models at passive crossover \(\delta=5/12\). Randomized behavioral
+equivalence is therefore equality. Every admitted affine unital convolution-monoid isomorphism maps
+simplex vertices to vertices and would restrict to the already-refuted hard isomorphism. Equality
+of the passive retained laws does not identify the independently randomized experiment.
+
+The old unmatched hard response is not a randomized invariant: in the other model it is the affine
+mixture with weights \(5/6\) and \(1/6\) of the two mediator-point responses. Correlated or
+shared-noise sequential randomization is not independent convolution; it needs a joint selector or
+coupling and remains outside the theorem.
+
+### 10.3 Declared standard-Borel semantics and the compact-Feller tier
+
+For a finite DAG of standard-Borel node spaces and standard-Borel palettes, declare every baseline
+and replacement mechanism as a normalized pointwise kernel and require joint measurability of all
+kernel evaluations. Finite topological-order recursion gives one normalized joint law per protocol
+and a Borel retained response into the law space with its evaluation sigma-algebra. The construction
+does not infer a pointwise conditional from a passive observational law. It supplies an algebraic
+contextual quotient but does not by itself establish a standard-Borel or smooth quotient; that
+requires an exhibited smooth classifier or stronger topology.
+
+A sufficient positive tier uses compact-Polish node spaces, compact metrizable palettes, isolated
+baseline symbols, and jointly Feller kernels. The finite-coordinate right-override monoid may have
+infinite cardinality. Its retained response is weakly continuous, so the contextual quotient is
+compact metrizable with continuous multiplication and response.
+
+On the circle \(\mathbb T\), let \(m\) be normalized Haar law and let \(H_\tau\) be the heat
+kernels. For \(0<s<t\), the ordered chains
+
+\[
+P_1=m(dR)H_s(R,dE)H_t(E,dO),
+\qquad
+P_2=m(dR)H_t(R,dE)H_s(E,dO)
+\]
+
+have the same passive retained law \(m(dR)H_{s+t}(R,dO)\). Give the mediator the compact weak palette
+\(\mathcal P(\mathbb T)\) and constant-parent preparations
+\(K_\nu(dE\mid R=r)=\nu(dE)\). Then
+
+\[
+H_t=H_sH_{t-s},
+\qquad
+\text{but no Markov kernel }L\text{ satisfies }H_s=H_tL,
+\]
+
+and
+
+\[
+\{\nu H_t:\nu\in\mathcal P(\mathbb T)\}
+\subsetneq
+\{\nu H_s:\nu\in\mathcal P(\mathbb T)\}.
+\]
+
+The strictness witness \(\nu_\rho=H_\rho(x_0,\mathord\cdot)\), with
+\(0<\rho<t-s\), is positive and smooth. The proof uses first-Fourier-mode Markov contraction and
+does not assume equivariance of a hypothetical reverse garbling. The comparison category retains
+the mediator, the circle heat geometry, ordered \(R\)-to-\(O\) roles, a compatible protocol map, and
+one protocol-independent response map. Boundary exchange and time reversal are not admitted.
+
+### 10.4 Exact supersession boundary
+
+The new results close operational quotient minimality relative to fixed data, one finite normalized
+marked-soft category, independent affine randomization of the released hard monoids, declared
+standard-Borel response semantics, one compact-Feller sufficient tier, and the frozen circle
+heat-kernel experiment. They do not establish a target-erasing soft theorem, correlated or adaptive
+interventions, point interventions inferred from almost-sure observational conditionals, a
+noncompact quotient theorem, category canonicity, arbitrary latent-dilation equivalence, or a
+minimal raw DAG/generative realization.
+
+Response equality also does not imply fixed-observation ELBO equality, posterior equality, or
+factorization equality. Nothing in this certificate identifies protocols with agents, supplies
+autonomous agency, extends the theorem over a base-manifold overlap region, derives gauge or RG
+dynamics, or supports a physical or ontological promotion. Those obligations remain **OPEN**.

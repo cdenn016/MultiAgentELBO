@@ -690,6 +690,24 @@ This gives the well-typed functors
 `Red : FinTIP_(R,O)^iso -> FinRIE_(R,O)^iso` and
 `Ubar_pass : FinRIE_(R,O)^iso -> FinObs_(R,O)^iso`.
 
+The operational-extension certificate is bound to target digest
+`af08539e8868b09e5165943d91c488c6e06a00ac7a00b1d408ae22ddca6ee7e1`.
+For any fixed protocol monoid `A` and response `Phi`, contextual equivalence is the largest
+two-sided congruence contained in `ker(Phi)`. Every response-compatible quotient
+`q:A->B` with `Phi=psi q` has one unique surjective unital factor
+`B->Syn(Phi)` over `A`. Thus `Syn(Phi)` is terminal from finer to coarser quotients and
+contextually fully abstract relative to the fixed operational data. If `A` is finite, it has
+minimum protocol-class cardinality, and equality of cardinalities gives the unique isomorphism
+over `A`. The cardinality statement is finite-only and does not minimize or canonically recover a
+raw latent state space, DAG, kernel family, parameterization, or computational realization.
+
+If `A` is a compact metrizable topological monoid, multiplication is jointly continuous, `Phi`
+is continuous into a metrizable Hausdorff response space, and `D` is a countable dense context
+set, the signature `S_D(a)=(Phi(uav))_(u,v in D)` realizes the contextual quotient as a compact
+metrizable image. Its multiplication and response are continuous. The same terminal factor is
+continuous for compact-Hausdorff response-compatible triples whose `q` and `psi` are continuous
+and whose `q` is a quotient map. Compactness and the quotient-map hypotheses are load-bearing.
+
 Inside the declared BSC subcategory,
 `L(1/4,1/3)` and `L(1/3,1/4)` have one raw structural signature and the same complete passive
 retained law `(7/24,5/24,5/24,7/24)`, in lexicographic retained-coordinate order
@@ -702,11 +720,47 @@ the negative certificate. The frozen universal target is therefore `COMPLETE_NEG
 
 Accordingly, `Ubar_pass` is not essentially injective and no universal reconstruction satisfies
 `R Ubar_pass ~= id_FinRIE` on that subcategory. A conventional representative-selecting section
-`Ubar_pass R ~= id_FinObs` remains allowed. This supersedes the earlier broad
-`INCONCLUSIVE` wording only for the frozen finite hard-intervention category. Category canonicity,
-minimal realization, arbitrary latent dilation, soft/stochastic/continuous interventions,
-autonomous agency, continuum/gauge/RG extension, VFE emergence, and every physical identification
-remain **OPEN**.
+`Ubar_pass R ~= id_FinObs` remains allowed.
+
+The same BSC pair with equal passive retained law is nonisomorphic on the marked normalized soft mediator face.
+For `0<epsilon<1/2`, its exact total-variation diameters are
+`(1-2epsilon)/3` and `(1-2epsilon)/2`; every
+`epsilon<s_-<s_+<1-epsilon` gives the strict-interior separation
+`|1-2b|(s_+-s_-)`. The theorem retains the mediator target, keeps `R` as input/parameter and
+`O` as output/observation, and uses one protocol-independent response intertwiner. It does not
+admit target erasure, boundary exchange, or time reversal.
+
+For the released fifteen-class hard monoids, independently randomized selectors form the affine
+convolution monoids `Delta(S)`. The complete contextual vectors have an exact minor
+`det M(b,delta)=(2b-1)^6(2delta-1)^3/32`, nonzero for both models at
+`delta=5/12`. Randomized contextual equivalence is therefore equality, and an admitted affine
+unital convolution-monoid isomorphism would preserve simplex vertices and restrict to the
+already-refuted hard isomorphism. This proof is not the old unmatched-response proof:
+convexification makes that hard response a `5/6,1/6` mixture in the other model. Correlated or
+shared-noise selectors require a joint selector object and are not covered.
+
+For a finite DAG of standard-Borel node spaces, declared standard-Borel palettes and normalized
+pointwise kernels with jointly measurable evaluations give a Borel retained response by finite
+topological-order recursion. The construction supplies an algebraic quotient but does not by itself
+establish a standard-Borel or smooth quotient; that requires an exhibited smooth classifier or
+stronger topology. On the stronger compact-Polish, compact-palette, isolated-bottom, jointly Feller
+tier, the finite-coordinate right-override monoid and weak retained response are continuous, so the
+compact quotient theorem applies. Finite-coordinate does not mean finite cardinality.
+
+A smooth compact-Feller witness is supplied by circle heat kernels. For `0<s<t`, the ordered
+chains `m(dR)H_s(R,dE)H_t(E,dO)` and `m(dR)H_t(R,dE)H_s(E,dO)` have the same passive retained law
+`m(dR)H_(s+t)(R,dO)`. With mediator palette `P(T)` and constant-parent preparations, `H_s`
+strictly Blackwell-dominates `H_t`, and
+`{nu H_t}` is a proper subset of `{nu H_s}`; the positive smooth witness is
+`nu_rho=H_rho(x_0,dot)` for `0<rho<t-s`. The comparison preserves the marked mediator, circle
+heat geometry, ordered boundary, compatible protocol map, and one global response map.
+
+These results supersede the earlier blanket `INCONCLUSIVE` or open wording only in their frozen
+hard, marked-soft, independently randomized, declared standard-Borel, compact-Feller, and circle
+categories. Target-erasing soft morphisms, correlated/adaptive selectors, identification of
+null-version point interventions from almost-sure passive observational conditionals, noncompact quotients, arbitrary latent dilation, minimal
+raw realization, autonomous agency, base-manifold continuum/gauge/RG extension, fixed-observation
+ELBO or VFE equality, and every physical or ontological identification remain **OPEN**.
 
 Finally, when `kappa` is promoted in the six-bit parity family, the full-joint map has rank seven
 everywhere, whereas singleton retention has rank six with kernel exactly
