@@ -3729,3 +3729,55 @@ The execution order is strict: notation standard; full fixed-point $\mathbb P/\m
 \boldsymbol\Pi$ construction; pointwise VFE and holonomy closure; comparison theorem; gluing over
 $\mathcal U_A$; and only then participatory or cross-scale nonequilibrium. No phase inherits a theorem
 status merely because it appears in this roadmap.
+
+## 12. 2026-08-15 governing correction -- full pointwise probabilistic datum
+
+### 12.1 Closed static construction
+
+The released package docs/derivations/2026-08-15-full-pointwise-meta-agent/ supersedes the earlier
+marginal-pair boundary at one fixed point. It is bound to target digest
+15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87; the canonical manuscript
+claim is **ESTABLISHED**, while the package records EVIDENCE_VERIFIED and COMPLETE_AFFIRMATIVE. For
+a finite child block \(I\), parent label \(A\), and
+\(r_*\in\mathcal U_A=\bigcap_{i\in I}\mathcal C_i\), one declared normalized
+recognition-independent channel \(C_A\) sends the fine generative joint, selected posterior-version
+family, and correlated recognition law to the normalized parent triple. Structural
+\(X_A=\chi_A(X)\) stays outside the channel and the observation remains in \(\mathsf O\).
+
+The model coordinate is connected to generation by a jointly measurable normalized evaluator. The
+evaluator is either induced by disintegration or separately required to agree almost surely with the
+selected parent conditional. Belief/model recognition marginals and the corresponding
+prior/posterior marginals are derived coordinate projections and do not reconstruct the full laws.
+The historical fixed-point sample \(m_i\) and the established dependency notation \(s_i^{o,X}\)
+remain distinct from the model-law section \(q_i^{m;o,X}\).
+
+### 12.2 Exact VFE defect and holonomy alternatives
+
+The common channel yields an additive extended-KL identity with conditional-information defect
+\(\Delta_A(o,X)\). Ordinary VFE differences, the zero-defect equality of discarded conditional
+laws, and pairwise common recovery require finite fine KL. Extended equality alone has no recovery
+consequence, and family-wide common recovery requires simultaneous hypotheses.
+
+The holonomy-blind branch requires typed actions on every relevant fine, parent, observation, and
+structural space; full fine-law covariance; compatible selected posterior versions; \(C_A\)
+equivariance; evaluator covariance; and fixed-\((o,X)\) isotropy for same-slice invariance. The
+alternative retains the raw root-framed holonomy law. Neither alternative canonically selects a
+channel, child block, parent label, partition, or membership kernel.
+
+### 12.3 Strict downstream order
+
+The next deliverables remain **OPEN/TODO** in this order: freeze the comparison category for target
+retention, the ordered \(R\to E\to O\) boundary, time orientation, and protocol-independent
+relabeling; prove patchwise channel regularity, cocycles, active-component and stratum handling,
+normalized soft or multiple membership, holonomy selection, integrable defect, parent local
+sections, and gluing over \(\mathcal U_A\); only then derive participatory nonequilibrium or
+operational agency grades from one typed tower action or proved reduction without double counting.
+Interventions remain analyst-declared probes.
+
+### 12.4 Retained nonclaims
+
+The release does not establish family-wide recovery without simultaneous hypotheses, a canonical
+comparison category, a geometric meta-agent, autonomous dynamics, agency, nonequilibrium
+persistence, continuum limits, physical time, a unique latent DAG, unique microscopic physics, or
+ontology. Deterministic semiconjugacy and Markov semigroup or generator intertwining are separate
+dynamic closure problems and remain **OPEN**.

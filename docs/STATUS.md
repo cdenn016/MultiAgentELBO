@@ -294,3 +294,39 @@ coarse map is $c_t$.
 The detailed ordered roadmap is in `solid_RG_theory.md`, Section 12. Central theorem chapters and
 release metadata remain unchanged until the relevant exit conditions are proved and independently
 verified.
+
+## 14. 2026-08-15 full pointwise probabilistic datum -- current authority
+
+The governing release is
+docs/derivations/2026-08-15-full-pointwise-meta-agent/release.json, bound to target digest
+15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87. The canonical manuscript
+status is **ESTABLISHED**. The package records ledger state EVIDENCE_VERIFIED and terminal release
+status COMPLETE_AFFIRMATIVE; those are evidence-package labels, not replacements for manuscript
+claim status.
+
+At one fixed \(r_*\in\mathcal U_A=\bigcap_{i\in I}\mathcal C_i\), with finite child block \(I\),
+parent label \(A\), fixed structural \(X\), and \(X_A=\chi_A(X)\) outside the random channel, one
+normalized recognition-independent
+\(C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A\) pushes the fixed fine generative joint, selected
+posterior-version family, and correlated recognition law to normalized
+\(\mathbb P_A\), \(\boldsymbol\Pi_{A,o,X}\), and \(\mathbb Q_{A,o,X}\). The observation space remains
+\(\mathsf O\). A parent model evaluator is either induced by standard-Borel disintegration or is a
+predeclared jointly measurable normalized kernel family satisfying the separate almost-sure
+compatibility condition. Recognition, prior, and posterior marginals are derived coordinate
+projections; they do not replace or reconstruct the full laws.
+
+The common-channel KL/VFE identity is additive in the extended nonnegative reals. Ordinary VFE
+subtraction, the zero-defect discarded-conditional criterion, and pairwise common recovery require
+finite fine KL. Family-wide common recovery requires simultaneous hypotheses for every family
+member. Holonomy blindness additionally requires typed actions, full fine-law covariance,
+compatible selected posterior versions, \(C_A\) equivariance, evaluator covariance, and
+fixed-\((o,X)\) isotropy for same-slice invariance. The raw-root retention alternative preserves the
+holonomy coordinate and selects no membership.
+
+Static Phases 1--2 are closed only at this pointwise level. Canonical coarse-channel, membership, or
+partition selection; the frozen comparison category; family-wide recovery absent its simultaneous
+hypotheses; extension and gluing across \(\mathcal U_A\); parent local sections; a geometric
+meta-agent; autonomy; agency; nonequilibrium persistence; continuum limits; physical time; unique
+latent DAG or microscopic physics; and ontology remain **OPEN**. Dynamics also remains **OPEN**:
+neither a deterministic semiconjugacy nor a Markov semigroup or generator intertwining follows from
+the static release.

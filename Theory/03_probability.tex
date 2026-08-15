@@ -64,6 +64,40 @@ Signature \eqref{eq:prob-generative-signature} is the typing on which several la
 
 Later chapters may make $X$ random, but only within this fixed measurable space, and at a different probability level. Doing so introduces a configuration prior in $\mathcal P(\mathsf X,\mathscr X)$ and a configuration recognition kernel from $(\mathsf O_D,\mathscr O_D)$ into $\mathcal P(\mathsf X,\mathscr X)$; neither changes $D$, $\mathfrak A$, or the identified fibers, and neither is denoted by any symbol reserved above for a state-level object.
 
+\medskip
+\definitionheading{Model presentations and evaluated kernels}{def:prob-model-evaluation}
+Fix an agent $i$, structural data $X$, and standard-Borel source and target spaces
+$(\mathsf S_i^X,\mathscr S_i^X)$ and $(\mathsf T_i^X,\mathscr T_i^X)$ containing all
+source and output coordinates required by the declared generative factorization. A model-presentation
+space $(\mathsf M_i,\mathscr M_i)$ is standard Borel. A model sample, or presentation coordinate, is
+$m_i\in\mathsf M_i$.
+A model-law section has value
+$q_i^{m;o,X}(r_*)\in\mathcal P(\mathsf M_i)$. A model evaluation is a map
+\begin{equation}
+\operatorname{ev}_i:\mathsf M_i\longrightarrow
+\operatorname{Kern}(\mathsf S_i^X,\mathsf T_i^X),
+\qquad
+m_i\longmapsto K^X_{i,m_i},
+\label{eq:prob-model-evaluation}
+\end{equation}
+such that $(m_i,u,B)\mapsto K^X_{i,m_i}(u,B)$ is jointly measurable and
+$K^X_{i,m_i}(u,\mathsf T_i^X)=1$ for every $(m_i,u)$. The source space retains
+every observation, structural-parent, or other parent coordinate required by the declared factor;
+\eqref{eq:prob-model-evaluation} does not silently reduce the factor to a state-to-observation
+kernel. The element $m_i$ is the sampled presentation coordinate.
+The model-law section $q_i^{m;o,X}(r_*)$, that coordinate, and its evaluated kernel
+$K^X_{i,m_i}$ are three different
+types. In the definite-presentation case the law is
+$q_i^{m;o,X}(r_*)=\delta_{m_i}$. Neither that law, a recognition parameter, nor a posterior is an
+argument of the evaluated generative kernel. \status{DEFINITION}
+\medskip
+
+Injectivity of $\operatorname{ev}_i$ is not assumed: distinct presentations may evaluate to the
+same normalized kernel. One may declare $m\sim m'$ when their evaluated kernels agree, but the
+standard-Borel, Hausdorff, or smooth regularity of the presentation quotient is not supplied by
+measurability of \eqref{eq:prob-model-evaluation}. A quotient-level model fiber requires a separate
+regularity theorem; the default probability construction retains presentations. \status{NOT-CLAIMED}
+
 \section{Reference measures}
 \label{sec:prob-reference}
 

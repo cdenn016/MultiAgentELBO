@@ -190,9 +190,9 @@ has type `\Sigma_i:\mathscr H_i\times\mathcal C_i\to
 `\varpi\circ\Sigma_i(r,c)=c`. The base remains fixed and timeless. Any local parameter used to
 calculate a path integral is auxiliary and must disappear from the final arc length.
 
-**Phase 0 pointwise-parent symbols.** For a finite active set \(A\), agent \(i\) supplies its
-section pair on \(\mathcal C_i\); the common overlap is
-\(\mathcal U_A=\bigcap_{i\in A}\mathcal C_i\), and the present construction fixes
+**Phase 0 pointwise-parent symbols.** For a finite child block \(I\) with parent label \(A\), agent
+\(i\in I\) supplies its section pair on \(\mathcal C_i\); the common overlap is
+\(\mathcal U_A=\bigcap_{i\in I}\mathcal C_i\), and the present construction fixes
 \(r_*\in\mathcal U_A\). Ordinary \(R\) is not an overlap: the intervention comparison retains
 \(R\to E\to O\). The action functional is \(\mathscr S\). The associated-bundle projection
 remains \(\varpi_x\); it is never receiver occupancy.
@@ -794,6 +794,36 @@ categories. Target-erasing soft morphisms, correlated/adaptive selectors, identi
 null-version point interventions from almost-sure passive observational conditionals, noncompact quotients, arbitrary latent dilation, minimal
 raw realization, autonomous agency, base-manifold continuum/gauge/RG extension, fixed-observation
 ELBO or VFE equality, and every physical or ontological identification remain **OPEN**.
+
+**Governing full pointwise probabilistic-datum correction (2026-08-15).** The released package is
+bound to target digest
+`15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87`. Its manuscript theorem is
+**ESTABLISHED**; its package ledger records `target` as `EVIDENCE_VERIFIED`, and `release.json`
+records `COMPLETE_AFFIRMATIVE`. Fix a nonempty finite child block `I`, a parent label `A`, one
+`r_* in U_A = intersection_{i in I} C_i`, fixed structural `X`, and `X_A=chi_A(X)` outside the
+random channel. One normalized recognition-independent
+`C_A:Y_I rightsquigarrow Z_A`, with the observation space `O` unchanged, pushes the fixed fine
+generative joint, selected posterior-version family, and correlated recognition law to the
+normalized parent triple `mathbb P_A`, `boldsymbol Pi_A`, and `mathbb Q_A`. The selected parent
+posterior identity holds at the observation-kernel level, not by applying an almost-sure equality at
+an arbitrary exceptional observation.
+
+The parent model coordinate has a generative interpretation only through a jointly measurable
+normalized evaluator. Standard-Borel disintegration supplies an induced evaluator; a predeclared
+evaluator requires separate almost-sure compatibility with the selected parent conditional. Belief,
+model, prior, and posterior marginals are forward coordinate projections of their typed full laws and
+do not reconstruct those laws. The common-channel KL chain is additive in `[0,+infinity]`. Ordinary
+VFE subtraction, the zero-defect conditional-law criterion, and pairwise common recovery require
+finite fine KL; family-wide recovery requires simultaneous hypotheses for every member.
+
+Holonomy blindness is conditional on typed fine and parent actions, full fine-law covariance,
+compatible selected posterior versions, `C_A` equivariance, and evaluator covariance. Same-slice
+invariance at fixed `(o,X)` follows only for isotropy arrows fixing that slice and its selected
+versions. The alternative retains raw root-framed holonomy and boundary marks and makes no blindness
+claim; neither branch selects membership. Canonical channel or partition selection, family-wide
+recovery, the comparison category, gluing over `U_A`, parent local sections, a geometric meta-agent,
+autonomy, agency, nonequilibrium persistence, continuum limits, physical time, a unique DAG or
+microscopic physics, and ontology remain **OPEN**.
 
 Finally, when `kappa` is promoted in the six-bit parity family, the full-joint map has rank seven
 everywhere, whereas singleton retention has rank six with kernel exactly

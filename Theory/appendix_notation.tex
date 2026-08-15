@@ -19,9 +19,10 @@ Symbol & Type & Meaning and prohibited identification \\
 smooth base manifold &
 Context space.  It is neither the population graph nor a probability
 sample space. \\
-\(\mathcal C_i;\ \mathcal U_A=\bigcap_{i\in A}\mathcal C_i\) &
+\(\mathcal C_i;\ \mathcal U_A=\bigcap_{i\in I}\mathcal C_i\) &
 agent support and common overlap patch &
-The pointwise program fixes \(r_*\in\mathcal U_A\). Ordinary \(R\) is not an
+A finite child block \(I\) has parent label \(A\), and the pointwise program fixes
+\(r_*\in\mathcal U_A\). Ordinary \(R\) is not an
 overlap region. \\
 \(q_i^{b;o,X},q_i^{m;o,X}\) &
 belief-law and model-law local sections &
@@ -60,12 +61,18 @@ correlated joint. Historical \(Q_q,Q_m\) are frozen local aliases only. \\
 measurable parent model-evaluation family &
 Its codomain is
 \(\operatorname{Kern}(\boldsymbol\Xi_A,
-\mathsf B_A\times\mathsf O_A\times\mathsf H_A)\). Evaluation compatibility
-is an almost-sure condition on the parent generative conditional. \\
+\mathsf B_A\times\mathsf O\times\mathsf H_A)\). The observation space is
+unchanged. An induced evaluator exists by disintegration; a predeclared evaluator needs a separate
+almost-sure compatibility condition on the parent generative conditional. \\
 \(C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A\) &
 normalized recognition-independent Markov kernel &
 One channel acts on generation, posterior, and recognition. It is neither an
 aggregation matrix nor a deterministic moving map. \\
+\(\Delta_A(o,X)\) &
+conditional-information defect in the common-channel KL chain &
+The extended KL identity is additive in \([0,+\infty]\). Ordinary VFE
+subtraction, zero-defect recovery, and the pairwise common-recovery equivalence
+require finite fine KL; family-wide recovery requires simultaneous hypotheses. \\
 \(c_t\) &
 differentiable moving coarse map in a declared smooth dynamics &
 This special-case deterministic moving map is not \(C_A\). The auxiliary \(t\) is not physical
