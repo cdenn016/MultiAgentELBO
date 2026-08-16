@@ -1,7 +1,10 @@
 # 2026-08-16 — Codex/Claude harness parity sync
 
 Scope: user-level harness configuration under `~/.codex` and `~/.claude`. No repository source
-files were modified.
+files were modified by the harness work.
+
+A second, unrelated workstream later the same day edited `solid_RG_theory.tex`; it is recorded in
+the final section of this document, "Expository pass on `solid_RG_theory.tex`".
 
 ## Motivation
 
@@ -233,6 +236,64 @@ than defects. Roughly forty of the surviving entries are hyper-specific one-offs
 `MultiAgentELBO/.claude/settings.local.json` carries the same accumulation in ten entries and was
 left alone. Details are in the configuration itself rather than recorded here.
 
+## Phase 6 — claude-mem outage and autoheal repair
+
+The claude-mem plugin update to 13.15.0 wedged the memory system for roughly twenty minutes. The
+episode is worth recording because Phase 5 read `claude-mem-autoheal.ps1` and pronounced it sound.
+That assessment was wrong. The script's detection logic was correct and its kill logic had gone
+stale, so it ran at session start against precisely the failure it was written for and healed
+nothing.
+
+At 09:55:39 the plugin observed that the running worker was 13.8.1 against a 13.15.0 plugin and
+recycled it. Graceful shutdown failed, reporting "Server is not running". The worker process died,
+but `chroma-mcp.exe` — which the worker had spawned two seconds after binding its HTTP listener —
+retained an inherited handle to that listening socket, so port 37780 remained in LISTEN attributed
+to the dead worker pid 12152. Every replacement worker then failed to bind, and the supervisor's
+liveness check, satisfied by the stale socket, short-circuited each retry with "Worker PID file
+points to a live process, skipping duplicate spawn". Wedged spawn attempts accumulated to 105
+processes. The `supervisor.json` bookkeeping was wrong on both tracked processes, naming a dead
+worker and a dead chroma while a different chroma held the port.
+
+The symptoms were diffuse enough to be worth naming. MCP search timed out at its configured
+45,000 ms; `claude-mem status` hung for seven minutes, then reported "port in use but health is
+unreachable" and exited 0, so anything gating on its exit code would read the wedge as healthy; and
+the `UserPromptSubmit` hook timed out at 60 seconds. Killing all 105 accumulated processes did not
+free the port. Only killing the chroma tree released the socket, whereupon a pending spawn bound it
+and came up healthy from the versioned cache path rather than the marketplace path.
+
+The guard failed for two independent reasons, each sufficient on its own. Chroma now runs from the
+uv cache at `AppData\Local\uv\cache\archive-v0\...\Scripts\chroma-mcp.exe`, so it matched neither
+the `Name='python.exe' OR Name='pythonw.exe'` filter nor the requirement that the command line
+contain `\.claude-mem`; the holder was excluded twice over. Separately, workers now run under
+`bun.exe`, so the `Name='node.exe'` filter matched nothing at all. Both filters were rewritten to
+match on process identity rather than host binary or install location, and the two full
+`Win32_Process` enumerations were collapsed into one, since a wedge can leave more than a hundred
+processes behind and the scan runs against a hook timeout. That timeout was raised from 20 to 45
+seconds in `~/.claude/settings.json`.
+
+The patch was verified three ways. Run against the healthy worker the script is a no-op, exiting 0
+in 0.94 seconds with the worker and its health endpoint untouched, because it short-circuits before
+the enumeration. Compared side by side on live processes, the new chroma filter matches five
+processes including `chroma-mcp.exe` where the old matched two and missed the holder entirely, and
+the new worker filter matches the live bun worker where the old matched nothing. Both
+`mcp-server.cjs` processes, which Claude Code and Codex manage, are excluded by the new filters.
+
+The global npm CLI was updated from 13.5.4 to 13.15.0 so that CLI, plugin, and worker agree; the
+install did not trigger a recycle and the running worker survived it. Two notes on the guard's own
+drift: the 13.8.1 version pin recorded in Phase 5 was retired earlier the same day, and the
+`$fixedCache` path it leaves behind still points at a 13.8.1 directory.
+
+The underlying defect is upstream and unfixed. The bundled `worker-service.cjs` launches chroma
+through the MCP SDK's `StdioClientTransport`, which spawns with
+`stdio: ["pipe","pipe", stderr ?? "inherit"]` and `shell: false`. Passing stdio handles forces
+`bInheritHandles=TRUE` on the Windows `CreateProcess` call, which duplicates every inheritable
+handle in the worker into the child, the freshly bound listener socket among them. Ordering the
+spawn before the bind, marking the listen socket non-inheritable, or spawning chroma from a helper
+process that owns no listener would each break the chain. Upstream is already adjacent to this,
+having fixed `isPortInUse` returning false for zombie-held ports in v13.12.2, which addresses the
+symptom rather than the inheritance that produces it. Until that changes, any worker recycle while
+chroma is running can re-pin the port, and version bumps are exactly what trigger recycles.
+
 ## Outstanding
 
 Tier 3 housekeeping (VACUUM of `logs_2.sqlite`, pruning `_backup-*`, clearing the stale
@@ -252,3 +313,237 @@ only 980,500 are retained. The problem is that the file is never compacted — 5
 Running `VACUUM`, or simply deleting the file while Codex is closed (it is a log and is recreated
 on next start), reclaims roughly 2 GiB. This was not performed because Codex was running and
 holding the database open.
+
+---
+
+# Expository pass on `solid_RG_theory.tex`
+
+Scope: `solid_RG_theory.tex` only. Driven by a reader punch list of undefined terms, undefined
+symbols, missing figures, one notation collision, and one overstated certification claim. Four
+parallel investigator agents traced every item to the canonical sources before any edit was made;
+no definition below was invented.
+
+## Definitions added
+
+- **New Section 2, "The four objects."** Prose definitions of the generative law, the recognition
+  law, the posterior, and the Markov channel, placed before the physics dictionary. Records why the
+  generative law is fixed before recognition (a moving joint leaves no fixed evidence target), what
+  "selected version" means (conditional probability is unique only up to an observation-null set),
+  and what "normalized" buys over an aggregation matrix or Galerkin projection.
+- **New Section 3.2, "Kernels, presentations, and the evaluation map."** Defines a kernel, defines a
+  *generative* kernel as one conditional factor of the DAG-ordered composition, and explains `ev_i`
+  as compile-and-instantiate from a model presentation to that kernel. States the three distinct
+  types (law over presentations / presentation / kernel) and why non-injectivity of `ev_i` is
+  retained rather than quotiented away.
+- **Section 4.1.** Defines `p_i^x` and `T_ij^x`, with `T^q = Omega` and `T^m = Omega-tilde`, and the
+  reciprocity condition. These were previously used in eq. (4) without ever being introduced.
+- **Section 4.4.** States the two-channel zero-distortion theorem explicitly as a three-way
+  equivalence, and defines the path transport `T_{gamma_i}` and the root-frame law
+  `P_i = (T_{gamma_i})_# p_i`. Previously the theorem was referenced by name only.
+- **Section 5.1.** Defines the structural data `X` (DAG, design incidence, geometric data, fixed
+  mechanism parameters) and why it stays outside the channel; explains `do`/`dy` as integrator
+  notation rather than derivatives; explains absolute continuity and why its failure is `+infinity`
+  rather than a large finite penalty.
+- **Section 8.1.** Defines "comparison law" as the free variable of the optimization and explains
+  the extended support convention.
+- **Section 9.1.** Defines the normalized membership channel and contrasts it with a replicated
+  cover, whose column sums exceed one.
+
+## Sections rewritten for motivation
+
+- **Section 5.3 (new), "The parent evaluator."** Unpacks "induced from the pushed generative law by
+  disintegration" into the disintegration statement, the direction of conditioning, and the
+  compatibility identity. Adds the binary witness showing why a predeclared evaluator needs
+  almost-sure agreement: the swapped family `ev'(m) = K_{1-m}` is equally normalized and equally
+  measurable yet disagrees on parent mass 1/2.
+- **Section 5.4.** New opening paragraph stating the argumentative role of the section: it closes off
+  the cheaper route in which the consensus pair `(Q_q, Q_m)` would be declared the meta-agent. Adds
+  that both directed divergences between the two joints are `+infinity`, so marginal agreement
+  coexists with maximal joint disagreement.
+- **Section 6.1.** Explains the fiber picture behind "disintegrate over the parent state," and
+  replaces the bare assertion about the weighting measure with the reason: relative entropy is an
+  expectation under its left argument, so the weight must be the recognition marginal.
+- **Section 8.2.** New opening explaining why the section exists (the zero-distortion theorem is
+  otherwise a knife-edge result), plus the explicit bound: `delta_x = sqrt(eps_x / (2 eta_min))`
+  uniform per tree edge, then `dist_T(u,v) * delta_x`. States the two costs, linear accumulation in
+  graph distance and spanning-tree dependence.
+- **Section 9.2.** Adds the type-mismatch argument for why the joint edge-event law pushes forward
+  and the conditional attention row does not, with a worked finite case: pushing the joint gives the
+  parent row `(0.45, 0.55)`, row averaging gives `(0.25, 0.75)`. Verified by direct computation.
+- **Section 9.3.** Unpacks conditional boundary marks, connected-component labels, and internal
+  based holonomy, why averaging leaves the group (mean of the two planar quarter-turns is the zero
+  matrix), and what "another theorem" would have to supply.
+- **Section 10.1.** States up front that the comparison theorem is open, so the definition precedes
+  the result it serves. Explains analyst-declared probe, declared preparation law, the hard/soft
+  distinction against Pearl's do-operator, and what "typed" means. Adds the binary-symmetric-channel
+  non-identifiability witness: `(a,b) = (1/4,1/3)` and `(1/3,1/4)` share the passive law
+  `(7/24, 5/24, 5/24, 7/24)` but respond differently to `do(E=0)`. Verified by exact rational
+  computation.
+
+## Defects corrected
+
+- **Notation collision on `R`.** Section 8.1 used `R` for an arbitrary comparison law while Section
+  10.1 uses `R` for the retained input of the `R -> E -> O` chain. Section 8.1 is renamed to `Q`,
+  matching `Theory/06_general_coarsegraining.tex`; Section 10.1 keeps `R`, which is canonical
+  throughout `Theory/05d_relational_inference.tex` and `Theory/appendix_notation.tex`. A
+  translation box records the disambiguation.
+- **Overstated certification status.** The "What is established" box claimed
+  `COMPLETE_AFFIRMATIVE`. The release file records `COMPLETE_AFFIRMATIVE_WITH_CORRECTIONS`, which
+  is not among the three terminal values the release schema admits, and the package does not pass
+  its own release-mode validator (invalid status token plus several stale artifact hashes, both
+  documented in the package erratum as deliberate). The box now reports the ledger state
+  `EVIDENCE_VERIFIED` and the boundary box carries the packaging caveat.
+- **Unexplained digest.** New Section 12.1 explains that the 64-hex string is the SHA-256 of the
+  canonical JSON serialization of the frozen `target` object in the package problem contract, why a
+  digest is quoted at all, and what the frozen conjunction asserts.
+- **Provenance gap.** Section 14 now lists `Theory/03_probability.tex`, `Theory/04_generative.tex`,
+  `Theory/05d_relational_inference.tex`, and the two appendices among the canonical sources, and
+  records that the two-channel theorem in its edge-weighted form and the forward-KL barycenter
+  identity live in the 2026-08-14 derivation package rather than in the theory chapters. Also flags
+  that "two-channel theorem" is this guide's shorthand and collides with an unrelated finite-ELBO
+  result elsewhere in the project docs.
+
+## Figures added
+
+Three hand-coded TikZ figures, each rendered and visually inspected before integration. `tikz` and
+its libraries were added to the preamble, along with a `deepgreen` color.
+
+1. **Figure 1 (Section 5)** — the coarse-graining step: fine triple, one common channel acting on
+   all three laws, parent triple, external conditioning on `(X, o)`, and the defect identity.
+2. **Figure 2 (Section 6.1)** — disintegration over the parent state: fibers, the blow-up of one
+   fiber showing a sharp recognition conditional against a broad posterior conditional, and the
+   between-fiber / within-fiber split of the chain rule.
+3. **Figure 3 (Section 9)** — network coarse-graining: soft membership channel with a split child,
+   pushforward of the joint edge-event law, recovery of the parent occupancy and attention row.
+
+## Verification performed
+
+- `latexmk -pdf` to a fixed point: 0 errors, 0 undefined references, 25 pages.
+- Each figure rendered standalone to PNG and inspected; collisions found and fixed in all three
+  (overlapping call-out, label-on-arrowhead, self-loop labels behind the formula box).
+- The two new numerical examples were computed rather than quoted: the attention-row pushforward
+  discrepancy and the binary-symmetric-channel passive/interventional laws, the latter in exact
+  rational arithmetic.
+
+Not done: no `.pdf` was written into the repository, and the release package's validator failures
+were reported in the manuscript but not repaired.
+
+## Grand-canonical network and meta-agent manuscript
+
+Added `Theory/grand_canonical_meta_agent_formation.tex`, a physicist-facing development of the
+network thermodynamic analogy. The manuscript uses the exact row free energy, separates the
+adaptive fine-agent network from literal grand-canonical edge occupation, constructs pointwise
+meta-agents and their recursive network, and records the participatory nonequilibrium extension as
+a conditional proposal rather than an established theorem. Four hand-coded TikZ figures show the
+fine network, the edge-occupation threshold, the meta-agent feedback loop, and the recursive tower.
+
+---
+
+# New companion manuscript: `physicists_companion.tex`
+
+Scope: one new file, `physicists_companion.tex`, plus a small style fix applied to
+`solid_RG_theory.tex`. Requested as a graduate-physicist-level orientation to the *full* theory
+buildout (`Theory/main.tex`, 17 chapters in four parts plus three appendices), in the same visual
+and rhetorical style as `solid_RG_theory.tex`, with physical analogies.
+
+## Sources read
+
+The document was written against the manuscript, not from memory. Read in full:
+`Theory/01_introduction.tex` (which carries the program's own reading map and status taxonomy),
+`Theory/02_geometry.tex`, `Theory/11_obstructions.tex`, `Theory/12_philosophy.tex`, and
+`Theory/appendix_claim_ledger.tex` (the central open-obligation ledger). Read in part:
+`Theory/05b_local_collective_elbo.tex` (collective/local VFE and the attention section),
+`Theory/05c_pullback_geometry.tex` (covariant jets and pullback tensors),
+`Theory/07_general_renormalization.tex` (the scale category),
+`Theory/08_infogeometry.tex` (gauge invariants of the interaction precision). The full index of
+typed results (`\theoremheading`, `\conjectureheading`, `\openproblemheading`) was extracted across
+all chapters to fix what is proved versus conjectured versus open.
+
+## Structure of the new document
+
+Thirteen sections, 21 pages. Orientation and a one-paragraph summary; a physicist's dictionary
+table; the gauge structure (base, two associated representations, law-valued fibers, three
+holonomies); the variational core (evidence/ELBO/free energy, the typing prohibition, infinite
+penalties); many agents (collective versus local free energy, attention); information geometry on
+the base; coarse graining and renormalization; the Gaussian realization; the reciprocal-fold no-go;
+a status table; takeaways; a reading path.
+
+## Physical analogies used, and their fidelity
+
+Deployed where the correspondence is exact and labeled as suggestive where it is not:
+
+- `Theta_e` as a lattice link variable and `H(gamma)` as a Wilson loop. Exact — including the
+  trivializing criterion, which is literally the lattice statement that a configuration is pure
+  gauge iff every Wilson loop is trivial.
+- The two associated bundles as two matter sectors in inequivalent representations (fundamental
+  and adjoint). Exact for the group action; the departure is that the fibers are spaces of
+  probability laws and the group acts by pushforward, which is called out explicitly.
+- `A_i = (u_i)^* omega` with the `Ad + Maurer-Cartan` law as the gauge potential. Exact.
+- The exact evidence identity as the Gibbs-Bogoliubov-Feynman bound, with the gap being the
+  relative entropy of the trial ensemble against the true one. Exact structural match.
+- The typing prohibition as "you may not let the Hamiltonian depend on your trial state".
+- Subspace-supported recognition laws costing `+infinity` rather than a large finite penalty.
+- The local-global potential identity as exact block-coordinate descent on one Landau-type
+  functional (cavity/block mean field made exact), including why parallel updates fail.
+- Softmax attention as a Gibbs measure over which neighbor to attend to, with `pi` as degeneracy
+  and `tau` as temperature; its natural-gradient flow is the replicator equation with descent rate
+  equal to minus the variance of the fitness-like quantity (Fisher's fundamental theorem shape).
+- Fisher metric as a susceptibility (Hessian of the log partition function; fluctuation-response).
+- The pullback `h_s^omega` as an induced metric in the worldvolume sense, explicitly relative to a
+  connection that is never canonically chosen.
+- Blocking as Kadanoff block-spin, with exact closure generating hyperedges read as the familiar
+  proliferation of couplings.
+- The scale-diagram-versus-RG distinction as the rescaling step after blocking, with the honest
+  note that here the rescaling is declared rather than derived.
+- Pencil invariance as "only dimensionless ratios are physical": a reframing `T = cI` rescales the
+  ordinary spectrum by `c^-2`, so absolute-eigenvalue thresholds are chart statements.
+- The flat unanchored reciprocal fold as a pure-gauge zero mode, with `det J = det(I-H)^2 /
+  (det R_e det R_f)` depending on the links only through the Wilson loop, and nontrivial holonomy
+  lifting the degeneracy — presented as the Aharonov-Bohm situation, where a ring degeneracy
+  depends only on the enclosed flux and threading flux splits it.
+- Precision addition as inverse-variance weighting with transports inserted, arising as a theorem
+  rather than a convention.
+
+## Honesty content carried over from the manuscript
+
+The document reproduces the manuscript's status discipline rather than smoothing it. It states
+that the base is not spacetime and carries no signature, causal cones, measure, or field equation;
+that Fisher duration is not physical time; that RG depth is not inference time; that graph-link
+holonomy is not evidence of base curvature or bundle topology; that no canonical connection is
+selected anywhere; that there is no continuum limit, no thermodynamic limit, no derived rescaling,
+and no proved nontrivial fixed point with a basin; and that identification of any limiting object
+with a physical law is open. A status table summarizes established / hypothesis / numerical / open
+/ not-claimed across the whole program.
+
+## Figures added
+
+Three hand-coded TikZ figures, each rendered standalone and visually inspected before integration:
+
+1. **Figure 1** — the ambient geometry: base, principal fiber with two frame choices related by
+   `h`, belief fiber drawn as a covariance ellipse, model fiber drawn as a law over presentations,
+   two connections transporting along a base curve, and the cross morphisms.
+2. **Figure 2** — three holonomies side by side (graph-link, base-connection, Cech class) with a
+   footer stating exactly what would be needed to identify any two of them.
+3. **Figure 3** — a scale diagram versus a renormalization map, showing that the declared
+   identifications `I_l` are what make a fixed point a well-posed question.
+
+## Also changed
+
+`solid_RG_theory.tex`: removed the LaTeX spacing macros (`\,`) introduced in the earlier pass, per
+the house rule against them. Seven occurrences in the new document and three in the older one were
+rewritten; both still compile identically.
+
+## Verification
+
+- `physicists_companion.tex`: `latexmk -pdf` to a fixed point, 0 errors, 0 undefined references,
+  0 overfull boxes, 21 pages.
+- `solid_RG_theory.tex` after the spacing-macro edit: 0 errors, 0 undefined references, 25 pages.
+- Each figure rendered standalone to PNG and inspected; collisions found and fixed in all three
+  (arc/label collisions in Figure 1, a reserved-key clash and formula overlaps in Figure 2, and a
+  footer box that was shrinking Figure 2's panels inside `\resizebox`).
+- Style checks run over the new document: no banned phrases, no British spellings, no LaTeX
+  spacing macros.
+
+Not done: no `.pdf` was written into the repository, and no claim in the manuscript was
+independently re-verified — the companion reports the manuscript's own status tags rather than
+re-adjudicating them.
