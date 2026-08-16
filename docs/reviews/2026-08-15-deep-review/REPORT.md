@@ -201,6 +201,21 @@ an edit, and has not been done. Until it is, the release rests on two derivation
 and two that are correctly marked stale. H1's stage-1 bytes are unrecoverable, so marking it
 unauditable is the honest terminal state rather than a repair.
 
+**All seven Medium findings were addressed on 2026-08-16**; six repaired, one recorded.
+
+| | Finding | Disposition |
+|---|---|---|
+| M1 | Flagship theorem `ESTABLISHED` with no proof | **Repaired** — full proof paragraph written into `Theory/07b`, covering normalization, the posterior-version test-function argument, null-set transfer, both evaluator tiers, the marginals, the chain identity via `thm:rg-exact-coarse-vfe`, the unconditional zero-defect criterion, and the finite tier |
+| M2 | "Holonomy blindness" has no connection-theoretic content | **Repaired** — scope paragraph in `Theory/07b` and a scope note on the `HOLONOMY-BLIND-FULL-LAW` ledger claim: what is proved is covariance under a declared typed groupoid, not a holonomy statement |
+| M3 | `solid_RG_theory.md` named for a theory it lacks | **Repaired** — the RG obligation is now the first `OPEN/TODO` item, with the distinction between a consistent family of coarse-grainings and an RG semigroup spelled out |
+| M4 | `CE4_…half_log_3` tested a tautology | **Repaired** — now computes the exact log-form from `node_laws`; mutation-tested against wrong laws, non-swaps and degenerate masses; 51 → 53 checks, both runs pass |
+| M5 | Uncited `ESTABLISHED` theorems in `Theory/05d` | **Repaired** — reduced on review to one item; attribution paragraph added citing Myhill, Nerode, Schützenberger, Eilenberg, Pin, with five new `references.bib` entries. The circle-heat theorem is confirmed **not** a classical restatement |
+| M6 | Reconstruction claimed outline-independent | **Repaired** — claim withdrawn in `final-report.md`; the order is contingent (42,636 admissible orderings), so agreement evidences dependence, not necessity |
+| M7 | Evidence discipline weaker than the 8/14 package | **Recorded, not repaired** — partly explained by subject matter; repairing it means re-deriving the ledger's evidence attachments, a new certification pass |
+
+Manuscript build verified after the LaTeX edits: `pdflatex` → `bibtex` → two further passes, all exit 0,
+no undefined references, no multiply-defined labels, all five new citations resolved into `main.bbl`.
+
 ## Punch list
 
 Ordered by value. Items 1–3 are the ones that matter. Items 1–3 are now **addressed as far as

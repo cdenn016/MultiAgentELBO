@@ -69,6 +69,39 @@ def record(checks: dict[str, bool], name: str, condition: bool) -> None:
     checks[name] = bool(condition)
 
 
+def binary_swapped_directed_kl_log_form(
+    p_law: tuple[Fraction, Fraction],
+    q_law: tuple[Fraction, Fraction],
+) -> tuple[Fraction, Fraction] | None:
+    r"""Return the exact pair $(c,r)$ with $\KL(p\Vert q)=c\log r$, canonically $r>1$.
+
+    For a two-point law $p=(p_0,p_1)$ and its coordinate swap $q=(p_1,p_0)$ with
+    both masses positive,
+
+    .. math::
+        \KL(p\Vert q)=p_0\log\frac{p_0}{p_1}+p_1\log\frac{p_1}{p_0}
+                     =(p_0-p_1)\log\frac{p_0}{p_1}.
+
+    Because $c\log r=(-c)\log(1/r)$, the representation is canonicalized to $r>1$
+    so that a directed pair and its reverse yield the same form. Returns ``None``
+    when ``q_law`` is not the swap of ``p_law``, when a mass vanishes, or when the
+    two laws coincide, so the caller cannot mistake an inapplicable input for a
+    match. This keeps the reported symbolic value a function of the node laws
+    rather than of literals written into the check.
+    """
+
+    p_zero, p_one = p_law
+    if (q_law[0], q_law[1]) != (p_one, p_zero):
+        return None
+    if p_zero <= 0 or p_one <= 0 or p_zero == p_one:
+        return None
+    coefficient = p_zero - p_one
+    ratio = p_zero / p_one
+    if ratio < 1:
+        coefficient, ratio = -coefficient, Fraction(1) / ratio
+    return (coefficient, ratio)
+
+
 def main() -> int:
     checks: dict[str, bool] = {}
 
@@ -318,10 +351,29 @@ def main() -> int:
         "CE4_trivial_holonomy_unequal_laws",
         node_laws["left"] != node_laws["right"],
     )
+    forward_kl_form = binary_swapped_directed_kl_log_form(
+        node_laws["left"], node_laws["right"]
+    )
+    reverse_kl_form = binary_swapped_directed_kl_log_form(
+        node_laws["right"], node_laws["left"]
+    )
     record(
         checks,
         "CE4_tree_directed_KL_symbolic_half_log_3",
-        Fraction(3, 4) - Fraction(1, 4) == Fraction(1, 2),
+        forward_kl_form == (Fraction(1, 2), Fraction(3)),
+    )
+    record(
+        checks,
+        "CE4_tree_directed_KL_symmetric_under_swap",
+        forward_kl_form is not None and forward_kl_form == reverse_kl_form,
+    )
+    record(
+        checks,
+        "CE4_directed_KL_form_rejects_other_node_laws",
+        binary_swapped_directed_kl_log_form(
+            (Fraction(2, 3), Fraction(1, 3)), (Fraction(1, 3), Fraction(2, 3))
+        )
+        != (Fraction(1, 2), Fraction(3)),
     )
     fair = (Fraction(1, 2), Fraction(1, 2))
     record(checks, "CE4_nontrivial_bit_flip", tuple(reversed(BITS)) != BITS)

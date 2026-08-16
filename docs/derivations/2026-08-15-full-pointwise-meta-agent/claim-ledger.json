@@ -106,7 +106,7 @@
       "id": "EV-TASK4-FINITE-WITNESS-OUTPUT",
       "kind": "SYMBOLIC_CHECK",
       "supports": true,
-      "scope": "Captured deterministic PASS output for 51 exact finite checks, including the parent table, forward and reverse KL orientations, all five counterexamples, and the exact witness totals.",
+      "scope": "Captured deterministic PASS output for 53 exact finite checks, including the parent table, forward and reverse KL orientations, all five counterexamples, and the exact witness totals. Raised from 51 by the 2026-08-16 remediation of M4: CE4_tree_directed_KL_symbolic_half_log_3 previously asserted a constant expression over two literals and never read the node laws; it now computes the exact (coefficient, ratio) log-form from node_laws, and two further checks assert symmetry under swap and rejection of node laws whose directed KL is not (1/2)log 3. See POST-RELEASE-CORRECTIONS.md.",
       "side_conditions": [
         "Two successive runs, one normal and one under python -O, produced this identical SHA-256.",
         "Decimal log values are readability-only corroboration; symbolic log(2), log(3)/2, zero, and +infinity labels are primary."
@@ -397,7 +397,7 @@
     },
     {
       "id": "HOLONOMY-BLIND-FULL-LAW",
-      "statement": "Under typed source/target groupoid actions, full fine-law covariance, compatible selected posterior versions, recognition covariance, C_A equivariance, and evaluation covariance, full parent generative, posterior, and recognition laws are covariant; same-slice invariance follows only on the fixed-(o,X) stabilizer.",
+      "statement": "Under typed source/target groupoid actions, full fine-law covariance, compatible selected posterior versions, recognition covariance, C_A equivariance, and evaluation covariance, full parent generative, posterior, and recognition laws are covariant; same-slice invariance follows only on the fixed-(o,X) stabilizer. Scope note (2026-08-16 remediation, M2): the acting object here is an arbitrary typed groupoid of bimeasurable isomorphisms, not the based-loop transport group of thm:cg-holonomy-kl-marginal from which the name is inherited. No connection form, lift, loop, or curvature enters the hypotheses or the proof; what is established is covariance of the full parent laws under a declared groupoid action, with same-slice invariance on the isotropy subgroup of (o,X). Loop transports are one admissible instance. See POST-RELEASE-CORRECTIONS.md.",
       "quantifiers": "For every groupoid arrow and datum satisfying ASM-HOLONOMY-BLIND-DATA.",
       "kind": "MATHEMATICAL",
       "target_digest": "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
