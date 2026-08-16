@@ -21,7 +21,7 @@
     {
       "id": "as-capacity",
       "kind": "MODELING_POSTULATE",
-      "statement": "A declared capacity restriction on the parent space Z_{s+1}, the downward-kernel family K_down, and the parent prior P_{s+1}, together with a strictly positive cost per parent node. Without both, the tower free energy is exactly constant across partitions."
+      "statement": "A declared capacity restriction on the parent space Z_{s+1}, downward-kernel family K_down, and parent prior P_{s+1} is one sufficient anti-degeneracy mechanism. A strictly positive cost per parent node is another. Their joint necessity over a declared model class is open."
     },
     {
       "id": "as-attention",
@@ -69,7 +69,7 @@
       "id": "ev-degeneracy",
       "kind": "COUNTEREXAMPLE",
       "supports": true,
-      "scope": "Proposition 5 and Corollary 6: with unrestricted parent space and downward-kernel family, min_Q F is constant across partitions, so the partition posterior equals its prior; a capacity restriction and a node-count cost are both necessary.",
+      "scope": "Proposition 5 and Corollary 6: with an unrestricted parent space and downward-kernel family, min_Q F is constant across partitions, so the partition posterior equals its prior. Capacity restriction and positive node-count cost are separate sufficient design mechanisms; their joint necessity is open.",
       "side_conditions": [
         "Requires the copy construction Z_{1,I} = Y_{0,I}, K^0_I = delta, P_1 = flat child law.",
         "Block factorization of K_down is respected because the product of Diracs is a Dirac.",
@@ -102,7 +102,7 @@
         "Barycenters require Bochner integrability and need not lie in the represented group."
       ],
       "artifact_path": "REPORT-part3-holonomy-blocks-dynamics.md",
-      "artifact_sha256": "f0fa4d68e97d2f70174a9266a562d55f532c0ebd0b4bfaee2bf0b159a5f32f02"
+      "artifact_sha256": "dbe4302c8412d4e6aeceb3026cc3cd37c4c91890c3e4efe71030926ec1ab0149"
     },
     {
       "id": "ev-nonequilibrium",
@@ -114,7 +114,7 @@
         "Not extended to projected flows on the simplex boundary or indefinite preconditioners; that extension is an open obligation."
       ],
       "artifact_path": "REPORT-part3-holonomy-blocks-dynamics.md",
-      "artifact_sha256": "f0fa4d68e97d2f70174a9266a562d55f532c0ebd0b4bfaee2bf0b159a5f32f02"
+      "artifact_sha256": "dbe4302c8412d4e6aeceb3026cc3cd37c4c91890c3e4efe71030926ec1ab0149"
     },
     {
       "id": "ev-intrinsic-scale",
@@ -226,7 +226,7 @@
     },
     {
       "id": "degeneracy",
-      "statement": "With an unrestricted parent space and downward-kernel family the minimized tower VFE is constant across partitions, so the inferred partition law equals its prior and hierarchy a capacity restriction and a node-count cost are sufficient design mechanisms, one per degeneracy, whose joint necessity over a declared model class is open.",
+      "statement": "With an unrestricted parent space and downward-kernel family, the minimized tower VFE is constant across partitions, so the inferred partition law equals its prior and no hierarchy is selected. Capacity restriction and node-count cost are sufficient design mechanisms, one per degeneracy; their joint necessity over a declared model class is open.",
       "quantifiers": "There exists an admissible tower, for every partition, on which the minimum is the same; hence the universal selection claim fails.",
       "kind": "MATHEMATICAL",
       "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
@@ -261,7 +261,7 @@
     },
     {
       "id": "holonomy-obstruction",
-      "statement": "Non-flat connection data are retained exactly as the simultaneous root-framed orbit together with the conditional law of dressed transports; H_#Q = Q is necessary and sufficient only on the zero-distortion sector; flatness and stabilization are logically independent; and an empty intersection of the holonomy fixed set with the admitted family makes a zero-distortion parent nonexistent.",
+      "statement": "Non-flat connection data are retained exactly as the simultaneous root-framed orbit together with the conditional law of dressed transports; H_#Q = Q is necessary and sufficient only on the zero-distortion sector; flatness implies stabilization, flatness does not imply agreement, and stabilization does not imply flatness; an empty intersection of the holonomy fixed set with the admitted family makes a zero-distortion parent nonexistent.",
       "quantifiers": "For every finite connected block, channel, and equivariant admitted parent family.",
       "kind": "MATHEMATICAL",
       "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",

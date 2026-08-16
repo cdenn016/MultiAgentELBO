@@ -59,7 +59,7 @@
         "intrinsic-scale"
       ],
       "representation": "Probability law on ordered node pairs plus normalized endpoint kernels.",
-      "invariant_or_obstruction": "Additivity under blocking; rows are not additive.",
+      "invariant_or_obstruction": "Linear mass preservation under a fixed Markov pushforward; row averages are not additive.",
       "obligations": [
         "Supply intrinsic scales that are genuine metrics."
       ],
@@ -76,7 +76,7 @@
     },
     {
       "family_id": "family-holonomy-retention",
-      "core_mechanism": "Retain the conditional law of dressed transports rather than a barycenter, and read blindness as a support condition on the stabilizer.",
+      "core_mechanism": "Retain the conditional law of dressed transports rather than a barycenter, and read blindness at the measurable tier as a measure-one stabilizer condition.",
       "target_obligation_ids": [
         "target",
         "holonomy-obstruction"
@@ -94,7 +94,7 @@
       "open_gaps": [
         "Conditional independence of consecutive dressed marks."
       ],
-      "novelty_fingerprint": "dressed transport law + convolution under conditional independence + stabilizer support criterion",
+      "novelty_fingerprint": "dressed transport law + convolution under conditional independence + measure-one stabilizer criterion",
       "disposition": "mature"
     },
     {
