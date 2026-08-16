@@ -1,0 +1,330 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+  "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+  "assumptions": [
+    {
+      "id": "as-typing",
+      "kind": "MODELING_POSTULATE",
+      "statement": "All spaces are nonempty standard Borel with sigma-finite references; every generative and recognition factor is a normalized measurable Markov kernel conditioning only on strictly earlier variables; the likelihood attaches only at scale 0; 0 < p_theta(o|X) < infinity."
+    },
+    {
+      "id": "as-reading-a",
+      "kind": "MODELING_POSTULATE",
+      "statement": "Reading A: the belief coordinate q^b_i is a law-valued component of the latent sample, not a marginal of the recognition law. Under Reading B the transported divergences are functionals of the recognition law and the row free energies are composite potentials rather than ELBO sectors."
+    },
+    {
+      "id": "as-integrability",
+      "kind": "MODELING_POSTULATE",
+      "statement": "E_{Q_phi}[(log L_theta(o|Z_0,X))^+] < infinity, so the signed observation term cannot be minus infinity and the seven-group sum is well defined in R union {+infinity}. Necessity of this condition is unproved."
+    },
+    {
+      "id": "as-capacity",
+      "kind": "MODELING_POSTULATE",
+      "statement": "A declared capacity restriction on the parent space Z_{s+1}, the downward-kernel family K_down, and the parent prior P_{s+1}, together with a strictly positive cost per parent node. Without both, the tower free energy is exactly constant across partitions."
+    },
+    {
+      "id": "as-attention",
+      "kind": "MODELING_POSTULATE",
+      "statement": "Label exclusivity of the augmented attention likelihood and the constant-row recognition restriction, under which the row free energy is an exact free-energy sector with energy E_{Q}[D_ij] and inverse temperature one."
+    },
+    {
+      "id": "as-endpoint",
+      "kind": "MODELING_POSTULATE",
+      "statement": "Conditional independence of the receiver and source block assignments given the fine edge, where the product endpoint kernel K = C tensor C is used; otherwise a correlated endpoint kernel is required."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-construction",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Proposition 1: the depth-S tower joint is a probability measure with no normalizer other than the evidence, by reverse-order integration along the declared partial order.",
+      "side_conditions": [
+        "Nonempty standard Borel spaces with sigma-finite references.",
+        "Every factor is a normalized measurable Markov kernel of finite scope.",
+        "Evidence density strictly positive and finite.",
+        "Finite label pools fix the measurable codomain of every later factor."
+      ],
+      "artifact_path": "REPORT-part1-vfe-and-construction.md",
+      "artifact_sha256": "98d998b818d69dc398fa2d7b52aae4dd48a437d58391cf0ba405c1b09d5e76b5"
+    },
+    {
+      "id": "ev-decomposition",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Theorem 2: the exact VFE equals the observation term plus conditional relative entropies over the top prior, both channels' memberships, graph data, holonomy marks, and parent-child kernels, as an identity in R union {+infinity}.",
+      "side_conditions": [
+        "Nonempty standard Borel spaces with sigma-finite references.",
+        "Every factor is a normalized measurable Markov kernel of finite scope.",
+        "Evidence density strictly positive and finite.",
+        "Recognition disintegrated along the same ordering; Q << Pi.",
+        "E[(log L)^+] < infinity; necessity of this condition is unproved.",
+        "Chain rule applied at the measure level; no infinite quantity is subtracted."
+      ],
+      "artifact_path": "REPORT-part1-vfe-and-construction.md",
+      "artifact_sha256": "98d998b818d69dc398fa2d7b52aae4dd48a437d58391cf0ba405c1b09d5e76b5"
+    },
+    {
+      "id": "ev-degeneracy",
+      "kind": "COUNTEREXAMPLE",
+      "supports": true,
+      "scope": "Proposition 5 and Corollary 6: with unrestricted parent space and downward-kernel family, min_Q F is constant across partitions, so the partition posterior equals its prior; a capacity restriction and a node-count cost are both necessary.",
+      "side_conditions": [
+        "Requires the copy construction Z_{1,I} = Y_{0,I}, K^0_I = delta, P_1 = flat child law.",
+        "Block factorization of K_down is respected because the product of Diracs is a Dirac.",
+        "Refutes only the unrestricted case; says nothing about a capacity-bounded tower."
+      ],
+      "artifact_path": "REPORT-part2-parent-partition-graphrg.md",
+      "artifact_sha256": "c58f4b36b3e0f8227ae03f4ee22a10908ceb65ea072ae7da18af0a7798244083"
+    },
+    {
+      "id": "ev-parent",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Proposition 3: parts (a)-(e) establishing that an instantaneous deterministic pushforward parent and an independently declared same-time parent cause cannot be imposed together, and the exhaustive trichotomy of normalized repairs.",
+      "side_conditions": [
+        "Part (d) assumes a nonatomic reference on the parent space.",
+        "Part (e) assumes the generative law is a normalized directed kernel composition.",
+        "A soft-constrained reciprocal factor is an instance of mechanism (iii) and still owes a finite-normalizer proof."
+      ],
+      "artifact_path": "REPORT-part2-parent-partition-graphrg.md",
+      "artifact_sha256": "c58f4b36b3e0f8227ae03f4ee22a10908ceb65ea072ae7da18af0a7798244083"
+    },
+    {
+      "id": "ev-holonomy",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Proposition 8 (empty fixed set implies infinite distortion), Proposition 9 (coarse dressed transports convolve iff consecutive marks are conditionally independent), and the support criterion for coarse holonomy blindness.",
+      "side_conditions": [
+        "Proposition 8 requires an equivariant admitted parent family.",
+        "Proposition 9's convolution direction requires conditional independence, which is itself unproved for the declared blocking.",
+        "Barycenters require Bochner integrability and need not lie in the represented group."
+      ],
+      "artifact_path": "REPORT-part3-holonomy-blocks-dynamics.md",
+      "artifact_sha256": "2f8af7aa532c2467d18960feb66189befe940c435b9e2f8623cc1dbeb0d2bade"
+    },
+    {
+      "id": "ev-nonequilibrium",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Proposition 10: one C^1 scalar with symmetric positive-definite mobility yields LaSalle convergence, so participatory feedback derivable from that scalar cannot sustain nonequilibrium; the four admissible mechanisms are enumerated.",
+      "side_conditions": [
+        "Assumes smooth dynamics and symmetric positive-definite mobility.",
+        "Not extended to projected flows on the simplex boundary or indefinite preconditioners; that extension is an open obligation."
+      ],
+      "artifact_path": "REPORT-part3-holonomy-blocks-dynamics.md",
+      "artifact_sha256": "2f8af7aa532c2467d18960feb66189befe940c435b9e2f8623cc1dbeb0d2bade"
+    },
+    {
+      "id": "ev-intrinsic-scale",
+      "kind": "DERIVATION",
+      "supports": true,
+      "scope": "Proposition 11: with Perron receiver occupancy the additive symmetrization of the edge-event law preserves occupancy and equals Chung's directed Laplacian, giving a gauge-invariant symmetric PSD operator supporting effective-resistance and commute-time metrics and a well-typed diffusion scale.",
+      "side_conditions": [
+        "Requires irreducibility of the attention row matrix for the Perron vector.",
+        "Effective resistance is a metric per Klein and Randic, cited as an applicable theorem.",
+        "Transported Fisher-Rao is a pseudometric; path independence needs holonomy stabilization."
+      ],
+      "artifact_path": "REPORT-part4-literature-experiment-verdict.md",
+      "artifact_sha256": "4bc4aad512598b8fa7b8a9401774f8f6e28d88c0d5a381a8b0bdac07ad33214a"
+    },
+    {
+      "id": "ev-literature-bks",
+      "kind": "PRIMARY_SOURCE",
+      "supports": true,
+      "scope": "arXiv:2305.10491 (Berman, Klinger, Stapleton, 'Bayesian Renormalization'), v1 2023-05-17, v3 2023-10-09, MLST 4(4) 045011: abstract, Eq. (44) pushforward inverse Fisher metric, Eq. (55) Fisher-diagonal shell, and the checked absence of any treatment of directed graphs, network partitions, or holonomy.",
+      "side_conditions": [
+        "Stiff/sloppy to relevant/irrelevant is the paper's interpretive claim, not a theorem.",
+        "Section 3.1 argues spectrally while section 4.2 implements diagonally.",
+        "Authors describe the connections as largely conceptual."
+      ],
+      "artifact_path": "REPORT-part4-literature-experiment-verdict.md",
+      "artifact_sha256": "4bc4aad512598b8fa7b8a9401774f8f6e28d88c0d5a381a8b0bdac07ad33214a"
+    },
+    {
+      "id": "ev-literature-netrg",
+      "kind": "PRIMARY_SOURCE",
+      "supports": true,
+      "scope": "arXiv:2412.12988 (Gabrielli, Garlaschelli, Patil, Serrano, 'Network Renormalization'), v1 2024-12-17, Nature Reviews Physics 7:203-219 (2025): abstract and the confirmed absence of any claim that a framework solves simultaneous renormalization of topology and dynamics.",
+      "side_conditions": [
+        "The section 6 open-problem heading list was not re-verified verbatim this session because HTML and PDF fetches truncated; it is carried from a project note and is marked as provenance-limited in the claim table.",
+        "A review's open problem is not cited as a solved theorem anywhere in this run."
+      ],
+      "artifact_path": "REPORT-part4-literature-experiment-verdict.md",
+      "artifact_sha256": "4bc4aad512598b8fa7b8a9401774f8f6e28d88c0d5a381a8b0bdac07ad33214a"
+    },
+    {
+      "id": "ev-counterexamples",
+      "kind": "COUNTEREXAMPLE",
+      "supports": true,
+      "scope": "Register of twenty-four exact counterexamples: eight constructed in this run and sixteen reused from the project's established register, covering shortcut failures in clustering, holonomy, coarse attention, membership semantics, normalization, closure, lumpability, and recovery.",
+      "side_conditions": [
+        "Each entry refutes a specific named shortcut, not the surrounding theory.",
+        "Entries marked [live] are cited, not reproved, here."
+      ],
+      "artifact_path": "counterexample-register.md",
+      "artifact_sha256": "43c23dd7b3fb4a7e4fdddede9f090f57ccde86adb1da7e041a57748a42dbf184"
+    }
+  ],
+  "claims": [
+    {
+      "id": "target",
+      "statement": "For a finite directed two-channel gauge network of agents at one shared contextual point c_* in C, with generally non-flat belief and model transports Omega^b, Omega^m, a possibly cyclic skeleton, normalized directed source rows beta and gamma, external receiver occupancies alpha^b and alpha^m, and joint directed edge-event laws eta^b_ij = alpha^b_i beta_ij and eta^m_ij = alpha^m_i gamma_ij: (1) construct a normalized finite-depth generative joint P_theta(do,dW|X) containing belief and model presentations at every scale, the edge-event and transport data, stochastic partition variables, retained holonomy marks, and parent variables, together with one normalized correlated recognition kernel Q_phi(dW|o,X); (2) derive the exact variational free energy F = -log p_theta(o|X) + KL(Q_phi || Pi_{theta,o,X}) and its conditional-KL decomposition, identifying every normalizer, base measure, absolute-continuity condition, and finite-versus-extended-real boundary; and (3) decide whether descent of that variational free energy alone selects a nondegenerate partition and produces persistent nested blocks.",
+      "quantifiers": "Existential in conjuncts (1) and (2): there exists a normalized finite-depth joint and recognition disintegration for which the displayed VFE identity and its conditional-KL decomposition hold. Universal in conjunct (3): for every admissible tower satisfying the declared typing, descent of the tower VFE selects a nondegenerate partition. The negative certificate is matched to conjunct (3).",
+      "kind": "MATHEMATICAL",
+      "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "as-typing",
+        "as-reading-a",
+        "as-integrability",
+        "as-capacity"
+      ],
+      "evidence_ids": [
+        "ev-construction",
+        "ev-decomposition",
+        "ev-degeneracy",
+        "ev-counterexamples"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Conjuncts (1) and (2) fail if a factor's measurable codomain depends on a realized earlier value, or if an admissible tower satisfying the regularity has an ill-defined sum. Conjunct (3) fails affirmatively if some declared capacity restriction is exhibited under which descent provably selects a persistent nondegenerate partition."
+    },
+    {
+      "id": "construction",
+      "statement": "The depth-S two-channel tower joint, containing belief and model presentations, edge-event and transport data, stochastic partitions over fixed finite label pools, retained holonomy marks, and parent variables, is a probability measure carrying no normalizer other than the evidence.",
+      "quantifiers": "For every admissible (theta, X) satisfying the declared typing.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "as-typing"
+      ],
+      "evidence_ids": [
+        "ev-construction"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit a displayed factor whose measurable codomain depends on the realized value of an earlier variable, breaking the reverse-order integration."
+    },
+    {
+      "id": "decomposition",
+      "statement": "The exact tower VFE equals -log p_theta(o|X) + KL(Q_phi || Pi) in R union {+infinity} and decomposes into the observation term plus conditional relative entropies over the top prior, both channels' memberships, the graph data, the holonomy marks, and the parent-child kernels; the partition and parent coordinate minimizers are the corresponding Gibbs posteriors.",
+      "quantifiers": "For every recognition law disintegrated along the declared ordering with Q << Pi and the stated integrability.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "as-typing",
+        "as-integrability",
+        "as-attention"
+      ],
+      "evidence_ids": [
+        "ev-decomposition"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit an admissible tower meeting the regularity for which the displayed sum is not well defined, or a group of terms not obtainable from the declared factorization."
+    },
+    {
+      "id": "degeneracy",
+      "statement": "With an unrestricted parent space and downward-kernel family the minimized tower VFE is constant across partitions, so the inferred partition law equals its prior and hierarchy selection is carried entirely by a declared capacity restriction together with a node-count cost.",
+      "quantifiers": "There exists an admissible tower, for every partition, on which the minimum is the same; hence the universal selection claim fails.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "as-typing",
+        "as-capacity"
+      ],
+      "evidence_ids": [
+        "ev-degeneracy",
+        "ev-counterexamples"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Show the copy construction violates a hypothesis actually imposed on the tower, for instance an a priori bound on the parent space that is already part of the typing."
+    },
+    {
+      "id": "parent-impossibility",
+      "statement": "An instantaneous deterministic pushforward parent and an independently declared same-time parent cause cannot be imposed together: the parent becomes a statistic whose prior is not free, a freely declared prior overdetermines the model, a hard constraint annihilates a Gibbs normalizer against a nonatomic reference, and two generative arrows form a directed 2-cycle with no normalization. The normalized repairs are exactly recognition demotion, temporal delay, and one undirected factor with a proved finite normalizer.",
+      "quantifiers": "For every standard Borel pair and Borel coarse map satisfying the stated conditions.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "as-typing"
+      ],
+      "evidence_ids": [
+        "ev-parent",
+        "ev-counterexamples"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit a normalized joint realizing both a deterministic pushforward and a nondegenerate independently declared parent prior with genuine downward influence."
+    },
+    {
+      "id": "holonomy-obstruction",
+      "statement": "Non-flat connection data are retained exactly as the simultaneous root-framed orbit together with the conditional law of dressed transports; H_#Q = Q is necessary and sufficient only on the zero-distortion sector; flatness and stabilization are logically independent; and an empty intersection of the holonomy fixed set with the admitted family makes a zero-distortion parent nonexistent.",
+      "quantifiers": "For every finite connected block, channel, and equivariant admitted parent family.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "as-typing"
+      ],
+      "evidence_ids": [
+        "ev-holonomy",
+        "ev-counterexamples"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Prove that every equivariant admitted family in this program contains a holonomy-fixed point, or exhibit a mean dressed transport that always lies in the represented group."
+    },
+    {
+      "id": "nonequilibrium",
+      "statement": "Within one C^1 scalar with symmetric positive-definite mobility the flow converges by LaSalle, so participatory cross-scale feedback derivable from that scalar cannot sustain nonequilibrium; driven controls, an antisymmetric sector, delay, or non-gradient stochastic drift is required.",
+      "quantifiers": "For every bounded trajectory of such a flow.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "as-typing"
+      ],
+      "evidence_ids": [
+        "ev-nonequilibrium"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit a projected natural-gradient flow with symmetric positive-definite mobility and one C^1 scalar possessing a nonconstant omega-limit set."
+    },
+    {
+      "id": "intrinsic-scale",
+      "statement": "The edge-event law supplies a gauge-invariant directed Laplacian with exactly zero row sums; under Perron receiver occupancy its additive symmetrization preserves occupancy and coincides with Chung's directed Laplacian, yielding effective-resistance and commute-time metrics and a well-typed diffusion scale, whereas 1/beta, the Gibbs surprisal, and raw relative entropy are not metrics.",
+      "quantifiers": "For every irreducible attention row matrix on a finite directed graph.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "as-typing"
+      ],
+      "evidence_ids": [
+        "ev-intrinsic-scale",
+        "ev-counterexamples"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "Exhibit an irreducible row matrix whose Perron symmetrization fails to preserve occupancy, or a triangle-inequality violation for effective resistance on the symmetrized graph."
+    },
+    {
+      "id": "literature",
+      "statement": "Bayesian renormalization supplies a model-space relevance criterion that treats no directed graph, network partition, or holonomy; the network-renormalization review names the simultaneous renormalization of topology and dynamics as open and does not claim any framework solves it; and neither supplies a partition selector, a renormalization of non-flat transports, or a closure theorem for a directed two-channel gauge network.",
+      "quantifiers": "For the cited versions of arXiv:2305.10491 and arXiv:2412.12988 as checked.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+      "state": "INCONCLUSIVE",
+      "assumption_ids": [
+        "as-typing"
+      ],
+      "evidence_ids": [
+        "ev-literature-bks",
+        "ev-literature-netrg"
+      ],
+      "bridge_premise_ids": [],
+      "falsifier": "A passage in either primary source treating directed two-channel gauge networks, holonomy, or a proved solution to coupled topology-and-dynamics renormalization."
+    }
+  ]
+}

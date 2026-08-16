@@ -1,0 +1,147 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+  "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+  "mechanism_families": [
+    {
+      "family_id": "family-ordered-kernel-tower",
+      "core_mechanism": "Ordered composition of normalized Markov kernels along a finite scale-indexed partial order, with the likelihood at scale 0 only.",
+      "target_obligation_ids": [
+        "target",
+        "construction",
+        "decomposition"
+      ],
+      "representation": "Measure-level tower on a fixed product of standard Borel spaces with finite label pools.",
+      "invariant_or_obstruction": "Normalization without a partition function; the obstruction is any factor whose codomain depends on a realized earlier value.",
+      "obligations": [
+        "Prove normalization and the conditional-KL decomposition."
+      ],
+      "bridge": "Conditional relative-entropy chain rule at the measure level.",
+      "failure_test": "A factor with a value-dependent measurable codomain.",
+      "verified_results": [
+        "construction",
+        "decomposition"
+      ],
+      "open_gaps": [
+        "Necessity of the observation integrability condition."
+      ],
+      "novelty_fingerprint": "ordered kernel tower + label pools + two-channel memberships + holonomy marks as generated variables",
+      "disposition": "mature"
+    },
+    {
+      "family_id": "family-capacity-degeneracy",
+      "core_mechanism": "Exhibit an admissible tower whose observation marginal is partition-independent, forcing the minimized free energy to be constant across partitions.",
+      "target_obligation_ids": [
+        "target",
+        "degeneracy"
+      ],
+      "representation": "Copy parent space with Dirac downward kernel.",
+      "invariant_or_obstruction": "The minimized free energy depends on the partition only through the observation marginal.",
+      "obligations": [
+        "Refute the universal selection conjunct."
+      ],
+      "bridge": "Minimum of the free energy equals minus log evidence.",
+      "failure_test": "A typing hypothesis excluding the copy construction.",
+      "verified_results": [
+        "degeneracy"
+      ],
+      "open_gaps": [
+        "Whether some capacity bound restores selection and persistence."
+      ],
+      "novelty_fingerprint": "copy-parent witness + block-factorization compatibility + posterior-equals-prior corollary",
+      "disposition": "mature"
+    },
+    {
+      "family_id": "family-edge-event-geometry",
+      "core_mechanism": "Treat the joint directed edge-event law as the primitive gauge-invariant object: push it, disintegrate it, and build a directed Laplacian from it.",
+      "target_obligation_ids": [
+        "target",
+        "intrinsic-scale"
+      ],
+      "representation": "Probability law on ordered node pairs plus normalized endpoint kernels.",
+      "invariant_or_obstruction": "Additivity under blocking; rows are not additive.",
+      "obligations": [
+        "Supply intrinsic scales that are genuine metrics."
+      ],
+      "bridge": "Perron occupancy identifies the symmetrization with Chung's directed Laplacian.",
+      "failure_test": "Occupancy not preserved by symmetrization under a stationary receiver law.",
+      "verified_results": [
+        "intrinsic-scale"
+      ],
+      "open_gaps": [
+        "No rescaling kernel, hence no renormalization semigroup."
+      ],
+      "novelty_fingerprint": "edge-event law + Perron occupancy + Chung symmetrization + effective-resistance metric + two-channel scale spectra",
+      "disposition": "mature"
+    },
+    {
+      "family_id": "family-holonomy-retention",
+      "core_mechanism": "Retain the conditional law of dressed transports rather than a barycenter, and read blindness as a support condition on the stabilizer.",
+      "target_obligation_ids": [
+        "target",
+        "holonomy-obstruction"
+      ],
+      "representation": "Markov kernel from the coarse state into probability measures on the structure group.",
+      "invariant_or_obstruction": "Empty intersection of the holonomy fixed set with the admitted family forces infinite distortion.",
+      "obligations": [
+        "Treat non-flat connection data exactly."
+      ],
+      "bridge": "Pushforward of the joint edge-event-and-mark law.",
+      "failure_test": "An equivariant admitted family always containing a fixed point.",
+      "verified_results": [
+        "holonomy-obstruction"
+      ],
+      "open_gaps": [
+        "Conditional independence of consecutive dressed marks."
+      ],
+      "novelty_fingerprint": "dressed transport law + convolution under conditional independence + stabilizer support criterion",
+      "disposition": "mature"
+    },
+    {
+      "family_id": "family-gradient-obstruction",
+      "core_mechanism": "Use LaSalle on one scalar with symmetric mobility to bound what cross-scale feedback can produce.",
+      "target_obligation_ids": [
+        "target",
+        "nonequilibrium"
+      ],
+      "representation": "Natural-gradient flow on the tower recognition parameters.",
+      "invariant_or_obstruction": "A single scalar plus symmetric mobility forbids a nonequilibrium steady state.",
+      "obligations": [
+        "Say what participatory feedback requires."
+      ],
+      "bridge": "Enumeration of the four ways to break the hypotheses.",
+      "failure_test": "A nonconstant omega-limit set under the stated hypotheses.",
+      "verified_results": [
+        "nonequilibrium"
+      ],
+      "open_gaps": [
+        "Projected flows on simplex boundaries; indefinite mobilities."
+      ],
+      "novelty_fingerprint": "LaSalle bar + four-mechanism enumeration + non-integrability as the technical content of participatory feedback",
+      "disposition": "mature"
+    },
+    {
+      "family_id": "family-directed-cycle-obstruction",
+      "core_mechanism": "Show that a deterministic pushforward and an independent same-time cause cannot coexist, by disintegration, overdetermination, Fubini nullity, and absence of a topological ordering.",
+      "target_obligation_ids": [
+        "target",
+        "parent-impossibility"
+      ],
+      "representation": "Joint law on a child-parent pair with a Borel coarse map.",
+      "invariant_or_obstruction": "A directed 2-cycle has no normalized ordered composition.",
+      "obligations": [
+        "Compare the three parent-influence mechanisms."
+      ],
+      "bridge": "Trichotomy of normalized repairs.",
+      "failure_test": "A normalized joint realizing both arrows nondegenerately.",
+      "verified_results": [
+        "parent-impossibility"
+      ],
+      "open_gaps": [
+        "Finite normalizer for the soft reciprocal model."
+      ],
+      "novelty_fingerprint": "four-part impossibility + exhaustive repair trichotomy",
+      "disposition": "mature"
+    }
+  ]
+}

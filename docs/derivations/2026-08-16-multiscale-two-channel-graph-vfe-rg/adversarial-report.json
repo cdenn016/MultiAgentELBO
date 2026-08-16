@@ -1,0 +1,140 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+  "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+  "attacks": [
+    {
+      "id": "A1",
+      "claim_ids": [
+        "construction"
+      ],
+      "disposition": "REJECTED",
+      "attack": "A random occupied vertex set would break the fixed-measurable-space requirement and with it the reverse-order integration argument.",
+      "response": "Fixed finite label pools make R_s a Lambda-valued assignment, so every later kernel has a fixed measurable codomain; unoccupied labels carry zero edge-event mass rather than being absent from the space.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "454c1b4d2292f971531c430ff0871502d6fac51a9a0b16a987e97a9c596aa2db"
+    },
+    {
+      "id": "A2",
+      "claim_ids": [
+        "decomposition"
+      ],
+      "disposition": "PARTIALLY_SUSTAINED",
+      "attack": "The sum mixes a signed observation term with terms that can be +infinity, so an identity in R union {+infinity} is not justified as stated.",
+      "response": "Six groups are nonnegative and sum unambiguously; the integrability condition bounds the observation term from below. Necessity of that condition is unproved and is recorded as an open obligation.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "454c1b4d2292f971531c430ff0871502d6fac51a9a0b16a987e97a9c596aa2db"
+    },
+    {
+      "id": "A3",
+      "claim_ids": [
+        "degeneracy"
+      ],
+      "disposition": "REJECTED",
+      "attack": "The copy construction is a straw model that no modeler would use, so the proposition does not show a sensible tower is partition-blind.",
+      "response": "The proposition is a necessity result: one admissible witness suffices to show the variational principle alone cannot select, which is exactly what makes the capacity restriction obligatory rather than optional.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "454c1b4d2292f971531c430ff0871502d6fac51a9a0b16a987e97a9c596aa2db"
+    },
+    {
+      "id": "A4",
+      "claim_ids": [
+        "parent-impossibility"
+      ],
+      "disposition": "PARTIALLY_SUSTAINED",
+      "attack": "Nobody imposes an exact deterministic constraint inside a Gibbs model, so the nullity argument refutes an unasserted position and the trichotomy is not exhaustive.",
+      "response": "A soft penalty is an instance of the undirected mechanism and inherits its unproved normalizer obligation; the nullity argument targets the exact combination the target names. Stating the soft model and proving finiteness of its normalizer remains open.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "454c1b4d2292f971531c430ff0871502d6fac51a9a0b16a987e97a9c596aa2db"
+    },
+    {
+      "id": "A5",
+      "claim_ids": [
+        "holonomy-obstruction"
+      ],
+      "disposition": "REJECTED",
+      "attack": "The witness family excludes its own fixed point by hand, so the obstruction is an artifact of an artificial family.",
+      "response": "The family is equivariant, which is the hypothesis the surrounding theory imposes; requiring a family to contain its holonomy fixed points is precisely the extra condition the proposition identifies as necessary.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "454c1b4d2292f971531c430ff0871502d6fac51a9a0b16a987e97a9c596aa2db"
+    },
+    {
+      "id": "A6",
+      "claim_ids": [
+        "nonequilibrium"
+      ],
+      "disposition": "PARTIALLY_SUSTAINED",
+      "attack": "Real implementations use nonsmooth simplex projections and sometimes indefinite preconditioners, so the LaSalle conclusion does not apply.",
+      "response": "Projection onto a convex set still decreases the objective; an indefinite preconditioner leaves the natural-gradient setting. Extending or refuting the proposition for projected flows and indefinite mobilities is recorded as open.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "454c1b4d2292f971531c430ff0871502d6fac51a9a0b16a987e97a9c596aa2db"
+    },
+    {
+      "id": "A7",
+      "claim_ids": [
+        "literature",
+        "intrinsic-scale"
+      ],
+      "disposition": "PARTIALLY_SUSTAINED",
+      "attack": "Several statements about the primary papers are carried from project notes rather than checked against the primary, which is the failure the target's literature policy forbids.",
+      "response": "Titles, authors, versions, journal references, abstracts, the two cited BKS equations, and the absence of graph, partition, and holonomy content were checked against the primary this session. The review's section 6 heading list was not, because the fetches truncated; it is labeled provenance-limited at the point of use and marked in the claim table.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "454c1b4d2292f971531c430ff0871502d6fac51a9a0b16a987e97a9c596aa2db"
+    },
+    {
+      "id": "A8",
+      "claim_ids": [
+        "target",
+        "construction",
+        "decomposition",
+        "degeneracy",
+        "parent-impossibility",
+        "holonomy-obstruction",
+        "nonequilibrium",
+        "intrinsic-scale",
+        "literature"
+      ],
+      "disposition": "PARTIALLY_SUSTAINED",
+      "attack": "The target is a conjunction and the run closes only part of it, so no claim to have addressed the target should be made.",
+      "response": "Precisely why the terminal status is INCONCLUSIVE. Each conjunct receives its own disposition; conjunct (3) is refuted only in the unrestricted case and the capacity-bounded question is left open rather than absorbed.",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "454c1b4d2292f971531c430ff0871502d6fac51a9a0b16a987e97a9c596aa2db"
+    }
+  ],
+  "independent_reconstruction": {
+    "claim_ids": [
+      "target",
+      "construction",
+      "decomposition",
+      "degeneracy",
+      "parent-impossibility",
+      "holonomy-obstruction",
+      "nonequilibrium",
+      "intrinsic-scale",
+      "literature"
+    ],
+    "method": "Re-derive each load-bearing interface from the frozen contract, ledger, and DAG without the report narrative, and check that the cited evidence proves the exact recorded statement.",
+    "result": "PASS",
+    "conclusion": "Seven interfaces reconstructed and agreeing; three discrepancies found and folded back before release (conditioning of the holonomy-mark factor, promotion of the observation integrability condition, restriction of the degeneracy statement to the minimized free energy). Performed by the authoring model, so it is a reconstruction and not independent-model corroboration.",
+    "artifact_path": "evidence/independent-reconstruction.md",
+    "artifact_sha256": "3f95ff4cc49bfc30021cddefa23530f5f1ccab5666c8ad8a802515a230647d85"
+  },
+  "oracle_erasure": {
+    "claim_ids": [
+      "target",
+      "construction",
+      "decomposition",
+      "degeneracy",
+      "parent-impossibility",
+      "holonomy-obstruction",
+      "nonequilibrium",
+      "intrinsic-scale",
+      "literature"
+    ],
+    "method": "Remove the affirmative prior from the logical context, scan premises, modeling postulates, regularity hypotheses, and load-bearing steps by hand for direct or paraphrased dependence, and recompute the target's dependency closure.",
+    "result": "PASS",
+    "conclusion": "No node loses support. The capacity bound, the only assumption capable of carrying the prior's content, is invoked exclusively in the negative direction, and the degeneracy witness is anti-correlated with the prior, so that result survives erasure a fortiori. Passing shows only that the prior was unnecessary.",
+    "artifact_path": "evidence/oracle-erasure.md",
+    "artifact_sha256": "18302874e1aa8511233f8a6bc7960c4ee95572184f613c11e0b6a3c8042d2b71"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+  "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+  "checkpoint": null,
+  "target_claim": "target",
+  "terminal_status": "INCONCLUSIVE",
+  "certificate_claim": null,
+  "strongest_result": "Theorem A: under standard-Borel typing, normalized ordered kernels, positive finite evidence, absolute continuity, and E[(log L)^+] < infinity, the depth-S two-channel tower is normalized with no partition function beyond the evidence; the exact VFE equals -log p + KL(Q || Pi) in R union {+infinity} and decomposes into the observation term plus conditional relative entropies over the top prior, both channels' memberships, the graph data, the holonomy marks, and the parent-child kernels; the partition and parent coordinate minimizers are Gibbs posteriors; pushing the joint directed edge-event laws and disintegrating gives normalized gauge-invariant coarse rows composing under nested memberships; and non-flat holonomy is retained exactly as a root-framed orbit with the conditional law of dressed transports. Paired negative result, Proposition 5: with an unrestricted parent space the tower free energy is exactly constant across partitions, so the partition posterior equals its prior.",
+  "unresolved_obligations": [
+    "State and defend a capacity restriction under which the partition posterior differs from its prior.",
+    "Construct a nondegenerate, relabeling-natural, gauge-compatible partition selector consistent with holonomy admissibility.",
+    "Construct the rescaling and identification kernel making the coarse family a semigroup; without it there is no renormalization group, beta function, blocking ratio, or relevant/irrelevant classification.",
+    "Prove or refute the six persistence hypotheses for the coupled flow on a generic cyclic graph, including a metastability statement.",
+    "Prove or refute exact-image invariance of the retained sector and account for generated hyperedges.",
+    "Prove or refute vanishing of the natural-gradient semiconjugacy defect, separating measurability of the discarded defect from horizontal conformality.",
+    "Prove or refute conditional independence of consecutive dressed marks.",
+    "Formulate and attempt the two-channel group-valued analogue of the multiscale-model uniqueness theorem.",
+    "Build the Bayesian-RG bridge on a common state space with a proved monotone.",
+    "Declare and account for one nonequilibrium mechanism with a distinguishing observable.",
+    "Supply a continuum reference measure directly on a section space.",
+    "Prove or refute necessity of the observation integrability condition.",
+    "Re-fetch section 6 of arXiv:2412.12988 and confirm or correct the one provenance-limited row of the claim table.",
+    "Obtain cross-model verification of every derivation in this run."
+  ]
+}
