@@ -221,11 +221,35 @@ nonnegative generator \(\phi_0(t)=t\log t-t+1\) that reappears at line 286 of th
 it carries `\citet{Kullback1951,Csiszar1967}`, the attribution the new package does not repeat.
 
 **Assessment.** The measure-theoretic and information-theoretic core of the 8/15 flagship release is a
-re-derivation of four results this repository already had marked `ESTABLISHED` a week earlier, shipped
-as a new hash-bound `COMPLETE_AFFIRMATIVE` release with no citation to the prior internal results and
-without the Kullback/Csiszár attribution the prior version carried. My earlier note that these results
-are "classical, not new" understated it: they are not merely classical, they are *already in this
-repo*, with proofs, with correct citations.
+re-derivation of four results this repository already had marked `ESTABLISHED` a week earlier. My
+earlier note that these results are "classical, not new" understated it: they are not merely classical,
+they are *already in this repo*, with proofs, with correct citations.
+
+> **CORRECTION (added after wave 2, on evidence I checked myself).** The paragraph above originally
+> continued "…shipped as a new hash-bound `COMPLETE_AFFIRMATIVE` release with no citation to the prior
+> internal results", and I rated the finding **High** as an attribution *and process* defect on the
+> ground that the certification machinery failed to notice the prior work. **That process charge is
+> wrong and I withdraw it.** `grep -rn "06_general"` over the package returns 19 hits, and three of the
+> four domain reviews cite the ancestor chapter by exact line range with explicit mapping sentences —
+> `view-probability-kernel.md:45` says of the pushforward identity "This is the selected-version-qualified
+> identity **already proved canonically** (`Theory/06:258-302`)"; `:51` maps the recovery result to
+> `Theory/06:124-165` and the chain identity to `Theory/07b:34-66`; `view-information-vfe.md:112` maps
+> to `Theory/06:85-165`. The process did notice, and said so. Further, `problem-contract.json`'s
+> `literature_policy` is disjunctive — "checked primary sources **or released repository derivations**" —
+> and ends "**No novelty or priority claim is made**", so there is no contract violation and no novelty
+> claim to puncture.
+>
+> What survives is narrow and real: `grep -c "Theory/"` on `evidence/direct-derivation.md` returns **0**,
+> so the mathematics document read alone presents §3 and §6 as first derivations; no prior theorem
+> *label* appears anywhere in the package (`grep -rn "cg-"` → 0), so the citations that exist are
+> drift-prone line ranges; and `Kullback1951`/`Csiszar1967` are carried nowhere into the package. One
+> cross-reference line per section repairs it. **Adjudicated severity: Low**, not High.
+>
+> Also incidental: the Kullback/Csiszár citation sits at `Theory/06:122` inside the proof of
+> `thm:cg-dpi-equality`, not `thm:cg-kl-dpi-extended` as I wrote above.
+>
+> The *mathematical* half of my note stands and was independently re-verified: the four theorems did
+> pre-exist at `git show bd46058:Theory/06`, and the 8/15 §3/§6 restate them.
 
 This does **not** make the 8/15 work empty. What is genuinely added is the typed parent
 belief/model/evaluator/holonomy decoration, the pointwise \(r_*\)/\(X\)/admitted-\(o\) framing, and the

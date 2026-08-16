@@ -74,29 +74,29 @@ Status values: `PENDING`, `IN_PROGRESS`, `COMPLETE`, `BLOCKED`.
 
 | ID | Findings file | Scope | Status |
 |---|---|---|---|
-| P1 | `findings/P1-measure-probability.md` | Standard-Borel construction, channel pushforward, disintegration, posterior version selection, absolute continuity, a.s. qualifiers | PENDING |
-| P2 | `findings/P2-information-vfe.md` | Extended-real KL chain additivity, defect `Delta_A`, extended-real VFE identity, finite tier, recovery equivalence | PENDING |
-| P3 | `findings/P3-counterexamples-pointwise.md` | The five finite negative constructions; execute `finite_nongaussian_witness.py` | PENDING |
-| P4 | `findings/P4-gauge-holonomy.md` | Holonomy blindness branch, typed actions, equivariance/covariance/isotropy hypotheses, `\mathscr P_G` vs scale-bundle split | PENDING |
-| P5 | `findings/P5-category-operational.md` | Protocol-quotient terminality, finite minimality, compact-metrizable quotient; novelty vs Myhill-Nerode / syntactic monoid / topological algebra literature | PENDING |
-| P6 | `findings/P6-blackwell-comparison.md` | Marked-soft face diameters, 15-coordinate affine determinant, circle heat-chain Blackwell dominance and soft response nesting; execute `recompute.py` | PENDING |
-| P7 | `findings/P7-rg-coarsegraining.md` | `solid_RG_theory.md`, `Theory/06_general_coarsegraining.tex`, `Theory/07b_agent_network_rg.tex` 8/15 additions and their coherence with the pointwise datum | PENDING |
-| P8 | `findings/P8-integration-overclaim.md` | Every 8/15 claim in `overview.md`, `Theory/SPEC.md`, `appendix_claim_ledger.tex`, `Theory/05d`, `docs/STATUS.md` versus what the packages actually prove | PENDING |
-| P9 | `findings/P9-selfcert-falsifiability.md` | The certification machinery itself: adversarial report, oracle erasure, independent reconstruction, four domain views, release provenance, circularity, falsifiability | PENDING |
-| P10 | `findings/P10-rigor-sweep.md` | Hedges, hand-waving, vague quantifiers in the newly added prose | PENDING |
+| P1 | `findings/P1-measure-probability.md` | Standard-Borel construction, channel pushforward, disintegration, posterior version selection, absolute continuity, a.s. qualifiers | COMPLETE |
+| P2 | `findings/P2-information-vfe.md` | Extended-real KL chain additivity, defect `Delta_A`, extended-real VFE identity, finite tier, recovery equivalence | COMPLETE |
+| P3 | `findings/P3-counterexamples-pointwise.md` | The five finite negative constructions; execute `finite_nongaussian_witness.py` | COMPLETE |
+| P4 | `findings/P4-gauge-holonomy.md` | Holonomy blindness branch, typed actions, equivariance/covariance/isotropy hypotheses, `\mathscr P_G` vs scale-bundle split | COMPLETE |
+| P5 | `findings/P5-category-operational.md` | Protocol-quotient terminality, finite minimality, compact-metrizable quotient; novelty vs Myhill-Nerode / syntactic monoid / topological algebra literature | COMPLETE |
+| P6 | `findings/P6-blackwell-comparison.md` | Marked-soft face diameters, 15-coordinate affine determinant, circle heat-chain Blackwell dominance and soft response nesting; execute `recompute.py` | COMPLETE |
+| P7 | `findings/P7-rg-coarsegraining.md` | `solid_RG_theory.md`, `Theory/06_general_coarsegraining.tex`, `Theory/07b_agent_network_rg.tex` 8/15 additions and their coherence with the pointwise datum | COMPLETE |
+| P8 | `findings/P8-integration-overclaim.md` | Every 8/15 claim in `overview.md`, `Theory/SPEC.md`, `appendix_claim_ledger.tex`, `Theory/05d`, `docs/STATUS.md` versus what the packages actually prove | COMPLETE |
+| P9 | `findings/P9-selfcert-falsifiability.md` | The certification machinery itself: adversarial report, oracle erasure, independent reconstruction, four domain views, release provenance, circularity, falsifiability | COMPLETE |
+| P10 | `findings/P10-rigor-sweep.md` | Hedges, hand-waving, vague quantifiers in the newly added prose | COMPLETE |
 
 ### Wave 2 — adversarial verification
 
 | ID | Findings file | Scope | Status |
 |---|---|---|---|
-| V1..Vn | `findings/V-*.md` | One skeptic per contested Critical/High wave-1 finding | PENDING |
-| ADJ | `findings/ADJUDICATION.md` | Evidence-weighted adjudication of contested findings | PENDING |
+| V1..V8 | `findings/V-*.md` | 8 skeptics dispatched against the contested Critical/High findings | COMPLETE |
+| ADJ | `findings/ADJUDICATION.md` | Evidence-weighted adjudication of contested findings | COMPLETE |
 
 ### Wave 3 — synthesis
 
 | ID | File | Scope | Status |
 |---|---|---|---|
-| SYN | `REPORT.md` | Final consolidated review report, severity-ranked, with a punch list | PENDING |
+| SYN | `REPORT.md` | Final consolidated report — see it for results | COMPLETE |
 
 ## Resume instructions
 
@@ -106,3 +106,14 @@ Status values: `PENDING`, `IN_PROGRESS`, `COMPLETE`, `BLOCKED`.
 3. Re-dispatch only the tasks whose status is not `COMPLETE`. Partial findings files are usable —
    an interrupted agent's file is appended to, not restarted, unless its content is unusable.
 4. Update this table as tasks complete.
+
+## Outcome (all three waves complete)
+
+Final report: `REPORT.md`. Adjudicated: 1 Critical, 1 High, 3 Medium, 5 Low. No false theorem found.
+The Critical finding is a certification-validity failure (two of four domain approvals are stale
+against canonical sources edited after approval). Five of eight adversarially-tested findings were
+materially narrowed and two headline clauses were outright refuted.
+
+**Remaining work, if this is picked up again:** the unchallenged wave-1 findings (~14 High, 46 Medium,
+29 Low by investigator label) were never put to a skeptic and must not be treated as confirmed. The
+five highest-value ones to test next are named in `REPORT.md` under "Coverage".
