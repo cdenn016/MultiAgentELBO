@@ -15,7 +15,8 @@ not `COMPLETE`.
 | Review started | 2026-08-15 ~21:40 CDT |
 | Scale of target | 67 files, 17,560 insertions, 171 deletions |
 | Wave 1 workflow run ID | `wf_f6996164-a6c` (task `wktd2gjii`) |
-| Wave 1 script | `<scratchpad>/wave1.js` — resumable with `Workflow({scriptPath, resumeFromRunId})` |
+| Wave 1 script | `docs/reviews/2026-08-15-deep-review/workflows/wave1.js` (durable copy) — resumable with `Workflow({scriptPath, resumeFromRunId})` |
+| Wave 2 script | `docs/reviews/2026-08-15-deep-review/workflows/wave2.js` (durable copy) — takes `args.contested`, or runs standalone in self-triage mode |
 | Scheduled continuation | 2026-08-16 01:05 local (session-scoped cron; see "Resume instructions") |
 
 Reproduce the target diff with:

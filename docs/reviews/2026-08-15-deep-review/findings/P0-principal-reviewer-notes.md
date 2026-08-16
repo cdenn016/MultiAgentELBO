@@ -85,6 +85,25 @@ I reached the same suspicion independently on the probabilistic side.
 (b) the fencing is unusually careful and honest, and (c) the novelty is thin and the certification
 language oversells it.
 
+## The recovery theorem (6.9)–(6.12) is the classical equality-in-DPI / sufficiency theorem
+
+Read `evidence/direct-derivation.md:348-379`. The forward direction uses the posterior reverse kernel
+supplied by disintegration; the converse assumes finite fine KL plus a normalized \(R\) satisfying
+both recovery identities and concludes \(\Delta_A=0\) by data processing through \(C_A\) then \(R\).
+
+That is precisely the classical characterization of **equality in the data-processing inequality**:
+for \(\mathbb Q\ll\boldsymbol\Pi\) and a channel \(C\), \(\operatorname{KL}(\mathbb QC\|\boldsymbol\Pi C)
+=\operatorname{KL}(\mathbb Q\|\boldsymbol\Pi)<\infty\) holds iff \(C\) is sufficient for the pair, iff
+there is a kernel \(R\) with \(\mathbb QCR=\mathbb Q\) and \(\boldsymbol\Pi CR=\boldsymbol\Pi\)
+(Csiszár's sufficiency theory for \(f\)-divergences; the quantum analogue is Petz recovery). The
+derivation is correct and the finiteness fence is in the right place — the converse genuinely needs it,
+since \(\infty=\infty\) carries no information, and the text says exactly that at line 379.
+
+**Verdict: CHECKS OUT, and is classical.** Together with the KL chain, this means the two central
+information-theoretic results of the pointwise package are correct restatements of standard theory in
+the program's notation. That is worth having; it is not a new theorem, and the surrounding
+`COMPLETE_AFFIRMATIVE` apparatus does not distinguish the two.
+
 ## Operational-intervention package: my own reconstructions
 
 From `docs/derivations/2026-08-14-operational-intervention-extensions/construction-or-strongest-theorem.md`.
