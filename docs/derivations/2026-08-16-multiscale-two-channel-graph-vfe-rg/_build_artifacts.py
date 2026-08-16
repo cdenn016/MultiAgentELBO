@@ -268,8 +268,9 @@ EVIDENCE = [
     ev(
         "ev-holonomy", "DERIVATION", P3,
         "Proposition 8 (empty fixed set implies infinite distortion), Proposition 9 (coarse "
-        "dressed transports convolve iff consecutive marks are conditionally independent), and "
-        "the support criterion for coarse holonomy blindness.",
+        "dressed transports convolve when consecutive marks are conditionally independent, the "
+        "converse being false by the Z_3 witness), and the measure-one criterion for coarse "
+        "holonomy blindness.",
         [
             "Proposition 8 requires an equivariant admitted parent family.",
             "Proposition 9's convolution direction requires conditional independence, which is "
@@ -442,7 +443,8 @@ CLAIMS = [
         "and decomposes into the observation term plus conditional relative entropies over the "
         "top prior, both channels' memberships, the graph data, the holonomy marks, and the "
         "parent-child kernels; the partition and parent coordinate minimizers are the "
-        "corresponding Gibbs posteriors.",
+        "corresponding Gibbs posteriors, the parent energy collecting every conditional "
+        "divergence whose generative factor conditions on the parent coordinate.",
         "For every recognition law disintegrated along the declared ordering with Q << Pi and the "
         "stated integrability.",
         "MATHEMATICAL", "INCONCLUSIVE", ["ev-decomposition"],
@@ -454,8 +456,8 @@ CLAIMS = [
         "degeneracy",
         "With an unrestricted parent space and downward-kernel family the minimized tower VFE is "
         "constant across partitions, so the inferred partition law equals its prior and hierarchy "
-        "selection is carried entirely by a declared capacity restriction together with a "
-        "node-count cost.",
+        "a capacity restriction and a node-count cost are sufficient design mechanisms, one "
+        "per degeneracy, whose joint necessity over a declared model class is open.",
         "There exists an admissible tower, for every partition, on which the minimum is the same; "
         "hence the universal selection claim fails.",
         "MATHEMATICAL", "INCONCLUSIVE", ["ev-degeneracy", "ev-counterexamples"],
@@ -544,12 +546,21 @@ ALL_CLAIMS = [c["id"] for c in CLAIMS]
 
 ATTACKS = [
     {
-        "id": "A1", "claim_ids": ["construction"], "disposition": "REJECTED",
-        "attack": "A random occupied vertex set would break the fixed-measurable-space requirement "
-                  "and with it the reverse-order integration argument.",
-        "response": "Fixed finite label pools make R_s a Lambda-valued assignment, so every later "
-                    "kernel has a fixed measurable codomain; unoccupied labels carry zero "
-                    "edge-event mass rather than being absent from the space.",
+        "id": "A1", "claim_ids": ["construction"], "disposition": "SUSTAINED",
+        "attack": "A random occupied vertex set breaks the fixed-measurable-space requirement and "
+                  "with it the reverse-order integration argument. The occupied set at scale s+1 "
+                  "is determined by R_s, which the generative order samples after P_S and P^s_G, "
+                  "so an earlier kernel's codomain would depend on a later variable.",
+        "response": "SUSTAINED on external review (PR #17, finding H1). The original response "
+                    "asserted that fixed finite label pools fix every later codomain, which is the "
+                    "correct repair, but the body of Part 1 nonetheless indexed Z_s and G_s by the "
+                    "random occupied sets V_s. The repair was described and never implemented, so "
+                    "marking this REJECTED was itself an error. Part 1 section 3.1 and the "
+                    "construction summary now index every scale-s object by the fixed pool "
+                    "Lambda_s, with occupancy the derived predicate alpha^{x,s}_A > 0, and record "
+                    "the disjoint-union alternative. Differing belief and model partitions now "
+                    "route through Proposition 7's declared correspondence rather than presuming a "
+                    "common occupied index.",
         "artifact_path": ATK, "artifact_sha256": sha(ATK),
     },
     {
@@ -610,6 +621,30 @@ ATTACKS = [
                     "checked against the primary this session. The review's section 6 heading list "
                     "was not, because the fetches truncated; it is labeled provenance-limited at the "
                     "point of use and marked in the claim table.",
+        "artifact_path": ATK, "artifact_sha256": sha(ATK),
+    },
+    {
+        "id": "A9", "claim_ids": ["decomposition", "holonomy-obstruction"],
+        "disposition": "SUSTAINED",
+        "attack": "External review PR #17, findings H2, H3, H4, M1, M3, M4. The parent Gibbs update "
+                  "omitted the membership, graph, and holonomy conditional divergences that also "
+                  "condition on Z_{s+1}; the dressed-transport law omitted the soft endpoint "
+                  "factor K^x(I,J|i,j) and was therefore unnormalized outside hard partitions; the "
+                  "convolution statement was promoted to an iff whose converse is false; Theorem 2 "
+                  "omitted its integrability premise; flatness was said not to imply stabilization, "
+                  "though the identity stabilizes every law; and a support inclusion was asserted "
+                  "at a tier with no declared topology.",
+        "response": "All six sustained and repaired. V_{s+1} now sums the four parent-dependent "
+                    "conditional divergences, with a two-state witness (C26) showing the truncated "
+                    "form moves the argmin, not merely the value. The mu^x_{IJ} numerator now "
+                    "carries K^x(I,J|i,j), with witness C27; the restricted form is retained only "
+                    "for hard assignment. Proposition 9 keeps the forward implication only, with "
+                    "the Z_3 witness C25. Theorem 2 lists the integrability condition as "
+                    "hypothesis (iv) and states that it is not implied by positive finite evidence "
+                    "and absolute continuity. Section 9.2(B) now states the chain flatness implies "
+                    "stabilization, flatness does not imply agreement, stabilization does not imply "
+                    "flatness. The blindness criterion is stated as mu_loop(Stab(Q_I)) = 1, with "
+                    "the support form deferred to a declared topological tier.",
         "artifact_path": ATK, "artifact_sha256": sha(ATK),
     },
     {
@@ -859,6 +894,10 @@ ATTACKS = [
                 "Prove or refute necessity of the observation integrability condition.",
                 "Re-fetch section 6 of arXiv:2412.12988 and confirm or correct the one "
                 "provenance-limited row of the claim table.",
+                "Prove or refute joint necessity of the capacity restriction and the "
+                "node-count cost over a declared class of admissible towers (review M2).",
+                "Determine whether the restricted dressed-transport sum and the "
+                "endpoint-factor form can agree beyond hard assignment (review H3).",
                 "Obtain cross-model verification of every derivation in this run.",
             ],
         },

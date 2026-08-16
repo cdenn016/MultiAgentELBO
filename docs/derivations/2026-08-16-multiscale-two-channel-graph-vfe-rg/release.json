@@ -21,6 +21,8 @@
     "Supply a continuum reference measure directly on a section space.",
     "Prove or refute necessity of the observation integrability condition.",
     "Re-fetch section 6 of arXiv:2412.12988 and confirm or correct the one provenance-limited row of the claim table.",
+    "Prove or refute joint necessity of the capacity restriction and the node-count cost over a declared class of admissible towers (review M2).",
+    "Determine whether the restricted dressed-transport sum and the endpoint-factor form can agree beyond hard assignment (review H3).",
     "Obtain cross-model verification of every derivation in this run."
   ]
 }

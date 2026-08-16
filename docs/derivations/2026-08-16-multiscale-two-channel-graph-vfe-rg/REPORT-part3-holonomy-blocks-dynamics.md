@@ -39,18 +39,25 @@ So an exactly parallel parent exists precisely when a stabilized law exists and 
 transported marginals all equal it. Both channels must vanish independently:
 $\mathcal D_b+\mathcal D_m=0\iff\mathcal D_b=\mathcal D_m=0$.
 
-**(B) Off that sector, stabilization is neither necessary nor sufficient for
-anything one wants.** Two exact witnesses, both already established in the
-project's counterexample register:
+**(B) Off that sector, the implications go one way only.** First the direction
+that *does* hold and must not be misstated: $H=I$ gives $H_\#Q=Q$ for every $Q$,
+so **flatness implies stabilization, trivially**. What fails is everything else,
+and two exact witnesses from the project's counterexample register separate the
+three notions:
 
-* *Flatness does not give agreement.* On a two-node tree with $\Omega=I$ and
-  Gaussian beliefs with means $\pm a e_1$ and unit covariance, the transported
-  divergence is $2a^2>0$. Trivial holonomy, arbitrary disagreement.
-* *Agreement does not require flatness.* $H=\mathrm{diag}(1,-1,-1)\ne I$ stabilizes
-  an isotropic Gaussian. Nonidentity holonomy, exact agreement.
+* *Flatness does not give agreement between agents.* On a two-node tree with
+  $\Omega=I$ and Gaussian beliefs with means $\pm a e_1$ and unit covariance, the
+  transported divergence is $2a^2>0$. Trivial holonomy, arbitrary disagreement.
+* *Stabilization does not give flatness.* $H=\mathrm{diag}(1,-1,-1)\ne I$
+  stabilizes an isotropic Gaussian.
 
-Consequently **full-frame flatness $H=I$ and state stabilization $H_\#Q=Q$ are
-different conditions and neither implies the other.** For the fixed-$K$
+Consequently the correct statement is a chain, not a mutual independence:
+**flatness $\Rightarrow$ stabilization; flatness $\not\Rightarrow$ agreement;
+stabilization $\not\Rightarrow$ flatness.** An earlier formulation of this package
+said flatness and stabilization were logically independent in both directions;
+that was wrong, because it conflated stabilization of a law with agreement between
+different agents' laws. Only the second and third statements are witnessed above.
+For the fixed-$K$
 connection-Laplacian sector with reciprocal invertible links and positive-definite
 internal edge weights one has $\ker L_I\cong\mathrm{Fix}(\mathrm{Hol}_r)$, so
 represented trivial holonomy is necessary and sufficient *for that full sector*;
@@ -137,7 +144,7 @@ the joint edge-event-and-mark law:
 $$
 \boxed{\;
 \mu^x_{IJ}(dg\mid z)\;:=\;\frac{1}{\eta^{x,c}_{IJ}(z)}\,
-\mathbb E_{B_o}\!\Big[\sum_{i\in I,\,j\in J}\eta^x_{ij}(Y)\,\delta_{\Theta^{IJ,x}_{ij}}(dg)\ \Big|\ Z=z\Big]
+\mathbb E_{B_o}\!\Big[\sum_{i,j}\eta^x_{ij}(Y)\,K^x(I,J\mid i,j)\,\delta_{\Theta^{IJ,x}_{ij}}(dg)\ \Big|\ Z=z\Big]
 \;}
 $$
 
@@ -145,6 +152,16 @@ on $\{\eta^{x,c}_{IJ}>0\}$, a normalized probability measure on $G$ (or on the
 represented group $R_x(G)$), defined as a Markov kernel $z\mapsto\mu^x_{IJ}(\cdot\mid z)$.
 This is the exact coarse connection datum. It is normalized by construction and
 requires no integrability hypothesis.
+
+**The endpoint factor is not optional.** The sum runs over *all* microscopic
+ordered pairs and carries the same $K^x(I,J\mid i,j)$ that defines the denominator
+$\eta^{x,c}_{IJ}=\sum_{i,j}\eta^x_{ij}K^x(I,J\mid i,j)$ in Part 2 §8.1; that is
+exactly what makes the total mass one. Writing instead a restricted sum over
+"$i\in I,\ j\in J$" is correct **only for hard deterministic endpoint
+assignments**, where the omitted factor is the indicator that is identically one
+on the displayed index set. Under the soft memberships this package admits
+(Part 2 §8.3), "$i\in I$" is not even well defined and the restricted formula is
+not a probability measure.
 
 **Why a mean is not a substitute.** Three independent failures.
 
@@ -168,20 +185,32 @@ requires no integrability hypothesis.
 **Composition of coarse transports as measures.** The natural question at the next
 scale is how $\mu$ composes. Here is the exact statement and its obstruction.
 
-**Proposition 9 (convolution under conditional independence, correlation defect
-otherwise).** Fix coarse nodes $I,J,K$ and condition on the coarse state $z$. Let
-$\Theta^{IJ}$ and $\Theta^{JK}$ be the dressed transports sampled from consecutive
-coarse edge events. If, given $z$ and given the pair of coarse edge events, the two
-dressed marks are conditionally independent, then the law of the composite
+**Proposition 9 (conditional independence is sufficient; the converse fails).**
+Fix coarse nodes $I,J,K$ and condition on the coarse state $z$. Let $\Theta^{IJ}$
+and $\Theta^{JK}$ be the dressed transports sampled from consecutive coarse edge
+events. If, given $z$ and the pair of coarse edge events, the two dressed marks
+are conditionally independent, then the law of the composite
 $\Theta^{IK}=\Theta^{IJ}\Theta^{JK}$ is the ordered convolution
-$\mu^x_{IJ}\ast\mu^x_{JK}$ on $G$. Without that hypothesis the composite law is the
-pushforward of the *joint* mark law under group multiplication, and it differs from
-the convolution by exactly the dependence between the two marks.
+$\mu^x_{IJ}\ast\mu^x_{JK}$ on $G$. In general the composite law is the pushforward
+of the *joint* mark law under group multiplication, and **convolution equality
+does not imply conditional independence**.
 
 *Proof.* Group multiplication $m:G\times G\to G$ is measurable; the law of
-$m(\Theta^{IJ},\Theta^{JK})$ is $m_\#$ of their joint law, which factorizes as the
-product measure precisely under conditional independence, and $m_\#(\mu\otimes\nu)$
-is by definition the convolution. $\square$
+$m(\Theta^{IJ},\Theta^{JK})$ is $m_\#$ of their joint law. Under conditional
+independence that joint law is the product measure, and $m_\#(\mu\otimes\nu)$ is by
+definition the convolution. $\square$
+
+Only that direction is proved, and only that direction is true. Group
+multiplication is not injective on joint laws, so distinct joints — including
+maximally dependent ones — can share a product law. On $G=\mathbb Z_3$ take $U$
+uniform and $V=U$; the pair is maximally dependent, yet $U+V=2U$ is uniform
+because $2$ is invertible mod $3$, and the convolution of the two uniform
+marginals is also uniform. More generally, if either marginal is Haar on a compact
+group the product is Haar whatever the dependence. **Convolution equality is
+therefore useless as a test for independence.** If independence matters
+operationally, test factorization of the full joint mark law directly, or use
+conditional mutual information; otherwise retain the joint law and push it through
+group multiplication.
 
 The dependence is not a pathology to be assumed away: consecutive coarse edges
 share the intermediate block's internal tree transports $\tau^x_{J\leftarrow\cdot}$,
@@ -195,15 +224,27 @@ Markov property on the coarse walk, and a genuine hypothesis.
 right coarse-scale criterion is not "the mean transport stabilizes $Q_I$" but
 
 $$
-\mathrm{supp}\,\mu^x_{\rm loop}(\cdot\mid z)\subseteq\mathrm{Stab}(Q_I)
-:=\{g:\ (R_x(g))_\#Q_I=Q_I\}\qquad\text{for }\ z\ \text{-a.e.},
+\mu^x_{\rm loop}\big(\mathrm{Stab}(Q_I)\mid z\big)=1,
+\qquad
+\mathrm{Stab}(Q_I):=\{g:\ (R_x(g))_\#Q_I=Q_I\}\qquad\text{for }\ z\ \text{-a.e.},
 $$
 
-where $\mu^x_{\rm loop}$ is the ordered-convolution law of a coarse loop.
-$\mathrm{Stab}(Q_I)$ is a closed subgroup, so this is a checkable support
-condition. Penalizing the *variance* of $\mu$ toward zero, or penalizing its mean
-toward the identity, is an extra modeling preference and is not a consequence of
-gauge covariance.
+where $\mu^x_{\rm loop}$ is the law of a coarse loop's dressed transport.
+$\mathrm{Stab}(Q_I)$ is a subgroup, and it is measurable whenever the action
+$(g,Q)\mapsto(R_x(g))_\#Q$ is jointly measurable, which is all the declared
+standard-Borel tier supplies.
+
+**Measure-one, not support-inclusion, at the measurable tier.** An earlier
+formulation wrote this as $\mathrm{supp}\,\mu^x_{\rm loop}\subseteq\mathrm{Stab}(Q_I)$
+and called $\mathrm{Stab}(Q_I)$ a closed subgroup. Both "support" and "closed"
+presuppose a topology on $G$ that the typing of Part 1 §3.1 does not declare — it
+asks only for a standard Borel $G$-space. The exact measurable-tier statement is
+the displayed $\mu^x_{\rm loop}(\mathrm{Stab}(Q_I))=1$. The support formulation is
+available only after separately declaring a topological group, a continuous
+action, and hence closedness of the stabilizer; under those extra hypotheses the
+two agree. Penalizing the *variance* of $\mu$ toward zero, or penalizing its mean
+toward the identity, is an extra modeling preference either way and is not a
+consequence of gauge covariance.
 
 **When may a mean plus a residual be used?** Only as a declared truncation. Write
 $\overline{\mathsf U}^x_{IJ}=\mathsf T^x_{IJ}/\eta^{x,c}_{IJ}$ for the normalized
@@ -399,25 +440,46 @@ $$
 so **the parent kernel acts as the child's prior**.
 
 **Parent update.** Freeze the child *kernel* $Q_s(\cdot\mid z_{s+1},\cdot)$ and
-vary $Q_{s+1}$. The only $z_{s+1}$-dependent contribution of the cross-scale term
-is the conditional divergence profile
+vary $Q_{s+1}$. Here one must collect **every** descendant term that depends on
+the parent coordinate, not only the parent–child one. Inspecting the generative
+factorization of Part 1 §3.2, the factors $P^s_R$, $P^s_G$, $P^s_H$ and
+$K^s_\downarrow$ all condition on $Z_{s+1}$, so all four of their conditional
+divergences contribute a $z_{s+1}$-dependent profile. The correct total is
 
 $$
-\mathcal V_{s+1}(z_{s+1}):=D_{\rm KL}\big(Q_s(\cdot\mid z_{s+1},\cdot)\,\Vert\,K^s_\downarrow(\cdot\mid z_{s+1},\cdot)\big),
+\begin{aligned}
+\mathcal V_{s+1}(z):={}&
+D_{\rm KL}\big(Q^s_R(\cdot\mid z,G_{s+1})\,\Vert\,P^s_R(\cdot\mid z,G_{s+1})\big)\\
+&+\mathbb E_{Q^s_R}\Big[D_{\rm KL}\big(Q^s_G(\cdot\mid z,R_s)\,\Vert\,P^s_G(\cdot\mid z,R_s)\big)\\
+&\qquad\qquad+\mathbb E_{Q^s_G}\Big(D_{\rm KL}\big(Q^s_H\,\Vert\,P^s_H\big)
++\mathbb E_{Q^s_H}D_{\rm KL}\big(Q_s\,\Vert\,K^s_\downarrow\big)\Big)\Big],
+\end{aligned}
 $$
 
-so the parent's coordinate objective is
-$\mathbb E_{Q_{s+1}}[\mathcal V_{s+1}]+D_{\rm KL}(Q_{s+1}\Vert P_{s+1})+\text{const}$,
+every divergence conditioned on $Z_{s+1}=z$. The parent's coordinate objective is
+then $\mathbb E_{Q_{s+1}}[\mathcal V_{s+1}]+D_{\rm KL}(Q_{s+1}\Vert P_{s+1})+\text{const}$,
 with minimizer
 
 $$
 \boxed{\;Q^\star_{s+1}(dz_{s+1})\ \propto\ P_{s+1}(dz_{s+1})\,e^{-\mathcal V_{s+1}(z_{s+1})}\;}
 $$
 
-whenever the normalizer is in $(0,\infty)$. **The child's conditional-KL profile
-acts as the parent's likelihood.** This is the exact static sense in which a
-meta-agent both constrains and is constrained by its sub-agents, with no generative
-factor reading a posterior.
+whenever the normalizer is in $(0,\infty)$. **The children's total conditional-KL
+profile acts as the parent's likelihood.** This is the exact static sense in which
+a meta-agent both constrains and is constrained by its sub-agents, with no
+generative factor reading a posterior. It is the symmetric partner of the
+partition update of Part 2 §7.2, where the same collection of terms appears as
+$U_s(R)$.
+
+**Why the omission matters.** Retaining only the downward mismatch gives the wrong
+minimizer, not merely a looser one. Two parent states, uniform $P_{s+1}$, and a
+downward mismatch identically zero, but a descendant membership term of value
+$-\log 1=0$ at $z=0$ and $-\log\tfrac12=\log 2$ at $z=1$: the true optimum is
+proportional to $(1,\tfrac12)$, that is $(\tfrac23,\tfrac13)$, while the truncated
+formula returns the uniform law. The truncated update is therefore admissible only
+under an explicitly declared factorization in which $Q^s_R,Q^s_G,Q^s_H$ and their
+generative counterparts are parent-independent, so that the first three profiles
+are constant in $z$ and drop into the normalizer.
 
 ### 11.2 Natural gradient on the tower
 

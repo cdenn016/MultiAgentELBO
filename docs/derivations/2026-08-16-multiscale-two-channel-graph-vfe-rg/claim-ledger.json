@@ -47,7 +47,7 @@
         "Finite label pools fix the measurable codomain of every later factor."
       ],
       "artifact_path": "REPORT-part1-vfe-and-construction.md",
-      "artifact_sha256": "98d998b818d69dc398fa2d7b52aae4dd48a437d58391cf0ba405c1b09d5e76b5"
+      "artifact_sha256": "3485b5848fa02934a0e0bc752e0abc181ddd3d75fcdff214d1f9a64addf8c943"
     },
     {
       "id": "ev-decomposition",
@@ -63,7 +63,7 @@
         "Chain rule applied at the measure level; no infinite quantity is subtracted."
       ],
       "artifact_path": "REPORT-part1-vfe-and-construction.md",
-      "artifact_sha256": "98d998b818d69dc398fa2d7b52aae4dd48a437d58391cf0ba405c1b09d5e76b5"
+      "artifact_sha256": "3485b5848fa02934a0e0bc752e0abc181ddd3d75fcdff214d1f9a64addf8c943"
     },
     {
       "id": "ev-degeneracy",
@@ -76,7 +76,7 @@
         "Refutes only the unrestricted case; says nothing about a capacity-bounded tower."
       ],
       "artifact_path": "REPORT-part2-parent-partition-graphrg.md",
-      "artifact_sha256": "c58f4b36b3e0f8227ae03f4ee22a10908ceb65ea072ae7da18af0a7798244083"
+      "artifact_sha256": "b31dacf04f00d9699db325abdedd56e285dcfffdeaa5cdf9dc41004eac440a3c"
     },
     {
       "id": "ev-parent",
@@ -89,20 +89,20 @@
         "A soft-constrained reciprocal factor is an instance of mechanism (iii) and still owes a finite-normalizer proof."
       ],
       "artifact_path": "REPORT-part2-parent-partition-graphrg.md",
-      "artifact_sha256": "c58f4b36b3e0f8227ae03f4ee22a10908ceb65ea072ae7da18af0a7798244083"
+      "artifact_sha256": "b31dacf04f00d9699db325abdedd56e285dcfffdeaa5cdf9dc41004eac440a3c"
     },
     {
       "id": "ev-holonomy",
       "kind": "DERIVATION",
       "supports": true,
-      "scope": "Proposition 8 (empty fixed set implies infinite distortion), Proposition 9 (coarse dressed transports convolve iff consecutive marks are conditionally independent), and the support criterion for coarse holonomy blindness.",
+      "scope": "Proposition 8 (empty fixed set implies infinite distortion), Proposition 9 (coarse dressed transports convolve when consecutive marks are conditionally independent, the converse being false by the Z_3 witness), and the measure-one criterion for coarse holonomy blindness.",
       "side_conditions": [
         "Proposition 8 requires an equivariant admitted parent family.",
         "Proposition 9's convolution direction requires conditional independence, which is itself unproved for the declared blocking.",
         "Barycenters require Bochner integrability and need not lie in the represented group."
       ],
       "artifact_path": "REPORT-part3-holonomy-blocks-dynamics.md",
-      "artifact_sha256": "2f8af7aa532c2467d18960feb66189befe940c435b9e2f8623cc1dbeb0d2bade"
+      "artifact_sha256": "8493f2f26fcfeae5a2ed1e13ab86d5aec833097986479696130595d0fa28d51f"
     },
     {
       "id": "ev-nonequilibrium",
@@ -114,7 +114,7 @@
         "Not extended to projected flows on the simplex boundary or indefinite preconditioners; that extension is an open obligation."
       ],
       "artifact_path": "REPORT-part3-holonomy-blocks-dynamics.md",
-      "artifact_sha256": "2f8af7aa532c2467d18960feb66189befe940c435b9e2f8623cc1dbeb0d2bade"
+      "artifact_sha256": "8493f2f26fcfeae5a2ed1e13ab86d5aec833097986479696130595d0fa28d51f"
     },
     {
       "id": "ev-intrinsic-scale",
@@ -127,7 +127,7 @@
         "Transported Fisher-Rao is a pseudometric; path independence needs holonomy stabilization."
       ],
       "artifact_path": "REPORT-part4-literature-experiment-verdict.md",
-      "artifact_sha256": "4bc4aad512598b8fa7b8a9401774f8f6e28d88c0d5a381a8b0bdac07ad33214a"
+      "artifact_sha256": "536c9d446de77861d3e51db053c4c7bfe002cf5e0fdbd5d575eef253b9e17ccc"
     },
     {
       "id": "ev-literature-bks",
@@ -140,7 +140,7 @@
         "Authors describe the connections as largely conceptual."
       ],
       "artifact_path": "REPORT-part4-literature-experiment-verdict.md",
-      "artifact_sha256": "4bc4aad512598b8fa7b8a9401774f8f6e28d88c0d5a381a8b0bdac07ad33214a"
+      "artifact_sha256": "536c9d446de77861d3e51db053c4c7bfe002cf5e0fdbd5d575eef253b9e17ccc"
     },
     {
       "id": "ev-literature-netrg",
@@ -152,7 +152,7 @@
         "A review's open problem is not cited as a solved theorem anywhere in this run."
       ],
       "artifact_path": "REPORT-part4-literature-experiment-verdict.md",
-      "artifact_sha256": "4bc4aad512598b8fa7b8a9401774f8f6e28d88c0d5a381a8b0bdac07ad33214a"
+      "artifact_sha256": "536c9d446de77861d3e51db053c4c7bfe002cf5e0fdbd5d575eef253b9e17ccc"
     },
     {
       "id": "ev-counterexamples",
@@ -164,7 +164,7 @@
         "Entries marked [live] are cited, not reproved, here."
       ],
       "artifact_path": "counterexample-register.md",
-      "artifact_sha256": "be758c25f2767e809542b858aefa0d6c13604d5a9178d28bb8e6896613d41ec7"
+      "artifact_sha256": "20659f3db451b578e76cb7e098381e65ed759e4517345468e9ec79e467c5ea3c"
     }
   ],
   "claims": [
@@ -208,7 +208,7 @@
     },
     {
       "id": "decomposition",
-      "statement": "The exact tower VFE equals -log p_theta(o|X) + KL(Q_phi || Pi) in R union {+infinity} and decomposes into the observation term plus conditional relative entropies over the top prior, both channels' memberships, the graph data, the holonomy marks, and the parent-child kernels; the partition and parent coordinate minimizers are the corresponding Gibbs posteriors.",
+      "statement": "The exact tower VFE equals -log p_theta(o|X) + KL(Q_phi || Pi) in R union {+infinity} and decomposes into the observation term plus conditional relative entropies over the top prior, both channels' memberships, the graph data, the holonomy marks, and the parent-child kernels; the partition and parent coordinate minimizers are the corresponding Gibbs posteriors, the parent energy collecting every conditional divergence whose generative factor conditions on the parent coordinate.",
       "quantifiers": "For every recognition law disintegrated along the declared ordering with Q << Pi and the stated integrability.",
       "kind": "MATHEMATICAL",
       "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
@@ -226,7 +226,7 @@
     },
     {
       "id": "degeneracy",
-      "statement": "With an unrestricted parent space and downward-kernel family the minimized tower VFE is constant across partitions, so the inferred partition law equals its prior and hierarchy selection is carried entirely by a declared capacity restriction together with a node-count cost.",
+      "statement": "With an unrestricted parent space and downward-kernel family the minimized tower VFE is constant across partitions, so the inferred partition law equals its prior and hierarchy a capacity restriction and a node-count cost are sufficient design mechanisms, one per degeneracy, whose joint necessity over a declared model class is open.",
       "quantifiers": "There exists an admissible tower, for every partition, on which the minimum is the same; hence the universal selection claim fails.",
       "kind": "MATHEMATICAL",
       "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",

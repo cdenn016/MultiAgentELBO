@@ -8,21 +8,32 @@ cross-model rule this is why no claim in this run reaches `EVIDENCE_VERIFIED`.
 
 *Attack.* The tower joint is claimed normalized without a partition function, but it
 contains a membership variable $R_s$ whose *support* (the occupied vertex set
-$V_{s+1}$) is itself random. A random index set usually breaks the fixed-measurable-space
-requirement and with it the reverse-order Tonelli argument, because the later factors
-$P^s_G$, $K^s_\downarrow$ would be kernels into a space that depends on the value of an
-earlier variable.
+$V_{s+1}$) is itself random. A random index set breaks the fixed-measurable-space
+requirement and with it the reverse-order Tonelli argument, because the later
+factors $P^s_G$, $K^s_\downarrow$ would be kernels into a space that depends on the
+value of an earlier variable. Concretely: pool $\{A,B\}$, a random partition that
+sometimes occupies only $\{A\}$, and the target space of $P_S$ changes with a
+variable sampled downstream of it.
 
-*Response.* Rejected, and the construction was written to avoid exactly this. Part 1
-§3.1 fixes a **finite label pool** $\Lambda^x_{s+1}$ in advance; $R_s$ is a
-$\Lambda$-valued assignment, not a set-valued variable, so every later kernel has a
-fixed measurable codomain indexed by the whole pool. Unoccupied labels carry zero
-edge-event mass (Part 2 §8.3, case (2)) rather than being absent from the space. The
-reverse-order integration in Proposition 1 therefore runs on a fixed product space.
-*Falsifies this response:* exhibiting a factor in Part 1 §3.2 whose codomain depends
-measurably on the realized value of $R_s$ rather than on the pool.
+*Response.* **SUSTAINED** on external review (PR #17, finding H1). The original
+response asserted that fixed finite label pools fix every later codomain. That is
+the correct repair, but the body of Part 1 nonetheless indexed $Z_s$, $G_s$, and
+the rows by the **random occupied sets** $V_s$ — the pools appeared in the prose and
+were never used as the index. The repair was described and not implemented, so
+marking this `REJECTED` was itself an error, and a more damaging one than missing
+the attack, because it converted an open question into a false clearance.
 
-*Disposition:* REJECTED.
+Repaired: Part 1 §3.1, the architecture diagram, and
+`construction-or-strongest-theorem.md` now index every scale-$s$ object by the fixed
+pool $\Lambda_s$, with occupancy the derived predicate $\alpha^{x,s}_A>0$ and the
+measurable disjoint union recorded as the equivalent alternative. The review's
+second point — that differing $C^b,C^m$ leave no common occupied index for a shared
+parent state — is handled by routing through Proposition 7's declared
+correspondence, which Part 2 §8.4 already established and §3.1 had ignored.
+*Falsifies this repair:* a factor in Part 1 §3.2 whose codomain still depends on a
+realized value rather than on the pool.
+
+*Disposition:* SUSTAINED, repaired.
 
 ## A2 — against `decomposition` (the seven-group conditional-KL identity)
 
@@ -168,3 +179,35 @@ Part 4 §14–§16 rather than being absorbed into a single verdict.
 
 *Disposition:* PARTIALLY_SUSTAINED. Smallest unresolved obligation: obligations 1, 2,
 and 4 of Part 4 §16.
+
+## A9 — against `decomposition` and `holonomy-obstruction` (external review PR #17)
+
+*Attack.* Six further defects, raised externally rather than by this package's own
+adversarial pass. H2: the parent Gibbs update omits the membership, graph, and
+holonomy conditional divergences that also condition on $Z_{s+1}$. H3: the
+dressed-transport law omits the soft endpoint factor $K^x(I,J\mid i,j)$ and is
+therefore unnormalized outside hard partitions. H4: the convolution statement was
+promoted to an `iff` whose converse is false. M1: Theorem 2 omits its integrability
+premise. M3: flatness was said not to imply stabilization, though the identity
+stabilizes every law. M4: a support inclusion and a closed stabilizer were asserted
+at a tier with no declared topology.
+
+*Response.* All six sustained and repaired, with three new witnesses added to the
+counterexample register. $\mathcal V_{s+1}$ now sums the four parent-dependent
+conditional divergences, and C26 shows the truncated form moves the argmin rather
+than merely the value. The $\mu^x_{IJ}$ numerator now carries the endpoint factor,
+with C27 exhibiting total mass $2$ or $0$ under a split child; the restricted form
+survives only for hard assignment. Proposition 9 keeps the forward implication
+only, with C25 ($\mathbb Z_3$, $U$ uniform, $V=U$) refuting the converse. Theorem 2
+lists integrability as hypothesis (iv) and states that it is not implied by
+positive finite evidence plus absolute continuity. Section 9.2(B) now states the
+chain rather than a mutual independence. The blindness criterion reads
+$\mu^x_{
+m loop}(\mathrm{Stab}(Q_I))=1$, with the support form deferred to a
+declared topological tier.
+*Falsifies this repair:* any of the six restated claims failing on its own terms —
+for instance a parent-dependent factor still missing from $\mathcal V_{s+1}$, or a
+soft-membership configuration on which the corrected $\mu^x_{IJ}$ is still not a
+probability measure.
+
+*Disposition:* SUSTAINED, repaired.

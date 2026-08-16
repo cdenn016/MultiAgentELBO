@@ -77,6 +77,41 @@ Argument: two generative arrows between the same variables at one slice form a
 directed 2-cycle; the ordered-kernel composition has no topological ordering and the
 reverse-order Tonelli argument of Proposition 1 does not run.
 
+## C25 [new] Convolution equality does not detect dependence — Part 3 Prop. 9
+
+Refutes: "coarse dressed transports convolve **iff** consecutive marks are
+conditionally independent" (the converse half, asserted in an earlier formulation
+of this package and in its claim table).
+Construction: $G=\mathbb Z_3$, $U$ uniform on $G$, $V:=U$. The pair $(U,V)$ is
+maximally dependent, yet $U+V=2U$ is uniform because $2$ is invertible mod $3$,
+and $\mu_U\ast\mu_V=$ uniform as well. So the product law equals the convolution
+of the marginals while the marks are as dependent as possible. General reason:
+group multiplication is not injective on joint laws, and if either marginal is
+Haar on a compact group the product is Haar whatever the dependence. Only the
+forward implication survives.
+
+## C26 [new] Truncating the parent energy moves the minimizer — Part 3 §11.1
+
+Refutes: "the parent Gibbs update needs only the downward mismatch profile."
+Construction: two parent states, uniform $P_{s+1}$, downward mismatch identically
+zero, and one descendant membership term contributing $-\log 1=0$ at $z=0$ and
+$-\log\tfrac12=\log 2$ at $z=1$. The true coordinate optimum is proportional to
+$(1,\tfrac12)$, that is $(\tfrac23,\tfrac13)$; the truncated formula returns the
+uniform law. The error is in the argmin, not merely in the value.
+
+## C27 [new] Soft membership breaks the restricted dressed-transport sum — Part 3 §9.4
+
+Refutes: "$\mu^x_{IJ}$ may be written as a sum of $\eta^x_{ij}$ over $i\in I$,
+$j\in J$ divided by the coarse mass."
+Construction: the denominator $\eta^{x,c}_{IJ}=\sum_{i,j}\eta^x_{ij}K^x(I,J\mid i,j)$
+runs over all ordered pairs with the endpoint factor, while the restricted
+numerator drops it. Take one child $i_0$ with $C(I\mid i_0)=C(I'\mid i_0)=\tfrac12$
+and a single microscopic edge carrying all the mass: the restricted numerator
+either counts that edge in full or not at all, whereas the denominator counts
+$\tfrac12$ of it, so total mass is $2$ or $0$ rather than $1$. Under hard
+assignment the omitted factor is the indicator identically one on the index set and
+the two agree.
+
 ## C9 [live] KL-threshold clustering is not transitive
 
 Bernoulli chain $1/10\to1/2\to9/10$ at threshold $0.6$ nats: first–second and
