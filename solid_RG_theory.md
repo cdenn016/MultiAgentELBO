@@ -1,6 +1,8 @@
 <!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","schema_version":"rigorous-theory-search/v1","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87"} -->
 # Pointwise meta-agent renormalization
 
+For a physicist-facing, standalone LaTeX explanation, see [solid_RG_theory.tex](solid_RG_theory.tex). This Markdown page remains the compact technical and status reference.
+
 This is the repository start page for the strongest certified pointwise result. Fix a finite child block $I$ with parent label $A$ and write
 
 $$
@@ -337,7 +339,8 @@ OPEN/TODO: family-wide common recovery absent simultaneous hypotheses; the froze
 
 | Location | Role |
 |---|---|
-| [solid_RG_theory.md](solid_RG_theory.md) | Start page and sole human-facing pointwise guide |
+| [solid_RG_theory.md](solid_RG_theory.md) | Compact technical start page and status reference |
+| [solid_RG_theory.tex](solid_RG_theory.tex) | Standalone physicist-facing exposition with intuition, a worked example, and explicit proof boundaries |
 | [Theory](Theory/) | Canonical theorem source, especially chapters 06, 07b, and 09 plus SPEC.md |
 | [Dated worklog](docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md) | Chronological investigation; later corrections supersede earlier exploratory language |
 | [Full-datum certification package](docs/derivations/2026-08-15-full-pointwise-meta-agent/) | Current hash-bound proof, reconstruction, adversarial, counterexample, reviews, and release metadata |
