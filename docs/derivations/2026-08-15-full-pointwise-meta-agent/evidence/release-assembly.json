@@ -77,7 +77,8 @@
         "high": 0,
         "medium": 0
       },
-      "staleness": "This review binds Theory/06_general_coarsegraining.tex at 4891a8f5... and Theory/07b_agent_network_rg.tex at 5eb159493ec72721..., which are the add1a69 bytes. At the released revision 8ce6358 those files hash fa10620d2a1d0e51... and 268f9c3b75b09966..., and the 07b edit inserted thm:rg-pointwise-parent-datum itself. The review's own post-review-mutation falsification clause is therefore met. The APPROVE disposition applies to the pre-integration snapshot only and does not extend to the released revision. See POST-RELEASE-CORRECTIONS.md (C1)."
+      "staleness": "This review binds Theory/06_general_coarsegraining.tex at 4891a8f5... and Theory/07b_agent_network_rg.tex at 5eb159493ec72721..., which are the add1a69 bytes. At the released revision 8ce6358 those files hash fa10620d2a1d0e51... and 268f9c3b75b09966..., and the 07b edit inserted thm:rg-pointwise-parent-datum itself. The review's own post-review-mutation falsification clause is therefore met. The APPROVE disposition applies to the pre-integration snapshot only and does not extend to the released revision. See POST-RELEASE-CORRECTIONS.md (C1).",
+      "severity_count_convention": "Counts are findings remaining against the CORRECTED bytes, after any finding raised during the review was repaired. A nonzero count is therefore unreachable by construction, and a 0/0/0 result records that the review-and-repair loop terminated -- it is not a measurement of how many defects the reviewed text originally contained. At least one real pre-fix mathematical error is recoverable from git for this package (raw t*log(t) called pointwise nonnegative, corrected to the generator phi_0). Disclosed by the 2026-08-16 remediation of finding L8; see POST-RELEASE-CORRECTIONS.md."
     },
     {
       "review_id": "VIEW-INFORMATION-VFE",
@@ -91,7 +92,8 @@
         "high": 0,
         "medium": 0
       },
-      "staleness": "Binds the same stale Theory/06 and Theory/07b bytes, but every stated falsification condition of this review is mathematical and none is met. Disposition stands."
+      "staleness": "Binds the same stale Theory/06 and Theory/07b bytes, but every stated falsification condition of this review is mathematical and none is met. Disposition stands.",
+      "severity_count_convention": "Counts are findings remaining against the CORRECTED bytes, after any finding raised during the review was repaired. A nonzero count is therefore unreachable by construction, and a 0/0/0 result records that the review-and-repair loop terminated -- it is not a measurement of how many defects the reviewed text originally contained. At least one real pre-fix mathematical error is recoverable from git for this package (raw t*log(t) called pointwise nonnegative, corrected to the generator phi_0). Disclosed by the 2026-08-16 remediation of finding L8; see POST-RELEASE-CORRECTIONS.md."
     },
     {
       "review_id": "VIEW-GAUGE-HOLONOMY",
@@ -105,7 +107,8 @@
         "high": 0,
         "medium": 0
       },
-      "staleness": "This review binds Theory/06_general_coarsegraining.tex at 4891a8f5... and Theory/07b_agent_network_rg.tex at 5eb159493ec72721..., which are the add1a69 bytes. At the released revision 8ce6358 those files hash fa10620d2a1d0e51... and 268f9c3b75b09966..., and the 07b edit inserted thm:rg-pointwise-parent-datum itself. The review's own post-review-mutation falsification clause is therefore met. The APPROVE disposition applies to the pre-integration snapshot only and does not extend to the released revision. See POST-RELEASE-CORRECTIONS.md (C1)."
+      "staleness": "This review binds Theory/06_general_coarsegraining.tex at 4891a8f5... and Theory/07b_agent_network_rg.tex at 5eb159493ec72721..., which are the add1a69 bytes. At the released revision 8ce6358 those files hash fa10620d2a1d0e51... and 268f9c3b75b09966..., and the 07b edit inserted thm:rg-pointwise-parent-datum itself. The review's own post-review-mutation falsification clause is therefore met. The APPROVE disposition applies to the pre-integration snapshot only and does not extend to the released revision. See POST-RELEASE-CORRECTIONS.md (C1).",
+      "severity_count_convention": "Counts are findings remaining against the CORRECTED bytes, after any finding raised during the review was repaired. A nonzero count is therefore unreachable by construction, and a 0/0/0 result records that the review-and-repair loop terminated -- it is not a measurement of how many defects the reviewed text originally contained. At least one real pre-fix mathematical error is recoverable from git for this package (raw t*log(t) called pointwise nonnegative, corrected to the generator phi_0). Disclosed by the 2026-08-16 remediation of finding L8; see POST-RELEASE-CORRECTIONS.md."
     },
     {
       "review_id": "VIEW-DYNAMICS-SCOPE",
@@ -118,7 +121,8 @@
         "critical": 0,
         "high": 0,
         "medium": 0
-      }
+      },
+      "severity_count_convention": "Counts are findings remaining against the CORRECTED bytes, after any finding raised during the review was repaired. A nonzero count is therefore unreachable by construction, and a 0/0/0 result records that the review-and-repair loop terminated -- it is not a measurement of how many defects the reviewed text originally contained. At least one real pre-fix mathematical error is recoverable from git for this package (raw t*log(t) called pointwise nonnegative, corrected to the generator phi_0). Disclosed by the 2026-08-16 remediation of finding L8; see POST-RELEASE-CORRECTIONS.md."
     }
   ],
   "review_binding_rule": "Reviews bind the corrected pre-review payload snapshot; final metadata binds current review hashes. Review agreement is adjudication and cannot replace direct mathematical evidence.",

@@ -19,7 +19,16 @@ The provenance is non-circular in structure — three one-way snapshots, no mutu
 
 ## Strongest verified result
 
-The construction supplies normalized parent generative, posterior, and recognition laws through one fixed recognition-independent Markov channel; preserves the observation marginal; proves parent posterior disintegration and absolute continuity; separates induced from explicitly compatible predeclared evaluators; derives belief, model, and posterior marginals only as forward projections; proves the additive extended-valued KL chain and the frozen finite-VFE corollary; characterizes finite zero defect and pairwise common recovery; and establishes the declared full-law holonomy blindness or raw-record retention branch. The five exact finite negative constructions verify failure of full-law reconstruction from marginals, unconditional split-channel VFE, model-marginal-only evaluator compatibility, agreement from trivial holonomy, and joint invariance from marginal invariance. `DYNAMICS-SCOPE` is separately verified as a boundary/nonclaim.
+The construction supplies normalized parent generative, posterior, and recognition laws through one fixed recognition-independent Markov channel; preserves the observation marginal; proves parent posterior disintegration and absolute continuity; separates induced from explicitly compatible predeclared evaluators; derives belief, model, and posterior marginals only as forward projections; proves the additive extended-valued KL chain and the frozen finite-VFE corollary; characterizes finite zero defect and pairwise common recovery; and establishes the declared full-law covariance ("holonomy blindness") or raw-record retention branch.
+
+Separately from the affirmative content above, and **not** to be read as part of it, five exact finite
+constructions are recorded as **two-atom insufficiency witnesses** (2026-08-16 remediation, finding
+L3). Each refutes a specific sufficiency claim — full-law reconstruction from marginals, unconditional
+split-channel VFE, model-marginal-only evaluator compatibility, agreement from trivial holonomy, and
+joint invariance from marginal invariance — and none is a substantive theorem in its own right. Two of
+the five (split-channel VFE, incompatible evaluator) refute premise-deleted versions of the
+affirmative theorem rather than any claim made here. `DYNAMICS-SCOPE` is separately verified as a
+boundary/nonclaim.
 
 ## Dependency closure
 
@@ -52,3 +61,23 @@ Two **certification** obligations are open, recorded in `POST-RELEASE-CORRECTION
 ## Scope and limitations
 
 The certificate is a static pointwise standard-Borel theorem, not a complete geometric or physical theory. It does not establish cross-`X` sufficiency, a canonical or measurable quotient of evaluator presentations, Gaussian closure, smoothness, patchwise gluing, a canonical membership selector, a canonical coarse channel or partition, the downstream comparison theorem, a unique latent DAG, unique microscopic physics, autonomous dynamics, agency, ontology, Wheelerian feedback, nonequilibrium persistence, or physical time. Split-channel and incompatible-evaluator witnesses refute premise-deleted overreach rather than the conditional common-channel theorem. Holonomy blindness is a full-law statement under explicit action/version/evaluator hypotheses; marginal invariance is not full-law invariance, and raw retention preserves the complete joint marked record. Extended KL is additive in the nonnegative extended reals; ordinary VFE differences and recovery equivalences are asserted only on the finite tier.
+
+Three further limitations, added by the 2026-08-16 remediation:
+
+**Null-slice version dependence (L2).** Every displayed quantity at the admitted `o` is a property of
+the *selected* posterior version, not of the conditional law as an equivalence class. When the
+admitted `o` lies in a null set of the observation reference, a different admissible version changes
+the fine VFE — a two-point example moves it from `log 2` to `0` while every frozen premise still
+holds. The package discloses this at `evidence/direct-derivation.md:45` and dispositions it as attack
+`A4`, but the limitation lists previously omitted it. Nothing is claimed about canonical null-slice
+values.
+
+**The fourth affirmative conjunct is a modeling declaration (L9).** It fixes how a parent datum is to
+be *presented*, not a proposition with an independent truth value, so certifying it records that the
+declaration was adopted and used consistently — it is not a verification in the sense the other
+conjuncts are. The stronger charge, that the released theorem *contradicts* the contract's wording for
+it, was tested and refuted.
+
+**Prior results (L1).** The measure-theoretic and information-theoretic core of §3 and §6 restates
+results already `ESTABLISHED` in this repository a week earlier; the mapping and the
+Kullback–Leibler / Csiszár attribution are in `evidence/prior-results-map.md`.
