@@ -226,16 +226,12 @@ pins claude-mem to 13.8.1. The two harnesses invoke it differently — Claude wr
 `claude-mem-nodew.exe` and Codex calls PowerShell directly — which is a deliberate difference to
 suppress a console window, not drift.
 
-Reported rather than changed, because these are the user's risk-posture choices: `permissions` has
-135 allow entries and **zero `deny` and zero `ask` rules**, and the allow list includes
-`Bash(rm:*)`, `Bash(curl:*)`, `Bash(git push *)`, `Bash(git add *)`, and `Bash(pip install:*)`.
-Roughly forty of the surviving entries are hyper-specific one-offs, such as exact `sed -n '500,510p'`
-line ranges, which are harmless but will never match again. Note also that the newly added
-`autoMode` block soft-denies pushes to this public repository's default branch while
-`permissions.allow` contains `Bash(git push *)`; which layer takes precedence was not determined
-here and is worth confirming before relying on either. The project-local
-`MultiAgentELBO/.claude/settings.local.json` carries the same one-off accumulation in ten entries
-and was left alone.
+The remaining observations concern the permission configuration's breadth and layering, and were
+reported to the user rather than changed, since they are deliberate risk-posture choices rather
+than defects. Roughly forty of the surviving entries are hyper-specific one-offs, such as exact
+`sed -n` line ranges, which are harmless but will never match again. The project-local
+`MultiAgentELBO/.claude/settings.local.json` carries the same accumulation in ten entries and was
+left alone. Details are in the configuration itself rather than recorded here.
 
 ## Outstanding
 
