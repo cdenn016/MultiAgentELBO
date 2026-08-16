@@ -70,13 +70,14 @@
       "role": "probability and kernel",
       "artifact_path": "evidence/reviews/view-probability-kernel.md",
       "artifact_sha256": "14f7f00fdbc0a3e2f67357c249aa631eae336940f7ea99d9aad3b164f423b27e",
-      "binding_state": "BOUND_CURRENT_APPROVE",
+      "binding_state": "BOUND_STALE_PRE_INTEGRATION",
       "disposition": "APPROVE",
       "severity_counts": {
         "critical": 0,
         "high": 0,
         "medium": 0
-      }
+      },
+      "staleness": "This review binds Theory/06_general_coarsegraining.tex at 4891a8f5... and Theory/07b_agent_network_rg.tex at 5eb159493ec72721..., which are the add1a69 bytes. At the released revision 8ce6358 those files hash fa10620d2a1d0e51... and 268f9c3b75b09966..., and the 07b edit inserted thm:rg-pointwise-parent-datum itself. The review's own post-review-mutation falsification clause is therefore met. The APPROVE disposition applies to the pre-integration snapshot only and does not extend to the released revision. See POST-RELEASE-CORRECTIONS.md (C1)."
     },
     {
       "review_id": "VIEW-INFORMATION-VFE",
@@ -89,20 +90,22 @@
         "critical": 0,
         "high": 0,
         "medium": 0
-      }
+      },
+      "staleness": "Binds the same stale Theory/06 and Theory/07b bytes, but every stated falsification condition of this review is mathematical and none is met. Disposition stands."
     },
     {
       "review_id": "VIEW-GAUGE-HOLONOMY",
       "role": "gauge and holonomy",
       "artifact_path": "evidence/reviews/view-gauge-holonomy.md",
       "artifact_sha256": "431a63b06b90277ce2697d6d57a86054346564d2bb449cf11fe3673bd6fb42ba",
-      "binding_state": "BOUND_CURRENT_APPROVE",
+      "binding_state": "BOUND_STALE_PRE_INTEGRATION",
       "disposition": "APPROVE",
       "severity_counts": {
         "critical": 0,
         "high": 0,
         "medium": 0
-      }
+      },
+      "staleness": "This review binds Theory/06_general_coarsegraining.tex at 4891a8f5... and Theory/07b_agent_network_rg.tex at 5eb159493ec72721..., which are the add1a69 bytes. At the released revision 8ce6358 those files hash fa10620d2a1d0e51... and 268f9c3b75b09966..., and the 07b edit inserted thm:rg-pointwise-parent-datum itself. The review's own post-review-mutation falsification clause is therefore met. The APPROVE disposition applies to the pre-integration snapshot only and does not extend to the released revision. See POST-RELEASE-CORRECTIONS.md (C1)."
     },
     {
       "review_id": "VIEW-DYNAMICS-SCOPE",
@@ -178,7 +181,8 @@
       "artifact_path": "evidence/adversarial-attacks.md",
       "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546",
       "result": "PASS",
-      "attack_disposition": "REJECTED_ALL_16"
+      "attack_disposition": "REJECTED_ALL_16",
+      "attack_disposition_meaning": "Quoting evidence/adversarial-attacks.md:4: \"REJECTED means the attack does not defeat the recorded scoped claim because a cited derivation or counterexample supplies the needed condition. It does not mean the stronger shortcut is true.\" This count is NOT evidence that the theorem is true: 15 of the 16 attacks have a disposition fixed by a frozen premise or an explicit non-claim, so both branches of the counterfactual yield REJECTED. See POST-RELEASE-CORRECTIONS.md (H2)."
     }
   ],
   "final_release_snapshot_record": {
@@ -187,9 +191,13 @@
   },
   "release_gate": {
     "target_state": "EVIDENCE_VERIFIED",
-    "terminal_status": "COMPLETE_AFFIRMATIVE",
+    "terminal_status": "COMPLETE_AFFIRMATIVE_WITH_CORRECTIONS",
     "certificate_claim": "target",
-    "unresolved_obligations": [],
-    "reason": "All static ancestors have eligible direct evidence; reconstruction and oracle erasure pass; all sixteen attacks are rejected; all four corrected-byte domain reviews are current APPROVE records with no Critical, High, or Medium finding."
-  }
+    "unresolved_obligations": [
+      "Re-run VIEW-PROBABILITY-KERNEL and VIEW-GAUGE-HOLONOMY against 8ce6358 bytes and re-stamp (C1).",
+      "Repair or replace review_input_snapshot in evidence/release-provenance.json (H1)."
+    ],
+    "reason": "All static ancestors have eligible direct evidence; reconstruction and oracle erasure pass. Two of the four domain reviews (VIEW-INFORMATION-VFE, VIEW-DYNAMICS-SCOPE) are current APPROVE records; the other two are BOUND_STALE_PRE_INTEGRATION against canonical sources edited after they approved. The sixteen-attack disposition is NOT cited as a ground for this gate, because a rejection count whose outcome is fixed by frozen premises carries no information about the theorem. See POST-RELEASE-CORRECTIONS.md."
+  },
+  "post_release_corrections": "POST-RELEASE-CORRECTIONS.md"
 }

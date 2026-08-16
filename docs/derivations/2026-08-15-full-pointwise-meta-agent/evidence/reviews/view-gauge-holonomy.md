@@ -1,6 +1,15 @@
 <!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","review_id":"VIEW-GAUGE-HOLONOMY","schema_version":"rigorous-theory-search/v1","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87"} -->
 # Gauge and holonomy domain review
 
+> **POST-RELEASE CORRECTION (C1).** The canonical-source hashes bound below are the
+> `add1a69` bytes. At the released revision `8ce6358`,
+> `Theory/06_general_coarsegraining.tex` hashes `fa10620d2a1d0e51...` and
+> `Theory/07b_agent_network_rg.tex` hashes `268f9c3b75b09966...`; the `07b` edit inserted
+> `thm:rg-pointwise-parent-datum` itself. This review's post-review-mutation
+> falsification clause is therefore met. **Its APPROVE applies to the pre-integration
+> snapshot only and does not extend to the released revision.** It has not been re-run.
+> See `../../POST-RELEASE-CORRECTIONS.md`.
+
 ## Disposition
 
 **APPROVE `VIEW-GAUGE-HOLONOMY` for the corrected frozen nonterminal Task-5 draft.** This bounded same-view re-review found no Critical, High, or Medium defect in the separate channel-groupoid boundary, the declared joint full-law action, source/target covariance, `C_A` equivariance, evaluator intertwining, stabilizer qualification, raw-record retention, or the three finite holonomy witnesses. This domain approval supersedes the initial pre-correction review; it does not promote `target`, set a terminal release status, select membership, or certify a geometric meta-agent over a base patch.

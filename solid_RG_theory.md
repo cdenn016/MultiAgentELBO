@@ -1,6 +1,8 @@
 <!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","schema_version":"rigorous-theory-search/v1","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87"} -->
 # Pointwise meta-agent renormalization
 
+For a physicist-facing, standalone LaTeX explanation, see [solid_RG_theory.tex](solid_RG_theory.tex). This Markdown page remains the compact technical and status reference.
+
 This is the repository start page for the strongest certified pointwise result. Fix a finite child block $I$ with parent label $A$ and write
 
 $$
@@ -13,7 +15,7 @@ The earlier two-channel certificate proved that zero positive-weight transported
 
 ## Status key
 
-ESTABLISHED means proved in the contained package or in the cited canonical theorem source. CONDITIONAL means exact under hypotheses stated beside the result. DIAGNOSTIC means a finite control or heuristic that is not a theorem. OPEN/TODO names an obligation that the pointwise certificate does not close. The manuscript status of the full datum is ESTABLISHED. Its release metadata records ledger state `EVIDENCE_VERIFIED`, terminal status `COMPLETE_AFFIRMATIVE`, and target digest `15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87`.
+ESTABLISHED means proved in the contained package or in the cited canonical theorem source. CONDITIONAL means exact under hypotheses stated beside the result. DIAGNOSTIC means a finite control or heuristic that is not a theorem. OPEN/TODO names an obligation that the pointwise certificate does not close. The manuscript status of the full datum is ESTABLISHED. Its release metadata records ledger state `EVIDENCE_VERIFIED`, terminal status `COMPLETE_AFFIRMATIVE_WITH_CORRECTIONS`, and target digest `15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87`. The corrections are to the certification apparatus, not the mathematics: two of four domain approvals are stale against canonical sources edited after they approved, the first provenance snapshot is unauditable, and the sixteen-attack rejection count is not evidence. See [POST-RELEASE-CORRECTIONS.md](docs/derivations/2026-08-15-full-pointwise-meta-agent/POST-RELEASE-CORRECTIONS.md).
 
 ## 1. Fixed-point data and conventions
 
@@ -337,13 +339,14 @@ OPEN/TODO: family-wide common recovery absent simultaneous hypotheses; the froze
 
 | Location | Role |
 |---|---|
-| [solid_RG_theory.md](solid_RG_theory.md) | Start page and sole human-facing pointwise guide |
+| [solid_RG_theory.md](solid_RG_theory.md) | Compact technical start page and status reference |
+| [solid_RG_theory.tex](solid_RG_theory.tex) | Standalone physicist-facing exposition with intuition, a worked example, and explicit proof boundaries |
 | [Theory](Theory/) | Canonical theorem source, especially chapters 06, 07b, and 09 plus SPEC.md |
 | [Dated worklog](docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md) | Chronological investigation; later corrections supersede earlier exploratory language |
 | [Full-datum certification package](docs/derivations/2026-08-15-full-pointwise-meta-agent/) | Current hash-bound proof, reconstruction, adversarial, counterexample, reviews, and release metadata |
 | [Marginal-pair certification package](docs/derivations/2026-08-14-pointwise-meta-agent-rg/) | Historical two-channel marginal theorem and normalized network closure |
 
-The current package terminal status is COMPLETE_AFFIRMATIVE for the exact frozen full-datum conjunction, and its `target` ledger entry is EVIDENCE_VERIFIED. Those package labels report release evidence; the canonical manuscript theorem is ESTABLISHED. No status crosses an OPEN/TODO boundary above; the machine-readable certificate is `docs/derivations/2026-08-15-full-pointwise-meta-agent/release.json`.
+The current package terminal status is COMPLETE_AFFIRMATIVE_WITH_CORRECTIONS for the exact frozen full-datum conjunction, and its `target` ledger entry is EVIDENCE_VERIFIED. Those package labels report release evidence; the canonical manuscript theorem is ESTABLISHED. No status crosses an OPEN/TODO boundary above; the machine-readable certificate is `docs/derivations/2026-08-15-full-pointwise-meta-agent/release.json`. Two certification obligations are open and are recorded in `docs/derivations/2026-08-15-full-pointwise-meta-agent/POST-RELEASE-CORRECTIONS.md`: re-running the two stale domain reviews against the released bytes, and repairing or replacing the unauditable first provenance snapshot. Neither affects the mathematics.
 
 ## 12. Ordered TODO roadmap beyond the pointwise certificate
 

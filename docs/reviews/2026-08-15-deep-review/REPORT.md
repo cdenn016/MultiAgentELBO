@@ -177,9 +177,35 @@ already fenced, and those clauses were refuted.
 **Two of three provenance stages are fully auditable** (26/26 and 26/26), and the derivation document is
 recoverable and byte-identical across all three revisions.
 
+## Remediation status (2026-08-16)
+
+C1, H1 and H2 have been remediated at the documentation level; see
+`docs/derivations/2026-08-15-full-pointwise-meta-agent/POST-RELEASE-CORRECTIONS.md`, which is
+authoritative over the release artifacts. `terminal_status` is now
+`COMPLETE_AFFIRMATIVE_WITH_CORRECTIONS` across `release.json`, `release-assembly.json`,
+`final-report.md`, `construction-or-strongest-theorem.md`, `Theory/SPEC.md`, `overview.md`,
+`solid_RG_theory.md`, `docs/STATUS.md`, and the closure record; the two stale reviews are re-stamped
+`BOUND_STALE_PRE_INTEGRATION` and carry a notice at their head; provenance stage 1 carries
+`audit_status: UNAUDITABLE` with the measured counts; and the bare `REJECTED_ALL_16` now carries the
+fence the attacks artifact already had, with the attack count removed as a ground from
+`release_gate.reason`.
+
+**The frozen `problem-contract.json` and the mathematical evidence artifacts
+(`direct-derivation.md`, `counterexample-proofs.md`, `finite_nongaussian_witness.py`) were
+deliberately not modified**, so the target digest `15336a68…` and the hashes that bind the actual
+proofs remain valid.
+
+**One obligation cannot be closed by documentation and remains open:** C1's proper fix is *re-running*
+`VIEW-PROBABILITY-KERNEL` and `VIEW-GAUGE-HOLONOMY` against `8ce6358` bytes. That is a new review, not
+an edit, and has not been done. Until it is, the release rests on two derivation-backed domain views
+and two that are correctly marked stale. H1's stage-1 bytes are unrecoverable, so marking it
+unauditable is the honest terminal state rather than a repair.
+
 ## Punch list
 
-Ordered by value. Items 1–3 are the ones that matter.
+Ordered by value. Items 1–3 are the ones that matter. Items 1–3 are now **addressed as far as
+documentation can address them**; see the remediation status above for the one that still needs a
+real re-review.
 
 1. **Re-run the two stale domain reviews against `8ce6358` bytes and re-stamp, or withdraw
    `COMPLETE_AFFIRMATIVE` until they are re-run.** This is the only Critical item. Re-hash `Theory/06`

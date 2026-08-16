@@ -533,7 +533,11 @@ Reading of the terms:
 
 **Full pointwise candidate-parent theorem**
 (`docs/derivations/2026-08-15-full-pointwise-meta-agent/`, manuscript status **ESTABLISHED**,
-release ledger `EVIDENCE_VERIFIED`, terminal status `COMPLETE_AFFIRMATIVE`, target digest
+release ledger `EVIDENCE_VERIFIED`, terminal status `COMPLETE_AFFIRMATIVE_WITH_CORRECTIONS` — the
+mathematics is unchanged, but two of four domain approvals are stale against canonical sources edited
+after they approved, one provenance stage is unauditable, and the sixteen-attack rejection count is
+not evidence; see `docs/derivations/2026-08-15-full-pointwise-meta-agent/POST-RELEASE-CORRECTIONS.md`
+— target digest
 `15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87`). For a finite child block
 \(I\), parent label \(A\), one fixed \(r_*\in\mathcal U_A\), fixed structural \(X\), and one
 admitted observation, a normalized recognition-independent \(C_A\) sends the fine generative joint,

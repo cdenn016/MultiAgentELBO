@@ -1,6 +1,15 @@
 <!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","review_id":"VIEW-PROBABILITY-KERNEL","schema_version":"rigorous-theory-search/v1","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87"} -->
 # Probability and kernel domain review
 
+> **POST-RELEASE CORRECTION (C1).** The canonical-source hashes bound below are the
+> `add1a69` bytes. At the released revision `8ce6358`,
+> `Theory/06_general_coarsegraining.tex` hashes `fa10620d2a1d0e51...` and
+> `Theory/07b_agent_network_rg.tex` hashes `268f9c3b75b09966...`; the `07b` edit inserted
+> `thm:rg-pointwise-parent-datum` itself. This review's post-review-mutation
+> falsification clause is therefore met. **Its APPROVE applies to the pre-integration
+> snapshot only and does not extend to the released revision.** It has not been re-run.
+> See `../../POST-RELEASE-CORRECTIONS.md`.
+
 ## Corrected review-input identity
 
 This same-view bounded re-review is bound to Git `HEAD` `add1a69f2b83550d13abd330c13f4b4e8e9138b9`, contract/target digest `15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87`, and the corrected pre-review mathematical/payload snapshot below. That input snapshot deliberately retained `target` as `CANDIDATE` and `terminal_status: null` while the four corrected-byte reviews were obtained.
