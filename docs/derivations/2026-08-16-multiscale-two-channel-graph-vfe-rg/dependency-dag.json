@@ -1,0 +1,47 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+  "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+  "edges": [
+    {
+      "from": "target",
+      "to": "construction"
+    },
+    {
+      "from": "target",
+      "to": "decomposition"
+    },
+    {
+      "from": "target",
+      "to": "degeneracy"
+    },
+    {
+      "from": "target",
+      "to": "parent-impossibility"
+    },
+    {
+      "from": "target",
+      "to": "holonomy-obstruction"
+    },
+    {
+      "from": "target",
+      "to": "nonequilibrium"
+    },
+    {
+      "from": "target",
+      "to": "intrinsic-scale"
+    },
+    {
+      "from": "target",
+      "to": "literature"
+    },
+    {
+      "from": "decomposition",
+      "to": "construction"
+    },
+    {
+      "from": "degeneracy",
+      "to": "decomposition"
+    }
+  ]
+}

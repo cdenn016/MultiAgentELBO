@@ -1,0 +1,79 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+  "target_digest": "7d2c4a48da6b18e0d1dd177ba0e42e6ab6b625410e5cbefa9c9031dcfb9dd985",
+  "target": {
+    "statement": "For a finite directed two-channel gauge network of agents at one shared contextual point c_* in C, with generally non-flat belief and model transports Omega^b, Omega^m, a possibly cyclic skeleton, normalized directed source rows beta and gamma, external receiver occupancies alpha^b and alpha^m, and joint directed edge-event laws eta^b_ij = alpha^b_i beta_ij and eta^m_ij = alpha^m_i gamma_ij: (1) construct a normalized finite-depth generative joint P_theta(do,dW|X) containing belief and model presentations at every scale, the edge-event and transport data, stochastic partition variables, retained holonomy marks, and parent variables, together with one normalized correlated recognition kernel Q_phi(dW|o,X); (2) derive the exact variational free energy F = -log p_theta(o|X) + KL(Q_phi || Pi_{theta,o,X}) and its conditional-KL decomposition, identifying every normalizer, base measure, absolute-continuity condition, and finite-versus-extended-real boundary; and (3) decide whether descent of that variational free energy alone selects a nondegenerate partition and produces persistent nested blocks.",
+    "kind": "MATHEMATICAL",
+    "quantifier_class": "MIXED",
+    "quantifiers": "Existential in conjuncts (1) and (2): there exists a normalized finite-depth joint and recognition disintegration for which the displayed VFE identity and its conditional-KL decomposition hold. Universal in conjunct (3): for every admissible tower satisfying the declared typing, descent of the tower VFE selects a nondegenerate partition. The negative certificate is matched to conjunct (3).",
+    "domains": [
+      "Finite scale set L = {0,...,S} with S finite.",
+      "Finite agent set V at scale 0, all at one context point c_* in C.",
+      "Nonempty standard Borel agent spaces Y_{i,s} = B_{i,s} x M_{i,s} x Xi_{i,s}, with B_{i,s} a subset of P(Z^b_{i,s}) (law-valued belief coordinate).",
+      "Finite label pools Lambda^b_{s+1}, Lambda^m_{s+1} for memberships.",
+      "Standard Borel observation space O and structural space X.",
+      "Standard Borel G-space for transports; G is the common principal structure group with two representations rho_b and rho_m."
+    ],
+    "codomains": [
+      "Probability measures on O x W, where W collects every retained random object.",
+      "Extended reals R union {+infinity} for the variational free energy.",
+      "Probability measures on G for the conditional law of dressed coarse transports."
+    ],
+    "regularity": "Every generative and recognition factor is a normalized measurable Markov kernel conditioning only on strictly earlier variables in a declared finite partial order. The evidence density satisfies 0 < p_theta(o|X) < infinity. The recognition law is absolutely continuous with respect to the selected posterior version. The observation term is integrable from above: E_{Q_phi}[(log L_theta(o|Z_0,X))^+] < infinity. Kernel densities, where used, are jointly measurable versions relative to one family-level dominating measure per kernel.",
+    "measures": [
+      "sigma-finite reference nu^O on the observation space.",
+      "Declared sigma-finite references on each belief-presentation space P(Z^b), each model presentation space, and each auxiliary space.",
+      "Counting measure on all finite factors: memberships, edge occupations, source labels, label pools.",
+      "Haar measure on G when G is locally compact; counting measure when G is finite.",
+      "The tower reference is the finite product of the above and is sigma-finite; an infinite product of non-probability sigma-finite factors is not, which is the concrete continuum obstruction."
+    ],
+    "boundary_conditions": [
+      "The likelihood attaches only at scale 0.",
+      "Structural data X and each X_A = chi_A(X) stay outside every random channel.",
+      "Retained boundary data at a block are the dressed boundary generators V^x_e in one simultaneous root-gauge orbit.",
+      "No boundary condition at infinity is imposed; the theory is finite-design."
+    ],
+    "symmetries": [
+      "Passive frame rechoice in each channel, acting by rho_b and rho_m of the same group element; the passive coordinate group is G x G while the principal structure group is G.",
+      "Node relabeling, under which an admissible partition selector must satisfy S(P.X) = P S(X) Q^T.",
+      "Based-loop holonomy H^x_I : pi_1(Gamma_I, r_I) -> G, conjugated by root rechoice; non-flat holonomy is admitted and is not penalized toward the identity."
+    ],
+    "equivalence": "Two towers are equivalent when their generative joints agree as measures after the declared passive frame rechoices and node relabelings, and when the retained marks agree as one simultaneous root-gauge orbit. Separately quotienting each holonomy is not an admissible equivalence because it loses orientation relative to root features and boundary legs.",
+    "premises": [
+      "All scale-0 agents lie at one contextual point; no physical length, lattice, translation symmetry, momentum space, or tree is assumed.",
+      "The finite directed network may contain cycles.",
+      "Each ordered edge carries two generally non-flat transports, one per channel.",
+      "Rows beta and gamma are normalized conditional source laws; alpha^b and alpha^m are external receiver occupancies; the joint edge-event laws are their products.",
+      "No generative factor may read the recognition law, its marginals or parameters, or the posterior the joint determines.",
+      "Any additive decomposition of the free energy must be derived from a declared factorization of the two laws or from a normalized Gibbs factor with its partition function; otherwise it is a composite potential.",
+      "A correlated recognition law is not reconstructed from its marginals.",
+      "Multivariate Gaussian families are an optional computational realization and are not used in any hypothesis."
+    ],
+    "modeling_postulates": [
+      "Reading A: the belief coordinate is a law-valued component of the latent sample, a point of the associated-bundle fiber, rather than a marginal of the recognition law.",
+      "Capacity restriction on the parent space and downward-kernel family, declared as the condition under which the partition posterior can differ from its prior.",
+      "Label exclusivity of the augmented attention likelihood.",
+      "Constant-row recognition restriction for the row free energy.",
+      "Conditional independence of endpoint assignments given the fine edge, where the product endpoint kernel is used."
+    ],
+    "search_priors": [
+      "SEARCH_PRIOR_AFFIRMATIVE"
+    ],
+    "permitted_theorems": [
+      "Kolmogorov extension for standard Borel coordinate spaces.",
+      "Tonelli and Fubini under sigma-finiteness.",
+      "Conditional relative-entropy chain rule on standard Borel spaces.",
+      "Data-processing inequality for relative entropy with its equality condition.",
+      "Disintegration of measures on standard Borel spaces.",
+      "P(X) is Polish when X is Polish (Kechris, Classical Descriptive Set Theory, 17.23).",
+      "LaSalle invariance principle.",
+      "Klein and Randic: effective resistance is a metric on a connected graph.",
+      "Chung: directed graph Laplacian via the Perron vector.",
+      "Freidlin-Wentzell exit-time asymptotics; Tikhonov-Fenichel slow manifolds."
+    ],
+    "negative_certificate_kind": "COUNTEREXAMPLE",
+    "falsification_criterion": "Conjunct (3) is refuted by exhibiting one admissible tower, satisfying the declared typing, on which the minimized tower variational free energy is constant across partitions, so that the inferred partition law equals its prior. Conjuncts (1) and (2) are refuted by exhibiting a factor whose measurable codomain depends on the realized value of an earlier variable, or by exhibiting an admissible tower satisfying the stated regularity for which the displayed sum is not well defined in R union {+infinity}.",
+    "literature_policy": "Primary sources only for load-bearing statements about arXiv:2305.10491 (Berman, Klinger, Stapleton) and arXiv:2412.12988 (Gabrielli, Garlaschelli, Patil, Serrano). Titles, author lists, version dates, journal references, abstracts, and any cited equation must be checked against the primary. A review's open problem is never cited as a solved theorem. Any statement carried from a secondary or project note must be labeled as such at the point of use and recorded as a numerical or provenance-limited item in the claim table. A bounded search is not a worldwide search and establishes no priority."
+  }
+}
