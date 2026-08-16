@@ -84,6 +84,14 @@
   breakable
 }
 
+\newtcolorbox{proposalbox}{
+  colback=softgreen,
+  colframe=deepgreen,
+  title=Proposed extension beyond the current main manuscript,
+  fonttitle=\bfseries,
+  breakable
+}
+
 \title{\textbf{Gauge-Covariant Variational Free Energy}\\[0.35em]
 \Large A Physicist's Companion to the Full Theory}
 \author{MultiAgentELBO theory program}
@@ -94,7 +102,7 @@
 \maketitle
 
 \begin{abstract}
-This document is an orientation to the full gauge-covariant variational free energy manuscript, written for a reader who knows gauge theory, statistical mechanics, and the renormalization group, and who does not want to begin with measure-theoretic disintegration. The theory is a genuine gauge theory whose matter fields are probability laws rather than vectors: one principal bundle over a contextual base, two associated bundles carrying belief and model laws in possibly inequivalent representations, chosen connections with their transports and holonomies, and an exact variational identity that plays the role of the Gibbs bound. Coarse graining is a normalized Markov channel, and the information it discards is measured exactly. Throughout, the emphasis falls on which statements are theorems, which are declarations, and which remain open, because the manuscript is unusually strict about that separation and the separation is the most useful thing a physicist can carry away from it.
+This document is an orientation to the full gauge-covariant variational free energy manuscript, written for a reader who knows gauge theory, statistical mechanics, and the renormalization group, and who does not want to begin with measure-theoretic disintegration. The theory is a genuine gauge theory whose matter fields are probability laws rather than vectors: one principal bundle over a contextual base, two associated bundles carrying belief and model laws in possibly inequivalent representations, chosen connections with their transports and holonomies, and an exact variational identity with the dimensionless Helmholtz form of an expected energy minus an entropy. Multi-agent attention is a canonical Gibbs ensemble on each source simplex, with a row free energy that must retain its entropy term. A normalized attention weight is not a chemical potential; a genuine grand-canonical extension requires a separate fluctuating edge or membership count. Coarse graining is a normalized Markov channel, the information it discards is measured exactly, and a pointwise meta-agent exists only after the channel pushes the full generative, recognition, and posterior laws. Throughout, the emphasis falls on which statements are theorems in the main manuscript, which are modeling declarations, which are thermodynamic analogies, and which are proposed extensions.
 \end{abstract}
 
 \tableofcontents
@@ -119,10 +127,10 @@ Fix a smooth manifold \(\mathcal C\) of contexts and a principal \(G\)-bundle \(
   +\KL\bigl(\Rec_X\Vert\Prob_\theta(\cdot\mid o,X)\bigr)
   \label{eq:elbo-identity}
 \end{equation}
-splits the log evidence into a variational bound and a nonnegative gap. For many agents, one collective free energy governs everything, and each agent's local update is exactly a coordinate move on it. Coarse graining is a normalized Markov channel applied to the whole latent state; it preserves the evidence, contracts the relative entropy, and the amount contracted is computed exactly. Turning a sequence of such coarse maps into a renormalization group requires additional, declared identifications between the changing state spaces. The multivariate Gaussian appears only at the end, as a computational realization in which every abstract object becomes a matrix formula.
+splits the log evidence into a variational bound and a nonnegative gap. For many agents, one collective free energy governs everything, and each exact local update is a coordinate move on it. Entropy-regularized source selection is a canonical ensemble whose energies depend on transported disagreement, so beliefs and effective bonds can coevolve without yet producing a meta-agent. A pointwise parent is constructed only when one normalized recognition-independent channel pushes the complete fine generative, recognition, and posterior laws. That pushforward preserves the evidence and gives an exact conditional-information defect. Turning a sequence of such parent constructions into a renormalization group requires additional identifications between changing state spaces, while turning adaptive source weights into a grand-canonical topology requires separate count-bearing occupation variables. The multivariate Gaussian appears only at the end, as an optional computational realization in which the abstract objects become matrix formulas.
 
 \begin{physicalreading}
-Everything in the first three parts of the manuscript is kinematics plus one exact identity. There is no dynamics, no action functional over the base, no equation of motion, and no time. What plays the role of dynamics is a descent on a free energy at a fixed context, and what plays the role of an RG flow is a declared sequence of blocking maps. The theory is honest that these are different things.
+The main manuscript supplies variational flows on spaces of probability laws at a fixed context, and it supplies typed arrows between scales. It does not identify either construction with physical time, derive an autonomous field theory on the base, or prove sustained nonequilibrium. A free-energy descent, a trajectory semiconjugacy, a scale diagram, and a physical dynamics are four different statements.
 \end{physicalreading}
 
 \section{A physicist's dictionary}
@@ -145,12 +153,16 @@ Everything in the first three parts of the manuscript is kinematics plus one exa
 \(H(\gamma)=\prod_a\Theta_{e_a}\) & A Wilson loop. Its conjugacy class is gauge invariant. \\
 \(\Phi,\widetilde\Phi\) & Declared maps between the two matter sectors. Extra structure, not forced by the gauge group. \\
 \(\mathcal D\Phi\) & The covariant defect: the failure of a cross-sector map to commute with transport. \\
-\(\log p_\theta(o\mid X)\) & \(\log Z\); minus the free energy at fixed evidence. \\
+\(\log p_\theta(o\mid X)\) & A log normalizer or log partition function. Its negative is the minimum of the dimensionless variational functional at the selected record. \\
 \(\mathcal L(\Rec)\) & The Gibbs--Bogoliubov--Feynman variational bound. \\
 \(\KL(\Rec\Vert\Post)\) & The exact gap of that bound. \\
 \(\mathcal F=-\mathcal L\) & Variational free energy. \\
 \(H_o(y)=-\log L_o(y)\) & The interaction energy of a configuration given the record. \\
+\(\mathcal F_i^{\mathrm{row}}\) & A canonical Helmholtz free energy on the source simplex: expected mismatch plus temperature times relative entropy to the source prior. \\
+\(\beta_{ij}\) & A conditional source-occupation probability. It is neither inverse temperature nor a chemical potential; \(\tau_i\) is the row temperature. \\
+\(\rho_{ij},\mu_{ij}\) & In the proposed grand-canonical extension, an edge-occupation probability and its conjugate chemical potential. These variables are not part of the established main theorem. \\
 \(C_A(dz\mid y)\) & A block-spin rule, allowed to be stochastic. \\
+\((\Prob_A,\Rec_A,\Post_A)\) & The full pointwise parent probabilistic datum obtained by pushing all three fine laws through the same channel. A pair of pooled marginals is not a substitute. \\
 \(\Delta_A\) & The information the block spin erases, computed exactly. \\
 \(g^F\) & The Fisher metric, equal to the Hessian of the exponential-family log partition function; a susceptibility. \\
 \(h_s^\omega\) & The Fisher metric pulled back to the base along a section, using a chosen connection. \\
@@ -508,15 +520,44 @@ where \(D_{ij}\) is a fixed gauge-invariant function of latent states and declar
   \beta^P_{ij}(y)=\frac{\pi_{ij}\exp[-D_{ij}(y)/\tau_i]}{\sum_k\pi_{ik}\exp[-D_{ik}(y)/\tau_i]},
   \label{eq:attention-posterior}
 \end{equation}
-and, after restricting the recognition law so that each row is independent of the latent state, the exact row contribution to the collective free energy is
+and, after restricting the recognition law so that each row is independent of the latent state, the exact dimensionless row contribution to the collective free energy is
 \begin{equation}
   \mathcal F_i^{\mathrm{att}}(\beta_i)=\KL(\beta_i\Vert\pi_i)
   +\frac{1}{\tau_i}\sum_j\beta_{ij}\Ex_{Q_Y}D_{ij},
   \label{eq:attention-vfe}
 \end{equation}
-whose unique interior minimizer is the softmax with the expected energies substituted for the pointwise ones.
+where \(\overline D_{ij}:=\Ex_{Q_Y}D_{ij}\). In the same energy units as \(D_{ij}\), the physically transparent row free energy is
+\begin{equation}
+  \boxed{\mathcal F_i^{\mathrm{row}}(\beta_i)
+  :=\tau_i\mathcal F_i^{\mathrm{att}}(\beta_i)
+  =\sum_j\beta_{ij}\overline D_{ij}
+  +\tau_i\KL(\beta_i\Vert\pi_i).}
+  \label{eq:attention-row-free-energy}
+\end{equation}
+The relative-entropy term contains both the source entropy and the reference weight,
+\begin{equation}
+  \tau_i\KL(\beta_i\Vert\pi_i)
+  =-\tau_i S(\beta_i)-\tau_i\sum_j\beta_{ij}\log\pi_{ij}.
+  \label{eq:row-helmholtz-split}
+\end{equation}
+For a uniform prior the final term is constant, leaving the literal canonical form \(U_i-\tau_iS_i\). For a nonuniform prior, \(\pi_i\) acts as a reference degeneracy or prior field.
 
-This is a Gibbs measure over which neighbor to listen to. The prior \(\pi_i\) plays the role of a degeneracy factor, \(D_{ij}\) is the energy of attending to \(j\), and \(\tau_i\) is a temperature. Equation~\eqref{eq:attention-vfe} is entropy against energy on the source simplex, and softmax attention is its equilibrium distribution rather than an architectural choice.
+The unique interior minimizer is
+\begin{equation}
+  \beta_{ij}^{\star}
+  =\frac{\pi_{ij}\exp(-\overline D_{ij}/\tau_i)}{Z_i},
+  \qquad
+  Z_i=\sum_k\pi_{ik}\exp(-\overline D_{ik}/\tau_i),
+  \label{eq:attention-row-optimum}
+\end{equation}
+and the reduced values are
+\begin{equation}
+  \mathcal F_{i,\mathrm{red}}^{\mathrm{row}}=-\tau_i\log Z_i,
+  \qquad
+  \mathcal F_{i,\mathrm{red}}^{\mathrm{att}}=-\log Z_i.
+  \label{eq:attention-row-reduced}
+\end{equation}
+Thus softmax is the equilibrium distribution of a canonical ensemble over sources, not merely an architectural choice. The two functionals have the same minimizer, but the distinction matters globally: multiplying one row sector by \(\tau_i\) does not produce another standard ELBO unless the whole objective is rescaled or a generalized free energy is separately declared.
 
 The dynamics is equally recognizable. Holding the latent recognition law fixed, the Fisher natural gradient of \eqref{eq:attention-vfe} on the open simplex is the replicator equation
 \begin{equation}
@@ -525,10 +566,192 @@ The dynamics is equally recognizable. Holding the latent recognition law fixed, 
   c_{ij}=\log\frac{\beta_{ij}}{\pi_{ij}}+\frac{\Ex_{Q_Y}D_{ij}}{\tau_i},
   \label{eq:replicator}
 \end{equation}
-with free-energy rate \(-\gamma_i\operatorname{Var}_{\beta_i}(c_{ij})\leq0\). The rate of descent is the variance of the fitness-like quantity across sources, which is the same structure as Fisher's fundamental theorem.
+with partial dimensionless rate \(-\gamma_i\operatorname{Var}_{\beta_i}(c_{ij})\leq0\). In row-energy units, and with \(\tau_i\) and \(\pi_i\) fixed, the beta-only and full rates are
+\begin{align}
+  \left.\frac{d\mathcal F_i^{\mathrm{row}}}{dt}\right|_{\beta_i}
+  &=-\gamma_i\tau_i\operatorname{Var}_{\beta_i}(c_{ij}),
+  \nonumber\\
+  \frac{d\mathcal F_i^{\mathrm{row}}}{dt}
+  &=-\gamma_i\tau_i\operatorname{Var}_{\beta_i}(c_{ij})
+  +\sum_j\beta_{ij}\frac{d\overline D_{ij}}{dt}.
+  \label{eq:attention-row-total-rate}
+\end{align}
+The second term is the missing piece when beliefs, transports, or both evolve. Coevolving \(\beta_{ij}\) and \(D_{ij}\) is therefore an annealed network, but row descent alone does not prove descent of the coupled system. Every evolving variable must follow the derivative of one common scalar. If the row is kept at its instantaneous optimum, the envelope theorem gives
+\begin{equation}
+  \frac{d\mathcal F_{i,\mathrm{red}}^{\mathrm{row}}}{dt}
+  =\sum_j\beta_{ij}^{\star}\frac{d\overline D_{ij}}{dt}.
+  \label{eq:attention-row-envelope}
+\end{equation}
+The variance dissipation has the same mathematical shape as Fisher's fundamental theorem; it is not a theorem about biological fitness.
 
 \begin{boundarybox}
 The clean softmax requires two declared hypotheses, and the manuscript states both. The augmented likelihood must factor so that no other record reads a source label, and the recognition law must factor over rows with each row independent of the latent state. Without the first, an extra label-dependent factor enters Bayes' rule and changes the answer. Without the second, a correlated conditional law retains a nonnegative conditional total-correlation term, and a row softmax is not asserted. The two softmax rows also answer different questions: the recognition optimum is generally not the recognition average of the pointwise posterior row, and the two agree only when the energy differences are almost surely constant.
+\end{boundarybox}
+
+\section{Thermodynamic hierarchy: adaptive bonds, grand occupation, and parent formation}
+\label{sec:thermodynamic-hierarchy}
+
+\subsection{Why variational free energy has the Helmholtz form}
+
+The word ``free energy'' is not merely metaphorical, but its exact content is information theoretic before it is physical. For a fixed normalized joint \(p_\theta(o,y\mid X)\), define the dimensionless configuration energy \(E_o(y):=-\log p_\theta(o,y\mid X)\). Then the variational free energy is
+\begin{equation}
+  \mathcal F[Q]
+  =\Ex_Q E_o(Y)-S[Q]
+  =\KL(Q\Vert\Post_{o,X})-\log p_\theta(o\mid X),
+  \label{eq:vfe-helmholtz}
+\end{equation}
+where \(S[Q]=-\Ex_Q\log q(Y)\) when a common density representation is available. Equation~\eqref{eq:vfe-helmholtz} is the Gibbs variational functional with Helmholtz form \(U-TS\) in units with \(k_B T=1\). Introducing an explicit information-temperature scale gives \(\mathcal F_T=U-TS\), and minimizing over \(Q\) gives the negative log-partition value. This is the structural reason for Friston's terminology, and it is the same maximum-entropy calculus used by Jaynes \cite{Friston2010,Jaynes1957}.
+
+The correspondence does not by itself identify \(-\log p\) with a physical Hamiltonian, \(S[Q]\) with thermodynamic entropy in joules per kelvin, or the descent parameter with time. Those identifications require a physical energy scale, a reservoir or environment, and an accounting of heat, work, and entropy production. The main manuscript proves the normalized probabilistic identity and uses the thermodynamic dictionary as an interpretation; it does not derive physical thermodynamics from probability theory.
+
+\begin{physicalreading}
+The exact statement is that VFE is a Gibbs variational functional with Helmholtz form over trial probability laws. The additional statement that this functional is the thermodynamic free energy of a physical system is a model-dependent hypothesis. Information temperature, physical temperature, inference time, and laboratory time must not be identified without an operational map.
+\end{physicalreading}
+
+\subsection{The fine-agent network before any meta-agent exists}
+
+Before coarse graining, the population contains only fine agents and their possible communication channels. A useful reduced presentation of the belief sector is
+\begin{align}
+  \mathcal F_{\mathrm{net}}
+  &=\sum_i\left[
+    \alpha_i\KL(q_i\Vert p_i)
+    -\Ex_{q_i}\log p(o_i\mid c_i)
+  \right]
+  \nonumber\\
+  &\quad+\sum_i\left[
+    \sum_j\beta_{ij}D_{ij}
+    +\tau_i\KL(\beta_i\Vert\pi_i)
+  \right],
+  \qquad
+  D_{ij}=\KL\bigl(q_i\Vert(\Omega_{ij})_{\#}q_j\bigr).
+  \label{eq:reduced-network-free-energy}
+\end{align}
+Here \(\alpha_i\) weights the self-prior sector, while \(\beta_{ij}\) is a normalized source row; it is unrelated to the thermodynamic convention in which a bare \(\beta\) denotes inverse temperature. The detailed manuscript obtains the attention term from a fixed normalized joint by adjoining a latent source label. Equation~\eqref{eq:reduced-network-free-energy} should therefore be read as a reduced network sector whose exact fixed-joint status depends on the hypotheses already stated above, not as a license to let a generative kernel read a live peer belief.
+
+When \(q_i\), \(\Omega_{ij}\), and \(\beta_{ij}\) all evolve, the network is annealed: both the configurations and the effective bonds respond. Low transported mismatch can attract attention, and increased attention can strengthen the forces reducing mismatch. This feedback may form a coherent subgraph. It has not yet created a parent latent, a parent generative law, or a parent posterior, so coherence alone is not meta-agent construction.
+
+\subsection{Why the attention--mismatch product is not yet a chemical-potential law}
+
+The tempting algebra is real. At one instant, setting \(N_{ij}:=D_{ij}\) and \(\mu_{ij}:=-\beta_{ij}\) gives
+\begin{equation}
+  \beta_{ij}D_{ij}=-\mu_{ij}N_{ij},
+  \qquad
+  d(\beta_{ij}D_{ij})
+  =-N_{ij}d\mu_{ij}-\mu_{ij}dN_{ij}.
+  \label{eq:formal-chemical-potential-map}
+\end{equation}
+The equality remains algebraically true when both factors change. Its thermodynamic interpretation does not follow. The row weight \(\beta_{ij}\) is constrained by \(\sum_j\beta_{ij}=1\), is learned from the state, and is not an externally imposed intensive field. The divergence \(D_{ij}\) is generally neither an extensive count nor a conserved quantity exchanged with a reservoir. The full row objective also contains the entropy term, whose derivative is omitted by the bare product. Equation~\eqref{eq:formal-chemical-potential-map} is therefore a Legendre-shaped relabeling, not yet the grand potential of the agent network.
+
+This distinction answers what changes when both \(\beta_{ij}\) and \(D_{ij}\) descend. Their product has two chain-rule terms, but the canonical row has the additional entropy derivative shown in Equation~\eqref{eq:attention-row-total-rate}. If all variables follow the full derivative of one time-independent scalar, that scalar is Lyapunov. If each sector follows a separately truncated force, or if the external controls change, monotone descent is no longer implied.
+
+\subsection{A genuine grand-canonical topology}
+
+\begin{proposalbox}
+A true grand-canonical extension introduces a binary edge occupation \(a_{ij}\in\{0,1\}\), its mean \(\rho_{ij}=\Ex[a_{ij}]\), and a chemical potential \(\mu_{ij}\) conjugate to the edge count. This extension is developed in \path{Theory/grand_canonical_meta_agent_formation.tex}; it is not part of the established target of \path{Theory/main.tex}.
+\end{proposalbox}
+
+Let \(\pi_{ij}^{E}\in(0,1)\) be a reference edge occupation and let \(\epsilon_{ij}\) contain gauge-invariant belief mismatch, model mismatch, boundary cost, and any declared retention gain. The independent-edge grand functional is
+\begin{align}
+  \mathcal G[q,\rho]
+  &=\mathcal F_{\mathrm{agents}}[q]
+  +\sum_{ij}\rho_{ij}\epsilon_{ij}[q]
+  -\sum_{ij}\mu_{ij}\rho_{ij}
+  \nonumber\\
+  &\quad+\tau_E\sum_{ij}
+  \KL\bigl(\mathrm{Bern}(\rho_{ij})\Vert
+            \mathrm{Bern}(\pi_{ij}^{E})\bigr).
+  \label{eq:grand-edge-functional}
+\end{align}
+Write \(\Phi_E\) for the edge-sector functional after minimization over \(\rho\), with all other variables fixed. Its unique occupation is
+\begin{equation}
+  \rho_{ij}^{\star}
+  =\left[
+    1+\frac{1-\pi_{ij}^{E}}{\pi_{ij}^{E}}
+    \exp\left(\frac{\epsilon_{ij}-\mu_{ij}}{\tau_E}\right)
+  \right]^{-1},
+  \qquad
+  -\frac{\partial\Phi_E}{\partial\mu_{ij}}=\rho_{ij}^{\star}.
+  \label{eq:grand-edge-occupation}
+\end{equation}
+This is a literal lattice-gas or Fermi occupation law on a network \cite{ParkNewman2004}. The variable \(\rho_{ij}\) answers whether an edge exists; \(\beta_{ij}\) answers which admitted source is selected conditional on a receiver event. Their roles coincide only after an additional normalization convention, and even then the count-bearing quantity is the unnormalized expected degree, not the row itself.
+
+Under fixed chemical potentials, temperatures, records, and boundary data, a joint natural-gradient flow of beliefs, frames, and Bernoulli occupations descends \(\mathcal G\) when every sector uses the full derivative of this same scalar. Driven reservoirs add work terms such as \(-\sum_{ij}\rho_{ij}\dot\mu_{ij}\). Sustained nonequilibrium then requires an open flux, explicit time-dependent drive, stochastic forcing, delay, nonreciprocity, or an antisymmetric kinetic sector. Adaptive coevolution alone can yield metastability and long transients, but fixed-control gradient flow still relaxes \cite{GrossBlasius2008}.
+
+\subsection{From a coherent cluster to a pointwise parent}
+
+The established meta-agent result begins after a nonempty child block \(I\), a parent label \(A\), and one normalized recognition-independent coarse channel \(C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A\) have been declared. The observation and structural input remain outside the random channel. The full pointwise parent datum is
+\begin{equation}
+  \Prob_A=(\id_{\mathsf O}\times C_A)_{\#}\Prob_I,
+  \qquad
+  \Rec_A=(C_A)_{\#}\Rec_I,
+  \qquad
+  \Post_{A,o,X}=(C_A)_{\#}\Post_{I,o,X}.
+  \label{eq:parent-full-triple}
+\end{equation}
+The parent belief and model laws are projections or disintegrations of these full laws. Constructing two consensus marginals does not reconstruct the parent joint, its posterior, or its VFE.
+
+The exact information accounting is
+\begin{equation}
+  \KL(\Rec_I\Vert\Post_I)
+  =\KL(\Rec_A\Vert\Post_A)+\Delta_A,
+  \qquad
+  \Delta_A=\int\KL(\widehat\Rec_I(\cdot\mid z)
+  \Vert\widehat\Post_I(\cdot\mid z))\Rec_A(dz),
+  \label{eq:parent-kl-defect}
+\end{equation}
+as an additive identity in \([0,+\infty]\). Adding the same finite evidence term gives the extended-real VFE identity. Ordinary subtraction and the two-way recovery criterion require finite fine KL. A parent may therefore discard most microscopic information, as a university ignores most detailed states of its members, while retaining a declared interface; \(\Delta_A\) measures the recognition-relevant information lost by that declaration.
+
+\begin{figure}[ht]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  >={Stealth[length=2.2mm]},
+  every node/.style={font=\small},
+  ag/.style={circle, draw=deepblue, very thick, fill=softblue, minimum size=7mm},
+  box/.style={draw=deepblue!65, fill=softblue, rounded corners=3pt, align=center, minimum width=3.1cm, minimum height=1.25cm},
+  prop/.style={draw=deepgreen, fill=softgreen, rounded corners=3pt, align=center, minimum width=3.3cm, minimum height=1.25cm},
+  open/.style={draw=orange!70!black, fill=softorange, rounded corners=3pt, align=center, minimum width=3.4cm, minimum height=1.25cm}
+]
+\node[ag] (a1) at (0,1.1) {$1$};
+\node[ag] (a2) at (1.3,2.0) {$2$};
+\node[ag] (a3) at (1.5,0.2) {$3$};
+\draw[->, thick, deepblue] (a2) -- node[above, font=\scriptsize] {$\beta,D$} (a1);
+\draw[->, thick, deepblue] (a3) -- (a2);
+\draw[->, thick, deepblue] (a1) -- (a3);
+\node[draw=deepblue!45, dashed, rounded corners, fit=(a1)(a2)(a3), inner sep=5pt,
+      label={[font=\scriptsize, text=deepblue]below:fine-agent network}] (fine) {};
+\node[box] (channel) at (5.0,1.1) {one normalized channel\\$C_A$};
+\node[box] (parent) at (9.0,1.1) {pointwise parent $A$\\$(\Prob_A,\Rec_A,\Post_A)$};
+\node[open] (tower) at (13.2,1.1) {network of parents\\and recursive scales};
+\node[prop] (grand) at (5.0,-1.6) {optional grand ensemble\\$a_{ij},\rho_{ij},\mu_{ij}$};
+\draw[->, very thick, deepblue] (fine.east) -- node[above, font=\scriptsize] {declared block} (channel.west);
+\draw[->, very thick, deepblue] (channel) -- node[above, font=\scriptsize] {push all three laws} (parent);
+\draw[->, thick, dashed, orange!75!black] (parent) -- node[above, font=\scriptsize] {additional interfaces} (tower);
+\draw[->, thick, dashed, deepgreen] (fine.south) to[bend right=18]
+  node[below, font=\scriptsize] {variable topology or membership} (grand.west);
+\draw[->, thick, dashed, deepgreen] (grand) -- node[right, font=\scriptsize] {candidate $A$ only} (channel.south);
+\draw[->, thick, dashed, orange!75!black] (parent.south) to[bend left=25]
+  node[below, font=\scriptsize] {top-down feedback is extra dynamics} (fine.south east);
+\end{tikzpicture}}
+\caption{\textbf{Four logically separate stages.} Canonical attention can reorganize a fine-agent network without changing edge number. A proposed grand ensemble can select variable edges or candidate memberships, but it does not itself construct a parent. The established pointwise theorem begins with one declared channel and pushes the complete law triple. Networks of parents, cross-scale feedback, and recursive dynamics require additional interfaces and dynamical hypotheses.}
+\label{fig:thermodynamic-hierarchy}
+\end{figure}
+
+\subsection{Networks of meta-agents and participatory nonequilibrium}
+
+Once several parents carry full probabilistic data and retained boundary interfaces, they may be treated as nodes of another declared network. That move does not follow merely by averaging the fine beliefs. Each scale needs its own normalized generative law, recognition law, posterior version, attention or edge variables, and comparison map to neighboring scales. Iteration produces a scale diagram; an RG flow additionally needs the rescalings and fixed reference object described later in this companion.
+
+A grand-canonical membership sector can make expected parent size fluctuate under a membership chemical potential, and the construction can be repeated at higher levels. This is a proposed organization principle rather than a theorem selecting one hierarchy. The current main manuscript leaves canonical channel selection, partition selection, local-section gluing, overlapping memberships, and the construction of a geometric meta-agent open.
+
+The Wheelerian possibility enters only when the parent changes the fine dynamics that sustain it. For a deterministic fine vector field \(V_t\), moving coarse map \(c_t\), and candidate parent field \(\overline V_t\), the semiconjugacy defect is
+\begin{equation}
+  \delta_t=\partial_t c_t+Dc_t V_t-\overline V_t\circ c_t.
+  \label{eq:participatory-semiconjugacy-defect}
+\end{equation}
+Vanishing \(\delta_t\) gives trajectory semiconjugacy under the required regularity hypotheses; it does not by itself give autonomy. A participatory nonequilibrium model must also identify the reciprocal operators, account for work and flux without double counting, and supply an observable distinguishing its feedback from an ordinary hierarchical latent-variable model.
+
+\begin{boundarybox}
+The static pointwise parent theorem is established. Grand-canonical edge or membership occupation, a recursive network of probabilistic parents, cross-scale feedback, sustained nonequilibrium, and emergent agency are proposed or open. None follows from the notation \(U-TS-\mu N\) alone.
 \end{boundarybox}
 
 \section{Information geometry on the base}
@@ -733,7 +956,7 @@ The manuscript tags every nontrivial statement with one of seven statuses, and t
 \textbf{Status} & \textbf{Content} \\
 \midrule
 Established &
-The typed bundle and kernel contract; the exact evidence identity and its extended-real form, with the equality criterion and the insufficiency of marginal matching; the total-correlation chain identity; the exact local--global potential identity for arbitrary blocks; the attention-label posterior and its replicator flow under declared hypotheses; passive gauge covariance of the Fisher and Amari pullbacks with exact connection-change formulas; extended data processing with its equality condition; the evidence-preserving coarse channel and the exact coarse free-energy identity with its nonnegative defect; the full pointwise parent datum; exact finite-network interaction coordinates and the Hoeffding action isomorphism; congruence-diagonal Kron closure with qualified maximality; frame invariance of the generalized spectrum; the reciprocal-pair kernel and determinant identities; the anchored-star definiteness, precision-addition, and geometric contraction theorems; and typed-intervention nonidentifiability in its declared categories. \\
+The typed bundle and kernel contract; the exact evidence identity and its extended-real form, with the equality criterion and the insufficiency of marginal matching; the total-correlation chain identity; the exact local--global potential identity for arbitrary blocks; the attention-label posterior, canonical row free energy, and replicator flow under declared hypotheses; passive gauge covariance of the Fisher and Amari pullbacks with exact connection-change formulas; extended data processing with its equality condition; the evidence-preserving coarse channel and the exact coarse free-energy identity with its nonnegative defect; the full pointwise parent datum; exact finite-network interaction coordinates and the Hoeffding action isomorphism; congruence-diagonal Kron closure with qualified maximality; frame invariance of the generalized spectrum; the reciprocal-pair kernel and determinant identities; the anchored-star definiteness, precision-addition, and geometric contraction theorems; and typed-intervention nonidentifiability in its declared categories. \\
 \addlinespace
 Hypothesis &
 The selected smooth tier for differential statements; regular observations selecting a posterior version; absolute continuity of the recognition law; label exclusivity and row factorization for the attention softmax; the Laplacian-plus-self-term interaction cone; identification of graph links with base transports; the Fisher metric as the declared fiber geometry; and observational closure as the sole interpretive restriction. \\
@@ -742,7 +965,7 @@ Numerical &
 Deterministic replacement checks for the generalized spectrum, the star and flat-pair contrast, and the holonomy determinant and kernel dimensions. These establish usability under their declared protocols and are not proofs. \\
 \addlinespace
 Open &
-The continuum law theory and the thermodynamic limit; joint limits in system size and RG depth, with universality, basin independence, and blocking-scheme robustness; a canonical channel, membership, and partition selector; the comparison-category theorem and category-independent intervention semantics; a smooth scale tier and a canonical continuous beta function; multiplicative ergodic structure of the interaction cocycle; nonflat-link compression; convergence of the alternating scheme and robustness to delayed or asynchronous updates; a global relational information clock; an operational observable sensitive to base holonomy; a canonical connection and a nondegenerate pullback geometry; and identification of any limiting object with a physical law. \\
+The continuum law theory and the thermodynamic limit; joint limits in system size and RG depth, with universality, basin independence, and blocking-scheme robustness; a canonical channel, membership, and partition selector; grand-canonical edge or membership occupation; recursive networks of parent probabilistic data; participatory cross-scale feedback and sustained nonequilibrium; the comparison-category theorem and category-independent intervention semantics; a smooth scale tier and a canonical continuous beta function; multiplicative ergodic structure of the interaction cocycle; nonflat-link compression; convergence of the alternating scheme and robustness to delayed or asynchronous updates; a global relational information clock; an operational observable sensitive to base holonomy; a canonical connection and a nondegenerate pullback geometry; and identification of any limiting object with a physical law. \\
 \addlinespace
 Not claimed &
 That \(\mathcal C\) is physical spacetime, or carries a Lorentzian signature, causal cones, a measure, or a field equation; that Fisher duration is physical time, proper time, thermal time, or a quantum clock; that RG depth is inference time; that graph-link holonomy evidences base curvature or bundle topology; that autonomous agency emerges; and that any structural-realist reading follows from the invariance results. \\
@@ -753,22 +976,24 @@ That \(\mathcal C\) is physical spacetime, or carries a Lorentzian signature, ca
 \end{table}
 
 \begin{provedbox}
-The load-bearing achievements are a consistent typed gauge-covariant kinematics for probabilistic agents, one exact variational identity that survives it, an exact potential identity making local multi-agent updates coordinate descent on one collective free energy, an exact accounting of the information destroyed by any normalized coarse channel, and a set of sharp finite counterexamples that fence off the shortcuts a hurried construction would take.
+The load-bearing achievements are a consistent typed gauge-covariant kinematics for probabilistic agents, one exact variational identity that survives it, an exact potential identity making local multi-agent updates coordinate descent on one collective free energy, a canonical source-selection ensemble with a correctly normalized row free energy, an exact accounting of the information destroyed by any normalized coarse channel, a full static pointwise parent probabilistic datum, and a set of sharp finite counterexamples that fence off invalid shortcuts.
 \end{provedbox}
 
 \begin{boundarybox}
-What is not achieved is equally definite. There is no continuum limit, no thermodynamic limit, no derived rescaling, no canonical connection, no proved nontrivial fixed point with a basin, no derivation of agency, and no identification of anything in the formalism with a physical law, a physical clock, or a spacetime. The manuscript's own summary is that the present empirical status is inconclusive, and that a viable interpretation must continue to distinguish graph-link holonomy, base-connection holonomy, bundle topology, and gauge redundancy, and must state which of them its evidence bears on.
+What is not achieved is equally definite. There is no continuum limit, no thermodynamic limit, no derived rescaling, no canonical connection, no proved nontrivial fixed point with a basin, no derivation of agency, and no identification of anything in the formalism with a physical law, a physical clock, or a spacetime. The finite static theorems are not empirically inconclusive; they are mathematical statements. What remains empirically inconclusive is their proposed physical and cross-scale interpretation. Any viable interpretation must continue to distinguish graph-link holonomy, base-connection holonomy, bundle topology, and gauge redundancy, and must state which of them its evidence bears on.
 \end{boundarybox}
 
 \section{What a physicist should take away}
 
-Three things in this program are worth a physicist's attention, and one temptation is worth resisting.
+Four things in this program are worth a physicist's attention, and one temptation is worth resisting.
 
 The first is that the gauge structure is not decorative. Agents holding probabilistic beliefs in local frames genuinely have a comparison problem, transport genuinely resolves it, and loop transport genuinely fails to be trivial. The lattice analogy is exact at the level of the link variables and their Wilson loops, and the trivializing criterion is literally the pure-gauge criterion. Where the analogy stops is that the matter fields are probability laws, so the group acts by pushforward and the fibers carry no linear structure; a good deal of the manuscript's length is the price of that one substitution.
 
 The second is the exact information accounting. Equation~\eqref{eq:coarse-vfe} is a clean statement about what blocking costs, valid without Gaussian assumptions, without a mean-field restriction, and in the extended reals so that it survives singular trial laws. A physicist used to controlling truncation error heuristically may find it worth having a quantity that is exactly the discarded information rather than a bound on it.
 
-The third is the discipline about status. The manuscript is unusual in refusing to let a suggestive correspondence stand as a theorem, and its most useful sections are the ones that say what would be required to close a gap. The list of things that would make the interpretation testable, including a preregistered target system, at least two admissible partitions, declared blocking and rescaling maps, gauge alignment, a held-out statistic, an acceptance tolerance, and Gaussian-graphical and spectral baselines, is a genuine experimental protocol sketch rather than a gesture.
+The third is the thermodynamic hierarchy. Variational free energy has an exact expected-energy minus entropy decomposition in natural units, and each attention row is a canonical ensemble over possible sources. The temperature is \(\tau_i\), while \(\beta_{ij}\) is a normalized occupation probability. Writing \(\beta_{ij}D_{ij}=-\mu_{ij}N_{ij}\) is only an algebraic resemblance to a grand potential because the normalized row has no fluctuating count. A genuine grand-canonical network requires explicit occupation variables, a count, and chemical potentials conjugate to that count. That extension is natural, but it is not yet part of the established theory.
+
+The fourth is the discipline about status. The manuscript refuses to let a suggestive correspondence stand as a theorem, and its most useful sections are the ones that say what would be required to close a gap. The list of things that would make the interpretation testable, including a preregistered target system, at least two admissible partitions, declared blocking and rescaling maps, gauge alignment, a held-out statistic, an acceptance tolerance, and Gaussian-graphical and spectral baselines, is an experimental protocol sketch rather than a gesture.
 
 The temptation to resist is reading the base as spacetime. The word ``holonomy'' and the presence of a principal bundle invite it, and the manuscript blocks it repeatedly and deliberately. Nothing in the construction supplies a signature, a causal structure, a measure on the base, or an equation of motion for it, and the pullback tensors that do live on the base are relative to a connection that is never canonically chosen. Whether any of this can be connected to physics is the open question the program names as its own, and it has not been answered.
 
@@ -776,6 +1001,34 @@ The temptation to resist is reading the base as spacetime. The word ``holonomy''
 
 The manuscript's own fast path for a physicist is worth following. Take the object and frame-covariance contract from the introduction and the geometry chapter, then read only the normalized-joint and evidence identities in the probability, generative, and ELBO chapters. On a second pass read the local--collective potential theorem and the attention construction, then the covariant pullback and relational-history chapters. On a third pass take the three-operation distinction, the Markov coarse theorem, the exact network closure, and the typed scale diagram. The Gaussian spine is then the interaction cone, the recognition costs and Fisher geometry, and finally Gaussian aggregation, Kron closure, holonomy, fixed rays, and the numerical gates. The obstruction and interpretation chapters separate the exact negative results from the empirical and interpretive commitments, and the claim ledger collects every open obligation in one place.
 
-For the static coarse-graining theorem specifically, the companion guide \path{solid_RG_theory.tex} treats the same material at a level between this document and the manuscript, with the measure-theoretic steps written out.
+For the static coarse-graining theorem specifically, the companion guide \path{solid_RG_theory.tex} treats the same material at a level between this document and the manuscript, with the measure-theoretic steps written out. The proposed thermodynamic extension is developed in \path{Theory/grand_canonical_meta_agent_formation.tex}; it should be read as a research program built on the established attention and parent-construction theorems, not as another chapter of proved results.
+
+\begin{thebibliography}{9}
+
+\bibitem{Friston2010}
+K.~Friston,
+``The free-energy principle: a unified brain theory?,''
+\emph{Nature Reviews Neuroscience} \textbf{11}, 127--138 (2010),
+\href{https://doi.org/10.1038/nrn2787}{doi:10.1038/nrn2787}.
+
+\bibitem{Jaynes1957}
+E.~T.~Jaynes,
+``Information theory and statistical mechanics,''
+\emph{Physical Review} \textbf{106}, 620--630 (1957),
+\href{https://doi.org/10.1103/PhysRev.106.620}{doi:10.1103/PhysRev.106.620}.
+
+\bibitem{ParkNewman2004}
+J.~Park and M.~E.~J.~Newman,
+``Statistical mechanics of networks,''
+\emph{Physical Review E} \textbf{70}, 066117 (2004),
+\href{https://doi.org/10.1103/PhysRevE.70.066117}{doi:10.1103/PhysRevE.70.066117}.
+
+\bibitem{GrossBlasius2008}
+T.~Gross and B.~Blasius,
+``Adaptive coevolutionary networks: a review,''
+\emph{Journal of the Royal Society Interface} \textbf{5}, 259--271 (2008),
+\href{https://doi.org/10.1098/rsif.2007.1229}{doi:10.1098/rsif.2007.1229}.
+
+\end{thebibliography}
 
 \end{document}

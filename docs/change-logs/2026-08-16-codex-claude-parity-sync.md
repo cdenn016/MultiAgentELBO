@@ -547,3 +547,24 @@ rewritten; both still compile identically.
 Not done: no `.pdf` was written into the repository, and no claim in the manuscript was
 independently re-verified — the companion reports the manuscript's own status tags rather than
 re-adjudicating them.
+
+## Physicist's companion thermodynamic revision
+
+`physicists_companion.tex` was reviewed against the detailed `Theory/main.tex` sequence and revised
+to distinguish the exact information-theoretic content from the proposed physical extensions. The
+attention sector now uses the correct row free energy in mismatch-energy units,
+`sum_j beta_ij E[D_ij] + tau_i KL(beta_i || pi_i)`, and includes the total derivative when the
+belief-dependent mismatch and the source probabilities coevolve.
+
+A new thermodynamic-hierarchy section treats the fine-agent network before meta-agent formation,
+explains why `beta_ij D_ij` is not by itself a chemical-potential law, introduces the separately
+typed Bernoulli grand-canonical edge proposal, and then states the established full pointwise parent
+triple and its exact information-loss defect. A fourth TikZ figure separates canonical attention,
+optional grand occupation, declared coarse-channel parent formation, recursive parent networks, and
+cross-scale feedback. Inline primary references were added for the free-energy principle, maximum
+entropy, statistical mechanics of networks, and adaptive networks.
+
+The detailed review record is `docs/reviews/2026-08-16-physicists-companion-review.md`. A focused
+standalone pdfLaTeX build settled after the reference/outline passes at 26 pages with no unresolved
+references or citations, TeX errors, overfull boxes, or underfull boxes. The repository's existing
+untracked PDF was not overwritten.
