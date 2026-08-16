@@ -194,8 +194,8 @@ carries both readings explicitly wherever they diverge.
       K_down^{S-1}   |  Q_{S-1}(.|Z_S,R,G)         (recognition disintegration,
                  v   |                              same ordering, correlated)
    scale s+1 [ Z_{s+1}, G_{s+1} ]
-                 |                              R_s^b : V_s ~~> Lambda^b_{s+1}
-        P_R^s ---+---> [ R_s^b , R_s^m ]        R_s^m : V_s ~~> Lambda^m_{s+1}
+                 |                              R_s^b : Lambda_s ~~> Lambda^b_{s+1}
+        P_R^s ---+---> [ R_s^b , R_s^m ]        R_s^m : Lambda_s ~~> Lambda^m_{s+1}
                  |                              (two channels may block differently)
         P_G^s ---+---> [ G_s = (beta^s, gamma^s, alpha^{b,s}, alpha^{m,s},
                  |                 a^s, Omega^{b,s}, Omega^{m,s}) ]
@@ -203,7 +203,8 @@ carries both readings explicitly wherever they diverge.
                  |
         K_down^s |     the ONLY generative locus of downward influence
                  v
-   scale s   [ Z_s ]  =  ( q^b_i , q^m_i , xi_i )_{i in V_s}
+   scale s   [ Z_s ]  =  ( q^b_i , q^m_i , xi_i )_{i in Lambda_s}   <- FIXED pool index,
+                                                              occupancy is derived
                  |
                 ...
                  v
@@ -240,27 +241,54 @@ standard Borel, and all reference measures are $\sigma$-finite.
   space, or tree is assumed. $X\in\mathsf X$ carries the finite directed skeleton
   (cycles permitted), the design incidence, and the geometric data. $X$ and each
   $X_A=\chi_A(X)$ stay outside every random channel.
-* **Label pools.** At each scale $s\ge1$ fix a **finite label pool**
-  $\Lambda^b_s$, $\Lambda^m_s$ for the two channels. The occupied vertex sets
-  $V^b_s,V^m_s$ are then determined by the membership variables rather than fixed
-  in advance; this is how a variable number of blocks enters a fixed measurable
-  space. $V^b_0=V^m_0=V$, the finite agent set.
-* **Agent states.** For $i\in V_s$,
+* **Label pools, and the typing rule that goes with them.** At each scale
+  $s\ge1$ fix a **finite label pool** $\Lambda^b_s$, $\Lambda^m_s$ per channel,
+  with $\Lambda^b_0=\Lambda^m_0=V$ the finite agent set. Write
+  $\Lambda_s:=\Lambda^b_s\sqcup\Lambda^m_s$ when a single index is needed.
+
+  **Every scale-$s$ object below is indexed by the fixed pool $\Lambda_s$, never
+  by an occupied subset.** Occupancy is a *derived predicate*, not an index set:
+  a label $A\in\Lambda^x_{s+1}$ is occupied at a realization when
+  $\alpha^{x,s+1}_A>0$, and the unoccupied labels carry zero edge-event mass
+  while still possessing coordinates. This rule is load-bearing and replaces an
+  earlier formulation of this package that indexed $Z_s$ and $G_s$ by random
+  occupied sets $V^b_s,V^m_s$. That formulation was **ill-typed**: the occupied
+  set at scale $s+1$ is determined by $R_s$, which the generative order samples
+  *after* $P_S$ and $P^s_G$, so the codomain of an earlier kernel would depend on
+  a later variable. Concretely, with pool $\{A,B\}$ and a random partition that
+  sometimes occupies only $\{A\}$, the target space of $P_S$ would change with a
+  variable sampled downstream of it, and the reverse-order integration of
+  Proposition 1 would not run. Fixed-pool indexing removes the dependence; an
+  equivalent repair is to declare a measurable disjoint union
+  $\bigsqcup_{V\subseteq\Lambda_s}\mathsf Y_V$ and type every kernel on it.
+* **Agent states.** For $i\in\Lambda_s$,
   $\mathsf Y_{i,s}=\mathsf B_{i,s}\times\mathsf M_{i,s}\times\Xi_{i,s}$, with
   $\mathsf B_{i,s}\subseteq\mathcal P(\mathsf Z^b_{i,s})$ the belief-presentation
   space, $\mathsf M_{i,s}$ the model-presentation space equipped with an
   evaluation map $\mathrm{ev}_{i,s}:m\mapsto K_m$ into normalized generative
-  kernels, and $\Xi_{i,s}$ auxiliary. $Z_s=(Z_{i,s})_{i\in V_s}$.
+  kernels, and $\Xi_{i,s}$ auxiliary. $Z_s=(Z_{i,s})_{i\in\Lambda_s}$, a product
+  over the **whole pool**, so $\mathsf Y_s=\prod_{i\in\Lambda_s}\mathsf Y_{i,s}$
+  is a fixed standard Borel space.
   Under Reading A the belief coordinate is genuinely law-valued and
   $\mathcal P(\mathsf Z^b)$ is standard Borel as recorded in §1.1; a model
   presentation is a presentation, not a law, until $\mathrm{ev}$ is declared.
 * **Graph data.** $G_s=(\alpha^{b,s},\alpha^{m,s},\beta^s,\gamma^s,a^s,\Omega^{b,s},\Omega^{m,s})$
-  with $\alpha^{x,s}\in\Delta(V_s)$ the external receiver occupancies,
-  $\beta^s_i,\gamma^s_i\in\Delta(V_s)$ the normalized directed source rows,
-  $a^s\in\{0,1\}^{V_s\times V_s}$ the edge occupations, and
+  with $\alpha^{x,s}\in\Delta(\Lambda^x_s)$ the external receiver occupancies,
+  $\beta^s_i,\gamma^s_i\in\Delta(\Lambda_s)$ the normalized directed source rows,
+  $a^s\in\{0,1\}^{\Lambda_s\times\Lambda_s}$ the edge occupations, and
   $\Omega^{b,s}_{ij},\Omega^{m,s}_{ij}$ the two channels' transports, valued in a
-  standard Borel $G$-space. **The transports are not assumed flat and loop
+  standard Borel $G$-space. All are indexed by the fixed pool, so each factor's
+  codomain is fixed in advance. **The transports are not assumed flat and loop
   holonomy is not penalized toward the identity.**
+* **Two channels, one parent state.** Because $C^b_s$ and $C^m_s$ may differ,
+  there need not be a common occupied index on which a shared parent state is
+  typed. The construction therefore declares one of the three options of
+  Proposition 7 (Part 2 §8.4) as part of the model: a common partition
+  $C^b=C^m$; a normalized correspondence kernel
+  $J_s:\Lambda^b_{s+1}\rightsquigarrow\Lambda^m_{s+1}$; or the joint refinement
+  pool $\Lambda^b_{s+1}\times\Lambda^m_{s+1}$. Absent such a declaration the two
+  channels carry **separate** parent states and any coupling between them must be
+  written explicitly. This is a declared modeling choice, not a derived fact.
 * **Memberships.** $R^b_s$ and $R^m_s$ are normalized membership kernels
   $C^x_s(A\mid i)\ge0$, $\sum_{A\in\Lambda^x_{s+1}}C^x_s(A\mid i)=1$, together
   with normalized **endpoint kernels** $K^x_s(A,B\mid i,j)$ supported on declared
@@ -360,9 +388,20 @@ $\mathcal N(0,I_2)$ against $\mathcal N(0,\begin{psmallmatrix}1&r\\r&1\end{psmal
 
 ### 4.2 The decomposition
 
-**Theorem 2 (exact hierarchical decomposition).** Assume the factorizations of
-§3.2 and §4.1, $p_\theta(o\mid X)\in(0,\infty)$, and
-$\mathbb Q_\phi\ll\boldsymbol\Pi_{\theta,o,X}$. Then, as an identity in
+**Theorem 2 (exact hierarchical decomposition).** Assume (i) the factorizations of
+§3.2 and §4.1 with every factor a normalized measurable Markov kernel on the
+fixed-pool spaces of §3.1; (ii) $p_\theta(o\mid X)\in(0,\infty)$; (iii)
+$\mathbb Q_\phi\ll\boldsymbol\Pi_{\theta,o,X}$; and (iv) the observation
+integrability condition
+
+$$
+\mathbb E_{\mathbb Q_\phi}\big(\log L_\theta(o\mid Z_0,X)\big)^{+}<\infty .
+$$
+
+Hypothesis (iv) is not implied by (ii) and (iii) and cannot be dropped: positive
+finite evidence and absolute continuity together still permit an observation
+contribution of $-\infty$ alongside a relative-entropy contribution of $+\infty$,
+leaving the displayed sum undefined. Under (i)–(iv), as an identity in
 $\mathbb R\cup\{+\infty\}$,
 
 $$

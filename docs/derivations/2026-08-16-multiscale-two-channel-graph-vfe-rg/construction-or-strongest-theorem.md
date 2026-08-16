@@ -12,15 +12,29 @@ measures $\sigma$-finite. All scale-0 agents at one context point $c_\*\in\mathc
 the finite directed skeleton may contain cycles; no length, lattice, translation
 symmetry, momentum space, or tree is assumed.
 
-Per scale $s$ and node $i$: $\mathsf Y_{i,s}=\mathsf B_{i,s}\times\mathsf M_{i,s}\times\Xi_{i,s}$
+Fix a finite label pool $\Lambda^x_s$ per channel and scale, with
+$\Lambda^b_0=\Lambda^m_0=V$. **Every scale-$s$ object is indexed by the fixed pool,
+never by a random occupied subset**; occupancy is the derived predicate
+$\alpha^{x,s}_A>0$. This is load-bearing: the occupied set at scale $s+1$ is
+determined by $R_s$, which is sampled after $P_S$ and $P^s_G$, so indexing by it
+would make an earlier kernel's codomain depend on a later variable and the
+reverse-order integration of Proposition 1 would fail.
+
+Per scale $s$ and label $i\in\Lambda_s$:
+$\mathsf Y_{i,s}=\mathsf B_{i,s}\times\mathsf M_{i,s}\times\Xi_{i,s}$
 with $\mathsf B_{i,s}\subseteq\mathcal P(\mathsf Z^b_{i,s})$ law-valued (standard Borel
 because $\mathcal P$ of a Polish space is Polish) and $\mathsf M_{i,s}$ carrying an
-evaluator $\mathrm{ev}$ into normalized generative kernels. Graph data
+evaluator $\mathrm{ev}$ into normalized generative kernels;
+$Z_s=(Z_{i,s})_{i\in\Lambda_s}$ is a product over the whole pool. Graph data
 $G_s=(\alpha^{b,s},\alpha^{m,s},\beta^s,\gamma^s,a^s,\Omega^{b,s},\Omega^{m,s})$ with
-non-flat transports. Memberships $R_s=(R^b_s,R^m_s)$ valued in fixed finite label pools
-$\Lambda^b_{s+1},\Lambda^m_{s+1}$, with normalized incidence-supported endpoint kernels
-$K^x_s(A,B\mid i,j)$. Holonomy marks $H_s$ recording component roots, based holonomy
-representations $H^x_I:\pi_1(\Gamma_I,r_I)\to G$, and dressed boundary generators
+non-flat transports, all indexed by $\Lambda_s$. Memberships $R_s=(R^b_s,R^m_s)$ are
+normalized kernels into $\Lambda^b_{s+1},\Lambda^m_{s+1}$, with normalized
+incidence-supported endpoint kernels $K^x_s(A,B\mid i,j)$. Because $C^b_s$ and $C^m_s$
+may differ, the model must declare one of Proposition 7's three options — common
+partition, correspondence kernel $J_s$, or joint refinement pool — or else carry
+separate parent states per channel with explicit coupling. Holonomy marks $H_s$ record
+component roots, based holonomy representations $H^x_I:\pi_1(\Gamma_I,r_I)\to G$, and
+dressed boundary generators
 $V^x_e=\tau^x_{I\leftarrow i}\Theta^x_e(\tau^x_{J\leftarrow j})^{-1}$, as one
 simultaneous root-gauge orbit. Structural data $X$ and each $X_A=\chi_A(X)$ stay
 outside every random channel.
@@ -63,10 +77,11 @@ $\mathbb E_{\mathbb Q_\phi}(\log L_\theta(o\mid Z_0,X))^{+}<\infty$. Then:
 3. The $R_s$-coordinate minimizer is $Q^\star_R\propto P^s_R\,e^{-U_s}$ with $U_s$ the
    derived sum of graph, mark, and cross-scale conditional divergences. The
    $Z_{s+1}$-coordinate minimizer at frozen child kernel is
-   $Q^\star_{s+1}\propto P_{s+1}\,e^{-\mathcal V_{s+1}}$ with
-   $\mathcal V_{s+1}(z)=D_{\rm KL}(Q_s(\cdot\mid z)\Vert K^s_\downarrow(\cdot\mid z))$.
-   The parent kernel is the child's prior; the child's conditional-KL profile is the
-   parent's likelihood.
+   $Q^\star_{s+1}\propto P_{s+1}\,e^{-\mathcal V_{s+1}}$, where $\mathcal V_{s+1}(z)$
+   collects **every** conditional divergence whose generative factor conditions on
+   $Z_{s+1}$ — those of $P^s_R$, $P^s_G$, $P^s_H$ and $K^s_\downarrow$ — not the
+   downward term alone. The parent kernel is the child's prior; the children's
+   total conditional-KL profile is the parent's likelihood.
 4. Pushing $\eta^b,\eta^m$ through normalized incidence-supported endpoint kernels and
    disintegrating gives normalized, gauge-invariant coarse occupancies and rows that
    compose exactly under nested normalized memberships, on positive parent occupancy.
@@ -76,8 +91,11 @@ $\mathbb E_{\mathbb Q_\phi}(\log L_\theta(o\mid Z_0,X))^{+}<\infty$. Then:
    surely; ordinary subtraction requires finite fine KL.
 6. Non-flat holonomy is retained exactly as the simultaneous root-framed orbit
    $(\bar z^x_I,H^x_I,\{V^x_e\})$ together with the conditional law $\mu^x_{IJ}$ of
-   dressed transports $\Theta^{IJ,x}_{ij}=\Omega^x_{Ii}\Omega^x_{ij}\Omega^x_{jJ}$; no
-   flatness is imposed and no barycenter is required to exist.
+   dressed transports $\Theta^{IJ,x}_{ij}=\Omega^x_{Ii}\Omega^x_{ij}\Omega^x_{jJ}$,
+   whose numerator carries the endpoint factor $K^x(I,J\mid i,j)$ so that it is
+   normalized under soft membership as well as hard; no flatness is imposed and no
+   barycenter is required to exist. Conditional independence of consecutive marks
+   is sufficient for these to convolve across scales; the converse is false.
 
 ## Negative companion
 
@@ -85,9 +103,10 @@ $\mathbb E_{\mathbb Q_\phi}(\log L_\theta(o\mid Z_0,X))^{+}<\infty$. Then:
 $\mathsf Z_{1,I}=\mathsf Y_{0,I}$, $K^0_I=\delta$, $P_1=\mathbb P^{\rm flat,Z_0}$. Then
 $\min_{\mathbb Q}\mathcal F^{(R)}_{\rm tower}=-\log p^{\rm flat}(o\mid X)$ for every
 partition $R$, so the tower VFE ranks no partition and the posterior over partitions
-equals the prior. Hierarchy selection is therefore carried entirely by declared
-capacity restrictions on $(\mathsf Z_{s+1},K^s_\downarrow,P_{s+1})$ together with a
-node-count cost; neither alone suffices.
+equals the prior. Something beyond the bare variational principle is therefore
+required. A capacity restriction on $(\mathsf Z_{s+1},K^s_\downarrow,P_{s+1})$ and a
+node-count cost are **sufficient** mechanisms, one aimed at each degeneracy; their
+joint necessity over a declared model class is open.
 
 ## What Theorem A does not give
 

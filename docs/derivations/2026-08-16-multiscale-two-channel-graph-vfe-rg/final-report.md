@@ -53,6 +53,13 @@ $\mathbb E_{\mathbb Q}(\log L)^+<\infty$.
 
 ## Strongest verified result
 
+Nothing in this section is verified. Under this package's own cross-model rule
+every claim remains INCONCLUSIVE, so what follows is the strongest
+**author-derived** result. The heading above is fixed verbatim by the
+`rigorous-theory-search` output contract, which requires exactly nine headings and
+forbids others, so it cannot be renamed to "author-derived" without failing the
+structural validator; this paragraph carries the correction instead.
+
 Theorem A of `construction-or-strongest-theorem.md`: under the stated typing and
 integrability hypotheses the depth-$S$ two-channel tower is normalized with no
 partition function beyond the evidence; the exact VFE equals

@@ -276,8 +276,18 @@ coarse degeneracy rather than excluding either. Since by Corollary 6 the data
 contribute nothing without a capacity bound, the posterior over partitions is
 *exactly* the prior, and a prior cannot by itself make a nondegenerate partition
 the unique minimizer unless it is constructed to be maximized there — which is
-assuming the answer. **Both a capacity restriction and a node-count cost are
-necessary; neither alone is sufficient.**
+assuming the answer.
+
+*What is and is not proved here.* Proposition 5 is a genuine impossibility: it
+exhibits an admissible tower on which the objective is exactly partition-blind, so
+**something** beyond the bare variational principle is required. It does not
+establish that the two mechanisms above are the only repairs, nor that a viable
+model must contain both. The arguments given for each extreme are arguments about
+those two constructions, not a necessity theorem over a specified model class.
+Accordingly: **a capacity restriction and a node-count cost are sufficient design
+mechanisms, one aimed at each degeneracy; their joint necessity is open** and
+would require a theorem quantified over a declared class of admissible towers. An
+earlier formulation of this package called them necessary; that was an overclaim.
 
 ## 8. Q5 — graph RG by pushing $(\eta^b,\eta^m)$ and disintegrating parent rows
 
@@ -310,14 +320,46 @@ Push the joint, then disintegrate. This is normalized, needs no parent root, and
 is the direct-sum specialization when $K^x=C^x\otimes C^x$ and the memberships are
 hard: $\eta^{c}_{IJ}=\sum_{i\in I}\sum_{j\in J}\eta_{ij}$.
 
-**Why $\eta$ and not $\beta$.** The renormalizability criterion that the network-RG
-literature isolates is that the *defining parameter must be additive under
-aggregation* — this is the content of the Garuccio–Lalli–Garlaschelli failure
-taxonomy (arXiv:2009.11024, §II.6), which is why the configuration model, the
-degree-corrected SBM, and preferential attachment are not renormalizable. Here
-$\eta$ is additive under blocking and $\beta$ is not. The theory's choice to push
-the event law is therefore exactly the MSM-consistent choice, arrived at
-independently.
+**Why $\eta$ and not $\beta$.** The reason is internal to this construction, and
+it is one line. If $\eta^x$ is a probability law on ordered microscopic pairs and
+$K^x$ is a fixed Markov endpoint kernel, then
+
+$$
+\sum_{A,B}\sum_{i,j}\eta^x_{ij}K^x(A,B\mid i,j)
+=\sum_{i,j}\eta^x_{ij}\sum_{A,B}K^x(A,B\mid i,j)
+=\sum_{i,j}\eta^x_{ij}=1 .
+$$
+
+Normalization *is* the interchange of two sums, that is, linearity of the
+pushforward. A row-normalized $\beta$ is not a law on pairs and admits no such
+pushforward; and any nonlinear aggregation breaks the interchange. This matters
+beyond bookkeeping: the exact VFE chain rule of Part 1 §5 requires that the coarse
+object be the image of the fine measure under **one fixed, input-independent
+Markov kernel**. Linear aggregation is the unique rule with that property.
+
+That is the argument. It is *not* the broader claim, made in an earlier
+formulation of this package, that renormalizability universally means additivity
+of the defining parameter. Zheng, García-Pérez, Boguñá and Serrano exhibit a whole
+family of closed weighted aggregation protocols,
+$\omega'_{IJ}=C\big(\sum_{e\in E(I,J)}\omega_e^{\phi}\big)^{1/\phi}$, with the sum
+rule at $\phi=1$ and the supremum rule as $\phi\to\infty$, and it is the
+supremum end that their real weighted networks obey
+(*Communications Physics* **7**, 97 (2024), arXiv:2307.00879). Closure is relative
+to a declared model family and aggregation protocol, not universal. Within the
+$\phi$-family, $\phi=1$ is singled out here for the specific reason above: it is
+the only member that is a fixed linear pushforward of the input measure. A
+nonlinear rule plus a global constant $C$ can still define a normalized coarse
+object, but not one obtained through a single input-independent Markov kernel, and
+the KL chain rule would be lost with it.
+
+Separately, the Garuccio–Lalli–Garlaschelli failure taxonomy (arXiv:2009.11024,
+§II.6) explains why the configuration model, the degree-corrected SBM, and
+preferential attachment are not renormalizable: their defining quantities are node
+degrees, which are neither preserved nor additively transformed. That is a
+*parametric closure* theorem for a specific independent-edge ensemble under an OR
+coarse map with additive hidden fitness and a prescribed dyadic update. Additivity
+of one coarse statistic here does not establish that closure, and calling the
+$\eta$-pushforward "MSM-consistent" would overstate the connection.
 
 ### 8.2 Counterexample: row averaging is not event-law pushforward
 

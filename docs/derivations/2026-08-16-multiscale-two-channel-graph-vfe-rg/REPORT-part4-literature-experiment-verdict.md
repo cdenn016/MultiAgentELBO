@@ -344,7 +344,7 @@ present system); **J** conjecture; **N** numerical/diagnostic only; **O** open.
 | # | Claim | Status | Where |
 |---|---|---|---|
 | 1 | $\mathcal F^{\rm ext}_{\rm tower}=-\log p_\theta(o\mid X)+D_{\rm KL}(\mathbb Q_\phi\Vert\boldsymbol\Pi)$ in $\mathbb R\cup\{+\infty\}$ | **E** | P1 §1 |
-| 2 | The depth-$S$ tower is normalized with no partition function | **E** | P1 Prop. 1 |
+| 2 | The depth-$S$ tower is normalized with no partition function, **provided every scale is indexed by its fixed label pool**; indexing by random occupied sets is ill-typed | **E** | P1 Prop. 1, §3.1 |
 | 3 | Exact seven-group conditional-KL decomposition under a common ordering | **E** | P1 Thm. 2 |
 | 4 | Observation term is the only term that can be $-\infty$; $\mathbb E_{\mathbb Q}(\log L)^+<\infty$ suffices | **E** | P1 §4.3 |
 | 5 | $\mathcal P(\mathsf Z)$ standard Borel for standard Borel $\mathsf Z$, so "state is a law" is well typed | **E** | P1 §1.1 (Kechris 17.23) |
@@ -364,7 +364,7 @@ present system); **J** conjecture; **N** numerical/diagnostic only; **O** open.
 | 19 | $\tau_R\ne1$ is an ELBO sector only for the rescaled energy $E/\tau_R$ | **E** | P2 §7.2 |
 | 20 | **Without a capacity bound the tower VFE is exactly constant across partitions** | **E** | P2 Prop. 5 |
 | 21 | Hence $Q^\star_R=P^s_R$: hierarchy selection lives entirely in declared restrictions | **E** | P2 Cor. 6 |
-| 22 | Capacity bound **and** node-count cost are both necessary; neither alone suffices | **E** | P2 §7.3 |
+| 22 | Capacity bound and node-count cost are **sufficient** design mechanisms, one per degeneracy; joint necessity is **open** | **E** / **O** | P2 §7.3 |
 | 23 | Event-law pushforward + disintegration is normalized, gauge-invariant, composes | **E** | P2 §8.1, §8.5 |
 | 24 | Row averaging $\ne$ event-law pushforward (explicit $0.4$ discrepancy) | **E** | P2 §8.2 |
 | 25 | Zero-occupancy parent rows are not invariants of the coarse law | **E** | P2 §8.3 |
@@ -372,17 +372,17 @@ present system); **J** conjecture; **N** numerical/diagnostic only; **O** open.
 | 27 | $C^b\ne C^m$ needs a declared correspondence; common refinement may not coarsen | **E** | P2 Prop. 7 |
 | 28 | Product endpoint form is not preserved under nested composition without independence | **E** | P2 §8.5 |
 | 29 | On the zero-distortion sector, $H_\#Q=Q$ is necessary and sufficient | **E** | P3 §9.2(A) |
-| 30 | Flatness and stabilization are logically independent (both directions witnessed) | **E** | P3 §9.2(B) |
+| 30 | Flatness $\Rightarrow$ stabilization; flatness $\not\Rightarrow$ agreement; stabilization $\not\Rightarrow$ flatness | **E** | P3 §9.2(B) |
 | 31 | **Empty $\mathrm{Fix}(\mathrm{Hol})\cap\mathscr M$ makes a zero-distortion parent nonexistent** | **E** | P3 Prop. 8 |
-| 32 | Exact coarse connection datum is the conditional law $\mu^x_{IJ}$, not a mean | **E** | P3 §9.4 |
+| 32 | Exact coarse connection datum is the conditional law $\mu^x_{IJ}$, not a mean; its numerator must carry the endpoint factor $K^x(I,J\mid i,j)$ or it is unnormalized under soft membership | **E** | P3 §9.4 |
 | 33 | Barycenter of $\mu$ need not lie in $\rho_x(G)$; first moment may not exist | **E** | P3 §9.4 |
-| 34 | Coarse transports convolve **iff** consecutive marks are conditionally independent | **E** | P3 Prop. 9 |
-| 35 | Coarse holonomy blindness $\iff \mathrm{supp}\,\mu_{\rm loop}\subseteq\mathrm{Stab}(Q_I)$ | **E** | P3 §9.4 |
+| 34 | Conditional independence of consecutive marks is **sufficient** for coarse transports to convolve; the converse is **false** (Z_3 witness C25) | **E** | P3 Prop. 9 |
+| 35 | Coarse holonomy blindness $\iff \mu_{\rm loop}(\mathrm{Stab}(Q_I))=1$ (measure-one; the support form needs a declared topology) | **E** | P3 §9.4 |
 | 36 | Uniform low transported KL produces **no** block ($\beta^\star=\pi$) | **E** | P3 §10.2 |
 | 37 | Large $\eta$ ranks hubs, not blocks | **E** | P3 §10.3 |
 | 38 | KL-threshold adjacency is not transitive, so it induces no partition | **E** | P3 §10.2 |
 | 39 | Child update: parent kernel acts as the child's prior | **E** | P3 §11.1 |
-| 40 | Parent update: $Q^\star_{s+1}\propto P_{s+1}e^{-\mathcal V_{s+1}}$, child KL profile as likelihood | **E** | P3 §11.1 |
+| 40 | Parent update: $Q^\star_{s+1}\propto P_{s+1}e^{-\mathcal V_{s+1}}$ where $\mathcal V_{s+1}$ collects **all four** parent-dependent conditional divergences ($R,G,H$, downward kernel), not the downward term alone | **E** | P3 §11.1 |
 | 41 | Per-scale natural gradient $=$ tower natural gradient **iff** cross-scale Fisher orthogonality | **E** | P3 §11.2 |
 | 42 | $\Delta^{\rm ng}=0$ needs both $c$-measurability of $\Delta$ and horizontal conformality | **E** | P3 §11.3 |
 | 43 | Strong lumpability is the every-initial-law condition; weak is strictly weaker | **E** | P3 §11.3 |
