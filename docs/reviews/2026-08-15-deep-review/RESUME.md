@@ -118,7 +118,7 @@ materially narrowed and two headline clauses were outright refuted.
 29 Low by investigator label) were never put to a skeptic and must not be treated as confirmed. The
 five highest-value ones to test next are named in `REPORT.md` under "Coverage".
 
-## Wave 4 — IN_PROGRESS (launched 2026-08-16 01:05)
+## Wave 4 — COMPLETE (2026-08-16)
 
 Run ID `wf_a1fd026a-2f3` (task `w0fj9gyeh`): 11 skeptics + adjudicator. Five named targets plus six
 grouped blocks covering all nine P9 High findings. `MAX_SKEPTICS` raised to 12.
@@ -149,3 +149,19 @@ Run with `workflows/wave2.js`, passing `args.contested` as `{id, severity, title
 one_line_evidence, source_file}` records; raise `MAX_SKEPTICS` above 8 if needed. Binding rules carry
 over: CONFIRMED only on a reconstructed derivation, an executed command with real output, or a cited
 primary source — never on agent agreement. Append a "Wave 4" section to `REPORT.md` when done.
+
+### Wave 4 outcome
+
+All 14 unchallenged High findings tested by 11 skeptics. One survives at High (H2, the attack-portfolio
+rate presented as certification evidence), one REFUTED outright, two merged into wave-2 findings, seven
+reduced to Medium/Low. See `findings/ADJUDICATION-W4.md`.
+
+Run history worth keeping: the first wave-4 run (`wf_a1fd026a-2f3`) hit the session limit at 02:20 and
+lost 8 of 12 agents, but four of those had already written complete findings files before dying, so
+their work survived — the write-before-work mandate is what saved it. The remaining seven ran as
+`wf_ac472d30-1a3`, whose adjudicator then died on a connection error; the adjudication was done
+directly by the principal reviewer from the eleven skeptic files on disk.
+
+**Remaining, if picked up again:** the 46 Medium and 29 Low wave-1 findings were never adversarially
+tested. Across 19 tested findings only 3 survived at filed severity, so assume the same correction
+factor applies.

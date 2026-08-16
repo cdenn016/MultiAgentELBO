@@ -1,15 +1,492 @@
 STATUS: COMPLETE
 
-AGENT: adjudicator (Claude Opus 5), wave 2
+AGENT: adjudicator (Claude Opus 5) — wave 2 (§A) and wave 4 (§B)
 TARGET: 8ce635807a6ca2a388255fc996c98f7c535e5843
-ADJUDICATION RUN AT REPO HEAD: 7433d814afbddf6b5ab1f838746ed414d346dc57 (review directory added since the
-target; all target artifacts read at `8ce6358` or at their unchanged working-tree state)
+WAVE-2 RUN AT REPO HEAD: 7433d814afbddf6b5ab1f838746ed414d346dc57
+WAVE-4 RUN AT REPO HEAD: 3505a53 (branch `review/2026-08-15-deep-review`; all target artifacts read at
+`8ce6358` or at their unchanged working-tree state)
 
 # Adjudication of contested findings
 
 Verdicts below rest on my own executed commands and reconstructions, listed under each case. Where a
 skeptic and an investigator disagreed on a checkable fact I ran the check myself rather than choosing
 between them. No verdict rests on agreement between agents.
+
+---
+
+# §B — Wave 4
+
+## Correction to the orchestrator's input record, before anything else
+
+The wave-4 verdict list handed to me marks eight of the eleven contested findings `INCONCLUSIVE`,
+`evidence_kind: "none"`, rationale *"skeptic agent died or was skipped."* **That metadata is false for
+seven of the eight.** I read every `V-W4-*.md` file on disk:
+
+```
+$ head -6 findings/V-W4-*.md | grep -c "STATUS: COMPLETE"      -> 8 of 9 files
+V-W4-P1-High-2-crossX.md          STATUS: COMPLETE   UPHELD_REDUCED / Low
+V-W4-P2-High-infinite-tier.md     STATUS: COMPLETE   UPHELD_REDUCED / Low
+V-W4-P3-High-CE4.md               STATUS: COMPLETE   UPHELD_REDUCED / Medium
+V-W4-P4-High-1-blindness.md       STATUS: COMPLETE   UPHELD_REDUCED / Medium
+V-W4-P10-High-05d-uncited.md      STATUS: COMPLETE   UPHELD_REDUCED / Medium
+V-W4-P9-counts.md                 STATUS: COMPLETE   UPHELD_REDUCED / Low
+V-W4-P9-ledger-eligibility.md     STATUS: COMPLETE   REFUTED
+V-W4-P9-fourth-conjunct.md        STATUS: COMPLETE   UPHELD_REDUCED / Low
+V-W4-P9-attacks.md                STATUS: IN_PROGRESS  (12 lines, no verdict — genuinely dead)
+```
+
+Each of those seven carries executed commands, quoted output, or a reconstructed derivation. Applying
+rule 1 to the *metadata* rather than to the *record on disk* would have discarded seven evidence-backed
+skeptic passes and left seven High findings artificially unresolved. I adjudicate from the files. Only
+`W4-P9-attacks` is genuinely unassessed, and only its sub-finding (a) survives as `INCONCLUSIVE`;
+I settled its sub-finding (b) myself below.
+
+One further metadata conflict: the orchestrator's record for `W4-P9-fourth-conjunct` reads
+`REFUTED / None`, while the file on disk reads `UPHELD_REDUCED / Low`. Both agree the load-bearing
+charge is refuted; they differ only on whether a residue survives. I resolve that split below on my
+own execution.
+
+## Wave-4 verdict table
+
+| Finding | Investigator severity | Skeptic verdict | ADJUDICATED | Adjudicated severity | Evidence relied on |
+|---|---|---|---|---|---|
+| W4-P1-High-2-crossX | High | UPHELD_REDUCED / Low | **CONFIRMED** as notation hygiene; the correctness clause and the "caveat confined to one paragraph" clause **REFUTED** | **Low** | My own `grep` of `Theory/SPEC.md:220` and `Theory/appendix_notation.tex:60` (the skeptic's one open obligation, discharged by me); my own read of `direct-derivation.md:6,154,190,452` |
+| W4-P2-High-infinite-tier | High | UPHELD_REDUCED / Low | **CONFIRMED** as an internal contract inconsistency; the load-bearing clause **REFUTED** | **Low** | My own JSON dump of `claim-ledger.json` (`VFE-CHAIN-EXTENDED` = `EVIDENCE_VERIFIED`, statement literally `[0,+infinity]`-valued, no finiteness in `quantifiers`) against `problem-contract.json` `target.regularity` |
+| W4-P3-High-CE4 | High | UPHELD_REDUCED / Medium | **CONFIRMED** (mechanical core; location corrected) | **Medium** | My own read of `finite_nongaussian_witness.py:321-325` and `:372-374`; `claim-ledger.json:109-112`; skeptic's four executed mutants |
+| W4-P4-High-1-blindness | High | UPHELD_REDUCED / Medium | **CONFIRMED**, and **merged with P4-High-2** — one finding, counted once | **Medium** (one Medium total, not two) | My own dump of `HOLONOMY-BLIND-FULL-LAW` / `HOLONOMY-RETENTION` / `HOLONOMY-ALTERNATIVE` statements and quantifiers; skeptic's executed `V-W4-P4-High-1-check.py`; wave-2 §A verdict on P4-High-2 |
+| W4-P10-High-05d-uncited | High | UPHELD_REDUCED / Medium | **CONFIRMED** as an **attribution** defect, scope reduced from six theorems to **one** | **Medium** | My own `grep -rniE "syntactic\|myhill\|nerode\|schutzenberger\|eilenberg" Theory/*.tex Theory/references.bib` → 0 on point; my read of `05d:1082`; P0's independent identification; skeptic's arXiv:1504.02694 |
+| W4-P9-counts | High (×2) | UPHELD_REDUCED / Low | **CONFIRMED** narrowly; the non-disclosure charge and the alleged review self-contradiction **REFUTED** | **Low** | Skeptic's reconstruction of the pre-fix `φ₀` defect, corroborated by my own read of `direct-derivation.md:286` |
+| W4-P9-attacks (a) "13/16 cannot fail" | High | none (skeptic dead) | **INCONCLUSIVE** — check named below | — | none |
+| W4-P9-attacks (b) "prior-art/triviality attacks absent" | High | none (skeptic dead) | **CONFIRMED as fact by my own execution; weak as a defect** | **Low** | My own enumeration of all sixteen records in `evidence/adversarial-report.json` |
+| W4-P9-independence | High (×2) | UPHELD_REDUCED / Low | **CONFIRMED** as a release-summary overclaim; both inferences drawn from the structural match **REFUTED** | **Low** | Skeptic's executed `V-W4-P9-independence-structcmp.py` / `-linext.py`; my own diff of `independent-reconstruction.md:46` against `direct-derivation.md:286` |
+| W4-P9-ledger-eligibility | High | REFUTED | **REFUTED** (I override one leg of the skeptic's reasoning; verdict unchanged) | **None** (separate Low residue at `release.json:9`) | My own execution: `validate_run.py:619` is `any(...)`; `target` = 3 `DERIVATION` + 6 `AGENT_ASSESSMENT`; `proof-obligations.md:7` read in full |
+| W4-P9-fourth-conjunct | High | REFUTED (record) / UPHELD_REDUCED-Low (file) | Charge (b) "contradicts the frozen contract" **REFUTED by my own execution**; charge (a) **CONFIRMED** in one location only | **Low** | My own recomputation of `target_digest` = `15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87` over the whole `target` object, matching the recorded value; `target.quantifiers` read in full; three separate holonomy ledger rows dumped |
+| W4-P9-regression | High | UPHELD_REDUCED / Medium | **CONFIRMED** as an evidence-typing defect; the "regressed" framing and the "attacks that land" row **REFUTED** | **Medium** | My own sweep of all eleven `docs/derivations/*/claim-ledger.json` |
+
+Two wave-4 findings are adjudicated **REFUTED in their load-bearing form** (`ledger-eligibility` in
+full, `fourth-conjunct`'s charge (b)); one is **INCONCLUSIVE** in part; the rest survive, all of them
+at a lower severity than filed, and none of them as a correctness defect. **No wave-4 finding shows a
+false theorem.**
+
+## Wave-4 case-by-case
+
+### W4-P1-High-2-crossX — CONFIRMED at Low. I discharge the skeptic's one open obligation, in its favor.
+
+The skeptic left exactly one obligation open: it did not check whether `Theory/SPEC.md` or
+`Theory/appendix_notation.tex` — both listed as `canonical_sources` for the evaluator symbol — type the
+parent evaluator with `X_A` in its domain, and said its verdict fails if they do not. I checked:
+
+```
+$ grep -n "operatorname{ev}" Theory/SPEC.md Theory/appendix_notation.tex
+Theory/SPEC.md:204          \(\operatorname{ev}_i:m_i\mapsto K^X_{i,m_i}\).
+Theory/SPEC.md:220          \(\operatorname{ev}_A:m_A\mapsto K^{X_A}_{A,m_A}\).
+Theory/appendix_notation.tex:32   \operatorname{ev}_i(m_i)=K^X_{i,m_i}\)
+Theory/appendix_notation.tex:60   \(\operatorname{ev}_A:m_A\mapsto K^{X_A}_{A,m_A}\)
+```
+
+Both canonical sources carry `K^{X_A}` for the *parent* evaluator and `K^{X}` for the fine one. The
+superscript is the program's standing notation, not an artifact of this derivation, so there is no
+second semantic type and no registry collision.
+
+I also refute the finding's third clause directly. The cross-`X` disclaimer is not confined to one
+paragraph; it is in the theorem's standing setup and repeated at the point of use:
+
+- `direct-derivation.md:6` — "This theorem is pointwise in this one \(X\). It makes no claim that two
+  values \(X,X'\) with \(\chi_A(X)=\chi_A(X')\) induce the same parent law. Such a cross-\(X\) claim
+  would require a separately measurable factorization through \(X_A\)."
+- `:154` — "At fixed \(X_A\), a parent evaluation family means…" (the tier is declared slice-local).
+- `:190` — "The notation \(X_A\) does not prove cross-\(X\) factorization: … equality of their induced
+  kernels whenever \(\chi_A(X)=\chi_A(X')\), together with measurability in \(X_A\), is an additional
+  premise."
+
+So (4.5) is not "false under a literal reading"; it is a fixed-slice statement whose slice is declared
+twice in the same document. The only two-`X` site is `:452-453`, and it is an equivariance *hypothesis*.
+What survives is that a reader scanning the display alone can misread the superscript as a
+factorization claim, and that the derivation's symbol is out of step with the package's own claim
+ledger. **Low — wording/presentation under `RESUME.md:64`.**
+
+### W4-P2-High-infinite-tier — CONFIRMED at Low; the load-bearing sentence is refuted by execution.
+
+The finding's load-bearing sentence is "the release cannot support it: nothing in `[0,+∞]` is inside
+the frozen domain." I dumped the ledger rather than adjudicating prose:
+
+```
+VFE-CHAIN-EXTENDED   state=EVIDENCE_VERIFIED   kind=MATHEMATICAL
+  statement:   "The two joint lifts through the same C_A obey the additive [0,+infinity]-valued KL
+                disintegration: fine KL equals parent KL plus the nonnegative conditional-KL defect…"
+  quantifiers: "For every pair satisfying ASM-RECOGNITION-AC, ASM-COMMON-CHANNEL,
+                ASM-EVIDENCE-REPRESENTATIVE."          <- no finiteness
+```
+
+The extended tier is inside the release, certified, with no finiteness quantifier. The sentence is
+false and the finding's fix (b) — demote the manuscript's `\status{ESTABLISHED}` to match the package —
+would make the documentation less accurate, not more.
+
+What survives is a genuine contradiction *inside the frozen contract object*. `target.regularity`
+reads "…and **finite terms wherever KL or VFE expressions are displayed**", which is contradicted by
+`target.statement`, by `target.quantifiers` (neither carries KL-finiteness), by the certified
+`VFE-CHAIN-EXTENDED`, by `final-report.md:40`, and by the package's own `direct-derivation.md`
+(6.3)/(6.4)/(6.6), all of which display extended-valued KL. One clause, one repair. The substantive
+half of the charge is already filed by the same investigator as its own `MEDIUM-2` and must not be
+counted twice. **Low.**
+
+The mathematics is not in dispute and I did not re-derive it: P0, the investigator, and the skeptic all
+reach the same unconditional zero-defect criterion, and P0's reconstruction (§"Verified: the additive
+KL chain") already carries it.
+
+### W4-P3-High-CE4 — CONFIRMED at Medium.
+
+I read the check myself rather than accepting the mutation table:
+
+```python
+# evidence/finite_nongaussian_witness.py:321-325
+    record(
+        checks,
+        "CE4_tree_directed_KL_symbolic_half_log_3",
+        Fraction(3, 4) - Fraction(1, 4) == Fraction(1, 2),
+    )
+```
+
+That is a constant expression over two literals. It never reads `node_laws`, so a check named for a
+directed KL constrains nothing about the distributions it is named for. The emitted artifact compounds
+it: `:372-374` hard-types `"identity_tree_directed_KL": "log(3)/2"` next to `identity_tree_laws`, which
+*is* derived from `node_laws` — so the JSON will publish a false pairing under any change to the laws.
+The skeptic's four executed mutants (including mutant D, which leaves the exhibited left law verbatim
+and still passes) establish this beyond the investigator's own falsifier.
+
+Severity. The rubric reserves **High** for "a claim materially stronger than its proof, or a proof with
+a repairable gap." Neither applies: the mathematics of CE-4 is true (`KL = (3/4 − 1/4)log 3 = ½log 3`,
+verified exactly in both orientations), and I confirmed that no ledger *claim* depends on the value —
+the only ledger mention of `log(3)/2` is a side condition of the evidence record itself:
+
+```
+$ grep -n "log(3)" claim-ledger.json
+112:  "Decimal log values are readability-only corroboration; symbolic log(2), log(3)/2, zero, and
+       +infinity labels are primary."
+```
+
+What is over-reported is the `EV-TASK4-FINITE-WITNESS-OUTPUT` scope sentence, "51 exact finite checks,
+including … forward and reverse KL orientations", one of which is a tautology. That is imprecision in a
+certified evidence artifact, i.e. **Medium**. I adopt the skeptic's location correction:
+`counterexample-proofs.md:198-202` should be struck from the finding — the mathematics there is right.
+
+### W4-P4-High-1-blindness — CONFIRMED at Medium, MERGED with P4-High-2, counted ONCE.
+
+The skeptic's reconstruction is sound and I checked its premise against the ledger:
+
+```
+HOLONOMY-BLIND-FULL-LAW  statement: "Under typed source/target groupoid actions, full fine-law
+  covariance, compatible selected posterior versions, recognition covariance, C_A equivariance, and
+  evaluation covariance, full parent … laws are covariant; same-slice invariance follows only on the
+  fixed-(o,X) stabilizer."
+```
+
+Every conclusion is downstream of an *assumed* fine-level covariance. At an admitted isotropy arrow,
+(7.2)/(7.3) assume the fine laws are invariant and (7.5) carries that assumption through an
+assumed-equivariant kernel. So the configuration the word "blind" names — the parent failing to
+register a motion the fine level registers — is not a consequence of (7.1)–(7.6) and cannot be
+witnessed by any datum `ASM-HOLONOMY-BLIND-DATA` admits. The label misdescribes; the theorem is true
+and correctly fenced (the "only on the stabilizer" clause is in the ledger statement itself).
+
+**Counting rule, stated explicitly under rule 4 and the wave-2 non-double-counting rule.** This is the
+second word of the same three-place string that wave-2's P4-High-2 attacks. P4-High-2 shows "holonomy"
+has no connection-theoretic content in §7; this shows "blind" names an erasure the theorem does not
+deliver. They are logically independent as claims but they are one defective label repaired by one
+rename, and P4's own Medium "the dichotomy is not a dichotomy" is a third facet of it. **Report as one
+Medium finding, "§7's branch label `holonomy-blind` misdescribes on both words." Do not tally two.**
+
+One provenance point cuts against the package and I record it: "holonomy" is inherited vocabulary,
+but "blind" is coined by this work (`git log -S"holonomy-blind"` first hits `ceffda2`; it enters the
+manuscript at `b9ba51f`), and it is introduced with no definition anywhere — its only operative gloss
+is by contrast at `:461`.
+
+### W4-P10-High-05d-uncited — CONFIRMED at Medium as an ATTRIBUTION defect, scope one item not six.
+
+Rule 4 governs here. This is not a correctness finding and it is not an overclaim finding about the
+theorem; it is attribution, and the rubric puts attribution at Medium.
+
+I verified the surviving item myself:
+
+```
+$ grep -rniE "syntactic|myhill|nerode|schutzenberger|eilenberg" --include=*.tex --include=*.bib Theory/
+   (two hits, both in PIFB2.tex about syntax in attention heads; nothing on point)
+$ sed -n '1082,1090p' Theory/05d_relational_inference.tex
+   \propositionheading{Universal property of the contextual operational quotient}…
+   a\sim_\Phi b  \iff  \Phi(uav)=\Phi(ubv)  for every u,v \in A
+```
+
+That is the syntactic congruence, and the universal property that follows is the syntactic-monoid
+universal property. P0 identified it independently and named the primary sources (Myhill; Nerode;
+Schützenberger; Pin, *Varieties of Formal Languages* Ch. 2; Eilenberg Vol. B); the skeptic fetched
+arXiv:1504.02694 (Adámek–Milius–Urbat) and matched Definition 36 / Definition 32. Neither the
+manuscript nor its 466-entry `references.bib` names any of them, and the borrowed notation `Syn(Φ)` is
+used without saying whose it is.
+
+The rest of the finding fails and I accept the skeptic's refutations, which are checkable and were
+checked: `SPEC.md:71`'s `ESTABLISHED` obligation is **disjunctive** ("Give the proof **or** the
+citation"), and seven of the eight new `ESTABLISHED` items carry a complete `\paragraph{Proof.}` ending
+in `\(\square\)` — so the SPEC-conformance leg is refuted outright, and the count "six" is wrong in
+both directions. The circle-heat theorem is not a classical restatement (P0 reconstructed it in full in
+Fourier and called it "the strongest single item across both packages"); the compact-quotient theorem
+is not a one-step corollary (P0 showed the countable dense signature is what buys metrizability and
+that joint continuity is obtained correctly). **Medium, one item.**
+
+### W4-P9-counts — CONFIRMED at Low.
+
+I corroborated the skeptic's concession because it is the part that matters: the *pre-fix* mathematics
+at `add1a69` was genuinely wrong, not merely loose. It justified the chain rule by "monotone truncation
+to the nonnegative relative-entropy integrands", and the raw `t log t` integrand is not nonnegative
+(minimum `−1/e` at `t = 1/e`). The released text repairs exactly this, and I read the repair:
+
+```
+direct-derivation.md:286  "…invoking the standard extended-valued chain theorem through the
+  nonnegative generator (φ₀(t)=t log t − t + 1) and its monotone truncations, rather than treating the
+  raw (t log t) integrand as pointwise nonnegative…"
+```
+
+So a real Medium-or-worse defect existed in the load-bearing step at the commit the reviews name, and
+the released reviews report 0/0/0. That is the finding's factual predicate and it holds.
+
+The charges that fail are the ones doing the rhetorical work: the fix-then-count convention *is*
+disclosed in every release-facing artifact (`release.json`, `release-assembly.json`, `final-report.md`,
+and all four reviews carry the "corrected-byte" / "same-view re-review" / "cannot replace direct
+mathematical evidence" qualifier), and the alleged self-contradiction inside
+`view-probability-kernel.md` does not exist once the bound derivation hash is checked. What survives is
+one narrow drafting sentence, not "the counts carry no information about the proof." **Low.**
+
+### W4-P9-attacks — (b) settled by me and CONFIRMED as fact; (a) INCONCLUSIVE.
+
+The skeptic file is twelve lines and `STATUS: IN_PROGRESS`. This is the one finding where the
+orchestrator's "died" metadata is accurate. I settled the half that is mechanical.
+
+**(b) — CONFIRMED as fact.** I enumerated the register myself:
+
+```
+$ python - <<'…'  adversarial-report.json
+n=16  Counter({'REJECTED': 16})
+ATTACK-NONNORMALIZATION, -DEPENDENT-COARSE-CHANNEL, -GENERATION-READS-RECOGNITION,
+-NULL-POSTERIOR-VERSION, -SPLIT-CHANNEL-SUPPORT, -MARGINAL-RECONSTRUCTION, -INCOMPATIBLE-EVALUATOR,
+-KERNEL-QUOTIENT-REGULARITY, -MARGINAL-FULL-HOLONOMY, -TRIVIAL-HOLONOMY-SELECTION, -ERASED-MARKS,
+-GAUSSIAN-LEAKAGE, -INFINITY-MINUS-INFINITY, -FAMILY-WIDE-RECOVERY, -CROSS-X-GLUING,
+-AUTONOMY-ONTOLOGY-DYNAMICS
+```
+
+Every one of the sixteen is an over-reading attack ("this could be inflated into X"). **Not one attacks
+triviality, novelty, or prior art** — the two objections P0 reached independently and that wave 1 and
+wave 2 both confirmed have real content. The fact is established.
+
+**But its force as a defect is weak, and I say so rather than shading it.** `problem-contract.json`'s
+`literature_policy` ends "No novelty or priority claim is made", and its `literature_policy` admits
+"released repository derivations" as sources. A portfolio is not obliged to attack a claim the contract
+declines to make. And wave 2 established that three of the four domain reviews *do* cite the ancestor
+chapter by exact line range. So this is a completeness observation about the attack portfolio, in the
+same thread as P1-High-1 (adjudicated **Low** in §A) — **Low, and do not count it twice with that
+finding.**
+
+**(a) — INCONCLUSIVE.** "Thirteen of the sixteen cannot fail, because their disposition is fixed by a
+frozen premise or an explicit non-claim" is a severity-of-test judgment (Mayo/Popper), and no party has
+put eligible evidence behind it. **The one specific check that would settle it:** for each of the
+sixteen, exhibit a datum that satisfies every frozen premise in `target.premises` and
+`target.quantifiers` and on which the attacked failure mode actually occurs; an attack for which such a
+datum exists is severe, an attack for which the frozen premises make it impossible is not. The skeptic
+for `W4-P4-High-1-blindness` performed exactly this construction for one attack
+(`V-W4-P4-High-1-check.py`), and the same method applied to the remaining fifteen decides the finding
+mechanically. Until that is run, `INCONCLUSIVE`.
+
+### W4-P9-independence — CONFIRMED at Low; both inferences refuted.
+
+The structural comparison reproduces (skeptic's `V-W4-P9-independence-structcmp.py`: the n-gram table
+byte-for-byte, section-block order A–F identical in both derivations, zero inversions across fourteen
+load-bearing steps). Both inferences drawn from it fail.
+
+The reconstruction's *inputs* are mandated by the protocol —
+`references/adversarial-verification.md:7`, "from the problem contract, claim ledger, and dependency
+DAG without the intended narrative" — and `claim-ledger.json` lists its claims in block order
+A,B,C,D,E,F,G. An agent obeying the protocol literally reproduces the direct proof's order without
+opening it. The match is what compliance predicts, so it is not evidence of outline reuse. (The
+skeptic's linear-extension count — 3,876 extensions over 12 affirmative nodes, 60 admissible section
+orders — refutes the *weaker* defense that the mathematics forces the order; the protocol defense is
+the one that holds.) And sub-finding (a) demands a mechanical residue the governing protocol says three
+times cannot exist (`SKILL.md:54`; `output-contract.md:39`; `adversarial-verification.md:9`, all
+stating that paraphrase detection is a semantic judgment the validator cannot make), while the required
+record form is fully supplied.
+
+What survives is `final-report.md:28` overselling independence while
+`independent-reconstruction.md:8` fences it honestly. **Low — summary looseness.**
+
+**New item, found by the skeptic, favoring the investigator, and confirmed by me.** I diffed the two
+documents at the disputed step:
+
+```
+independent-reconstruction.md:46  "All terms are nonnegative, so no subtraction of infinities occurs."
+direct-derivation.md:286          "…through the nonnegative generator φ₀(t)=t log t − t + 1 and its
+                                   monotone truncations, RATHER THAN treating the raw t log t
+                                   integrand as pointwise nonnegative…"
+```
+
+The reconstruction's one-clause justification is, verbatim in substance, the loose route the direct
+proof was corrected to avoid (see W4-P9-counts). And (6.3) is elided from the reconstruction entirely.
+So the artifact typed `DERIVATION` and counted toward closure did not independently re-derive the one
+step that had a known defect. That is a real coverage gap. It is **new in wave 4, has no wave-1
+counterpart, and is therefore recorded but not adjudicated: Low**, carried to the final report as a
+separate item.
+
+### W4-P9-ledger-eligibility — REFUTED. I override one leg of the skeptic's reasoning; the verdict stands.
+
+**Where I override the skeptic.** Its §4 claims the rule the finding applies — "LLM judgment cannot
+close a claim; agreement among agents is not evidence" — "is not from this package and not from
+`rigorous-theory-search/v1`", and is imported from a `verification` skill this package never adopted.
+**That is wrong, and I checked it.** The adopted protocol's own reference says it verbatim:
+
+```
+~/.claude/skills/rigorous-theory-search/references/proof-obligations.md:7
+  "Mathematical verification requires direct DERIVATION, FORMAL_PROOF, or APPLICABLE_THEOREM evidence…
+   Numerical tests, finite enumeration, symbolic simplification without side conditions, figures, and
+   AGENT AGREEMENT CANNOT CLOSE A MATHEMATICAL CLAIM."
+```
+
+So the rule is adopted, not imported, and the skeptic's cleanest line of defense is unavailable.
+
+**The verdict is nevertheless REFUTED, on the mechanics I executed myself.** The adopted rule forbids
+closing *by* agent agreement. It does not forbid listing non-closing evidence alongside closing
+evidence. The gate is existential:
+
+```python
+# ~/.claude/skills/rigorous-theory-search/scripts/validate_run.py:618-626
+direct = [evidence.get(item, {}) for item in _list_field(record, "evidence_ids")]
+if not any(item.get("kind") in eligible and item.get("supports") is expected_support for item in direct):
+    errors.append(...)
+kinds = {str(item.get("kind")) for item in direct if item.get("supports") is expected_support}
+if kind == "MATHEMATICAL" and state == "EVIDENCE_VERIFIED" and not kinds & MATH_EVIDENCE:
+    errors.append(...)
+# MATH_EVIDENCE = {"DERIVATION", "FORMAL_PROOF", "APPLICABLE_THEOREM"}
+```
+
+`any(...)` and a set intersection — not `all(...)`. And I dumped the claim rather than trusting either
+table:
+
+```
+target  state=EVIDENCE_VERIFIED  kind=MATHEMATICAL
+  EV-TASK3-DIRECT-DERIVATION            DERIVATION        supports=True
+  EV-TASK4-COUNTEREXAMPLE-DERIVATIONS   DERIVATION        supports=True
+  EV-TASK5-INDEPENDENT-RECONSTRUCTION   DERIVATION        supports=True
+  EV-TASK5-VIEW-{PROBABILITY-KERNEL,INFORMATION-VFE,GAUGE-HOLONOMY,DYNAMICS-SCOPE}  AGENT_ASSESSMENT
+  EV-TASK5-{ORACLE-ERASURE,ADVERSARIAL-ATTACKS}                                     AGENT_ASSESSMENT
+```
+
+Three `DERIVATION` entries carry the closure; the six `AGENT_ASSESSMENT` entries are surplus. The
+skeptic executed the finding's own falsifier (delete all six; release mode still exits 0 with `target`
+at `EVIDENCE_VERIFIED`) and it was met. The closure does not rest on agent agreement, so the adopted
+rule at `proof-obligations.md:7` is not violated. **REFUTED.**
+
+A distinct **Low** residue, which is *not* this finding and which the finding never cites:
+`release.json:9`'s `strongest_result` reads "…are EVIDENCE_VERIFIED **by** direct Task-3 and Task-4
+derivations, … **and four current corrected-byte domain approvals**", where the "by" governs a list
+ending in the approvals. That single summary field does read the approvals as part of what verifies,
+and it is contradicted by the per-entry `side_conditions`, `release-assembly.json:121`,
+`final-report.md:14,24`, and `oracle-erasure.md:42`'s own fencing sentence.
+
+### W4-P9-fourth-conjunct — charge (b) REFUTED by my own execution; charge (a) CONFIRMED at Low.
+
+The two skeptic records disagree on whether a residue survives. I resolve it by running the check both
+of them turn on.
+
+**Charge (b), "the released theorem contradicts the frozen contract's wording", is REFUTED.** The
+contract phrase is "declared holonomy-alternative", and the finding reads it as an exclusive-or over
+branches. Whether that reading is even available depends on whether `target.quantifiers` is inside the
+freeze. I recomputed the digest:
+
+```
+sha256( json.dumps(target, separators=(',',':'), sort_keys=True) )
+  = 15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87
+recorded target_digest
+  = 15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87        MATCH
+```
+
+The freeze covers all eighteen `target` keys, `quantifiers` included. And `target.quantifiers`, read in
+full, ends: "…the stated parent-law, posterior, projection, VFE, **and declared holonomy-alternative
+conclusions hold**" — a conjunctive obligation over branches each gated on its own hypotheses, quantified
+over `Y_I, B_A, M_A, Xi_A, H_A, X, o, P_I, Pi, Q, C_A, ev_A` and **no holonomy or groupoid data at all**,
+so a "for every datum exactly one branch holds" proposition is not even statable inside the frozen
+quantifier. The exclusive-or reading is unavailable, and it would additionally make the frozen target
+trivially false, since blindness and retention are not complementary. Charge (b) fails on frozen text
+the investigator did not read.
+
+**Charge (a), "the conjunct is a modeling declaration with no mathematical content", is CONFIRMED in one
+location and refuted elsewhere.** The ledger carries three rows, not one, and I dumped all three. Two
+have real mathematical content with hypotheses and fences:
+
+```
+HOLONOMY-BLIND-FULL-LAW  "…full parent generative, posterior, and recognition laws are covariant;
+                          same-slice invariance follows only on the fixed-(o,X) stabilizer."
+HOLONOMY-RETENTION       "When H_A and C_A explicitly retain roots, raw root-framed holonomy, and
+                          boundary marks, full parent pushforwards retain their joint laws…"
+```
+
+The third does not:
+
+```
+HOLONOMY-ALTERNATIVE  kind=MATHEMATICAL  state=EVIDENCE_VERIFIED
+  statement:   "A concrete parent MAY DECLARE either the fully hypothesis-backed holonomy-blind
+                covariance branch or the raw-retention branch…"
+  quantifiers: "For every concrete parent that declares one branch with that branch's hypotheses."
+```
+
+A row typed `MATHEMATICAL` and closed at `EVIDENCE_VERIFIED` whose `statement` is a permission ("may
+declare") rather than a proposition. Its `quantifiers` field rescues it as a conditional, and the actual
+theorem lives in the two rows above, so nothing false is certified and nothing is vacuously closed —
+but the statement field of a certified mathematical claim should state a proposition. **Low — one
+clause repairs it.** I decline the finding's prescription (amend the frozen target, recompute the
+digest, re-run four reviews); the frozen object already disambiguates itself in `quantifiers` and
+`symmetries`, and `view-gauge-holonomy.md:147` carries a titled section resolving the same question the
+same way.
+
+### W4-P9-regression — CONFIRMED at Medium; the framing refuted.
+
+I ran the comparison across every package rather than the two the finding names:
+
+```
+$ python - (all 11 docs/derivations/*/claim-ledger.json)
+2026-08-12-elbo-pifb2-fast-slow-program        all {PRIMARY_SOURCE:2, DERIVATION:4, APPLICABLE_THEOREM:1}
+2026-08-12-elbo-to-effective-section-action    all {DERIVATION:5, COUNTEREXAMPLE:1, APPLICABLE_THEOREM:1}
+2026-08-12-exact-two-channel-finite-elbo       all {DERIVATION:6, APPLICABLE_THEOREM:1, COUNTEREXAMPLE:1, PRIMARY_SOURCE:1}
+2026-08-13-finite-presentation-descent…        all {DERIVATION:3, SYMBOLIC_CHECK:1}
+2026-08-14-canonical-dependence-selection      all {NONEXISTENCE_PROOF:1, DERIVATION:4, SYMBOLIC_CHECK:5}
+2026-08-14-collective-joint-lift-fisher        all {DERIVATION:4, SYMBOLIC_CHECK:7}
+2026-08-14-operational-intervention-extensions all {DERIVATION:3, APPLICABLE_THEOREM:1, SYMBOLIC_CHECK:2}
+                                            target {DERIVATION:3, APPLICABLE_THEOREM:1}
+2026-08-14-pointwise-meta-agent-rg             all {DERIVATION:2, SYMBOLIC_CHECK:2}
+2026-08-14-typed-intervention-nonidentifiability all {DERIVATION:6, COUNTEREXAMPLE:1, SYMBOLIC_CHECK:15}
+2026-08-15-full-pointwise-meta-agent           all {DERIVATION:3, SYMBOLIC_CHECK:2, AGENT_ASSESSMENT:6}
+                                            target {DERIVATION:3, AGENT_ASSESSMENT:6}
+```
+
+`AGENT_ASSESSMENT` appears in **zero of the ten predecessors** and only in the 8/15 package. That is
+stronger than the two-package comparison the finding filed, and it kills the cherry-picked-comparator
+defense. The subject-matter defense also fails: both packages carry exactly two `SYMBOLIC_CHECK`
+entries, both correctly exclude them from `target`, so availability of executable evidence is held
+constant and cannot explain the difference.
+
+The sharpest form of the defect is internal, and I confirm it: the four review entries carry the side
+condition "`AGENT_ASSESSMENT` is adjudication and attack evidence, **not the mathematical derivation
+that closes the target**" while sitting inside `target.evidence_ids` — the field whose semantics that
+sentence denies, in the same JSON file that applies the distinction correctly to `SYMBOLIC_CHECK`.
+Under `RESUME.md:64` that is imprecision in a certification artifact: **Medium**.
+
+Two parts of the finding are refuted. **(1)** The "attacks that land" row is false — I counted both
+registers: 8/14 is 21 attacks, all `REJECTED`; 8/15 is 16 attacks, all `REJECTED`. Both are clean
+sweeps. Strike the row. **(2)** "Regressed" inverts the direction: the 8/15 package did strictly *more*
+verification work (an independent reconstruction, an oracle-erasure pass, four domain reviews, none of
+which the 8/14 package ran). The defect is that added work was **mistyped as closing evidence**, not
+that work was withdrawn. The finding should be restated accordingly.
+
+**Counting.** With `W4-P9-ledger-eligibility` adjudicated REFUTED, this finding is the sole surviving
+carrier of the evidence-typing defect, so there is no double count — but it and the `release.json:9`
+residue recorded under that finding are **one** item, not two.
+
+---
+
+# §A — Wave 2
 
 ## Verdict table
 
@@ -295,28 +772,28 @@ including the next paragraph of the same file. **Low.**
 
 ---
 
-## Unchallenged findings
+## Unchallenged findings (updated after wave 4)
 
 Rule 5: these were not put to a skeptic, for budget reasons. They are **unchallenged, not confirmed**,
 and carry no adjudicated verdict. They must be re-verified before any of them enters the final report
-as established. Counts are by the investigator's own severity labels.
+as established. Counts are by the investigator's own severity labels. **Every wave-1 High and Critical
+finding has now been challenged and adjudicated** (waves 2 and 4); what remains unchallenged is Medium
+and Low only.
 
-- **P1** (measure/probability): 1 High (`[High-2]` (4.5) asserts the cross-`X` factorization §9
-  disclaims), 5 Medium, 2 Low.
-- **P2** (information/VFE): 1 High (unconditional zero-defect criterion asserted `ESTABLISHED` across
-  five surfaces on the authority of a release whose contract excludes the infinite tier), 5 Medium,
-  4 Low.
-- **P3** (counterexamples): 1 High (`CE4_tree_directed_KL_symbolic_half_log_3` does not test its named
-  claim), 6 Medium, 4 Low.
-- **P4** (gauge/holonomy): 1 High (`[High-1]` "holonomy blindness" is inherited invariance), 8 Medium,
-  1 Low.
+- **P1** (measure/probability): 5 Medium, 2 Low.
+- **P2** (information/VFE): 5 Medium, 4 Low.
+- **P3** (counterexamples): 6 Medium, 4 Low.
+- **P4** (gauge/holonomy): 8 Medium, 1 Low.
 - **P5** (category/operational): 3 Medium, 4 Low.
 - **P6** (Blackwell comparison): 3 Medium, 4 Low.
 - **P7** (RG/coarse-graining): 5 Medium, 2 Low.
 - **P8** (integration/overclaim): 7 Medium, 3 Low.
-- **P9** (self-certification): 8 High, 2 Medium, 1 Low.
-- **P10** (rigor sweep): 1 High (`[High]` six new `ESTABLISHED` theorems in `05d` carry no citation),
-  7 Medium, 5 Low (two of which are positive "CHECKS OUT" records).
+- **P9** (self-certification): 2 Medium (`:423`, `:442`), 1 Low (`:456`).
+- **P10** (rigor sweep): 7 Medium, 5 Low (two of which are positive "CHECKS OUT" records).
+
+One part of one challenged finding is **INCONCLUSIVE** rather than unchallenged:
+`W4-P9-attacks` sub-finding (a). Its skeptic file is `STATUS: IN_PROGRESS` with no verdict, and the
+one check that decides it is named in §B.
 
 **Duplicates of adjudicated findings — do not double-count.** Two unchallenged High findings describe
 the same underlying defect as findings adjudicated above and are covered by those verdicts:
@@ -330,6 +807,19 @@ adjudicated: the non-reproducibility of the three `fingerprint_sha256` values (L
 `Theory/07b:151`'s unhedged "No displayed marginal pair reconstructs any of the corresponding full
 laws", which lacks the nondegeneracy hypothesis `prop:prob-marginals-do-not-determine-joint` requires
 and is falsified by the one-point parent case the surrounding text permits (Low).
+
+Two further spun-off items surfaced during wave 4, likewise recorded but not adjudicated:
+`independent-reconstruction.md:46` justifies the extended chain rule by the very clause
+(`direct-derivation.md`'s pre-fix "all terms are nonnegative") that the direct proof was corrected to
+avoid, and elides (6.3) entirely, so the `DERIVATION`-typed reconstruction did not independently
+re-derive the one step with a known defect (Low, favors the investigator on `W4-P9-independence`); and
+`release.json:9`'s `strongest_result` field lists the four domain approvals inside the scope of "are
+EVIDENCE_VERIFIED **by**" (Low, and it is one item with `W4-P9-regression`, not two).
+
+**Wave-4 counting rules, binding on the final report.** `W4-P4-High-1-blindness` and the wave-2
+`P4-High-2` are **one Medium**, not two. `W4-P9-attacks` (b) and the wave-2 `P1-High-1` attribution
+finding are **one Low**, not two. `W4-P9-regression` and the `release.json:9` residue are **one
+Medium**, not two.
 
 ---
 
@@ -377,6 +867,31 @@ not merely separate — continuity of multiplication is obtained correctly; and 
 terminality result with its finite-cardinality fence stated correctly. P10 independently logged the
 same three as CHECKS OUT.
 
+**Wave 4 adds to this list, not to the defect list.** Four separate claims that wave-1 investigators
+filed as High turn out, on execution, to be things the package got *right*:
+
+- The extended `[0,+∞]` tier **is** inside the release, certified as `VFE-CHAIN-EXTENDED` at
+  `EVIDENCE_VERIFIED` with no finiteness quantifier. The charge that the release "cannot support it"
+  is false, and the finding's proposed fix would have made the documentation less accurate.
+- The cross-`X` disclaimer is **not** confined to one paragraph: it is in the theorem's standing setup
+  at `direct-derivation.md:6`, restated at `:154` and `:190`, and the `K^{X_A}` superscript is the
+  program's canonical parent-evaluator notation at `Theory/SPEC.md:220` and
+  `Theory/appendix_notation.tex:60`, not an ad-hoc symbol.
+- The frozen contract's fourth conjunct **does not** contradict the released theorem. I recomputed the
+  target digest and it covers all eighteen keys; read with its own `quantifiers`, the conjunct is a
+  conjunctive obligation over hypothesis-gated branches, and the exclusive-or reading the finding
+  attributes to it is not statable inside the frozen quantifier.
+- The `EVIDENCE_VERIFIED` closure of `target` **does not** rest on agent agreement. The gate is
+  existential, three `DERIVATION` entries carry it, and deleting all six `AGENT_ASSESSMENT` entries
+  leaves the release validating clean.
+
+Two mathematical facts were also newly confirmed in wave 4 rather than merely asserted: CE-4's directed
+KL really is `½ log 3` in both orientations (exact symbolic), and the extended chain rule and
+zero-defect criterion hold with no finiteness anywhere, re-derived a third time via the `φ₀` generator.
+And the package's own correction history works: the pre-fix derivation at `add1a69` justified the chain
+rule by monotone-truncating a signed integrand, which is invalid, and the released text at
+`direct-derivation.md:286` repairs it explicitly and names the error it is avoiding.
+
 **The honest headline.** The mathematics is correct and carefully fenced. What outruns it is the
 certification apparatus, and the specific failure is narrower and more mechanical than the panel
 alleged: two of four domain approvals are stale against canonical sources that were edited after
@@ -388,3 +903,18 @@ range, and the residual is that the mathematics document and the release-facing 
 flagship theorem's `ESTABLISHED` tag violates the manuscript's own rule by carrying neither a proof nor
 a pointer — while sitting ten lines below a proved statement of the same identity. Nothing found in
 either wave shows a false theorem.
+
+Wave 4 does not change that headline; it sharpens the second half of it. Every one of the wave-4 High
+findings that survives does so as a **label, bookkeeping, or attribution** defect: a branch named
+`holonomy-blind` that is neither, an evidence record typed `AGENT_ASSESSMENT` sitting in the field its
+own side condition disclaims, a check named for a divergence that is a constant expression, a
+syntactic-monoid universal property restated with no attribution in a 466-entry bibliography, a
+`regularity` clause contradicting the `statement` in the same frozen object, and a certified
+`MATHEMATICAL` row whose statement is a permission rather than a proposition. Two of the eleven are
+refuted outright in their load-bearing form and one is inconclusive in part. Across all four waves,
+**not one finding has produced a false theorem, a gapped proof, or a claim its own derivation fails to
+support.** The defects are in what the package says *about* its mathematics, not in the mathematics —
+with one exception worth naming precisely: the attack portfolio contains sixteen over-reading attacks
+and zero attacks on triviality or prior art, which is why a package whose core results were already
+proved in this repository a week earlier passed sixteen adversarial attacks, an oracle-erasure pass, an
+independent reconstruction, and four expert reviews without that ever becoming a finding.

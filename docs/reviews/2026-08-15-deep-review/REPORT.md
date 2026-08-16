@@ -2,11 +2,12 @@
 
 **Target:** `8ce635807a6ca2a388255fc996c98f7c535e5843` (merge of PR #4). 67 files, 17,560 insertions.
 **Diff base:** `060f80e5556e41e0f31aeafcd9ef8564c1544c16^`.
-**Method:** ten independent expert investigators; eight adversarial skeptics against the most
-consequential findings; one evidence-weighted adjudicator; plus the principal reviewer's own
-reconstructions, recorded before the panel reported. No finding below is promoted on agent agreement —
-each rests on a reconstructed derivation, an executed command, or a primary source.
-**Detail:** `findings/P0`–`P10` (investigators), `findings/V-*` (skeptics), `findings/ADJUDICATION.md`.
+**Method:** ten independent expert investigators (wave 1); nineteen adversarial skeptics across two
+waves against every Critical and High finding; evidence-weighted adjudication; plus the principal
+reviewer's own reconstructions, recorded before the panel reported. No finding below is promoted on
+agent agreement — each rests on a reconstructed derivation, an executed command, or a primary source.
+**Detail:** `findings/P0`–`P10` (investigators), `findings/V-*` (skeptics),
+`findings/ADJUDICATION.md` (wave 2), `findings/ADJUDICATION-W4.md` (wave 4).
 
 ## Bottom line
 
@@ -26,7 +27,7 @@ and the residual defect is that the mathematics document itself carries no point
 
 ## Adjudicated findings
 
-Eight findings were put to adversarial skeptics and then adjudicated. Every one has a surviving
+Eight findings were put to adversarial skeptics in wave 2 and then adjudicated (wave 4 follows below). Every one has a surviving
 evidence-backed core; in five of eight that core is materially narrower than the filed headline. That
 ratio is itself a result: the panel's instinct was right more often than its severity.
 
@@ -200,19 +201,100 @@ Ordered by value. Items 1–3 are the ones that matter.
    negative witnesses at `final-report.md:20`; document the `fingerprint_sha256` construction rule;
    hedge `Theory/07b:151`.
 
+## Wave 4 — the unchallenged High findings, adversarially tested
+
+All fourteen unchallenged High findings were put to eleven skeptics (five named targets individually,
+P9's nine certification findings in six thematic blocks). Detail in `findings/ADJUDICATION-W4.md` and
+`findings/V-W4-*.md`.
+
+**One survives at High. One is refuted outright. Two merge into findings already adjudicated. The
+other seven drop to Medium or Low.**
+
+### New High
+
+**H2 — The 16/16 attack-rejection rate carries no information, and the release presents it as
+certification evidence.** Independent reclassification of all sixteen attacks gives **15 of 16**
+decided by a frozen premise or an explicit non-claim — worse than filed — and catches an arithmetic
+slip in the investigator's own table. The essentiality rescue fails: six of them *are* genuine
+premise-essentiality tests, but their disposition is invariant to whether the witness exists, so both
+branches of the counterfactual yield `REJECTED`. Severity criterion: Mayo, *Statistical Inference as
+Severe Testing* (CUP 2018) section 1.2; Popper, *LScD* sections 6 and 82.
+
+The defect is **not** where it was filed. `evidence/adversarial-attacks.md:4` self-fences honestly —
+"`REJECTED` ... does not mean the stronger shortcut is true" — a sentence the finding elided with an
+ellipsis. The overclaim is `evidence/release-assembly.json:181`, a bare
+`"attack_disposition": "REJECTED_ALL_16"` inside `final_certification_evidence` feeding the release
+gate. Verified directly.
+
+### New Medium
+
+- **M4** — `CE4_tree_directed_KL_symbolic_half_log_3` does not test its named claim (confirmed by
+  execution and strengthened); `counterexample-proofs.md:198-202` should be struck from its location.
+- **M5** — the `ESTABLISHED`-without-citation defect in `Theory/05d`, scope cut from six theorems and
+  three classical restatements to a smaller set. The circle-heat theorem is **not** among the
+  classical restatements.
+- **M6** — the independent reconstruction is not outline-independent. The only wave-4 sub-finding no
+  skeptic could dent: the shared section order is **contingent**, with 42,636 admissible orders over
+  the load-bearing steps, so "the mathematics forces the order" fails. The release-facing
+  outline-independence claim is unsupported; the reconstruction's mathematics is not in question.
+- **M7** — an evidence-discipline gap between the 8/14 and 8/15 packages survives machine-reading of
+  both ledgers, partly but not wholly explained by subject matter.
+- P4's "holonomy blindness" finding **merges into M2**; it is the same defect restated and must not
+  be double-counted.
+
+### New Low
+
+**L6** (4.5)'s cross-`X` notation, defused by the `:190` caveat — notation hygiene. **L7** the
+contract's `/target/regularity` clause contradicts `/target/statement`, `/target/quantifiers`,
+`VFE-CHAIN-EXTENDED` and `final-report.md:40`. **L8** the 0/0/0 counts come from a fix-then-count
+loop over a real, git-recoverable pre-fix error. **L9** the fourth conjunct is a modeling declaration
+(the strong charge, that the released theorem *contradicts* the contract, is refuted). The
+missing-hostile-attack charge merges into **L1**.
+
+**On L7 the direction of the defect is inverted from how it was filed.** `git show --stat fe08359`
+shows the commit introducing the unconditional wording touched no package file: the *manuscript* is
+the corrected surface and the *package labels* are stale. The release's summary artifacts
+under-describe what its own hash-bound derivation proves, and the investigator's proposed fix would
+have made the documentation less accurate. This skeptic also re-derived the chain identity and
+zero-defect criterion from scratch, ran 20,000 random finite instances (max
+|KL_I - (KL_A + Delta_A)| = 2.66e-15, zero criterion mismatches), and exhibited a non-vacuous
+infinite tier — independently corroborating `findings/P0`.
+
+### Refuted
+
+**W4-P9-ledger-eligibility.** All nine `target.evidence_ids` enumerated verbatim against the ledger's
+own `kind` field: three `DERIVATION`, six `AGENT_ASSESSMENT`, and no script or `SYMBOLIC_CHECK`
+attached to `target` at all — those bind only the five `NEG-*` claims. Closure rests on derivations.
+The charge worked only by importing an eligibility rule from a separate verification protocol that
+this package never adopted.
+
+## Calibration
+
+**Nineteen findings across waves 2 and 4 were put to adversarial skeptics. Three survived at their
+filed severity**; sixteen were narrowed, merged, or refuted. Investigator severity ran roughly one to
+two levels hot, and several findings' *locations* were wrong even where their cores were right — H2
+blamed the honest artifact rather than the release gate; M4 cited a proof file that should be struck
+from its location line. Apply the same correction factor to anything below.
+
 ## Coverage and what this review does not establish
 
-Eight findings were adversarially tested. **The remaining unchallenged findings — roughly 14 High, 46
-Medium and 29 Low by investigator labels — were not put to a skeptic and are unchallenged, not
-confirmed.** Given the ratio observed among the eight that were tested (five of eight materially
-narrowed, two headline clauses outright refuted), the unchallenged High findings should be assumed
-overstated until checked. The highest-value ones to test next are P1's `[High-2]` (equation (4.5)
-asserting the cross-`X` factorization §9 disclaims), P2's High on the unconditional zero-defect
-criterion, P3's `CE4_tree_directed_KL_symbolic_half_log_3` not testing its named claim, P4's `[High-1]`
-on "holonomy blindness" as inherited invariance, and P10's High on six uncited `ESTABLISHED` theorems
-in `05d`. Two apparent unchallenged Highs are duplicates already adjudicated and must not be
-double-counted (`P7:110` = M1; `P8:353` = C1).
+All 2 Critical and all 14 High findings have now been adversarially tested and adjudicated. **The 46
+Medium and 29 Low findings have not been**, and remain unchallenged rather than confirmed; given the
+calibration above, assume they are overstated. Two apparent Highs were duplicates already adjudicated
+and are not double-counted (`P7:110` = M1; `P8:353` = C1).
 
-No code was executed beyond the packages' own witness scripts and git/hash verification. No claim in
-this report rests on a `.verification/` ledger state, on the reviewed package's internal attestations,
-or on agreement among agents.
+No code was executed beyond the packages' own witness scripts, the skeptics' independent verification
+scripts, and git/hash verification. No claim in this report rests on a `.verification/` ledger state,
+on the reviewed package's internal attestations, or on agreement among agents.
+
+## Final tally
+
+| Severity | Count | Items |
+|---|---|---|
+| Critical | 1 | C1 stale domain approvals |
+| High | 2 | H1 provenance stage 1; H2 attack-portfolio certification evidence |
+| Medium | 7 | M1-M7 |
+| Low | 9 | L1-L9 |
+| Refuted | 3 | one finding outright; two headline clauses |
+
+No false theorem was found in either package.
