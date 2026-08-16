@@ -1,0 +1,310 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
+  "target_digest": "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
+  "attacks": [
+    {
+      "id": "ATTACK-NONNORMALIZATION",
+      "claim_ids": [
+        "POINTWISE-TYPING",
+        "PARENT-NORMALIZATION",
+        "MODEL-FAMILY-NORMALIZATION"
+      ],
+      "attack": "A nonnormalized channel row or evaluator could make the claimed parent objects subprobabilities or superprobabilities.",
+      "response": "The frozen premises require pointwise channel and evaluator normalization. Kernel integration against the constant one proves parent mass one, and disintegration supplies normalized conditional rows.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-DEPENDENT-COARSE-CHANNEL",
+      "claim_ids": [
+        "PARENT-NORMALIZATION",
+        "POSTERIOR-PUSHFORWARD",
+        "COMMON-CHANNEL-ABSOLUTE-CONTINUITY",
+        "VFE-CHAIN-EXTENDED",
+        "VFE-FINITE-ZERO-DEFECT-RECOVERY"
+      ],
+      "attack": "An observation-, recognition-, posterior-, or recognition-parameter-dependent C_A could manufacture agreement and invalidate the common-channel proof.",
+      "response": "ASM-COMMON-CHANNEL freezes one normalized channel on random Y before inference inputs and leaves observation untouched. The split-channel witness demonstrates the consequence of dropping that premise.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-GENERATION-READS-RECOGNITION",
+      "claim_ids": [
+        "PARENT-NORMALIZATION",
+        "MODEL-FAMILY-NORMALIZATION",
+        "EVALUATION-COMPATIBILITY"
+      ],
+      "attack": "Generation or model evaluation could read Q, Pi, recognition parameters, or realized observation, making the construction circular.",
+      "response": "Fine generation is fixed first; the induced evaluator is disintegrated from pushed generation alone, and a predeclared evaluator is independently typed and separately checked for generative compatibility. The circular route is retired.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-NULL-POSTERIOR-VERSION",
+      "claim_ids": [
+        "POSTERIOR-PUSHFORWARD",
+        "VFE-CHAIN-EXTENDED"
+      ],
+      "attack": "An arbitrary regular-conditional version at a null observation could make the pointwise posterior and VFE version dependent.",
+      "response": "A measurable observation-indexed version is fixed first, the parent identity is proved globally by bounded test functions, and only then is the declared admitted slice with its finite evidence representative used. Canonical null-slice values are not claimed.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-SPLIT-CHANNEL-SUPPORT",
+      "claim_ids": [
+        "NEG-SPLIT-CHANNEL-VFE",
+        "VFE-CHAIN-EXTENDED",
+        "VFE-FINITE-ZERO-DEFECT-RECOVERY"
+      ],
+      "attack": "Different recognition and posterior channels can map equal fine laws to coarse laws with incompatible support and infinite forward KL.",
+      "response": "The finite identity-versus-constant channel witness proves this premise-deleted overreach and thereby justifies, rather than refutes, the scoped common-channel theorem.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-MARGINAL-RECONSTRUCTION",
+      "claim_ids": [
+        "DERIVED-MARGINALS",
+        "NEG-MARGINAL-DETERMINATION"
+      ],
+      "attack": "Belief and model marginals might be mistaken for a reconstruction of the correlated parent joint.",
+      "response": "The affirmative result proves only coordinate pushforwards. Correlated and anticorrelated fair binary laws have the same marginals and distinct disjoint supports.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-INCOMPATIBLE-EVALUATOR",
+      "claim_ids": [
+        "MODEL-FAMILY-NORMALIZATION",
+        "EVALUATION-COMPATIBILITY",
+        "NEG-MODEL-MARGINAL-EVALUATION"
+      ],
+      "attack": "A normalized model marginal could be paired with a nonmeasurable or incompatible evaluator.",
+      "response": "The induced tier uses a jointly measurable disintegration; the predeclared tier separately requires normalization, joint measurability, and almost-sure compatibility. Swapped finite rows refute the premise-deleted shortcut.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-KERNEL-QUOTIENT-REGULARITY",
+      "claim_ids": [
+        "MODEL-FAMILY-NORMALIZATION",
+        "EVALUATION-COMPATIBILITY"
+      ],
+      "attack": "Quotienting presentations by evaluated-kernel equality may fail to be standard Borel, Hausdorff, or smooth.",
+      "response": "The construction retains presentations in the declared standard-Borel M_A and explicitly declines injectivity and quotient regularity. No quotient is used in closure.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-MARGINAL-FULL-HOLONOMY",
+      "claim_ids": [
+        "HOLONOMY-BLIND-FULL-LAW",
+        "NEG-MARGINAL-HOLONOMY-JOINT"
+      ],
+      "attack": "Separate invariant marginals could be treated as full-law invariance.",
+      "response": "The theorem starts from full fine-law covariance, selected-version compatibility, channel equivariance, and evaluator covariance. A one-coordinate bit flip preserves both fair marginals while changing the joint.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-TRIVIAL-HOLONOMY-SELECTION",
+      "claim_ids": [
+        "HOLONOMY-ALTERNATIVE",
+        "NEG-TRIVIAL-HOLONOMY-AGREEMENT"
+      ],
+      "attack": "Trivial holonomy could be treated as sufficient for law agreement or canonical membership selection.",
+      "response": "Unequal Bernoulli laws on an identity-transport tree directly refute agreement, and both declared branches leave membership selection open.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-ERASED-MARKS",
+      "claim_ids": [
+        "HOLONOMY-RETENTION",
+        "HOLONOMY-ALTERNATIVE"
+      ],
+      "attack": "A parent called retention-capable could erase roots, raw based holonomy, boundary marks, or their correlations.",
+      "response": "The retention branch includes every record as an explicit H_A coordinate and pushes it jointly. A channel that erases records must instead prove the blindness branch or decline both claims.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-GAUSSIAN-LEAKAGE",
+      "claim_ids": [
+        "target",
+        "POINTWISE-TYPING"
+      ],
+      "attack": "Gaussian parameter vectors or moment matching could silently define the ambient theory.",
+      "response": "The contract and derivations use arbitrary normalized laws and kernels on standard-Borel spaces; the exact executable witness is finite categorical and non-Gaussian.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-INFINITY-MINUS-INFINITY",
+      "claim_ids": [
+        "VFE-CHAIN-EXTENDED",
+        "VFE-FINITE-ZERO-DEFECT-RECOVERY"
+      ],
+      "attack": "Fine-minus-coarse KL could hide an undefined infinity-minus-infinity expression or reverse the KL orientation.",
+      "response": "The load-bearing identity is additive in the extended nonnegative reals. Ordinary differences and recovery appear only on the finite forward KL(Q||Pi) tier; reverse KL is never substituted.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-FAMILY-WIDE-RECOVERY",
+      "claim_ids": [
+        "VFE-FINITE-ZERO-DEFECT-RECOVERY"
+      ],
+      "attack": "Pairwise zero defect could be inflated into one parameter-independent recovery kernel for an entire statistical experiment.",
+      "response": "The theorem is explicitly pairwise and finite-KL. Family-wide recovery requires simultaneous experiment-level hypotheses and remains open.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-CROSS-X-GLUING",
+      "claim_ids": [
+        "target",
+        "POINTWISE-TYPING"
+      ],
+      "attack": "The display X_A=chi_A(X) and r_* in an overlap could be inflated into cross-X factorization or patchwise gluing.",
+      "response": "The theorem is fixed-X and fixed-r_*. Cross-X factorization, channel families, cocycles, active-set changes, strata, and gluing are explicit downstream obligations.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    },
+    {
+      "id": "ATTACK-AUTONOMY-ONTOLOGY-DYNAMICS",
+      "claim_ids": [
+        "target",
+        "DYNAMICS-SCOPE"
+      ],
+      "attack": "A static normalized datum could be promoted to an autonomous agent, complete ontology, persistent nonequilibrium system, physical clock, or geometric meta-agent; it could also be claimed to canonically select its coarse channel or partition, supply the downstream comparison theorem, or recover a unique latent DAG or unique microscopic physics.",
+      "response": "DYNAMICS-SCOPE is a separate verified boundary and not a static target ancestor. The theorem assumes one supplied C_A and proves no canonical coarse-channel, partition, membership, or presentation selection rule. The comparison theorem is downstream and requires fixed parent data plus a separately declared comparison category; category-relative observational or interventional statements do not identify a unique latent DAG or microscopic physics. The contract, theorem, and final report preserve these exclusions.",
+      "disposition": "REJECTED",
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546"
+    }
+  ],
+  "independent_reconstruction": {
+    "claim_ids": [
+      "target",
+      "POINTWISE-TYPING",
+      "MODEL-FAMILY-NORMALIZATION",
+      "PARENT-NORMALIZATION",
+      "POSTERIOR-PUSHFORWARD",
+      "COMMON-CHANNEL-ABSOLUTE-CONTINUITY",
+      "EVALUATION-COMPATIBILITY",
+      "DERIVED-MARGINALS",
+      "VFE-CHAIN-EXTENDED",
+      "VFE-FINITE-ZERO-DEFECT-RECOVERY",
+      "HOLONOMY-BLIND-FULL-LAW",
+      "HOLONOMY-RETENTION",
+      "HOLONOMY-ALTERNATIVE",
+      "DYNAMICS-SCOPE",
+      "NEG-MARGINAL-DETERMINATION",
+      "NEG-SPLIT-CHANNEL-VFE",
+      "NEG-MODEL-MARGINAL-EVALUATION",
+      "NEG-TRIVIAL-HOLONOMY-AGREEMENT",
+      "NEG-MARGINAL-HOLONOMY-JOINT"
+    ],
+    "method": "Sequentially derive the finite falsifiers, normalized pushforwards, posterior disintegration, evaluator seam, marginal projections, extended KL chain, finite pairwise recovery, and holonomy branches from the frozen contract, ledger, and DAG in an order independent of the direct proof outline; compare only after reconstruction.",
+    "result": "PASS",
+    "conclusion": "Every static target ancestor reconstructs under its recorded hypotheses, and DYNAMICS-SCOPE reconstructs as a non-ancestor boundary. All four corrected-byte domain reviews are current APPROVE records with no Critical, High, or Medium finding; target promotion is supported by direct derivation evidence, not reviewer vote.",
+    "artifact_path": "evidence/independent-reconstruction.md",
+    "artifact_sha256": "f74f74bb93c240f28016b550fe58a4643d487ee8a517d40faa77d69cacde0df9"
+  },
+  "oracle_erasure": {
+    "claim_ids": [
+      "target",
+      "POINTWISE-TYPING",
+      "MODEL-FAMILY-NORMALIZATION",
+      "PARENT-NORMALIZATION",
+      "POSTERIOR-PUSHFORWARD",
+      "COMMON-CHANNEL-ABSOLUTE-CONTINUITY",
+      "EVALUATION-COMPATIBILITY",
+      "DERIVED-MARGINALS",
+      "VFE-CHAIN-EXTENDED",
+      "VFE-FINITE-ZERO-DEFECT-RECOVERY",
+      "HOLONOMY-BLIND-FULL-LAW",
+      "HOLONOMY-RETENTION",
+      "HOLONOMY-ALTERNATIVE",
+      "DYNAMICS-SCOPE",
+      "NEG-MARGINAL-DETERMINATION",
+      "NEG-SPLIT-CHANNEL-VFE",
+      "NEG-MODEL-MARGINAL-EVALUATION",
+      "NEG-TRIVIAL-HOLONOMY-AGREEMENT",
+      "NEG-MARGINAL-HOLONOMY-JOINT"
+    ],
+    "method": "Remove desired-conclusion cues, scan every premise and load-bearing proof step for paraphrased target dependence, and recompute the static closure from types, normalization, measurability, support, declared compatibility, and direct finite constructions alone.",
+    "result": "PASS",
+    "conclusion": "No static target conclusion is smuggled into the premises. The predeclared evaluator remains explicitly conditional, holonomy conclusions require pushforward arguments, and canonical selection, dynamics, ontology, unique physics, and gluing remain excluded.",
+    "artifact_path": "evidence/oracle-erasure.md",
+    "artifact_sha256": "c957a17307ed7839b77fb804be83e9e721f0f8d64cc46a67e36b532625b50c72"
+  },
+  "review_adjudication": {
+    "result": "PASS",
+    "method": "Bind each corrected-byte same-view review by exact SHA-256 and require APPROVE with zero Critical, High, and Medium findings; use reviews as adversarial adjudication, not as mathematical closure evidence.",
+    "reviews": [
+      {
+        "review_id": "VIEW-PROBABILITY-KERNEL",
+        "artifact_path": "evidence/reviews/view-probability-kernel.md",
+        "artifact_sha256": "14f7f00fdbc0a3e2f67357c249aa631eae336940f7ea99d9aad3b164f423b27e",
+        "disposition": "APPROVE",
+        "critical": 0,
+        "high": 0,
+        "medium": 0
+      },
+      {
+        "review_id": "VIEW-INFORMATION-VFE",
+        "artifact_path": "evidence/reviews/view-information-vfe.md",
+        "artifact_sha256": "c291869ccb7d518f2df85c43f60319e59654c2769e0fdc8b07373a53430525d4",
+        "disposition": "APPROVE",
+        "critical": 0,
+        "high": 0,
+        "medium": 0
+      },
+      {
+        "review_id": "VIEW-GAUGE-HOLONOMY",
+        "artifact_path": "evidence/reviews/view-gauge-holonomy.md",
+        "artifact_sha256": "431a63b06b90277ce2697d6d57a86054346564d2bb449cf11fe3673bd6fb42ba",
+        "disposition": "APPROVE",
+        "critical": 0,
+        "high": 0,
+        "medium": 0
+      },
+      {
+        "review_id": "VIEW-DYNAMICS-SCOPE",
+        "artifact_path": "evidence/reviews/view-dynamics-scope.md",
+        "artifact_sha256": "71401ff15af3c1ce033ddbd9b01cace311f04c1eeef17a09d13b7f8125b8461b",
+        "disposition": "APPROVE",
+        "critical": 0,
+        "high": 0,
+        "medium": 0
+      }
+    ]
+  },
+  "attack_summary": {
+    "total": 16,
+    "rejected": 16,
+    "partially_sustained": 0,
+    "sustained": 0,
+    "unresolved": 0
+  }
+}

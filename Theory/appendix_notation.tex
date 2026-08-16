@@ -19,7 +19,74 @@ Symbol & Type & Meaning and prohibited identification \\
 smooth base manifold &
 Context space.  It is neither the population graph nor a probability
 sample space. \\
-\(P\xrightarrow{\pi}\mathcal C\) &
+\(\mathcal C_i;\ \mathcal U_A=\bigcap_{i\in I}\mathcal C_i\) &
+agent support and common overlap patch &
+A finite child block \(I\) has parent label \(A\), and the pointwise program fixes
+\(r_*\in\mathcal U_A\). Ordinary \(R\) is not an
+overlap region. \\
+\(q_i^{b;o,X},q_i^{m;o,X}\) &
+belief-law and model-law local sections &
+The admitted observation and structural dependencies remain visible.
+Established \(q_i^{o,X},s_i^{o,X}\) are typed source notation, not bare aliases. \\
+\(\mathsf M_i;\ m_i\in\mathsf M_i;\
+\operatorname{ev}_i(m_i)=K^X_{i,m_i}\) &
+model-presentation space, sample, and normalized evaluated kernel &
+The sample \(m_i\) is never a law. The evaluation is measurable, keeps its
+declared \(X\) and parent dependencies, and reads no recognition or posterior. \\
+\(X;\ X_A=\chi_A(X);\ \xi_A\in\boldsymbol\Xi_A\) &
+fixed fine/parent structure and retained random interface &
+\(X,X_A\) remain outside the random channel. The random interface \(\xi_A\)
+is not structural \(X_A\). \\
+\(\mathsf Z_A=\mathsf B_A\times\mathsf M_A\times
+\boldsymbol\Xi_A\times\mathsf H_A\) &
+parent random state space &
+Contains random retained state only, not structural \(X_A\) or the unchanged
+observation coordinate. \\
+\(\mathbb P_I(Do,DY\mid X);\ \mathbb Q_{I,o,X};\
+\boldsymbol\Pi_{I,o,X}\) &
+fine generative joint, correlated recognition law, and selected posterior &
+The generative joint is fixed before recognition; the posterior is derived
+from it at an admitted observation. \\
+\(\mathbb P_A(Do,Dz\mid X);\ \mathbb Q_{A,o,X};\
+\boldsymbol\Pi_{A,o,X}\) &
+parent generative joint, recognition law, and posterior &
+All three use the same \(C_A\), with the observation unchanged. Bare global
+\(P_A,Q_A\) are forbidden. \\
+\(q_A^b,q_A^m;\ p_A^b,p_A^m;\
+\boldsymbol\Pi_{A,o,X}^b,\boldsymbol\Pi_{A,o,X}^m\) &
+derived recognition, generative-conditional, and posterior marginals &
+These are projections of their typed full laws. No marginal pair replaces a
+correlated joint. Historical \(Q_q,Q_m\) are frozen local aliases only. \\
+\(\operatorname{ev}_A:m_A\mapsto K^{X_A}_{A,m_A}\) &
+measurable parent model-evaluation family &
+Its codomain is
+\(\operatorname{Kern}(\boldsymbol\Xi_A,
+\mathsf B_A\times\mathsf O\times\mathsf H_A)\). The observation space is
+unchanged. An induced evaluator exists by disintegration; a predeclared evaluator needs a separate
+almost-sure compatibility condition on the parent generative conditional. \\
+\(C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A\) &
+normalized recognition-independent Markov kernel &
+One channel acts on generation, posterior, and recognition. It is neither an
+aggregation matrix nor a deterministic moving map. \\
+\(\Delta_A(o,X)\) &
+conditional-information defect in the common-channel KL chain &
+The extended KL identity is additive in \([0,+\infty]\). Zero defect is
+equivalent to equality of the discarded conditional laws
+\(\mathbb Q_{A,o,X}\)-almost surely, without a finite-KL premise. Ordinary VFE subtraction and
+the two-way pairwise common-recovery equivalence require finite fine KL; family-wide recovery
+requires simultaneous hypotheses. \\
+\(c_t\) &
+differentiable moving coarse map in a declared smooth dynamics &
+This special-case deterministic moving map is not \(C_A\). The auxiliary \(t\) is not physical
+time, base position, or RG depth by implication. \\
+\(R\to E\to O\) &
+retained input or parameter, intervened target, and retained output &
+This is the typed intervention comparison chain, not an overlap notation or
+an ontic-action claim. \\
+\(\mathscr S\) &
+variational action functional &
+Lowercase behavioral action is unavailable until separately declared. \\
+\(\mathscr P_G\xrightarrow{\pi}\mathcal C\) &
 principal \(G\)-bundle &
 The common source of belief and model associated bundles. It is not either
 statistical bundle. \\
@@ -32,13 +99,13 @@ channel \(x\). \\
 actions on laws &
 \(\widehat\rho_x(g)q=(\rho_x(g))_\#q\).  A hatted action is not an action
 on a sample vector. \\
-\(\mathcal E_b=P\times_{\widehat\rho_b}\mathcal B_b,\qquad
-  \mathcal E_m=P\times_{\widehat\rho_m}\mathcal B_m\) &
+\(\mathcal E_b=\mathscr P_G\times_{\widehat\rho_b}\mathcal B_b,\qquad
+  \mathcal E_m=\mathscr P_G\times_{\widehat\rho_m}\mathcal B_m\) &
 associated law bundles over \(\mathcal C\) &
 Their fibers contain belief and model laws.  They are not principal
 bundles. \\
 \(u_i^b,u_i^m;\ h_i\) with \(u_i^m=u_i^b h_i\) &
-two local sections of \(P\); unique map \(h_i:\mathcal C_i\to G\) &
+two local sections of \(\mathscr P_G\); unique map \(h_i:\mathcal C_i\to G\) &
 The relative principal frame exists independently of \(\rho_b,\rho_m\). It
 does not define a map between their representation spaces. \\
 \(u_i^{x\prime}=u_i^x a_i^x;\quad
@@ -63,7 +130,7 @@ model-to-belief associated-bundle morphism &
 Covers \(\operatorname{id}_{\mathcal C}\).  It is independent of \(\Phi\)
 and is not presumed to be its inverse. \\
 \(\omega_b,\omega_m\), or \(H^b,H^m\) &
-two principal connections on \(P\), or induced horizontal distributions &
+two principal connections on \(\mathscr P_G\), or induced horizontal distributions &
 They are separate geometric data on the same principal bundle. Vector-bundle covariant
 derivatives are a linear specialization. \\
 \(\Omega_\gamma,\widetilde\Omega_\gamma\) &
@@ -128,7 +195,7 @@ pullback; they are different objects on different bundles.  The base comparison
 retains \emph{two} tensors, \(-\mathcal X_\Psi\) with \(\mathcal X_\Psi\)
 signed and \(-\mathcal Q_\Psi\) with \(\mathcal Q_\Psi\succeq0\); neither may be
 summarized as one mismatch term. \\
-\(\mathcal E_i,\varpi_i;\ \boldsymbol\omega_i\) &
+\(\varpi_i:\mathcal E_i\to\mathcal C_i;\ \boldsymbol\omega_i\) &
 \(\mathcal E_b|_{\mathcal C_i}\times_{\mathcal C_i}
 \mathcal E_m|_{\mathcal C_i}\to\mathcal C_i\); product connection &
 Agent \(i\)'s paired law bundle and the pair
@@ -208,7 +275,7 @@ are invariant under orientation-preserving reparameterization; neither is
 physical time. \\
 \(T_{ij}^b(c),T_{ij}^m(c)\) &
 elements of \(G\) at one \(c\in\mathcal C_i\cap\mathcal C_j\) &
-Transition functions computed from two frame atlases of the same \(P\).
+Transition functions computed from two frame atlases of the same \(\mathscr P_G\).
 Their cocycles are cohomologous descriptions of one principal-bundle class.
 They use no nonconstant curve and are not graph links. \\
 \(\Theta_e^b,\Theta_e^m\) &
@@ -286,13 +353,14 @@ and a general law uses Markov pushforward. \\
 normalized interaction-record kernel and its fixed-record negative log density &
 One actual record is one global factor.  It may occur in several incident
 coordinate-local VFEs without being duplicated in the joint. \\
-\(\alpha_i,\beta_{ij},\eta_{ij}=\alpha_i\beta_{ij}\) &
-receiver occupancy, conditional source attention, and joint edge-event law &
-Exact meta-attention pushes \(\eta\) and then disintegrates.  A row
+\(\alpha_i^x;\ \eta_{ij}^q=\alpha_i^q\beta_{ij};\
+\eta_{ij}^m=\alpha_i^m\gamma_{ij}\) &
+external receiver occupancy and channel-typed joint edge-event laws &
+Exact meta-attention pushes \(\eta^x\) and then disintegrates. A row
 \(\beta\) alone does not determine receiver weights. \\
 \(\mathscr P_\ell\xrightarrow{\varpi_\ell}\mathcal C_\ell\) &
 scale-\(\ell\) principal bundle and its principal projection &
-\(\mathscr P_\ell\) is distinct from the root-level notation \(P\), from the
+\(\mathscr P_\ell\) is distinct from the root-level notation \(\mathscr P_G\), from the
 normalized law \(\pi_\ell\), and from every interaction-coordinate operator.
 The projection is \(\varpi_\ell\), not \(\pi_\ell\). \\
 \(\boldsymbol\Xi_\ell^{\mathrm{MVG}}

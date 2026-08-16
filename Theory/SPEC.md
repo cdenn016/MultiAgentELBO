@@ -119,16 +119,16 @@ would misrepresent the state of the theory in opposite directions. The tag for t
 ## 3. Notation — fixed, do not deviate
 
 **Geometry.** Contextual base `\mathcal C` with points `c`. One principal bundle
-`\pi:P\to\mathcal C` with structure group `G` induces the belief and model associated bundles
-`\mathcal E_b=P\times_{\widehat\rho_b}\mathcal B_b` and
-`\mathcal E_m=P\times_{\widehat\rho_m}\mathcal B_m`. Use `\rho_b,\rho_m` for possibly inequivalent
+`\pi:\mathscr P_G\to\mathcal C` with structure group `G` induces the belief and model associated bundles
+`\mathcal E_b=\mathscr P_G\times_{\widehat\rho_b}\mathcal B_b` and
+`\mathcal E_m=\mathscr P_G\times_{\widehat\rho_m}\mathcal B_m`. Use `\rho_b,\rho_m` for possibly inequivalent
 representations of `G` on the two sample fibers and `\widehat\rho_b,\widehat\rho_m` for their
-pushforward actions on law fibers. Local principal frames `u_i^b,u_i^m:\mathcal C_i\to P` are
+pushforward actions on law fibers. Local principal frames `u_i^b,u_i^m:\mathcal C_i\to\mathscr P_G` are
 separate choices. The unique relative principal-frame field is `h_i:\mathcal C_i\to G`, defined by
 `u_i^m=u_i^b h_i`; it exists even when the representations have different dimensions, but it does
 not define a map between their representation spaces. At the general tier the cross maps are
 measurable and fiber preserving. Under the selected smooth-tier hypothesis, the two principal
-connections `\omega_b,\omega_m` on the same `P` induce Ehresmann horizontal
+connections `\omega_b,\omega_m` on the same `\mathscr P_G` induce Ehresmann horizontal
 distributions and parallel transports
 `\Omega_\gamma` on `\mathcal E_b` and `\widetilde\Omega_\gamma` on `\mathcal E_m` along a
 piecewise-smooth base curve `\gamma`. Cross-associated-bundle morphisms cover the identity and have
@@ -190,6 +190,38 @@ has type `\Sigma_i:\mathscr H_i\times\mathcal C_i\to
 `\varpi\circ\Sigma_i(r,c)=c`. The base remains fixed and timeless. Any local parameter used to
 calculate a path integral is auxiliary and must disappear from the final arc length.
 
+**Phase 0 pointwise-parent symbols.** For a finite child block \(I\) with parent label \(A\), agent
+\(i\in I\) supplies its section pair on \(\mathcal C_i\); the common overlap is
+\(\mathcal U_A=\bigcap_{i\in I}\mathcal C_i\), and the present construction fixes
+\(r_*\in\mathcal U_A\). Ordinary \(R\) is not an overlap: the intervention comparison retains
+\(R\to E\to O\). The action functional is \(\mathscr S\). The associated-bundle projection
+remains \(\varpi_x\); it is never receiver occupancy.
+
+At fixed admitted \((o,X)\), use \(q_i^{b;o,X}\) for a belief-law section and
+\(q_i^{m;o,X}\) for a model-law section. Established \(q_i^{o,X},s_i^{o,X}\) retain those
+dependencies and are not globally renamed. A model sample or presentation is
+\(m_i\in\mathsf M_i\), not a law, and its measurable evaluation is
+\(\operatorname{ev}_i:m_i\mapsto K^X_{i,m_i}\).
+General normalized law and kernel spaces on
+standard-Borel domains are primary; smooth statistical manifolds require separate regularity, and
+Gaussian families are optional computational realizations only.
+
+Structural \(X\) is fixed outside the random channel, with \(X_A=\chi_A(X)\). The retained random
+interface is \(\xi_A\in\boldsymbol\Xi_A\), and
+\(\mathsf Z_A=\mathsf B_A\times\mathsf M_A\times\boldsymbol\Xi_A\times\mathsf H_A\) contains random
+parent state only. The fine full laws are \(\mathbb P_I(Do,DY\mid X)\), \(\mathbb Q_{I,o,X}\),
+and \(\boldsymbol\Pi_{I,o,X}\). The parent full laws are \(\mathbb P_A(Do,Dz\mid X)\),
+\(\mathbb Q_{A,o,X}\), and \(\boldsymbol\Pi_{A,o,X}\). Bare global \(P_A,Q_A\) are forbidden;
+bare \(P,Q\) are lemma-local dummy probability measures only after a nearby type declaration.
+
+The pointwise coarse object is one normalized recognition-independent Markov kernel
+\(C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A\), not a matrix or deterministic map. A moving
+deterministic map is \(c_t\) only after a flow is declared. The parent model evaluation is
+\(\operatorname{ev}_A:m_A\mapsto K^{X_A}_{A,m_A}\). At locally fixed \((o,X)\),
+\(q_A^b,q_A^m\), \(p_A^b,p_A^m\), and
+\(\boldsymbol\Pi_{A,o,X}^b,\boldsymbol\Pi_{A,o,X}^m\) are derived marginals of their typed full
+laws or conditionals; historical root \(Q_q,Q_m\) are scoped legacy aliases only.
+
 **Population.** Agents `i\in V=\{1,\dots,N\}`. Design `D=\{c_a\}_{a=1}^M`, design index `a`.
 State latent `k_i\in\mathbb R^{K}`, model latent `m_i\in\mathbb R^{d_m}`, observation `o_i`.
 Stacked latents `Y`, observations `o`. Structural data `X`.
@@ -205,8 +237,9 @@ Free energy `\mathcal F=-\mathcal L`. Relative entropy `\KL(\cdot\Vert\cdot)`.
 `K_a(y_{\partial a},do_a)`. At a regular record its fixed negative log density is `E_{a,o}`.
 Coordinate-local VFEs include every incident factor, while the global joint owns each record once.
 For directed attention, `\pi_{ij}` is the generative source prior, `\beta^P_{ij}` the generative
-posterior row, `\beta^Q_{ij}` the recognition row, `\alpha_i` the receiver occupancy, and
-`\eta_{ij}=\alpha_i\beta_{ij}` the joint marked edge-event law. Exact coarse attention pushes
+posterior row, `\beta^Q_{ij}` the recognition row, and `\alpha_i^x` the external normalized receiver
+occupancy in channel `x`. The marked event laws are `\eta_{ij}^q=\alpha_i^q\beta_{ij}` and
+`\eta_{ij}^m=\alpha_i^m\gamma_{ij}`. Exact coarse attention pushes
 `\eta`, not `\beta` alone.
 
 **Gaussian information form.** Natural parameters `(h,J)`, moments `\mu=J^{-1}h`, `C=J^{-1}`.
@@ -486,15 +519,15 @@ fiber, and do not infer a manifold, common dominating measure, affine chart, nat
 convex cone, boundary, or Fisher metric merely because the elements are beliefs or models.
 
 The two law fibers are carried by the separate associated bundles
-`\mathcal E_b=P\times_{\widehat\rho_b}\mathcal B_b` and
-`\mathcal E_m=P\times_{\widehat\rho_m}\mathcal B_m`. The representations of the common group `G`
+`\mathcal E_b=\mathscr P_G\times_{\widehat\rho_b}\mathcal B_b` and
+`\mathcal E_m=\mathscr P_G\times_{\widehat\rho_m}\mathcal B_m`. The representations of the common group `G`
 may be inequivalent and may act on different-dimensional fibers. The cross maps `\Phi` and
 `\widetilde\Phi` are declared morphisms of these associated bundles over
 `\operatorname{id}_{\mathcal C}`. Their existence is additional structure: the relative principal
 frame `h_i` does not supply them, and inequivalent linear representations admit a nonzero linear
 cross map only when an appropriate intertwiner exists. Neither map forces equal ranks, inverse
 maps, or parallelness. A shared-frame model imposes `u_i^b=u_i^m`; it does not follow merely from
-using one `P`. Compatibility with either of the two connections remains a separate condition.
+using one `\mathscr P_G`. Compatibility with either of the two connections remains a separate condition.
 
 The selected differential tier is a finite-dimensional smooth **parametrized-measure model**. State
 its parameter manifold and require differentiability in quadratic mean, square-integrable score
@@ -761,6 +794,39 @@ categories. Target-erasing soft morphisms, correlated/adaptive selectors, identi
 null-version point interventions from almost-sure passive observational conditionals, noncompact quotients, arbitrary latent dilation, minimal
 raw realization, autonomous agency, base-manifold continuum/gauge/RG extension, fixed-observation
 ELBO or VFE equality, and every physical or ontological identification remain **OPEN**.
+
+**Governing full pointwise probabilistic-datum correction (2026-08-15).** The released package is
+bound to target digest
+`15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87`. Its manuscript theorem is
+**ESTABLISHED**; its package ledger records `target` as `EVIDENCE_VERIFIED`, and `release.json`
+records `COMPLETE_AFFIRMATIVE`. Fix a nonempty finite child block `I`, a parent label `A`, one
+`r_* in U_A = intersection_{i in I} C_i`, fixed structural `X`, and `X_A=chi_A(X)` outside the
+random channel. One normalized recognition-independent
+`C_A:Y_I rightsquigarrow Z_A`, with the observation space `O` unchanged, pushes the fixed fine
+generative joint, selected posterior-version family, and correlated recognition law to the
+normalized parent triple `mathbb P_A`, `boldsymbol Pi_A`, and `mathbb Q_A`. The selected parent
+posterior identity holds at the observation-kernel level, not by applying an almost-sure equality at
+an arbitrary exceptional observation.
+
+The parent model coordinate has a generative interpretation only through a jointly measurable
+normalized evaluator. Standard-Borel disintegration supplies an induced evaluator; a predeclared
+evaluator requires separate almost-sure compatibility with the selected parent conditional. Belief,
+model, prior, and posterior marginals are forward coordinate projections of their typed full laws and
+do not reconstruct those laws. The common-channel KL chain is additive in `[0,+infinity]`. Adding
+the same finite real `-log p_X(o)` to both KL terms gives an extended-real VFE identity; a finite
+VFE may be negative. Without a finiteness premise, `Delta_A=0` exactly when the discarded
+conditional recognition and posterior laws agree `mathbb Q_A`-almost surely. Finite fine KL is
+required for ordinary subtraction `F_I-F_A=Delta_A` and for the stated two-way pairwise
+common-recovery equivalence; family-wide recovery requires simultaneous hypotheses for every member.
+
+Holonomy blindness is conditional on typed fine and parent actions, full fine-law covariance,
+compatible selected posterior versions, `C_A` equivariance, and evaluator covariance. Same-slice
+invariance at fixed `(o,X)` follows only for isotropy arrows fixing that slice and its selected
+versions. The alternative retains raw root-framed holonomy and boundary marks and makes no blindness
+claim; neither branch selects membership. Canonical channel or partition selection, family-wide
+recovery, the comparison category, gluing over `U_A`, parent local sections, a geometric meta-agent,
+autonomy, agency, nonequilibrium persistence, continuum limits, physical time, a unique DAG or
+microscopic physics, and ontology remain **OPEN**.
 
 Finally, when `kappa` is promoted in the six-bit parity family, the full-joint map has rank seven
 everywhere, whereas singleton retention has rank six with kernel exactly

@@ -1,0 +1,265 @@
+{
+  "checks": {
+    "CE1_KL_anticorrelated_to_correlated_infinite": true,
+    "CE1_KL_correlated_to_anticorrelated_infinite": true,
+    "CE1_anticorrelated_normalized": true,
+    "CE1_correlated_normalized": true,
+    "CE1_distinct_joints": true,
+    "CE1_equal_first_marginals": true,
+    "CE1_equal_second_marginals": true,
+    "CE2_coarse_forward_KL_infinite": true,
+    "CE2_coarse_reverse_KL_symbolic_log_2": true,
+    "CE2_fine_KL_zero": true,
+    "CE2_fine_Q_equals_Pi": true,
+    "CE2_posterior_channel_constant_zero": true,
+    "CE2_recognition_channel_identity": true,
+    "CE3_evaluator_mismatch_every_model": true,
+    "CE3_generative_model_marginal_fair": true,
+    "CE3_mismatch_on_positive_generative_model_mass": true,
+    "CE3_swapped_rows_normalized": true,
+    "CE4_bit_flip_stabilizes_fair_law": true,
+    "CE4_first_marginal_invariant": true,
+    "CE4_full_joint_not_invariant": true,
+    "CE4_identity_transport_preserves_node_laws": true,
+    "CE4_joint_action_maps_correlated_to_anticorrelated": true,
+    "CE4_nontrivial_bit_flip": true,
+    "CE4_second_marginal_invariant": true,
+    "CE4_tree_directed_KL_symbolic_half_log_3": true,
+    "CE4_tree_has_trivial_holonomy": true,
+    "CE4_trivial_holonomy_unequal_laws": true,
+    "main_K_0_B1": true,
+    "main_K_0_normalized": true,
+    "main_K_1_B1": true,
+    "main_K_1_normalized": true,
+    "main_belief_prior_marginal_fair": true,
+    "main_belief_recognition_marginal_fair": true,
+    "main_coarse_KL_zero": true,
+    "main_each_conditional_defect_symbolic_log_2": true,
+    "main_evaluation_compatible_on_generative_model_mass": true,
+    "main_fine_KL_symbolic_log_2": true,
+    "main_fine_likelihood_ratios_all_two": true,
+    "main_fine_posterior_normalized": true,
+    "main_fine_recognition_normalized": true,
+    "main_model_prior_marginal_fair": true,
+    "main_model_recognition_marginal_fair": true,
+    "main_parent_laws_equal": true,
+    "main_parent_posterior_normalized": true,
+    "main_parent_recognition_normalized": true,
+    "main_parent_table_exact": true,
+    "main_recognition_absolutely_continuous": true,
+    "main_recognition_support_exact": true,
+    "main_reverse_fine_KL_infinite": true,
+    "main_singleton_evidence_one": true,
+    "main_total_defect_symbolic_log_2": true
+  },
+  "command": "C:/Python314/python.exe docs/derivations/2026-08-15-full-pointwise-meta-agent/evidence/finite_nongaussian_witness.py",
+  "contract_id": "contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
+  "counterexamples": {
+    "evaluation_mismatch": {
+      "generative_model_marginal": [
+        "1/2",
+        "1/2"
+      ],
+      "marginal_source": "P_A^M(.|X)",
+      "mismatch_atoms_m_b": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "predeclared_evaluator": "ev'_A(m)=K_(1-m)",
+      "status": "PASS"
+    },
+    "holonomy_boundaries": {
+      "bit_flip_stabilizes_fair_law": true,
+      "correlated_joint_after_first_coordinate_flip": {
+        "0,0": "0",
+        "0,1": "1/2",
+        "1,0": "1/2",
+        "1,1": "0"
+      },
+      "identity_tree_directed_KL": "log(3)/2",
+      "identity_tree_directed_KL_decimal_corroboration": "0.5493061443340548456976226184612628523237452789113747258673471668187471466093045",
+      "identity_tree_holonomy": "trivial",
+      "identity_tree_laws": {
+        "left": [
+          "3/4",
+          "1/4"
+        ],
+        "right": [
+          "1/4",
+          "3/4"
+        ]
+      },
+      "joint_invariant": false,
+      "marginals_invariant": true,
+      "status": "PASS"
+    },
+    "marginal_nonuniqueness": {
+      "anticorrelated": {
+        "0,0": "0",
+        "0,1": "1/2",
+        "1,0": "1/2",
+        "1,1": "0"
+      },
+      "correlated": {
+        "0,0": "1/2",
+        "0,1": "0",
+        "1,0": "0",
+        "1,1": "1/2"
+      },
+      "first_marginals": [
+        "1/2",
+        "1/2"
+      ],
+      "joints_distinct": true,
+      "kl_anticorrelated_to_correlated": "+infinity",
+      "kl_correlated_to_anticorrelated": "+infinity",
+      "second_marginals": [
+        "1/2",
+        "1/2"
+      ],
+      "status": "PASS"
+    },
+    "split_channel": {
+      "coarse_KL_Q_to_Pi": "+infinity",
+      "coarse_reverse_KL_Pi_to_Q": "log(2)",
+      "fine_KL_Q_to_Pi": "0",
+      "fine_Q_equals_Pi": true,
+      "posterior_channel": "constant_zero",
+      "posterior_coarse": {
+        "0": "1",
+        "1": "0"
+      },
+      "recognition_channel": "identity",
+      "recognition_coarse": {
+        "0": "1/2",
+        "1": "1/2"
+      },
+      "status": "PASS"
+    }
+  },
+  "exactness_boundary": {
+    "all_finite_probability_arithmetic": "Fraction",
+    "decimal_values": "corroboration_only",
+    "direct_proof_artifact": "evidence/counterexample-proofs.md",
+    "gaussian": false,
+    "theorem_proof": false
+  },
+  "interpreter": "C:/Python314/python.exe",
+  "schema_version": "rigorous-theory-search/v1",
+  "status": "PASS",
+  "summary": {
+    "check_count": 51,
+    "failed_check_count": 0,
+    "negative_claim_count": 5,
+    "passed_check_count": 51
+  },
+  "target_digest": "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
+  "witness": {
+    "C_A": "deterministic projection retaining (B,M); structural X remains fixed outside",
+    "Delta_A": "log(2)",
+    "Delta_A_decimal_corroboration": "0.69314718055994530941723212145817656807550013436025525412068000949339362196969472",
+    "K_m_B1": {
+      "0": "1/4",
+      "1": "3/4"
+    },
+    "coarse_KL_Q_to_Pi": "0",
+    "evaluation_compatible": true,
+    "evidence_p_X_1": "1",
+    "fine_KL_Pi_to_Q": "+infinity",
+    "fine_KL_Q_to_Pi": "log(2)",
+    "fine_KL_Q_to_Pi_decimal_corroboration": "0.69314718055994530941723212145817656807550013436025525412068000949339362196969472",
+    "fine_posterior": {
+      "0,0,0": "3/16",
+      "0,0,1": "3/16",
+      "0,1,0": "1/16",
+      "0,1,1": "1/16",
+      "1,0,0": "1/16",
+      "1,0,1": "1/16",
+      "1,1,0": "3/16",
+      "1,1,1": "3/16"
+    },
+    "fine_posterior_mass": "1",
+    "fine_recognition": {
+      "0,0,0": "3/8",
+      "0,0,1": "0",
+      "0,1,0": "0",
+      "0,1,1": "1/8",
+      "1,0,0": "1/8",
+      "1,0,1": "0",
+      "1,1,0": "0",
+      "1,1,1": "3/8"
+    },
+    "fine_recognition_mass": "1",
+    "label": "finite categorical non-Gaussian",
+    "parent_belief_prior_marginal": [
+      "1/2",
+      "1/2"
+    ],
+    "parent_belief_recognition_marginal": [
+      "1/2",
+      "1/2"
+    ],
+    "parent_laws_equal": true,
+    "parent_model_prior_marginal": [
+      "1/2",
+      "1/2"
+    ],
+    "parent_model_recognition_marginal": [
+      "1/2",
+      "1/2"
+    ],
+    "parent_posterior_M_B": {
+      "0,0": "3/8",
+      "0,1": "1/8",
+      "1,0": "1/8",
+      "1,1": "3/8"
+    },
+    "parent_posterior_mass": "1",
+    "parent_recognition_M_B": {
+      "0,0": "3/8",
+      "0,1": "1/8",
+      "1,0": "1/8",
+      "1,1": "3/8"
+    },
+    "parent_recognition_mass": "1",
+    "random_spaces": {
+      "B": [
+        0,
+        1
+      ],
+      "E": [
+        0,
+        1
+      ],
+      "H_A": [
+        "*"
+      ],
+      "M": [
+        0,
+        1
+      ],
+      "O": [
+        1
+      ],
+      "Xi_A": [
+        "*"
+      ]
+    },
+    "recognition_constraint": "E=B",
+    "structural_X": "fixed conditioning datum outside C_A"
+  }
+}

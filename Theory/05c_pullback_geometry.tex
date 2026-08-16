@@ -60,7 +60,7 @@ selected parametrized-measure models, not about arbitrary law fibers.
 Under \Cref{hyp:pb-regular-models}, the represented $G$-action
 preserves $g_x^F$ and $\mathcal T_x$.  Consequently they descend to smooth
 vertical tensors, denoted by the same symbols, on
-$\mathcal E_x=P\times_{\widehat\rho_x}\mathcal B_x$.  \status{ESTABLISHED}
+$\mathcal E_x=\mathscr P_G\times_{\widehat\rho_x}\mathcal B_x$.  \status{ESTABLISHED}
 
 \paragraph{Proof.}
 Let $r_g$ be the bimeasurable sample-coordinate change representing $g$.
@@ -79,7 +79,7 @@ $\iota_{ug}=\iota_u\circ\widehat\rho_x(g)$, so a fiber tensor $\tau$ has
 frame-independent transport $\tau^u:=(\iota_u^{-1})^*\tau$ exactly when
 $\widehat\rho_x(g)^*\tau=\tau$ for every $g$.  Smoothness of the descended
 tensor follows by evaluating this construction on local smooth sections of
-$P$.  $\square$
+$\mathscr P_G$.  $\square$
 
 The bimeasurable sample action in this proposition is load bearing.  Closure
 of a set of parameter values under an arbitrary diffeomorphism of its
@@ -156,14 +156,14 @@ $h$ to $dx^2$.  \status{ESTABLISHED}
 \section{Exact dependence on the chosen connection}
 \label{sec:pb-connection-dependence}
 
-Let $\omega'$ be a second principal connection on $P$.  Their difference is
+Let $\omega'$ be a second principal connection on $\mathscr P_G$.  Their difference is
 horizontal and $\operatorname{Ad}$-equivariant; denote its descended form by
 \begin{equation}
-a\in\Omega^1(\mathcal C,\operatorname{Ad}(P)).
+a\in\Omega^1(\mathcal C,\operatorname{Ad}(\mathscr P_G)).
 \label{eq:pb-connection-difference}
 \end{equation}
 For the associated action, let
-$\vartheta_e:\operatorname{Ad}(P)_{\varpi(e)}\to V_eE$ denote the fundamental
+$\vartheta_e:\operatorname{Ad}(\mathscr P_G)_{\varpi(e)}\to V_eE$ denote the fundamental
 vertical map.  Along $s$, set
 \begin{equation}
 R_a^s(X)=\vartheta_{s(c)}(a_c(X)).
@@ -214,11 +214,11 @@ part of $Ts$ by $\vartheta_{s(c)}(a(X))=R_a^s(X)$, which proves
 \eqref{eq:pb-fisher-connection-change}, and trilinearity of
 $\mathcal T$ gives \eqref{eq:pb-amari-connection-change}.  The formulas are
 independent of the selected local frame because $a$ is an
-$\operatorname{Ad}(P)$-valued one-form and every displayed contraction is
+$\operatorname{Ad}(\mathscr P_G)$-valued one-form and every displayed contraction is
 gauge invariant.  $\square$
 
 The dependence can occur even in the simplest regular family.  Let
-$\mathcal C=\R$, let $P$ be the trivial principal translation bundle, and let
+$\mathcal C=\R$, let $\mathscr P_G$ be the trivial principal translation bundle, and let
 $\mathcal B=\{\mathcal N(\mu,1):\mu\in\R\}$.  For the constant section
 $\mu=0$, the zero connection gives $h=0$, whereas the local connection
 $A'=a_0dx$ gives
@@ -908,20 +908,22 @@ $h_s^\omega-f^*\bar h_{\bar s}^{\bar\omega}=-a^2dx^2\prec0$.
 
 The horizontal defect of an induced morphism is not an arbitrary vertical
 field.  Suppose $\Psi$ is induced by an equivariant principal scale map
-$\mathcal P$ over $f$ with Lie-group homomorphism $\kappa$ and law-fiber map
-$q$, in the sense of \eqref{eq:rg-associated-scale-map}.  Define the
+$\mathcal P:\mathscr P\to\bar{\mathscr P}$ over
+$f:\mathcal C\to\bar{\mathcal C}$ with Lie-group homomorphism
+$\kappa:G\to\bar G$ and law-fiber map $q$, in the sense of
+\eqref{eq:rg-associated-scale-map}.  Define the
 \emph{scale-connection defect form}
 \begin{equation}
 \mathfrak A_{\mathcal P}
 =\mathcal P^*\bar\omega-\mathrm d\kappa\circ\omega
-\in\Omega^1(P,\bar{\mathfrak g}).
+\in\Omega^1(\mathscr P,\bar{\mathfrak g}).
 \label{eq:pb-scale-connection-defect}
 \end{equation}
 
 \theoremheading{Isotropy criterion for a vanishing horizontal defect}{thm:pb-isotropy-criterion}
 The form $\mathfrak A_{\mathcal P}$ is horizontal and
 $\operatorname{Ad}\circ\kappa$-equivariant, hence descends to an element of
-$\Omega^1(\mathcal C;f^*\operatorname{Ad}\bar P)$, and
+$\Omega^1(\mathcal C;f^*\operatorname{Ad}\bar{\mathscr P})$, and
 \begin{equation}
 A_\Psi(e;X)
 =\vartheta_{\Psi(e)}\left(\mathfrak A_{\mathcal P}(X)\right),

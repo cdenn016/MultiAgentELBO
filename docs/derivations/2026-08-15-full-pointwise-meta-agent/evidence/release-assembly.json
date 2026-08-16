@@ -1,0 +1,195 @@
+{
+  "schema_version": "full-pointwise-release-assembly/v1",
+  "contract_id": "contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
+  "target_digest": "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
+  "path_policy": "All artifact paths are POSIX-style, relative to the derivation package, contain no parent traversal, and name regular files when bound.",
+  "static_target_closure": [
+    "COMMON-CHANNEL-ABSOLUTE-CONTINUITY",
+    "DERIVED-MARGINALS",
+    "EVALUATION-COMPATIBILITY",
+    "HOLONOMY-ALTERNATIVE",
+    "HOLONOMY-BLIND-FULL-LAW",
+    "HOLONOMY-RETENTION",
+    "MODEL-FAMILY-NORMALIZATION",
+    "NEG-MARGINAL-DETERMINATION",
+    "NEG-MARGINAL-HOLONOMY-JOINT",
+    "NEG-MODEL-MARGINAL-EVALUATION",
+    "NEG-SPLIT-CHANNEL-VFE",
+    "NEG-TRIVIAL-HOLONOMY-AGREEMENT",
+    "PARENT-NORMALIZATION",
+    "POINTWISE-TYPING",
+    "POSTERIOR-PUSHFORWARD",
+    "VFE-CHAIN-EXTENDED",
+    "VFE-FINITE-ZERO-DEFECT-RECOVERY",
+    "target"
+  ],
+  "scope_only_claims": [
+    "DYNAMICS-SCOPE"
+  ],
+  "immutable_input_bindings": [
+    {
+      "artifact_path": "evidence/counterexample-proofs.md",
+      "artifact_sha256": "59c38ed4181b2f8fbf2b573c79cb7257516c7e2d91e44dbea870c953406de6fc"
+    },
+    {
+      "artifact_path": "evidence/direct-derivation.md",
+      "artifact_sha256": "2aa70b07751d07712a3d9395f77817317d48d77d97c3fd5fb8cd1a3f6fda226a"
+    },
+    {
+      "artifact_path": "evidence/finite-nongaussian-output.json",
+      "artifact_sha256": "ca79ea94822e74ad1e7fb3257d0ea852a609a9102be0e49a302687ad1612c062"
+    },
+    {
+      "artifact_path": "evidence/finite_nongaussian_witness.py",
+      "artifact_sha256": "15a9eea5a01cb19150babc85f26cb6b663528e7f189cf088cda1ade4cbf78835"
+    },
+    {
+      "artifact_path": "evidence/notation-collision-report.json",
+      "artifact_sha256": "67a8c6a20d7583b86fb5fac740fd03987f2456e65a29ccfd9b9a38f1db536a87"
+    },
+    {
+      "artifact_path": "evidence/notation-registry.json",
+      "artifact_sha256": "c4ee4c4ccfbf88689539f318a6b850dc0e1b2e00b5f4c08d04655561feb21813"
+    },
+    {
+      "artifact_path": "evidence/notation-standard.md",
+      "artifact_sha256": "cfe662fa42a3e4aed5c55d14851604cfd24f2579c8188d7bda00f579f4be3695"
+    },
+    {
+      "artifact_path": "evidence/notation_scan.py",
+      "artifact_sha256": "0c11294e10b8a832e6e0f6fc88eacda7865f12e994a8a6ea7ddb56a19d7f6a62"
+    }
+  ],
+  "reviewed_design_binding": {
+    "repository_path": "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md",
+    "artifact_sha256": "a302a046e886f0a777226d667202437a6e371eac36dbfa203e8b201131afc16f"
+  },
+  "review_slots": [
+    {
+      "review_id": "VIEW-PROBABILITY-KERNEL",
+      "role": "probability and kernel",
+      "artifact_path": "evidence/reviews/view-probability-kernel.md",
+      "artifact_sha256": "14f7f00fdbc0a3e2f67357c249aa631eae336940f7ea99d9aad3b164f423b27e",
+      "binding_state": "BOUND_CURRENT_APPROVE",
+      "disposition": "APPROVE",
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0
+      }
+    },
+    {
+      "review_id": "VIEW-INFORMATION-VFE",
+      "role": "information-geometric and VFE",
+      "artifact_path": "evidence/reviews/view-information-vfe.md",
+      "artifact_sha256": "c291869ccb7d518f2df85c43f60319e59654c2769e0fdc8b07373a53430525d4",
+      "binding_state": "BOUND_CURRENT_APPROVE",
+      "disposition": "APPROVE",
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0
+      }
+    },
+    {
+      "review_id": "VIEW-GAUGE-HOLONOMY",
+      "role": "gauge and holonomy",
+      "artifact_path": "evidence/reviews/view-gauge-holonomy.md",
+      "artifact_sha256": "431a63b06b90277ce2697d6d57a86054346564d2bb449cf11fe3673bd6fb42ba",
+      "binding_state": "BOUND_CURRENT_APPROVE",
+      "disposition": "APPROVE",
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0
+      }
+    },
+    {
+      "review_id": "VIEW-DYNAMICS-SCOPE",
+      "role": "dynamics and scope",
+      "artifact_path": "evidence/reviews/view-dynamics-scope.md",
+      "artifact_sha256": "71401ff15af3c1ce033ddbd9b01cace311f04c1eeef17a09d13b7f8125b8461b",
+      "binding_state": "BOUND_CURRENT_APPROVE",
+      "disposition": "APPROVE",
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0
+      }
+    }
+  ],
+  "review_binding_rule": "Reviews bind the corrected pre-review payload snapshot; final metadata binds current review hashes. Review agreement is adjudication and cannot replace direct mathematical evidence.",
+  "assembly_source_revision": "add1a69f2b83550d13abd330c13f4b4e8e9138b9",
+  "review_input_snapshot": {
+    "snapshot_id": "corrected-pre-review-add1a69",
+    "git_head": "add1a69f2b83550d13abd330c13f4b4e8e9138b9",
+    "artifact_sha256": {
+      "problem-contract.json": "ce3494750e04a421d6700c970ccbffb7f37efcde3c6998b59970ceaf49600936",
+      "approach-registry.json": "787132b16d0392cfbe836e6bca6296d59d5d9914fe7426fb129a4b1ccb0eb45b",
+      "claim-ledger.json": "862dd55014513c4b4c0b3b2f68e1dbf17336fa1c9fce49911aa6badbfecf9129",
+      "dependency-dag.json": "ac28d44546eb576fa3816282200b79ff481bd74934cacebaaab50b13dfa21246",
+      "counterexample-register.md": "59be1c062463bc9337c6edc34f90ab5df828a2c7b2b5247792a732d50deb2159",
+      "construction-or-strongest-theorem.md": "71c563725989d8a873e72beab1e48ac960adbb34be0ebe86d3944358d73cb428",
+      "adversarial-report.json": "bfbe5238accc8adb8c5a7f6411b91c819c3c64f616b504447c02e6108d36c85c",
+      "release.json": "b46ace5e52dea221b6ccb94946cd18ede81f3edd583f66479c0b4564bda0c91c",
+      "final-report.md": "730c28d4ebd5eeaefe9e69069e3486daf5825037a1c51e762bbcb6ee7b86c80c",
+      "evidence/direct-derivation.md": "2aa70b07751d07712a3d9395f77817317d48d77d97c3fd5fb8cd1a3f6fda226a",
+      "evidence/adversarial-attacks.md": "f2c6bf6899ad6215dfa8c925d85015dac89c6498aee8a8ccb832a81ba66c3caa",
+      "evidence/independent-reconstruction.md": "d25ad3b8b6f8bae07a6865f58d9b214b21b6db2ab3b723393bc60359a564500f",
+      "evidence/oracle-erasure.md": "249e18fb17fac8ff21945866fdde3ea88c87d81a753c5fcaf5dee95f9e08dea3",
+      "evidence/release-assembly.json": "09434008550960adf1d4fcc7daea67a3915c3f6a473afd62b81913554bcf658b",
+      "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md": "a302a046e886f0a777226d667202437a6e371eac36dbfa203e8b201131afc16f"
+    },
+    "purpose": "Exact corrected mathematical and release-facing payload reviewed while target was CANDIDATE and terminal_status was null."
+  },
+  "provenance_model": {
+    "stage_1": "Each domain review binds the corrected pre-review snapshot above.",
+    "stage_2": "Final assembly, ledger, and release bind the resulting review hashes and therefore have distinct post-review metadata hashes.",
+    "non_circularity": "No mutual raw-hash fixed point is claimed; evidence/release-provenance.json records the final one-way snapshot."
+  },
+  "fix_round_1_review_input_snapshot": {
+    "snapshot_id": "final-release-sha256-7479e84d3999e41324d25af80e41ea6f53ab4e204d4462f747d24054befa5c1c",
+    "git_head": "1b18842d6f853ee32c2b4f8a1741b1738ce9890e",
+    "fingerprint_sha256": "7479e84d3999e41324d25af80e41ea6f53ab4e204d4462f747d24054befa5c1c",
+    "review_result": "WITHHOLD",
+    "severity_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 2
+    },
+    "required_repairs": [
+      "M1: refresh the notation report from the exact final design bytes and cascade its binding.",
+      "M2: add required artifact metadata to the deterministic witness output and the dynamics/scope review."
+    ],
+    "binding_rule": "This is the immutable input snapshot examined by the post-commit Fix Round 1 reviewer; the repaired final-release snapshot is recorded one-way in evidence/release-provenance.json."
+  },
+  "final_certification_evidence": [
+    {
+      "artifact_path": "evidence/independent-reconstruction.md",
+      "artifact_sha256": "f74f74bb93c240f28016b550fe58a4643d487ee8a517d40faa77d69cacde0df9",
+      "result": "PASS"
+    },
+    {
+      "artifact_path": "evidence/oracle-erasure.md",
+      "artifact_sha256": "c957a17307ed7839b77fb804be83e9e721f0f8d64cc46a67e36b532625b50c72",
+      "result": "PASS"
+    },
+    {
+      "artifact_path": "evidence/adversarial-attacks.md",
+      "artifact_sha256": "edc9f7d8632bd24e781cf137ff2c84570ebee4dea414adf35e3028c443c38546",
+      "result": "PASS",
+      "attack_disposition": "REJECTED_ALL_16"
+    }
+  ],
+  "final_release_snapshot_record": {
+    "artifact_path": "evidence/release-provenance.json",
+    "self_hash_rule": "The record excludes its own SHA-256; its bytes are captured by Git and the ignored Task-5 report."
+  },
+  "release_gate": {
+    "target_state": "EVIDENCE_VERIFIED",
+    "terminal_status": "COMPLETE_AFFIRMATIVE",
+    "certificate_claim": "target",
+    "unresolved_obligations": [],
+    "reason": "All static ancestors have eligible direct evidence; reconstruction and oracle erasure pass; all sixteen attacks are rejected; all four corrected-byte domain reviews are current APPROVE records with no Critical, High, or Medium finding."
+  }
+}

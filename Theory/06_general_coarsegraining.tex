@@ -301,6 +301,35 @@ selected versions from \Cref{thm:cg-kl-dpi-extended}; when
 $Q_o\not\ll P_o$ its rightmost value is $-\infty$, and the inequality remains
 valid without any undefined sum. \(\square\)
 
+\paragraph{Pointwise parent specialization.}
+Fix a nonempty finite child block $I$, a parent label $A$, structural data $X$ with
+$X_A=\chi_A(X)$ outside the random channel, and the unchanged observation space $\mathsf O$.
+Let $\mathbb P_I(Do,DY\mid X)$ have a selected measurable posterior-version kernel
+$o\mapsto\boldsymbol\Pi_{I,o,X}$, and let
+$C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A$ be normalized and independent of the realized
+observation, recognition law, and posterior. Specializing
+\Cref{thm:cg-evidence-preserving-channel} gives
+\begin{equation}
+\mathbb P_A(Do,Dz\mid X)
+=\int_{\mathsf Y_I}C_A(Y,Dz)\mathbb P_I(Do,DY\mid X),
+\qquad
+\boldsymbol\Pi_{A,o,X}=\boldsymbol\Pi_{I,o,X}C_A,
+\label{eq:cg-pointwise-parent-posterior}
+\end{equation}
+for every $o$ in the selected version family. Indeed, for bounded measurable $f$ on
+$\mathsf O$ and $g$ on $\mathsf Z_A$,
+\begin{equation}
+\int f(o)g(z)\mathbb P_A(do,dz\mid X)
+=\int f(o)\left[\int g(z)(\boldsymbol\Pi_{I,o,X}C_A)(dz)\right]
+\mathbb P_I^O(do\mid X),
+\label{eq:cg-pointwise-parent-posterior-test}
+\end{equation}
+which is the defining test-function identity for the displayed selected parent posterior version.
+This is a typed specialization of the preceding theorem, not a second posterior-pushforward theorem.
+The associated KL/VFE loss is the common-channel chain rule of
+\Cref{thm:rg-exact-coarse-vfe}, specialized in
+\Cref{thm:rg-pointwise-parent-datum}. \status{ESTABLISHED}
+
 Thus different latent inventories are not by themselves a prohibition.
 ELBOs are comparable under an evidence-preserving common Markov pushforward
 applied to the posterior and recognition law. Absent that relation,

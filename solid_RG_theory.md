@@ -1,25 +1,31 @@
-<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06","schema_version":"rigorous-theory-search/v1","target_digest":"48389cdfa67c229a7a179881667aa14591ad8c4b126a506781a189e1b82d2d06"} -->
+<!-- rigorous-theory-search-metadata {"contract_id":"contract-sha256-15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87","schema_version":"rigorous-theory-search/v1","target_digest":"15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87"} -->
 # Pointwise meta-agent renormalization
 
-This is the repository start page for the strongest certified pointwise result. It fixes one base point $r_*$ in an overlap region and works with a finite network there. It does not extend the construction across the contextual base $R$.
+This is the repository start page for the strongest certified pointwise result. Fix a finite child block $I$ with parent label $A$ and write
 
-The result is exact but deliberately bounded. In each of the belief and model channels, zero positive-weight transported edge KL is equivalent to one unique common root marginal stabilized by that channel's holonomy. The two channel results combine into a pair of marginal parent laws. They do not by themselves produce a joint belief-model law, an exact recognition law, or a VFE agent.
+$$
+\mathcal U_A:=\bigcap_{i\in I}\mathcal C_i\subseteq\mathcal C,
+$$
+
+for its overlap patch. The certificate fixes one base point $r_*\in\mathcal U_A$ and works with a finite network in the single fiber over $r_*$. It does not extend the construction across $\mathcal U_A$ or across the contextual base $\mathcal C$.
+
+The earlier two-channel certificate proved that zero positive-weight transported edge KL is equivalent to one unique common root marginal in each channel. The released full pointwise theorem now supersedes only the resulting marginal-pair boundary. Under its stated standard-Borel, common-channel, evaluator, evidence, and holonomy-branch hypotheses, one normalized recognition-independent channel produces the full parent generative, posterior, and correlated recognition laws, their derived marginals, and the exact conditional-information VFE defect. This is a full pointwise probabilistic datum for a candidate parent. It is not yet a pair of parent local sections, a geometric meta-agent, an autonomous agent, or a dynamical theory.
 
 ## Status key
 
-ESTABLISHED means proved in the contained package or in the cited canonical theorem source. CONDITIONAL means exact under hypotheses stated beside the result. DIAGNOSTIC means a finite control or heuristic that is not a theorem. OPEN/TODO names an obligation that the pointwise certificate does not close.
+ESTABLISHED means proved in the contained package or in the cited canonical theorem source. CONDITIONAL means exact under hypotheses stated beside the result. DIAGNOSTIC means a finite control or heuristic that is not a theorem. OPEN/TODO names an obligation that the pointwise certificate does not close. The manuscript status of the full datum is ESTABLISHED. Its release metadata records ledger state `EVIDENCE_VERIFIED`, terminal status `COMPLETE_AFFIRMATIVE`, and target digest `15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87`.
 
 ## 1. Fixed-point data and conventions
 
-At $r_*$, agent $i$ carries normalized marginal laws
+At $r_*$ and fixed admitted $(o,X)$, agent $i$ carries normalized marginal laws
 
 $$
-q_i(r_*)\in\mathcal P(\mathsf Z_i^q),
+q_i^{b;o,X}(r_*)\in\mathcal P(\mathsf Z_i^q),
 \qquad
-m_i(r_*)\in\mathcal P(\mathsf Z_i^m).
+q_i^{m;o,X}(r_*)\in\mathcal P(\mathsf M_i).
 $$
 
-on standard-Borel fibers. Legacy text may write $s_i$ for the model law $m_i$; this guide uses $m_i$ consistently.
+on standard-Borel fibers. The original fixed-point certificate locally abbreviates these law-valued quantities by $q_i$ and $m_i$ in Sections 2--8. That historical $m_i$ is a scoped legacy alias only. In the canonical full construction, $m_i\in\mathsf M_i$ is a sampled model presentation, $q_i^{m;o,X}$ is its law, and $s_i^{o,X}$ remains the established section notation where used.
 
 The belief and model channels are separate:
 
@@ -274,21 +280,21 @@ The canonical sources are [Theory/06_general_coarsegraining.tex](Theory/06_gener
 
 ## 9. Inference flow is optional and typed after the fact
 
-Only after declaring a fine flow $\dot y=X_t(y)$ may $t$ be called an inference-flow parameter. For a $C^1$ moving coarse map $C_t$ and $z(t)=C_t(y(t))$,
+Only after declaring a fine flow $\dot y=X_t(y)$ may $t$ be called an inference-flow parameter. For a $C^1$ moving coarse map $c_t$ and $z(t)=c_t(y(t))$,
 
 $$
 \dot z
-=\partial_tC_t(y)+DC_t(y)X_t(y).
+=\partial_t c_t(y)+D c_t(y)X_t(y).
 $$
 
 Exact dynamic semiconjugacy to $\dot z=\overline X_t(z)$ is the equation
 
 $$
-\partial_tC_t+DC_tX_t
-=\overline X_t\circ C_t.
+\partial_t c_t+D c_tX_t
+=\overline X_t\circ c_t.
 $$
 
-The $\partial_tC_t$ term disappears only for a frozen coarse map. The parameter $t$ is not a base coordinate, physical time, or RG depth. ESTABLISHED.
+The $\partial_t c_t$ term disappears only for a frozen coarse map. The parameter $t$ is not a base coordinate, physical time, or RG depth. ESTABLISHED.
 
 For frozen memberships and the constant-metric Gaussian or feature flow
 
@@ -321,19 +327,73 @@ See [counterexample-proofs.md](docs/derivations/2026-08-14-pointwise-meta-agent-
 
 ## 11. Certified boundary and repository map
 
-ESTABLISHED: fixed-point types; fundamental-cycle holonomy bookkeeping; two-channel zero distortion; unrestricted full-law mixture identity and uniqueness; finite-holonomy orbit averaging; rooted-tree total-variation control; normalized joint-event pushforward and disintegration; incidence-supported component-indexed retained mark laws; common-channel VFE chain rule; normalized nested composition; moving-map chain rule; and the eight counterexamples.
+ESTABLISHED: fixed-point types; fundamental-cycle holonomy bookkeeping; two-channel zero distortion; unrestricted full-law mixture identity and uniqueness; finite-holonomy orbit averaging; rooted-tree total-variation control; normalized joint-event pushforward and disintegration; incidence-supported component-indexed retained mark laws; the full pointwise parent generative/posterior/recognition triple; induced or explicitly compatible parent evaluation; derived recognition, prior, and posterior marginals; the extended common-channel KL/VFE chain and its finite zero-defect and pairwise recovery corollaries; normalized nested composition; moving-map chain rule; and the released counterexamples.
 
-CONDITIONAL: compact continuous holonomy averaging under explicit domination and finite-KL assumptions; the frozen constant-metric Gaussian or feature stability corollary; the richer Theory/07b hypergraph, path-law, and memory closures under their separately stated joint-factor, full-path-law/transport, and linear-dynamic hypotheses; and any exact removal of the certified marks or holonomy under a theorem stated for that removal.
+CONDITIONAL: holonomy blindness under typed actions, full fine-law covariance, compatible selected posterior versions, $C_A$ equivariance, evaluator covariance, and fixed-$(o,X)$ isotropy for same-slice invariance; compact continuous holonomy averaging under explicit domination and finite-KL assumptions; the frozen constant-metric Gaussian or feature stability corollary; the richer Theory/07b hypergraph, path-law, and memory closures under their separately stated joint-factor, full-path-law/transport, and linear-dynamic hypotheses; and any exact removal of the certified marks or holonomy under a theorem stated for that removal.
 
 DIAGNOSTIC: raw connection spectral gaps, KL thresholds, and finite symbolic or numerical checks. They can test a proposed construction but do not select a partition or prove a theorem.
 
-OPEN/TODO: hyperedge, shared-factor, and path-memory closure absent the separate imported hypotheses; extension across $R$; patch gluing; active-set changes; canonical partition selection; literal replicated-parent semantics; autonomous agency; physical time; continuum limits; an intrinsic threshold; general noncompact holonomy averaging; adaptive attention dynamics; nonlinear full-law VFE semiconjugacy; and dynamically selected memberships.
+OPEN/TODO: family-wide common recovery absent simultaneous hypotheses; the frozen comparison category; extension across $\mathcal U_A$; parent local sections and patch gluing; active-set changes; canonical channel, membership, and partition selection; literal replicated-parent semantics; a geometric meta-agent; autonomous agency; nonequilibrium persistence; physical time; continuum limits; unique latent DAG or microscopic physics; ontology; an intrinsic threshold; general noncompact holonomy averaging; adaptive attention dynamics; nonlinear full-law VFE semiconjugacy; and dynamically selected memberships.
 
 | Location | Role |
 |---|---|
 | [solid_RG_theory.md](solid_RG_theory.md) | Start page and sole human-facing pointwise guide |
 | [Theory](Theory/) | Canonical theorem source, especially chapters 06, 07b, and 09 plus SPEC.md |
 | [Dated worklog](docs/research-plans/2026-08-12-elbo-to-continuum-action-worklog.md) | Chronological investigation; later corrections supersede earlier exploratory language |
-| [Certification package](docs/derivations/2026-08-14-pointwise-meta-agent-rg/) | Hash-bound proof, reconstruction, adversarial, counterexample, and validator evidence |
+| [Full-datum certification package](docs/derivations/2026-08-15-full-pointwise-meta-agent/) | Current hash-bound proof, reconstruction, adversarial, counterexample, reviews, and release metadata |
+| [Marginal-pair certification package](docs/derivations/2026-08-14-pointwise-meta-agent-rg/) | Historical two-channel marginal theorem and normalized network closure |
 
-The package terminal status is COMPLETE_AFFIRMATIVE for the exact frozen pointwise conjunction. That status does not cross any OPEN/TODO boundary above; the machine-readable certificate is release.json.
+The current package terminal status is COMPLETE_AFFIRMATIVE for the exact frozen full-datum conjunction, and its `target` ledger entry is EVIDENCE_VERIFIED. Those package labels report release evidence; the canonical manuscript theorem is ESTABLISHED. No status crosses an OPEN/TODO boundary above; the machine-readable certificate is `docs/derivations/2026-08-15-full-pointwise-meta-agent/release.json`.
+
+## 12. Ordered TODO roadmap beyond the pointwise certificate
+
+This roadmap records the completed static phases and the next theory program. The full-datum release closes only Phases 1--2; each later phase remains OPEN/TODO and depends on closure of the preceding phase.
+
+### Phase 0: collision-free notation standard -- COMPLETE
+
+Before another theorem is stated, publish a notation dictionary and migration table, then scan the governing sources for collisions. The standard must enforce all of the following.
+
+- The base is $\mathcal C$; agent supports are $\mathcal C_i$; and a finite child block $I$ with parent label $A$ has overlap patch $\mathcal U_A=\bigcap_{i\in I}\mathcal C_i$. Bare $R$ is never an overlap region. In the intervention chapters, $R$ remains the typed retained input or parameter, $E$ the intervened mediator, and $O$ the retained output or observation.
+- $\mathscr P_G\to\mathcal C$ denotes a principal bundle when that object is needed. Full generative and recognition laws use $\mathbb P$ and $\mathbb Q$, and the posterior uses $\boldsymbol\Pi$. Bare $P$ and $Q$ may occur only as explicitly local dummy measures or inside a frozen historical theorem whose types are stated nearby.
+- $\varpi$ remains reserved for the established projection notation; it is not reused for receiver occupancy. The normalized receiver occupancy in channel $x$ remains $\alpha_i^x$, and $\eta_{ij}^q=\alpha_i^q\beta_{ij}$ and $\eta_{ij}^m=\alpha_i^m\gamma_{ij}$ remain the joint directed edge-event laws. These $\alpha_i^x$ are external occupancy or sampling weights, not learned attention logits, attention rows, or an instruction to add a new transformer parameter. Any unrelated manuscript use of $\alpha$ must carry a distinguishing qualifier or superscript.
+- The new full-law construction uses $q_i^b$ for a local belief law and $q_i^m$ for a law over generative models. The symbol $m_i$ remains a model sample or presentation wherever it is so typed; it is not a general alias for $q_i^m$. Only explicitly law-valued $m_i$ occurrences in the frozen pointwise RG certificate may receive the local migration alias $q_i^m$. Preserve the distinct dependency notation $s_i^{o,X}$ and $q_i^{o,X}$; bare legacy $s_i$ is not globally renamed. A model point $m\in\mathsf M_i$ denotes a model presentation only after declaring an evaluation map $\operatorname{ev}_i:m\mapsto K_m$ into normalized generative kernels.
+- $C_A$ denotes the normalized coarse Markov channel used in the pointwise law construction. A moving deterministic coarse map in a dynamical closure problem is written $c_t$, not $C_t$.
+- General measurable or smooth statistical model spaces are the theory default. Multivariate Gaussian families are optional finite computational realizations, never the definition of the model fiber or of a meta-agent.
+
+The exit gate is closed by the authoritative registry, migration record, scanner self-test, and stored collision report in the full-datum package.
+
+### Phase 1: full pointwise probabilistic datum at one fixed point -- ESTABLISHED
+
+At $r_*$, the released theorem types the fine full recognition law $\mathbb Q_{I,o,X}$, full generative law $\mathbb P_I$, and selected posterior $\boldsymbol\Pi_{I,o,X}$. One normalized recognition-independent coarse channel $C_A$ leaves the observation coordinate unchanged, while the structural datum $X_A=\chi_A(X)$ remains outside $C_A$. The candidate parent objects are
+
+$$
+\mathbb Q_{A,o,X}=\mathbb Q_{I,o,X}C_A,
+\qquad
+\mathbb P_A=(\operatorname{id}_{\mathsf O}\times C_A)_\#\mathbb P_I,
+\qquad
+\boldsymbol\Pi_{A,o,X}=\boldsymbol\Pi_{I,o,X}C_A.
+$$
+
+The theorem proves normalization, the selected parent posterior identity, absolute continuity, induced or explicitly compatible parent evaluation, and the coordinate-projection identities for $q_A^b$, $q_A^m$, the prior marginals, and the posterior marginals. These projections do not reconstruct a joint law. This phase is closed for the static pointwise datum and does not construct a geometric meta-agent.
+
+### Phase 2: static pointwise VFE and holonomy alternatives -- ESTABLISHED
+
+The common-channel KL chain is additive in $[0,+\infty]$ with defect $\Delta_A(o,X)$. Adding the same finite real $-\log p_X(o)$ to both KL terms gives an extended-real VFE identity; a finite VFE may be negative. Without a finiteness premise, $\Delta_A=0$ exactly when the discarded conditional recognition and posterior laws agree $\mathbb Q_{A,o,X}$-almost surely. Finite fine KL is required for ordinary subtraction $\mathcal F_I-\mathcal F_A=\Delta_A$ and for the stated two-way pairwise common-recovery equivalence; family-wide recovery still needs simultaneous hypotheses. A bare equality $+\infty=+\infty$ supplies neither the zero-defect criterion nor a recovery consequence. The holonomy-blind branch is conditional on the typed action, channel, evaluator, fine-law, and selected-version hypotheses stated above. The alternative retains raw root-framed holonomy and boundary marks and makes no blindness claim. Neither branch selects membership. Dynamics is not part of this static closure.
+
+### Phase 3: comparison theorem -- OPEN/TODO
+
+Only after Phase 2, formalize how conclusions change when the comparison category permits or forbids target erasure, boundary exchange, time reversal, protocol-dependent relabeling, or latent dilation. Prove monotonicity under enlargement of the admitted morphism category and separate observational equivalence from equality of VFE, posterior, factorization, or meta-agent structure. Interventions are analyst-declared probes of a mechanism in this theorem; their use does not add ontic actions, plans, or controls to the underlying dynamics.
+
+### Phase 4: extend from $r_*$ across $\mathcal U_A$ -- OPEN/TODO
+
+Promote the pointwise objects to local sections over $\mathcal U_A$ and prove the required gluing, cocycle, measurability or smoothness, and path-consistency statements. Treat changing active sets, soft or multiple memberships, stabilizer and rank jumps, and failure of one global parent section explicitly. A single child may participate in multiple normalized coarse channels, but a literal replicated cover has different mass semantics and remains separately typed. The exit gate is a patchwise construction; no continuum or spacetime interpretation follows automatically.
+
+### Phase 5: participatory and cross-scale nonequilibrium -- OPEN
+
+Begin with declared fine dynamics $\dot y=V_t(y)$, a possibly moving deterministic coarse map $c_t$, and the coarse vector field $\overline V_t$. The semiconjugacy defect is
+
+$$
+\delta_t=\partial_t c_t+D c_tV_t-\overline V_t\circ c_t.
+$$
+
+Determine whether one coupled multiscale action can derive reciprocal fine-to-coarse and coarse-to-fine influence without double counting. Frozen dissipative gradient flow may relax toward equilibrium; sustained nonequilibrium would require a proved mechanism such as adaptive coarse maps, open boundary flux, stochastic driving, an antisymmetric sector, or Wheelerian participatory feedback. Distinguish universal variational evolution from the stronger claim of emergent agency. This phase remains OPEN until a typed coupled action, conservation or flux accounting, and an exact or controlled approximate dynamical closure theorem are supplied.

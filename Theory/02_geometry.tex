@@ -40,15 +40,15 @@ by a chosen connection.  These are typing declarations rather than physical conc
 \definitionheading{Common principal gauge bundle}{def:geo-principal-systems}
 Let
 \begin{equation}
-\pi:P\longrightarrow\mathcal C
+\pi:\mathscr P_G\longrightarrow\mathcal C
 \label{eq:geo-principal-bundle}
 \end{equation}
 be a smooth principal right $G$-bundle for a Lie group $G$.  For each agent $i$, choose an open
 support $\mathcal C_i\subseteq\mathcal C$ and two local principal-frame sections
 \begin{equation}
-u_i^b:\mathcal C_i\longrightarrow P,
+u_i^b:\mathcal C_i\longrightarrow\mathscr P_G,
 \qquad
-u_i^m:\mathcal C_i\longrightarrow P.
+u_i^m:\mathcal C_i\longrightarrow\mathscr P_G.
 \label{eq:geo-frame-sections}
 \end{equation}
 \status{DEFINITION}
@@ -120,9 +120,9 @@ infinite-dimensional fibers require their own categories and are not included si
 \definitionheading{Belief and model associated bundles}{def:geo-associated-bundles}
 On invariant law fibers define
 \begin{equation}
-\mathcal E_b=P\times_{\widehat\rho_b}\mathcal B_b,
+\mathcal E_b=\mathscr P_G\times_{\widehat\rho_b}\mathcal B_b,
 \qquad
-\mathcal E_m=P\times_{\widehat\rho_m}\mathcal B_m,
+\mathcal E_m=\mathscr P_G\times_{\widehat\rho_m}\mathcal B_m,
 \label{eq:geo-associated-bundles}
 \end{equation}
 using the quotient convention
@@ -133,7 +133,7 @@ using the quotient convention
 \status{DEFINITION}
 
 At the general tier these are associated measurable bundles.  Under
-\Cref{hyp:geo-smooth-tier} they are smooth associated bundles.  Smoothness of $P$ alone does not
+\Cref{hyp:geo-smooth-tier} they are smooth associated bundles.  Smoothness of $\mathscr P_G$ alone does not
 upgrade an arbitrary law fiber.
 
 The field $h_i$ compares the two principal sections, even when $\rho_b$ and $\rho_m$ are
@@ -141,7 +141,7 @@ inequivalent.  It then produces two different represented operators,
 $\widehat\rho_b(h_i)$ on $\mathcal B_b$ and $\widehat\rho_m(h_i)$ on $\mathcal B_m$.  It does not
 canonically produce an operator from $\mathcal B_b$ to $\mathcal B_m$.  If ``frame'' instead means
 an arbitrary basis of an associated vector fiber that is not induced from a section of this same
-$P$, the existence of a $G$-valued relative field is not guaranteed.  Moreover, when a
+$\mathscr P_G$, the existence of a $G$-valued relative field is not guaranteed.  Moreover, when a
 representation is nonfaithful, represented frame data alone determine at most a coset modulo its
 kernel; the principal sections, rather than their represented images, are what make $h_i$ unique.
 
@@ -167,7 +167,7 @@ h_i'=a_i^{-1}h_i b_i.
 
 These two passive coordinate choices must not be confused with a product gauge symmetry.  The
 principal gauge group of the ambient theory is the single group of $G$-equivariant automorphisms
-of $P$ over $\operatorname{id}_{\mathcal C}$, and each such automorphism acts simultaneously on
+of $\mathscr P_G$ over $\operatorname{id}_{\mathcal C}$, and each such automorphism acts simultaneously on
 both associated bundles.  For such an automorphism $F$, define its local functions by
 $F(u_i^b)=u_i^b\cdot k_i^b$ and $F(u_i^m)=u_i^m\cdot k_i^m$.  Equivariance and
 \eqref{eq:geo-relative-frame} imply
@@ -282,10 +282,10 @@ $\phi_i=\widehat\rho_m(h_i^{-1})\circ\phi$ and hence $f_i=\phi$.
 \definitionheading{Two connections on the common principal bundle}{def:geo-connections}
 Under \Cref{hyp:geo-smooth-tier}, choose
 \begin{equation}
-\omega_b,\omega_m\in\Omega^1(P,\mathfrak g)
+\omega_b,\omega_m\in\Omega^1(\mathscr P_G,\mathfrak g)
 \label{eq:geo-principal-connections}
 \end{equation}
-as principal connections on $P$.  They induce horizontal distributions $H^b,H^m$ on the two
+as principal connections on $\mathscr P_G$.  They induce horizontal distributions $H^b,H^m$ on the two
 associated bundles and, for every piecewise-smooth $\gamma:[0,1]\to\mathcal C$, parallel
 transports
 \begin{equation}
@@ -299,15 +299,15 @@ transports
 \status{DEFINITION}
 
 Explicitly, $\omega_x$ selects the unique horizontal lift of $\gamma$ through a chosen point of
-$P_{\gamma(0)}$; carrying the associated-law coordinate along that lift defines the corresponding
+$(\mathscr P_G)_{\gamma(0)}$; carrying the associated-law coordinate along that lift defines the corresponding
 map in \eqref{eq:geo-base-parallel-transports}.  This is transport \emph{over} the base curve, not
 transport of vectors in $T\mathcal C$.  A tangent-vector transport would require a separately
-chosen affine connection on $T\mathcal C$, unless $P$ and its representation have explicitly been
+chosen affine connection on $T\mathcal C$, unless $\mathscr P_G$ and its representation have explicitly been
 identified with the frame bundle of $\mathcal C$.
 
 The two connections need not agree.  Their difference $\omega_m-\omega_b$ is horizontal and
 $\operatorname{Ad}$-equivariant, hence descends to an
-$\operatorname{Ad}(P)$-valued one-form on $\mathcal C$.  In an associated vector-bundle
+$\operatorname{Ad}(\mathscr P_G)$-valued one-form on $\mathcal C$.  In an associated vector-bundle
 realization, the induced horizontal distributions also define covariant derivatives
 $\nabla^b,\nabla^m$.  No linear covariant derivative is assumed on a merely measurable law fiber.
 
@@ -510,12 +510,12 @@ to $i$ gives the unique change from $l$ to $i$. \hfill$\square$
 Let $\mathcal G$ be the sheaf of smooth $G$-valued maps.  There is one principal bundle and hence
 one nonabelian \v{C}ech class:
 \begin{equation}
-[T^b]=[T^m]=[P|_{\mathcal C_0}]
+[T^b]=[T^m]=[\mathscr P_G|_{\mathcal C_0}]
 \in\check H^1(\{\mathcal C_i\};\mathcal G).
 \label{eq:geo-cech-class}
 \end{equation}
 Indeed, \eqref{eq:geo-frame-comparison-relation} is exactly the coboundary equivalence between
-the two cocycles.  The class is distinguished exactly when $P|_{\mathcal C_0}$ is trivial,
+the two cocycles.  The class is distinguished exactly when $\mathscr P_G|_{\mathcal C_0}$ is trivial,
 equivalently when, for either atlas, there are smooth $U_i^x:\mathcal C_i\to G$ such that
 \begin{equation}
 T_{ij}^x=U_i^x(U_j^x)^{-1}.
@@ -536,7 +536,7 @@ different induced characteristic data.
 
 \medskip
 \hypothesisheading{Common principal trivialization}{hyp:geo-common-trivializations}
-Whenever global principal-frame coordinates are used, declare $P|_{\mathcal C_0}$ trivial and
+Whenever global principal-frame coordinates are used, declare $\mathscr P_G|_{\mathcal C_0}$ trivial and
 choose one reference section $\sigma_0$ such that
 \begin{equation}
 u_i^b=\sigma_0\cdot(U_i^b)^{-1},
@@ -551,8 +551,8 @@ h_i=U_i^b(U_i^m)^{-1}.
 
 This is one topological hypothesis, not two channelwise hypotheses.  The general theory retains
 local frames and their common \v{C}ech class.  A global section of an associated bundle does not
-in general trivialize $P$: if an associated fiber contains a $G$-fixed point $\beta_0$, then
-$c\mapsto[p,\beta_0]$ is well defined for any $P$. \status{ESTABLISHED}
+in general trivialize $\mathscr P_G$: if an associated fiber contains a $G$-fixed point $\beta_0$, then
+$c\mapsto[p,\beta_0]$ is well defined for any $\mathscr P_G$. \status{ESTABLISHED}
 
 \section{Channel-specific graph links and trivializing subfamilies}
 \label{sec:geo-regime-two}
@@ -618,7 +618,7 @@ walk and hence agree.  Appending $e:j\to i$ gives the required edge factorizatio
 A subfamily is \emph{jointly trivializing} when the criterion holds separately for both link data
 sets.  For $T^x$ evaluated at one common context the criterion is automatic by the \v{C}ech
 cocycle law.  Its nontrivial graph content concerns the independently declared $\Theta^x$.
-Pointwise graph triviality is weaker than triviality of $P$, which requires smooth overlap data on
+Pointwise graph triviality is weaker than triviality of $\mathscr P_G$, which requires smooth overlap data on
 the entire cover.
 
 \medskip
@@ -724,7 +724,7 @@ laws without supplying a linear map between the sample fibers.
 \label{sec:geo-product-extension}
 
 If the application genuinely requires independently nonisomorphic principal bundles or two
-independent gauge symmetries, replace the ambient $P$ by
+independent gauge symmetries, replace the ambient $\mathscr P_G$ by
 \begin{equation}
 \pi_b:P_b\to\mathcal C,
 \qquad

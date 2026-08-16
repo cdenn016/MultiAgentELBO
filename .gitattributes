@@ -13,6 +13,7 @@ docs/derivations/2026-08-14-typed-intervention-nonidentifiability/** text eol=lf
 solid_RG_theory.md text eol=lf
 docs/derivations/2026-08-14-pointwise-meta-agent-rg/** text eol=lf
 docs/derivations/2026-08-14-operational-intervention-extensions/** text eol=lf
+docs/derivations/2026-08-15-full-pointwise-meta-agent/** text eol=lf
 
 # Typed-intervention witness contract has byte-bound evidence snapshots.
 tests/test_typed_intervention_semantics_witness.py text eol=lf

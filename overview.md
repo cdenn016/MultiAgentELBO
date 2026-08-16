@@ -30,9 +30,9 @@ than being inserted as physical primitives.
 | Symbol | Type | Role |
 |---|---|---|
 | \(\mathcal C\) | smooth manifold | fixed, initially nonphysical **context** or noumenal index space. Explicitly **not yet** space, time, the agent index set, or the interaction graph. |
-| \(P\to\mathcal C\) | principal \(G\)-bundle | frame bundle; \(G\le GL(K,\mathbb R)\), \(K\) = **fiber** dimension (so the simple rotation group is \(SO(K)\), not \(SO(N)\)) |
+| \(\mathscr P_G\to\mathcal C\) | principal \(G\)-bundle | frame bundle; \(G\le GL(K,\mathbb R)\), \(K\) = **fiber** dimension (so the simple rotation group is \(SO(K)\), not \(SO(N)\)) |
 | \(\mathcal B_b,\mathcal B_m\) | normalized-law fibers | declared subsets of \(\mathcal P(\mathsf K)\) and \(\mathcal P(\mathsf M)\). Smooth statistical/Fisher geometry is an additional regular-tier hypothesis. |
-| \(\mathcal E_b,\mathcal E_m\) | associated law bundles | \(P\times_{\widehat\rho_b}\mathcal B_b\) and \(P\times_{\widehat\rho_m}\mathcal B_m\), carrying belief and model laws. The action **must** be by pushforward, \(\widehat\rho_x(g)=(\rho_x(g))_\#\) for bimeasurable parameter-independent \(\rho_x:G\to\operatorname{Aut}(\mathsf K)\) (`Theory/02` `eq:geo-pushforward-actions`); this is what makes \(g^F\) invariant and it is what every invariance claim in §2.2 consumes. A merely smooth \(G\le GL(K,\mathbb R)\) action on \(\mathcal B\subseteq\mathcal P(\mathsf K)\) need not be Fisher-isometric — projective tilting on the simplex drifts \(g^F\) by tens of percent. |
+| \(\mathcal E_b,\mathcal E_m\) | associated law bundles | \(\mathscr P_G\times_{\widehat\rho_b}\mathcal B_b\) and \(\mathscr P_G\times_{\widehat\rho_m}\mathcal B_m\), carrying belief and model laws. The action **must** be by pushforward, \(\widehat\rho_x(g)=(\rho_x(g))_\#\) for bimeasurable parameter-independent \(\rho_x:G\to\operatorname{Aut}(\mathsf K)\) (`Theory/02` `eq:geo-pushforward-actions`); this is what makes \(g^F\) invariant and it is what every invariance claim in §2.2 consumes. A merely smooth \(G\le GL(K,\mathbb R)\) action on \(\mathcal B\subseteq\mathcal P(\mathsf K)\) need not be Fisher-isometric — projective tilting on the simplex drifts \(g^F\) by tens of percent. |
 | \(\mathcal E_A=\mathcal E_b\times_{\mathcal C}\mathcal E_m\) | paired agent bundle | the kinematic bundle for one agent's belief–model pair |
 | \(z_i=(q_i,s_i)\) | section of \(\mathcal E_A|_{\mathcal C_i}\) | the primitive state-bearing content of agent \(i\) on its support \(\mathcal C_i\) |
 | \(q_i(c)\) | section of \(\mathcal E_b\) | recognition/belief law over hidden state |
@@ -40,6 +40,10 @@ than being inserted as physical primitives.
 | \(p_i(c),r_i(c)\) | reference sections | state prior and model hyperprior; derived cross-scale where the hierarchy closes, otherwise declared boundary data |
 | \(O_a\) | measurable record | an endogenous observation/event produced by interaction factor \(a\), not an additional substance or a posterior law |
 | \(K_a(do_a\mid y_{\partial a},X)\) | normalized Markov kernel | fixed, recognition-independent generative law for the record of a scoped interaction |
+| \(I,A,\mathcal U_A=\bigcap_{i\in I}\mathcal C_i\) | finite child block, parent label, and common overlap | the released full-datum theorem fixes one \(r_*\in\mathcal U_A\); it does not glue across the patch |
+| \(\mathbb P_I,\boldsymbol\Pi_{I,o,X},\mathbb Q_{I,o,X}\) | fine generative joint, selected posterior, and correlated recognition law | the full fine probabilistic tuple at fixed structural \(X\), with generation independent of recognition |
+| \(C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A\) | normalized recognition-independent Markov channel | one declared channel pushes generation, posterior, and recognition while leaving the observation in \(\mathsf O\) unchanged; it does not select membership |
+| \(\mathbb P_A,\boldsymbol\Pi_{A,o,X},\mathbb Q_{A,o,X}\) | full parent probabilistic datum | normalized common-channel pushforwards; \(q_A^b,q_A^m\) and the prior/posterior marginals are derived projections, not replacements for the joints |
 | \(\Omega_{ij},\widetilde\Omega_{ij}\) | fiber maps | transports of belief / model from \(j\)'s frame into \(i\)'s |
 | \(\beta_{ij},\gamma_{ij}\) | simplex rows | attention weights, belief and model channels |
 | \(A\) (or \(\omega\)) | principal connection | compares fibers at *different* base points |
@@ -527,6 +531,30 @@ Reading of the terms:
   \(d^2v/(2(v+1))+(v-\log(1+v))/2\)). Registered internally since
   `docs/research-plans/2026-08-12-pifb2-continuum-roadmap.md:104` and `rm-03-action-class.md:364-366`.
 
+**Full pointwise candidate-parent theorem**
+(`docs/derivations/2026-08-15-full-pointwise-meta-agent/`, manuscript status **ESTABLISHED**,
+release ledger `EVIDENCE_VERIFIED`, terminal status `COMPLETE_AFFIRMATIVE`, target digest
+`15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87`). For a finite child block
+\(I\), parent label \(A\), one fixed \(r_*\in\mathcal U_A\), fixed structural \(X\), and one
+admitted observation, a normalized recognition-independent \(C_A\) sends the fine generative joint,
+selected posterior-version family, and correlated recognition law to a normalized parent triple with
+the observation unchanged. The parent model evaluator is either induced by disintegration or is a
+predeclared jointly measurable normalized family satisfying the explicit almost-sure compatibility
+condition. All named parent marginals are derived projections and do not reconstruct the joints.
+
+The KL chain is additive in \([0,+\infty]\) with defect \(\Delta_A(o,X)\). Adding the same finite
+real \(-\log p_X(o)\) to both KL terms gives an extended-real VFE identity; a finite VFE may be
+negative. Without a finiteness premise, \(\Delta_A=0\) exactly when the discarded conditional
+recognition and posterior laws agree \(\mathbb Q_{A,o,X}\)-almost surely. Finite fine KL is required
+for ordinary subtraction \(\mathcal F_I-\mathcal F_A=\Delta_A\) and for the stated two-way pairwise
+common-recovery equivalence; family-wide recovery still requires simultaneous hypotheses. Holonomy
+blindness additionally requires typed actions, full fine-law covariance, compatible selected
+posterior versions, channel equivariance, evaluator covariance, and fixed-\((o,X)\) isotropy for
+same-slice invariance. Raw root-framed holonomy retention is the alternative and selects no
+membership. Canonical channel/partition selection, comparison-category closure, patch gluing,
+geometric meta-agency, autonomy, agency, nonequilibrium, continuum limits, physical time, unique DAG
+or physics, and ontology remain open.
+
 **Other established results:** exact fast-state profiling identity; compact-subgroup reduction by
 Haar averaging; exact finite-site KL contraction (**conditional** — under §5's four hypotheses, not
 unconditionally); gauge-covariant informational pullback geometry with an exact defect cocycle
@@ -573,6 +601,14 @@ return and not yet reproduced in `Theory/`."
 
 ## 8. Live front (this session)
 
+- **Full pointwise probabilistic datum -- ESTABLISHED.** Static Phases 1--2 are closed at one
+  \(r_*\) by the released common-channel theorem. The next order is strict and remains OPEN/TODO:
+  freeze the comparison category for the parent experiment and the ordered \(R\to E\to O\) probe;
+  construct measurable or smooth channel families, cocycles, active-component/stratum handling,
+  normalized soft multiple membership, holonomy selection, integrable defect, local sections, and
+  gluing over \(\mathcal U_A\); then derive participatory nonequilibrium and operational agency grades
+  from one tower action or proved reduction without double counting. Interventions remain analyst
+  probes, and no static status transfers to those phases.
 - **Gradient sector.** The Fisher metric is the **negative mixed second jet** of KL at the diagonal
   (`Theory/05c` `prop:pb-kl-divergence-jets`) — not "the Hessian", which names three different objects
   of two different signs — so base-neighbor transported KL is a discrete Dirichlet energy **to second
@@ -731,6 +767,12 @@ Say this, and not more:
 > retained-variable VFE and strictly positive \(C^2\), parameterwise retained-family Fisher tensors descend;
 > arbitrary uncompleted full-latent VFE and full-joint Fisher tensors do not factor through those
 > retained data, and node inventories do not descend under the certified observational equivalence.
+> At one fixed \(r_*\), fixed structural \(X\), and one admitted observation, the released
+> full-datum theorem constructs normalized parent generative, selected posterior, and correlated
+> recognition laws through one declared recognition-independent channel, derives their marginals,
+> and reports the exact conditional-information VFE defect. It does not select that channel or
+> membership, construct parent local sections, glue over \(\mathcal U_A\), or establish autonomy,
+> agency, physical time, unique physics, or ontology.
 > Relative to one fixed protocol monoid, response, target coloring where retained, and morphism category, the
 > two-sided contextual quotient is terminal from finer to coarser response-compatible quotients.
 > Finite protocol monoids have minimum class cardinality over the raw quotient map; compact
