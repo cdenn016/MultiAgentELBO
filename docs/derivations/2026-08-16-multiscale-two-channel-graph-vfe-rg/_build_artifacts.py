@@ -244,9 +244,10 @@ EVIDENCE = [
     ),
     ev(
         "ev-degeneracy", "COUNTEREXAMPLE", P2,
-        "Proposition 5 and Corollary 6: with unrestricted parent space and downward-kernel "
+        "Proposition 5 and Corollary 6: with an unrestricted parent space and downward-kernel "
         "family, min_Q F is constant across partitions, so the partition posterior equals its "
-        "prior; a capacity restriction and a node-count cost are both necessary.",
+        "prior. Capacity restriction and positive node-count cost are separate sufficient "
+        "design mechanisms; their joint necessity is open.",
         [
             "Requires the copy construction Z_{1,I} = Y_{0,I}, K^0_I = delta, P_1 = flat child law.",
             "Block factorization of K_down is respected because the product of Diracs is a Dirac.",
@@ -374,10 +375,10 @@ ASSUMPTIONS = [
         "id": "as-capacity",
         "kind": "MODELING_POSTULATE",
         "statement": (
-            "A declared capacity restriction on the parent space Z_{s+1}, the downward-kernel "
-            "family K_down, and the parent prior P_{s+1}, together with a strictly positive cost "
-            "per parent node. Without both, the tower free energy is exactly constant across "
-            "partitions."
+            "A declared capacity restriction on the parent space Z_{s+1}, downward-kernel family "
+            "K_down, and parent prior P_{s+1} is one sufficient anti-degeneracy mechanism. A "
+            "strictly positive cost per parent node is another. Their joint necessity over a "
+            "declared model class is open."
         ),
     },
     {
@@ -454,10 +455,10 @@ CLAIMS = [
     ),
     claim(
         "degeneracy",
-        "With an unrestricted parent space and downward-kernel family the minimized tower VFE is "
-        "constant across partitions, so the inferred partition law equals its prior and hierarchy "
-        "a capacity restriction and a node-count cost are sufficient design mechanisms, one "
-        "per degeneracy, whose joint necessity over a declared model class is open.",
+        "With an unrestricted parent space and downward-kernel family, the minimized tower VFE is "
+        "constant across partitions, so the inferred partition law equals its prior and no "
+        "hierarchy is selected. Capacity restriction and node-count cost are sufficient design "
+        "mechanisms, one per degeneracy; their joint necessity over a declared model class is open.",
         "There exists an admissible tower, for every partition, on which the minimum is the same; "
         "hence the universal selection claim fails.",
         "MATHEMATICAL", "INCONCLUSIVE", ["ev-degeneracy", "ev-counterexamples"],
@@ -483,9 +484,10 @@ CLAIMS = [
         "holonomy-obstruction",
         "Non-flat connection data are retained exactly as the simultaneous root-framed orbit "
         "together with the conditional law of dressed transports; H_#Q = Q is necessary and "
-        "sufficient only on the zero-distortion sector; flatness and stabilization are logically "
-        "independent; and an empty intersection of the holonomy fixed set with the admitted family "
-        "makes a zero-distortion parent nonexistent.",
+        "sufficient only on the zero-distortion sector; flatness implies stabilization, flatness "
+        "does not imply agreement, and stabilization does not imply flatness; an empty intersection "
+        "of the holonomy fixed set with the admitted family makes a zero-distortion parent "
+        "nonexistent.",
         "For every finite connected block, channel, and equivariant admitted parent family.",
         "MATHEMATICAL", "INCONCLUSIVE", ["ev-holonomy", "ev-counterexamples"], ["as-typing"],
         "Prove that every equivariant admitted family in this program contains a holonomy-fixed "
@@ -772,7 +774,8 @@ ATTACKS = [
                     "target_obligation_ids": ["target", "intrinsic-scale"],
                     "representation": "Probability law on ordered node pairs plus normalized "
                                       "endpoint kernels.",
-                    "invariant_or_obstruction": "Additivity under blocking; rows are not additive.",
+                    "invariant_or_obstruction": "Linear mass preservation under a fixed Markov "
+                                                "pushforward; row averages are not additive.",
                     "obligations": ["Supply intrinsic scales that are genuine metrics."],
                     "bridge": "Perron occupancy identifies the symmetrization with Chung's "
                               "directed Laplacian.",
@@ -787,8 +790,8 @@ ATTACKS = [
                 {
                     "family_id": "family-holonomy-retention",
                     "core_mechanism": "Retain the conditional law of dressed transports rather than "
-                                      "a barycenter, and read blindness as a support condition on "
-                                      "the stabilizer.",
+                                      "a barycenter, and read blindness at the measurable tier as "
+                                      "a measure-one stabilizer condition.",
                     "target_obligation_ids": ["target", "holonomy-obstruction"],
                     "representation": "Markov kernel from the coarse state into probability "
                                       "measures on the structure group.",
@@ -800,7 +803,7 @@ ATTACKS = [
                     "verified_results": ["holonomy-obstruction"],
                     "open_gaps": ["Conditional independence of consecutive dressed marks."],
                     "novelty_fingerprint": "dressed transport law + convolution under conditional "
-                                           "independence + stabilizer support criterion",
+                                           "independence + measure-one stabilizer criterion",
                     "disposition": "mature",
                 },
                 {

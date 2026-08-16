@@ -68,14 +68,16 @@ mechanisms, and explicitly separated from the exact $\eta$ pushforward. That
 condition is now met, and it appears as **mechanism M5** in Part 3 §10.1, labeled
 `CONJECTURE`, with three caveats attached:
 
-1. Proposition 11's effective resistance supplies the length scale GR needs, so the
-   protocol is statable here without any latent embedding.
-2. No theorem transfers — not the self-similarity result, not the hidden-degree
+1. The $\phi$/sup weight rule acts only after blocks are supplied. Effective
+   resistance may motivate a separate conjectural blocking map, but no such map or
+   semigroup is currently defined.
+2. No theorem transfers: not self-similarity, not the hidden-degree
    recursion $\langle\sigma'\rangle=\langle\sigma\rangle r^{\psi}$, not the angular
    sector construction, all of which depend on the weighted-$\mathbb S^1$ model.
-3. Any $\phi\ne1$ needs the global constant $C$, so it leaves the
-   Markov-pushforward semantics and the exact KL chain rule; and effective
-   resistance is computed on the **symmetrized** graph, so the mechanism discards
+3. For $\phi\ne1$, no fixed input-independent normalization makes the $\phi$-norm
+   a mass-preserving Markov pushforward for all probability inputs and nontrivial
+   blocks; GRW instead uses rescaling $C$. Effective resistance is computed on the
+   **symmetrized** graph, so the mechanism discards
    the directionality that $\beta$ and $\gamma$ exist to carry — the review's own
    added objection.
 

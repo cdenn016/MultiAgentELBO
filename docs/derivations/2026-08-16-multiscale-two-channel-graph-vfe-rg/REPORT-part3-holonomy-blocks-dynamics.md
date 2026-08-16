@@ -142,21 +142,29 @@ the right demand, and the reasons are sharp.
 the joint edge-event-and-mark law:
 
 $$
+\eta^{x,c}_{IJ}(z):=
+\mathbb E\!\left[\sum_{i,j}\eta^x_{ij}(Y)K^x(I,J\mid i,j)\ \middle|\ Z=z\right],
+$$
+
+and, on $\{\eta^{x,c}_{IJ}(z)>0\}$,
+
+$$
 \boxed{\;
 \mu^x_{IJ}(dg\mid z)\;:=\;\frac{1}{\eta^{x,c}_{IJ}(z)}\,
-\mathbb E_{B_o}\!\Big[\sum_{i,j}\eta^x_{ij}(Y)\,K^x(I,J\mid i,j)\,\delta_{\Theta^{IJ,x}_{ij}}(dg)\ \Big|\ Z=z\Big]
+\mathbb E\!\Big[\sum_{i,j}\eta^x_{ij}(Y)K^x(I,J\mid i,j)\delta_{\Theta^{IJ,x}_{ij}}(dg)\ \Big|\ Z=z\Big].
 \;}
 $$
 
-on $\{\eta^{x,c}_{IJ}>0\}$, a normalized probability measure on $G$ (or on the
+This is a normalized probability measure on $G$ (or on the
 represented group $R_x(G)$), defined as a Markov kernel $z\mapsto\mu^x_{IJ}(\cdot\mid z)$.
 This is the exact coarse connection datum. It is normalized by construction and
 requires no integrability hypothesis.
 
 **The endpoint factor is not optional.** The sum runs over *all* microscopic
-ordered pairs and carries the same $K^x(I,J\mid i,j)$ that defines the denominator
-$\eta^{x,c}_{IJ}=\sum_{i,j}\eta^x_{ij}K^x(I,J\mid i,j)$ in Part 2 §8.1; that is
-exactly what makes the total mass one. Writing instead a restricted sum over
+ordered pairs and carries the same $K^x(I,J\mid i,j)$ inside the conditional
+expectation that defines the denominator. Integrating this conditional mass over
+$Z$ gives the Part 2 §8.1 pushforward. This identity, rather than an unconditioned
+denominator, makes the total mass one. Writing instead a restricted sum over
 "$i\in I,\ j\in J$" is correct **only for hard deterministic endpoint
 assignments**, where the omitted factor is the indicator that is identically one
 on the displayed index set. Under the soft memberships this package admits
@@ -171,9 +179,9 @@ not a probability measure.
    exist for a generic $\mu^x_{IJ}$. The set of measures whose barycenter lies in
    $R_x(G)$ is not generic and is not preserved under blocking.
 2. *The first moment need not exist.* The Hom operator
-   $\mathsf T^x_{IJ}(z)=\mathbb E_{B_o}[\sum\eta_{ij}R_x(V^x_{ij})\mid Z=z]$ is
+   $\mathsf T^x_{IJ}(z)=\mathbb E[\sum\eta_{ij}R_x(V^x_{ij})\mid Z=z]$ is
    defined only under the conditional Bochner-integrability condition
-   $\mathbb E_{B_o}[\sum\eta_{ij}\Vert R_x(V^x_{ij})\Vert\mid Z]<\infty$ a.e. For
+   $\mathbb E[\sum\eta_{ij}\Vert R_x(V^x_{ij})\Vert\mid Z]<\infty$ a.e. For
    noncompact $\rho_x$ this can fail.
 3. *A mean transport plus a mean feature does not give the mean message.* If marks
    and source features are correlated, means do not determine $\mathbb E[Uz]$:
@@ -339,11 +347,13 @@ context point $c_\*$.
 The transplant that is *available* is narrower than it first appears, and three
 separate caveats have to travel with it.
 
-1. **The missing length scale can be supplied.** GR needs only a notion of
-   "increasingly longer length scales," not a hyperbolic embedding. Proposition 11
-   of Part 4 §12.3 supplies one intrinsically and gauge-invariantly: effective
-   resistance or commute time on $L^{x,\rm sym}$. So a max-weight blocking
-   *protocol* becomes statable here.
+1. **The weight rule does not choose blocks.** In GRW the binary GR step supplies
+   blocks from consecutive angular sectors of the latent $\mathbb S^1$ geometry;
+   the $\phi$- or sup-rule then aggregates weights between those already chosen
+   blocks. This theory has no such embedding or angular-sector map. Proposition 11
+   of Part 4 §12.3 supplies gauge-invariant effective resistance and commute time,
+   which may motivate a separate conjectural blocking map, but no such map or
+   semigroup is defined here.
 2. **The theorems do not come with it.** Transplanting a protocol is not
    transplanting a result. Their self-similarity findings, the hidden-degree
    recursion $\langle\sigma'\rangle=\langle\sigma\rangle r^{\psi}$, and the angular
@@ -351,16 +361,18 @@ separate caveats have to travel with it.
    and none of them follows here. This mechanism is a **conjecture about where to
    propose blocks**, nothing more.
 3. **It is outside the exact VFE pushforward, and it discards directionality.**
-   Any $\phi\ne1$ requires the global constant $C$, so the coarse object is no
-   longer the image of the fine measure under one input-independent Markov kernel,
-   and the exact KL chain rule of Part 1 §5 is lost with it. Separately, effective
-   resistance is computed on the *symmetrized* graph, so a mechanism built on it
-   throws away the directed structure that $\beta$ and $\gamma$ exist to carry.
+   For $\phi\ne1$, no fixed input-independent normalization makes the $\phi$-norm
+   a mass-preserving Markov pushforward for all probability inputs and nontrivial
+   blocks; GRW instead includes a model-dependent rescaling $C$. The exact KL chain
+   rule of Part 1 §5 therefore does not transfer. Separately, effective resistance
+   is computed on the *symmetrized* graph, so a mechanism built on it throws away
+   the directed structure that $\beta$ and $\gamma$ exist to carry.
 
-The disciplined use is therefore: **propose** candidate blocks with a $\sup$ or
-$\phi$-norm rule on the resistance scale, then **score and coarse-grain** them with
-the exact linear $\eta$ pushforward of Part 2 §8.1. Proposal and accounting are
-different jobs, and only the second is bound by the VFE identity. Whether a
+The disciplined use is therefore: obtain candidate blocks from a separately
+declared mechanism, optionally investigate a resistance-based proposal, and then
+**score and coarse-grain** them with the exact linear $\eta$ pushforward of Part 2
+§8.1. Block proposal and weight accounting are different jobs, and only the second
+is bound by the VFE identity. Whether a
 directed analogue of the $\phi$-family exists that preserves both the composition
 semigroup and the Markov-pushforward property is open; the authors themselves name
 directionality as essential future work.
