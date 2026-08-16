@@ -1,0 +1,583 @@
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{booktabs,tabularx,array}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{deepblue}{RGB}{25,55,90}
+\definecolor{softblue}{RGB}{236,244,250}
+\definecolor{softgreen}{RGB}{237,247,239}
+\definecolor{softorange}{RGB}{252,244,231}
+\definecolor{softgray}{RGB}{244,244,244}
+
+\hypersetup{
+  pdftitle={Pointwise Meta-Agent Renormalization: A Physicist's Guide},
+  pdfauthor={MultiAgentELBO project},
+  pdfsubject={Gauge transport, coarse graining, variational free energy, and meta-agent construction}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textit{Pointwise meta-agent renormalization}}
+\rhead{\textit{Physicist's guide}}
+\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.7em}
+\setlist[itemize]{leftmargin=1.6em,itemsep=0.25em,topsep=0.25em}
+
+\newcommand{\KL}{\operatorname{KL}}
+\newcommand{\Prob}{\mathbb P}
+\newcommand{\Rec}{\mathbb Q}
+\newcommand{\Post}{\boldsymbol\Pi}
+\newcommand{\Law}{\mathcal P}
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\ev}{\operatorname{ev}}
+
+\newtcolorbox{physicalreading}{
+  colback=softblue,
+  colframe=deepblue,
+  title=Physical reading,
+  fonttitle=\bfseries,
+  breakable
+}
+
+\newtcolorbox{provedbox}{
+  colback=softgreen,
+  colframe=green!45!black,
+  title=What is established,
+  fonttitle=\bfseries,
+  breakable
+}
+
+\newtcolorbox{boundarybox}{
+  colback=softorange,
+  colframe=orange!65!black,
+  title=Boundary of the result,
+  fonttitle=\bfseries,
+  breakable
+}
+
+\newtcolorbox{translationbox}{
+  colback=softgray,
+  colframe=black!55,
+  title=Translation,
+  fonttitle=\bfseries,
+  breakable
+}
+
+\title{\textbf{Pointwise Meta-Agent Renormalization}\\[0.35em]
+\Large A Physicist's Guide to the Static Theory}
+\author{MultiAgentELBO theory program}
+\date{August 15, 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document explains the pointwise meta-agent renormalization result in the language of effective theories, gauge transport, information loss, and coarse observables. The central construction takes a block of fine agents and one declared coarse channel, then produces a normalized parent generative law, recognition law, and posterior law. An exact relative-entropy chain rule measures the information discarded by that channel. The result is static and pointwise: it holds at one base point, one structural configuration, and one admitted observation. It does not yet construct a spacetime-dependent geometric agent, autonomous dynamics, nonequilibrium persistence, or a unique microscopic physics.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{The theory in one page}
+
+The renormalization question is familiar from physics: if a set of microscopic degrees of freedom is replaced by an effective degree of freedom, what information survives, what information is lost, and which predictions remain unchanged? Here the microscopic objects are agents carrying probabilistic beliefs and generative-model presentations. The effective object is called a candidate parent or meta-agent datum.
+
+There are two complications beyond ordinary block-spin language. First, different agents may express their states in different local frames. Their probability laws cannot be compared until they are transported into a common frame. Transport around a closed loop can return a state in a rotated or otherwise transformed frame; this is the holonomy. Second, the object being coarse-grained is not a single field value. It is a probabilistic triple:
+\[
+  \text{generative law } \Prob_I,
+  \qquad
+  \text{recognition law } \Rec_{I,o,X},
+  \qquad
+  \text{posterior } \Post_{I,o,X}.
+\]
+The subscript \(I\) denotes the fine block, \(X\) is fixed structural data, and \(o\) is the admitted observation.
+
+One normalized Markov channel \(C_A\) is applied to the fine latent variables. The same channel must be used for recognition and posterior. It is chosen independently of the current recognition law, posterior, parameters, and observation. The parent triple is
+\begin{equation}
+  \Rec_{A,o,X}=\Rec_{I,o,X}C_A,
+  \qquad
+  \Prob_A=(\id_{\mathsf O}\times C_A)_{\#}\Prob_I,
+  \qquad
+  \Post_{A,o,X}=\Post_{I,o,X}C_A.
+  \label{eq:parent-triple}
+\end{equation}
+The observation coordinate is not coarse-grained, and the structural variable \(X\) remains an external conditioning datum. Equation~\eqref{eq:parent-triple} is the probabilistic core of the static meta-agent construction.
+
+The exact information balance is
+\begin{equation}
+  \KL(\Rec_{I,o,X}\Vert\Post_{I,o,X})
+  =
+  \KL(\Rec_{A,o,X}\Vert\Post_{A,o,X})
+  +\Delta_A(o,X),
+  \qquad
+  \Delta_A(o,X)\geq 0.
+  \label{eq:kl-chain-preview}
+\end{equation}
+The nonnegative term \(\Delta_A\) is the recognition-versus-posterior information that remains in the fine variables after the parent variable is known. It is the exact cost of forgetting those variables for this pair of laws.
+
+\begin{physicalreading}
+The theorem is an exact static coarse-graining statement. It resembles an RG step because a block is mapped to an effective probabilistic description and the discarded information is quantified. It is not yet a dynamical RG flow, a continuum limit, or a derivation of agency.
+\end{physicalreading}
+
+\section{A physics dictionary}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.19\textwidth}X}
+\toprule
+\textbf{Symbol or term} & \textbf{Physical interpretation} \\
+\midrule
+\(\mathcal C\) & Contextual base space. A point of \(\mathcal C\) specifies where the local probabilistic data are evaluated. It need not be physical spacetime. \\
+\(\mathcal C_i\) & Region on the base over which agent \(i\) is defined. \\
+\(\mathcal U_A=\bigcap_{i\in I}\mathcal C_i\) & Common overlap patch for a finite child block \(I\) and candidate parent label \(A\). \\
+\(r_*\) & One fixed point in the overlap. The proved construction is performed in the fiber over this point. \\
+Law & A normalized probability measure on a declared measurable state space. It is a generic type, not one special global object. \\
+\(\Prob\) & The generative law: the model's normalized joint distribution over observations and latent variables, conditional on declared structural data. \\
+\(\Rec\) & The recognition law: the agent's current inferential distribution over latent variables for an admitted observation. \\
+\(\Post\) & A selected posterior version obtained from the generative law. It is the Bayesian target against which \(\Rec\) is compared. \\
+\(m\in\mathsf M_i\) & A model presentation or model-valued state. It becomes an operative generative mechanism through an evaluation map \(m\mapsto K_m\). \\
+\(q_i^m\) & A probability law over model presentations. A sharp model is the special case \(q_i^m=\delta_m\). \\
+\(\Omega_{ij}\) & Transport from agent \(j\)'s local frame to agent \(i\)'s local frame. \\
+\(H\) & Holonomy: the ordered product of transports around a closed path. \\
+\(H_{\#}Q=Q\) & The law \(Q\) is invariant under the loop transformation. This is weaker than \(H=I\). \\
+\(\eta_{ij}=\alpha_i\beta_{ij}\) & Joint probability of the directed edge event ``receiver \(i\), source \(j\).'' \\
+\(C_A\) & The normalized coarse Markov channel that turns the fine latent state into the parent latent state. \\
+\(\Delta_A\) & Conditional relative entropy discarded by the coarse channel. \\
+\(\mathcal F\) & Variational free energy at fixed evidence, equal to a KL term plus the common evidence contribution. \\
+\bottomrule
+\end{tabularx}
+\caption{A translation between the repository notation and standard physics language.}
+\label{tab:dictionary}
+\end{table}
+
+\subsection{What ``law'' means}
+
+A law is simply a normalized probability measure. The phrase can refer to the global generative law \(\Prob\), the global recognition law \(\Rec\), a posterior \(\Post\), an agent's local belief law, or a distribution over model presentations. The symbols \(\Prob\) and \(\Rec\) name particular roles; they do not exhaust the meaning of ``law.''
+
+For example, \(q_i^m\in\Law(\mathsf M_i)\) is a law over the model fiber \(\mathsf M_i\). A point \(m\in\mathsf M_i\) is one model presentation, while
+\[
+  \ev_i:m\longmapsto K_{i,m}^{X}
+\]
+turns that presentation into a normalized generative kernel. The map need not be injective: two presentations can generate the same observable kernel. The general theory therefore uses measurable model spaces, and smooth statistical manifolds when differential structure is needed. Multivariate Gaussians are optional finite computational realizations, not the definition of a model fiber or of an agent.
+
+\section{Gauge transport and network frustration}
+
+\subsection{Why transport is needed}
+
+Suppose two agents assign probability laws to locally represented states. Directly comparing the coordinate arrays is meaningless if the agents use different frames. A transport map \(\Omega_{ij}:j\to i\) first expresses agent \(j\)'s law in agent \(i\)'s frame. The edge mismatch is then
+\[
+  \KL\left(p_i\Vert(\Omega_{ij})_{\#}p_j\right).
+\]
+This is the probabilistic analogue of comparing vectors only after parallel transport.
+
+The theory keeps belief and model transport separate:
+\[
+  (\beta_{ij},\Omega_{ij})
+  \quad\text{and}\quad
+  (\gamma_{ij},\widetilde\Omega_{ij}).
+\]
+The matrices \(\beta\) and \(\gamma\) provide conditional edge weights in the belief and model channels. They describe an informational network, but they do not by themselves establish a unique causal DAG or a unique microscopic physics.
+
+\subsection{The joint edge-event law}
+
+A conditional attention row is not yet a normalized law over all directed edges. Let \(\alpha_i^x\) be the normalized probability of sampling receiver \(i\) in channel \(x\). Then
+\begin{equation}
+  \eta_{ij}^q=\alpha_i^q\beta_{ij},
+  \qquad
+  \eta_{ij}^m=\alpha_i^m\gamma_{ij}.
+  \label{eq:eta}
+\end{equation}
+Thus \(\eta_{ij}^x\) is the joint probability of observing the directed event ``receiver \(i\), source \(j\).'' In a transformer implementation the receiver occupancy can be fixed externally, often uniformly, and need not be another learned attention parameter. The row \(\beta_{ij}\) or \(\gamma_{ij}\) says which source is selected conditional on the receiver; \(\alpha_i\) says how receivers enter the ensemble.
+
+\subsection{Holonomy is not the same as disagreement}
+
+Transport around a closed path gives a holonomy transformation \(H\). Two logically different statements often get conflated:
+\[
+  H=I,
+  \qquad\text{and}\qquad
+  H_{\#}Q=Q.
+\]
+The first says the frame returns exactly to itself. The second says that the probability law is unchanged by the returned frame transformation. An isotropic distribution can satisfy \(H_{\#}Q=Q\) even for a nonidentity rotation. Conversely, a tree has no nontrivial loops and hence no holonomy obstruction, yet two nodes on the tree can carry completely different laws.
+
+\begin{translationbox}
+Holonomy measures path dependence of frame transport. It does not, by itself, measure agreement of the transported states. For a parent that forgets which path was used, \(H_{\#}Q=Q\) is the relevant invariance condition. A richer parent may instead retain the holonomy or path mark as internal state.
+\end{translationbox}
+
+\subsection{Zero transported distortion}
+
+For channel \(x\in\{q,m\}\), define
+\begin{equation}
+  \mathcal D_x
+  =
+  \sum_{i,j:\eta_{ij}^x>0}
+  \eta_{ij}^x
+  \KL\left(
+  p_i^x\Vert(T_{ij}^x)_{\#}p_j^x
+  \right).
+  \label{eq:distortion}
+\end{equation}
+On a connected positive-support graph, \(\mathcal D_x=0\) if and only if every positive-weight edge agrees after transport. Equivalently, all node laws transport to one unique root law \(Q_x\), and that root law is stabilized by every retained holonomy:
+\begin{equation}
+  (T_{\gamma_i}^x)_{\#}p_i^x=Q_x,
+  \qquad
+  H_{\#}Q_x=Q_x.
+  \label{eq:root-law}
+\end{equation}
+The two-channel theorem yields a pair \((Q_q,Q_m)\). That pair does not determine a joint belief-model law. Correlations are extra information.
+
+\begin{physicalreading}
+Equation~\eqref{eq:distortion} acts like a nonnegative frustration energy on a gauge network. Zero energy means edgewise compatibility and path-independent reconstruction of a root law, provided the root law lies in the holonomy-fixed sector. It does not mean that the connection itself is flat.
+\end{physicalreading}
+
+\section{From a fine block to a parent effective description}
+
+\subsection{The declared fine objects}
+
+Fix a finite nonempty block \(I\), a base point \(r_*\), structural data \(X\), and an admitted observation \(o\) with finite positive evidence density or mass \(p_X(o)\). The fine probabilistic datum consists of
+\[
+  \Prob_I(do,dy\mid X),
+  \qquad
+  \Post_{I,o,X}(dy),
+  \qquad
+  \Rec_{I,o,X}(dy).
+\]
+The generative law is fixed before recognition is chosen. The selected posterior is a measurable conditional version of the generative law. The recognition law is normalized, may be correlated across the child agents, and satisfies \(\Rec_{I,o,X}\ll\Post_{I,o,X}\) when a finite forward KL is required.
+
+\subsection{One common coarse channel}
+
+Let \(C_A(dz\mid y)\) be a normalized Markov channel from the fine latent state \(y\) to the parent state \(z\). It may be deterministic or stochastic. It may intentionally discard most microscopic information. The same \(C_A\) must act on recognition and posterior, while the observation and structural data remain outside the channel.
+
+The parent objects are those in Equation~\eqref{eq:parent-triple}. This construction proves normalization, a selected parent posterior identity, and the appropriate absolute-continuity relation. A parent evaluator can be induced from the pushed generative law by disintegration. Alternatively, a predeclared parent model evaluator is admissible only when it agrees almost surely with that induced conditional kernel.
+
+\begin{boundarybox}
+The theorem constructs a full \emph{pointwise probabilistic datum}. It does not yet construct the local sections and gluing data required for a geometric agent over an overlap region. Calling the datum a meta-agent is law-level shorthand, not a proof of autonomous agency.
+\end{boundarybox}
+
+\subsection{Why marginals are insufficient}
+
+Suppose two binary variables \(B\) and \(M\) are each fair. One joint law can put probability \(1/2\) on \((0,0)\) and \((1,1)\); another can put probability \(1/2\) on \((0,1)\) and \((1,0)\). Their \(B\)- and \(M\)-marginals are identical, but their correlations are opposite and their supports are disjoint. Therefore a parent belief law \(q_A^b\) and a parent model law \(q_A^m\) do not reconstruct the full parent law.
+
+This distinction matters physically. A university can discard most microscopic details about students and faculty while retaining organization-level variables. That lossy parent can still be well-defined, but its joint law must be constructed by a coarse channel. It cannot be inferred from a list of separate consensus marginals.
+
+\section{The exact information cost of coarse graining}
+
+\subsection{Relative-entropy chain rule}
+
+Disintegrate the fine recognition and posterior laws over the parent state \(z\):
+\[
+  \widehat{\Rec}_{I,o,X}(dy\mid z),
+  \qquad
+  \widehat{\Post}_{I,o,X}(dy\mid z).
+\]
+The discarded-information defect is
+\begin{equation}
+  \Delta_A(o,X)
+  =
+  \int
+  \KL\left(
+  \widehat{\Rec}_{I,o,X}(\cdot\mid z)
+  \Vert
+  \widehat{\Post}_{I,o,X}(\cdot\mid z)
+  \right)
+  \Rec_{A,o,X}(dz).
+  \label{eq:defect}
+\end{equation}
+The weighting measure is the coarse recognition law, not an arbitrary reference law. Standard-Borel disintegration gives the additive identity
+\begin{equation}
+  \KL(\Rec_{I,o,X}\Vert\Post_{I,o,X})
+  =
+  \KL(\Rec_{A,o,X}\Vert\Post_{A,o,X})
+  +\Delta_A(o,X)
+  \label{eq:kl-chain}
+\end{equation}
+in the extended nonnegative reals.
+
+The physical content is straightforward. The first term on the right is the mismatch visible to the parent. The second is the mismatch still present among fine states that the parent regards as the same state. Coarse graining cannot increase the visible KL divergence; the missing amount is exactly \(\Delta_A\).
+
+\subsection{Variational free energy}
+
+At fixed evidence, define
+\begin{equation}
+  \mathcal F_I(o,X)
+  =
+  \KL(\Rec_{I,o,X}\Vert\Post_{I,o,X})
+  -\log p_X(o),
+  \label{eq:fine-vfe}
+\end{equation}
+with the analogous definition for \(\mathcal F_A\). Since the observation coordinate and its evidence are unchanged, the same finite real number \(-\log p_X(o)\) is added to both KL terms. Hence
+\begin{equation}
+  \mathcal F_I(o,X)
+  =
+  \mathcal F_A(o,X)+\Delta_A(o,X)
+  \label{eq:vfe-chain}
+\end{equation}
+as an extended-real identity.
+
+A continuous evidence density can exceed one, so a finite VFE can be negative. Only the KL terms and \(\Delta_A\) live in \([0,+\infty]\). If the fine KL is finite, ordinary subtraction is valid:
+\[
+  \mathcal F_I-\mathcal F_A=\Delta_A.
+\]
+Without that finiteness premise, the expression \(+\infty-(+\infty)\) is undefined. A bare equality \(+\infty=+\infty\) implies neither zero discarded information nor recovery.
+
+The zero-defect criterion itself is sharper. Regardless of whether the total KL is finite,
+\begin{equation}
+  \Delta_A(o,X)=0
+  \quad\Longleftrightarrow\quad
+  \widehat{\Rec}_{I,o,X}(\cdot\mid z)
+  =
+  \widehat{\Post}_{I,o,X}(\cdot\mid z)
+  \quad
+  \Rec_{A,o,X}\text{-almost surely}.
+  \label{eq:zero-defect}
+\end{equation}
+Thus the coarse state is sufficient for this recognition-posterior pair exactly when the discarded conditional laws agree.
+
+\begin{boundarybox}
+\(\Delta_A\) is an information-theoretic loss term. Calling it thermodynamic entropy production would require an additional physical model, time evolution, and identification of thermodynamic variables. The static theorem does not make that identification.
+\end{boundarybox}
+
+\section{A worked binary example}
+
+Let the fine latent state be \(Y=(M,B,E)\), with all three variables binary, and let the observation space contain one admitted value. The model bit is fair:
+\[
+  \Pr(M=0)=\Pr(M=1)=\frac12.
+\]
+Given \(M=m\), let
+\[
+  \Pr(B=1\mid M=m)=\frac14+\frac{m}{2}.
+\]
+Thus \(B\) tends to agree with \(M\). In the posterior, let \(E\) be an independent fair bit. The posterior marginal on \((M,B)\), displayed in the order \((M,B)\), is
+\begin{center}
+\begin{tabular}{ccccc}
+\toprule
+\((M,B)\) & \((0,0)\) & \((0,1)\) & \((1,0)\) & \((1,1)\) \\
+\midrule
+\(\Post_{I}(M,B)\) & \(3/8\) & \(1/8\) & \(1/8\) & \(3/8\) \\
+\bottomrule
+\end{tabular}
+\end{center}
+Each cell is split equally between \(E=0\) and \(E=1\).
+
+Choose a recognition law with the same \((M,B)\) marginal but impose \(E=B\) exactly. On the support of the recognition law, the density ratio \(d\Rec_I/d\Post_I\) equals \(2\). Therefore
+\[
+  \KL(\Rec_I\Vert\Post_I)=\log 2.
+\]
+Now let the coarse channel retain \((M,B)\) and discard \(E\). Since the two laws have the same retained marginal,
+\[
+  \Rec_A=\Post_A,
+  \qquad
+  \KL(\Rec_A\Vert\Post_A)=0.
+\]
+Conditioned on a parent state \((m,b)\), recognition assigns \(E=b\) with certainty while the posterior keeps \(E\) fair. Every conditional KL is \(\log 2\), so
+\[
+  \Delta_A=\log 2.
+\]
+The chain rule reads
+\[
+  \log 2=0+\log 2.
+\]
+
+\begin{physicalreading}
+The parent is exact about everything it retains and blind to the entire recognition-posterior disagreement. This is not a failure of the theorem. It is what the defect term is designed to expose.
+\end{physicalreading}
+
+\section{Forward-KL parents and approximate agreement}
+
+\subsection{The unrestricted forward-KL barycenter}
+
+Transport full laws \(P_i\) into one root frame and choose positive weights \(w_i\) summing to one. Their mixture
+\[
+  M=\sum_i w_iP_i
+\]
+satisfies
+\begin{equation}
+  \sum_iw_i\KL(P_i\Vert R)
+  =
+  \sum_iw_i\KL(P_i\Vert M)
+  +\KL(M\Vert R)
+  \label{eq:barycenter}
+\end{equation}
+for every comparison law \(R\), with the extended support convention. Therefore \(M\) is the unique unrestricted minimizer of the forward-KL objective.
+
+This is a mixture law, not a product of experts and not precision pooling. Gaussian precision formulas arise only after imposing a restricted Gaussian family or changing the orientation of the optimization. They are useful computational charts, not the general parent theorem.
+
+\subsection{Small distortion}
+
+KL divergence has no triangle inequality, so a chain of small edge KL values cannot be added as if it were a metric length. Pinsker's inequality first converts each edge estimate into total variation:
+\[
+  \|P-Q\|_{\mathrm{TV}}
+  \leq
+  \sqrt{\frac12\KL(P\Vert Q)}.
+\]
+Total variation does satisfy a triangle inequality. Along a rooted spanning tree this gives a controlled bound between each transported node law and the root law. The result is an approximate agreement statement in total variation, not a claim that KL itself is a path metric.
+
+\section{Coarse-graining the network}
+
+The node laws and the interaction network must both be coarse-grained. If \(C(A\mid i)\) is a normalized membership channel from child \(i\) to parent \(A\), the correct scalar network object to push forward is the joint edge-event law \(\eta_{ij}\), not only the conditional attention row. A deterministic endpoint assignment gives
+\[
+  \eta_{AB}^{c}
+  =
+  \sum_{i,j}
+  \eta_{ij}
+  C(A\mid i)C(B\mid j).
+\]
+The parent receiver occupancy and conditional row are recovered by
+\[
+  \alpha_A^c=\sum_B\eta_{AB}^c,
+  \qquad
+  a_{AB}^c=\frac{\eta_{AB}^c}{\alpha_A^c}
+\]
+when \(\alpha_A^c>0\).
+
+A hard partition has one parent per child. A normalized soft membership permits several nonzero memberships whose weights sum to one, so no probability mass is duplicated. A literal replicated cover permits several unit memberships and therefore has column sum greater than one; it is not a Markov channel and has different mass semantics.
+
+For gauge-valued or marked edges, averaging matrices is generally unsafe because the average can leave the group. The exact closure retains conditional boundary marks, connected-component labels, and internal based holonomy. Erasing those marks requires another declared coarse channel and another theorem.
+
+\section{Interventions and passive agreement}
+
+\subsection{What an intervention is}
+
+In the comparison theorem, an intervention is an analyst-declared probe of a mechanism. Consider a typed chain
+\[
+  R\longrightarrow E\longrightarrow O,
+\]
+where \(R\) is a retained input or parameter, \(E\) is an internal mediator, and \(O\) is a retained output or observation. An intervention replaces the ordinary mechanism feeding \(E\) with a declared preparation law while leaving the retained boundary roles fixed. One then asks how the distribution of \(O\) responds.
+
+This use of intervention does not assert that actions, plans, or controls are primitive ingredients of reality. It is a mathematical way to distinguish mechanisms that look identical when left alone.
+
+\subsection{Passive agreement}
+
+Two mechanisms passively agree when they give the same retained \((R,O)\) law in the unperturbed experiment. They need not have the same full joint law on \((R,E,O)\). If an intervention at \(E\) produces different retained output laws, the passive data hid a mechanistic difference.
+
+\begin{physicalreading}
+The analogy is two materials with the same equilibrium equation of state but different response functions. Passive agreement records the shared unforced behavior. The intervention probes susceptibility.
+\end{physicalreading}
+
+Why specify the comparison rules so carefully? If one is allowed to erase the mediator target, swap input and output, reverse time, or choose a different relabeling for every protocol, one is no longer testing the same mechanistic equivalence. Those moves may define useful comparison problems, but they are different problems. A theorem that varies these admissible morphisms remains a downstream task.
+
+\section{Static closure is not dynamics or agency}
+
+\subsection{The moving-map defect}
+
+Suppose a fine state obeys a declared dynamics
+\[
+  \dot y=V_t(y)
+\]
+and a possibly moving deterministic coarse map is \(c_t\). The coarse state \(z=c_t(y)\) obeys
+\[
+  \dot z
+  =
+  \partial_t c_t(y)+Dc_t(y)V_t(y).
+\]
+Exact trajectory semiconjugacy to a proposed coarse vector field \(\overline V_t\) requires
+\begin{equation}
+  \delta_t
+  =
+  \partial_t c_t+Dc_tV_t-\overline V_t\circ c_t
+  =
+  0.
+  \label{eq:semiconjugacy}
+\end{equation}
+This is an additional dynamical statement. It does not follow from the static pushforward theorem. The term \(\partial_t c_t\) is present whenever the coarse map or membership changes.
+
+Autonomy requires more than Equation~\eqref{eq:semiconjugacy}: the relevant fields and maps must have the appropriate time independence or closed state dependence, and the resulting flow must be well posed. Sustained nonequilibrium requires a source of circulating or driven behavior, such as open boundary flux, stochastic driving, an antisymmetric sector, adaptive coarse maps, or a proved cross-scale feedback mechanism. Frozen dissipative gradient flow will generally relax toward an equilibrium sector.
+
+\subsection{Where Wheelerian participation could enter}
+
+The present theorem maps fine probabilistic structure upward to a parent description. A participatory theory would also let emergent coarse variables modify the fine dynamics that sustain them. Such a loop could support nonequilibrium evolution, but it must be derived from a typed coupled action or a controlled reduction. Fine-to-coarse influence plus an independently added coarse-to-fine force risks double counting.
+
+The program therefore leaves Wheelerian feedback as a concrete open direction rather than treating it as a consequence of static coarse graining. The same caution applies to emergent agency. Universal variational evolution and autonomous goal-directed behavior are different claims.
+
+\subsection{No unique microscopic physics is assumed}
+
+The construction does not require every scale to share one literal generative model or one unique latent DAG. A bacterium, a human, and a university can occupy different model spaces and carry different laws over model presentations. What is shared across a successful coarse-graining step is a typed relation between fine and parent probabilistic objects, not one privileged ontology.
+
+This allows a constructivist reading: each scale has an effective ``physics'' encoded by its generative regularities. The theory can still produce invariant consequences, such as information-loss identities, holonomy constraints, and induced pullback geometry. It does not thereby derive a unique underlying microscopic world model.
+
+\section{What has been proved, what is conditional, and what remains open}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.16\textwidth}X}
+\toprule
+\textbf{Status} & \textbf{Content} \\
+\midrule
+Established &
+At one fixed \(r_*\), \(X\), and admitted \(o\): normalized parent \(\Prob_A\), \(\Rec_{A,o,X}\), and \(\Post_{A,o,X}\); induced or explicitly compatible parent evaluation; derived marginal projection identities; the extended KL/VFE chain; the exact zero-defect criterion; finite pairwise recovery results; zero transported-distortion theorem; forward-KL mixture parent; normalized network pushforward; and explicit finite counterexamples to common shortcuts. \\
+\addlinespace
+Conditional &
+Holonomy blindness requires declared full-law actions, compatible posterior versions, channel equivariance, evaluator covariance, and the appropriate fixed-\((o,X)\) stabilizer. Compact continuous holonomy averaging needs domination and integrability assumptions. Gaussian stability results apply only in their declared finite realization. \\
+\addlinespace
+Diagnostic &
+Spectral gaps, finite KL thresholds, symbolic checks, and numerical experiments can test a proposed construction. They do not select the coarse channel or prove a universal theorem. \\
+\addlinespace
+Open &
+A comparison-category theorem; extension across \(\mathcal U_A\); local sections and gluing; changing active sets; canonical channel, membership, and partition selection; geometric meta-agents; autonomous agency; nonequilibrium persistence; physical time; continuum limits; unique microscopic physics; ontology; adaptive attention dynamics; and nonlinear full-law dynamical closure. \\
+\bottomrule
+\end{tabularx}
+\caption{The current boundary of the theory.}
+\label{tab:status}
+\end{table}
+
+\begin{provedbox}
+The certified object is stronger than a pair of consensus marginals: it is a normalized parent generative-posterior-recognition triple with an exact information-loss identity. The certification status is \texttt{COMPLETE\_AFFIRMATIVE} for the frozen static conjunction, whose target digest is
+\[
+\texttt{15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87}.
+\]
+\end{provedbox}
+
+\begin{boundarybox}
+The certification does not cross the open boundaries in Table~\ref{tab:status}. In particular, it does not prove that a university is literally a geometric agent, that agency necessarily emerges, that VFE dynamics remain out of equilibrium, or that the construction identifies one true microscopic physics.
+\end{boundarybox}
+
+\section{The next three theory steps}
+
+The first open step is the comparison theorem. It should state how mechanistic equivalence changes when target erasure, boundary exchange, time reversal, protocol-dependent relabeling, or latent dilation is admitted. Its purpose is to separate observational agreement from equality of posterior, VFE, factorization, or meta-agent structure.
+
+The second step is geometric extension. The pointwise laws must become local sections over \(\mathcal U_A\), with measurable or smooth dependence, gluing, cocycle consistency, changing active sets, and possible rank or stabilizer jumps. Only this step can promote the pointwise probabilistic datum toward a geometric meta-agent.
+
+The third step is participatory nonequilibrium dynamics. A coupled multiscale action must account for both upward and downward influence without double counting, and it must identify the flux, driving, antisymmetric structure, stochasticity, or adaptive geometry that prevents ordinary dissipative relaxation. Agency is a further claim requiring its own operational definition and falsifiers.
+
+\section{Repository map and provenance}
+
+The compact technical status page is \path{solid_RG_theory.md}. The canonical theorem sources are:
+\begin{itemize}
+  \item \path{Theory/06_general_coarsegraining.tex},
+  \item \path{Theory/07b_agent_network_rg.tex},
+  \item \path{Theory/09_coarsegraining.tex},
+  \item \path{Theory/SPEC.md}.
+\end{itemize}
+The hash-bound full-datum proof and release package is under
+\[
+  \texttt{docs/derivations/2026-08-15-full-pointwise-meta-agent/}.
+\]
+The earlier two-channel marginal result is retained under
+\[
+  \texttt{docs/derivations/2026-08-14-pointwise-meta-agent-rg/}.
+\]
+
+This guide changes the level of explanation, not the theorem. Where a compact statement here appears to differ from a technical qualification, the canonical theorem source and frozen release package control.
+
+\section{Closing physical picture}
+
+The theory can be summarized as a gauge-covariant, information-theoretic blocking operation. Fine agents carry local probabilistic descriptions in local frames. Transport makes comparisons meaningful. A normalized coarse channel turns their correlated full law into an effective parent law. The relative-entropy chain rule then separates what the parent can see from what its coarse variables erase.
+
+That is already a nontrivial static RG statement. It tells us when consensus is path independent, why a pair of marginals is not a meta-agent, how much inferential information a coarse description loses, and which marks must be retained for exact closure. The dynamical and Wheelerian program begins after this point: one must show how these effective descriptions persist, interact across scales, and possibly participate in reshaping the dynamics from which they emerged.
+
+\end{document}
