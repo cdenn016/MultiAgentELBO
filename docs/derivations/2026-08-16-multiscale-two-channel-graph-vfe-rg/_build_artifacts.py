@@ -183,7 +183,7 @@ for name in MD_ARTIFACTS:
     lines = text.splitlines(keepends=True)
     if lines and lines[0].startswith("<!-- rigorous-theory-search-metadata"):
         lines = lines[1:]
-    path.write_text(HEADER + "".join(lines), encoding="utf-8")
+    path.write_text(HEADER + "".join(lines), encoding="utf-8", newline="\n")
 
 
 def sha(rel: str) -> str:
@@ -626,6 +626,7 @@ ATTACKS = [
 (RUN / "problem-contract.json").write_text(
     json.dumps({**BASE, "target": TARGET}, ensure_ascii=False, indent=2) + "\n",
     encoding="utf-8",
+    newline="\n",
 )
 
 (RUN / "claim-ledger.json").write_text(
@@ -634,11 +635,13 @@ ATTACKS = [
         ensure_ascii=False, indent=2,
     ) + "\n",
     encoding="utf-8",
+    newline="\n",
 )
 
 (RUN / "dependency-dag.json").write_text(
     json.dumps({**BASE, "edges": EDGES}, ensure_ascii=False, indent=2) + "\n",
     encoding="utf-8",
+    newline="\n",
 )
 
 (RUN / "adversarial-report.json").write_text(
@@ -680,6 +683,7 @@ ATTACKS = [
         ensure_ascii=False, indent=2,
     ) + "\n",
     encoding="utf-8",
+    newline="\n",
 )
 
 (RUN / "approach-registry.json").write_text(
@@ -805,6 +809,7 @@ ATTACKS = [
         ensure_ascii=False, indent=2,
     ) + "\n",
     encoding="utf-8",
+    newline="\n",
 )
 
 (RUN / "release.json").write_text(
@@ -860,6 +865,7 @@ ATTACKS = [
         ensure_ascii=False, indent=2,
     ) + "\n",
     encoding="utf-8",
+    newline="\n",
 )
 
 print("contract_id:", CONTRACT_ID)
