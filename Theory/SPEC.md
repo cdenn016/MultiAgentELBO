@@ -799,7 +799,11 @@ ELBO or VFE equality, and every physical or ontological identification remain **
 bound to target digest
 `15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87`. Its manuscript theorem is
 **ESTABLISHED**; its package ledger records `target` as `EVIDENCE_VERIFIED`, and `release.json`
-records `COMPLETE_AFFIRMATIVE`. Fix a nonempty finite child block `I`, a parent label `A`, one
+records `COMPLETE_AFFIRMATIVE_WITH_CORRECTIONS` (the mathematical content is unchanged; two of four
+domain approvals are stale, one provenance stage is unauditable, and the adversarial rejection count
+is not evidence — see
+`docs/derivations/2026-08-15-full-pointwise-meta-agent/POST-RELEASE-CORRECTIONS.md`).
+Fix a nonempty finite child block `I`, a parent label `A`, one
 `r_* in U_A = intersection_{i in I} C_i`, fixed structural `X`, and `X_A=chi_A(X)` outside the
 random channel. One normalized recognition-independent
 `C_A:Y_I rightsquigarrow Z_A`, with the observation space `O` unchanged, pushes the fixed fine

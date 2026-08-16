@@ -301,8 +301,12 @@ The governing release is
 docs/derivations/2026-08-15-full-pointwise-meta-agent/release.json, bound to target digest
 15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87. The canonical manuscript
 status is **ESTABLISHED**. The package records ledger state EVIDENCE_VERIFIED and terminal release
-status COMPLETE_AFFIRMATIVE; those are evidence-package labels, not replacements for manuscript
-claim status.
+status COMPLETE_AFFIRMATIVE_WITH_CORRECTIONS; those are evidence-package labels, not replacements for
+manuscript claim status. The corrections are to the certification apparatus and not the mathematics:
+two of the four domain approvals are stale against canonical sources edited after they approved, the
+first provenance snapshot is unauditable (0 of 15 entries verify), and the sixteen-attack rejection
+count is not evidence. Two certification obligations are open. See
+docs/derivations/2026-08-15-full-pointwise-meta-agent/POST-RELEASE-CORRECTIONS.md.
 
 At one fixed \(r_*\in\mathcal U_A=\bigcap_{i\in I}\mathcal C_i\), with finite child block \(I\),
 parent label \(A\), fixed structural \(X\), and \(X_A=\chi_A(X)\) outside the random channel, one

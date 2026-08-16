@@ -26,7 +26,24 @@
       "evidence/oracle-erasure.md": "249e18fb17fac8ff21945866fdde3ea88c87d81a753c5fcaf5dee95f9e08dea3",
       "evidence/release-assembly.json": "09434008550960adf1d4fcc7daea67a3915c3f6a473afd62b81913554bcf658b",
       "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md": "a302a046e886f0a777226d667202437a6e371eac36dbfa203e8b201131afc16f"
-    }
+    },
+    "audit_status": "UNAUDITABLE",
+    "audit_result": {
+      "entries": 15,
+      "verified": 0,
+      "mismatched": 11,
+      "path_absent_at_recorded_head": 4,
+      "recovered_from_object_store": 4,
+      "paths_absent": [
+        "evidence/adversarial-attacks.md",
+        "evidence/independent-reconstruction.md",
+        "evidence/oracle-erasure.md",
+        "evidence/release-assembly.json"
+      ],
+      "method": "git show <git_head>:<path>, hashed raw and CRLF-rendered; plus an exhaustive git cat-file --batch-all-objects search over all 1418 blobs.",
+      "note": "These hashes are retained as a historical record, not as a verifiable binding. Stages fix_round_1_review_input_snapshot and final_release_snapshot verify 26/26 each. See POST-RELEASE-CORRECTIONS.md (H1)."
+    },
+    "fingerprint_note": "Not reproducible: the package documents no construction rule for this fingerprint."
   },
   "corrected_domain_reviews": {
     "VIEW-PROBABILITY-KERNEL": {
@@ -104,7 +121,8 @@
       "M1-NOTATION-EVIDENCE-FRESHNESS",
       "M2-ARTIFACT-METADATA-CONTRACT"
     ],
-    "scope": "Exact committed Task-5 release payload examined by the post-commit Fix Round 1 reviewer."
+    "scope": "Exact committed Task-5 release payload examined by the post-commit Fix Round 1 reviewer.",
+    "fingerprint_note": "Not reproducible: the package documents no construction rule for this fingerprint."
   },
   "final_release_snapshot": {
     "snapshot_id": "final-release-sha256-5d3703b39303bece791dc20d0f59ca9e3a363b7fedbab691413b99d91cbb5bb0",
@@ -137,6 +155,8 @@
       "release.json": "36a4458d09bd8f2f18599511be145e97f37b00c3fe513b71009c1513db07210d",
       "docs/superpowers/specs/2026-08-15-full-pointwise-meta-agent-design.md": "a302a046e886f0a777226d667202437a6e371eac36dbfa203e8b201131afc16f"
     },
-    "excluded_self_path": "evidence/release-provenance.json"
-  }
+    "excluded_self_path": "evidence/release-provenance.json",
+    "fingerprint_note": "Not reproducible: the package documents no construction rule for this fingerprint."
+  },
+  "post_release_corrections": "POST-RELEASE-CORRECTIONS.md"
 }

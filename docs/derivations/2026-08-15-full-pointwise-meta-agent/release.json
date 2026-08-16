@@ -4,21 +4,25 @@
   "target_digest": "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
   "checkpoint": "Task 5 final certified release after corrected-byte same-view domain review and release-mode validation",
   "target_claim": "target",
-  "terminal_status": "COMPLETE_AFFIRMATIVE",
+  "terminal_status": "COMPLETE_AFFIRMATIVE_WITH_CORRECTIONS",
   "certificate_claim": "target",
-  "strongest_result": "The mixed pointwise target and all seventeen static ancestors are EVIDENCE_VERIFIED by direct Task-3 and Task-4 derivations, independent reconstruction, semantic oracle erasure, final adversarial dispositions, and four current corrected-byte domain approvals. DYNAMICS-SCOPE remains a verified non-ancestor boundary.",
-  "unresolved_obligations": [],
+  "strongest_result": "The mixed pointwise target and all seventeen static ancestors are EVIDENCE_VERIFIED by direct Task-3 and Task-4 derivations, independent reconstruction, and semantic oracle erasure. DYNAMICS-SCOPE remains a verified non-ancestor boundary. Of the four domain approvals, two (VIEW-INFORMATION-VFE, VIEW-DYNAMICS-SCOPE) are current and two are stale against canonical sources edited after they approved; the adversarial rejection count is not evidence. See POST-RELEASE-CORRECTIONS.md.",
+  "unresolved_obligations": [
+    "Re-run VIEW-PROBABILITY-KERNEL and VIEW-GAUGE-HOLONOMY against 8ce6358 bytes and re-stamp (C1).",
+    "Repair or replace review_input_snapshot in evidence/release-provenance.json (H1)."
+  ],
   "review_bindings": [
     {
       "review_id": "VIEW-PROBABILITY-KERNEL",
       "artifact_path": "evidence/reviews/view-probability-kernel.md",
       "artifact_sha256": "14f7f00fdbc0a3e2f67357c249aa631eae336940f7ea99d9aad3b164f423b27e",
-      "disposition": "APPROVE",
+      "disposition": "APPROVE_PRE_INTEGRATION_ONLY",
       "severity_counts": {
         "critical": 0,
         "high": 0,
         "medium": 0
-      }
+      },
+      "staleness": "Binds canonical Theory/06 and Theory/07b bytes that were edited after this review approved; its own post-review-mutation falsifier is met. See POST-RELEASE-CORRECTIONS.md (C1)."
     },
     {
       "review_id": "VIEW-INFORMATION-VFE",
@@ -35,12 +39,13 @@
       "review_id": "VIEW-GAUGE-HOLONOMY",
       "artifact_path": "evidence/reviews/view-gauge-holonomy.md",
       "artifact_sha256": "431a63b06b90277ce2697d6d57a86054346564d2bb449cf11fe3673bd6fb42ba",
-      "disposition": "APPROVE",
+      "disposition": "APPROVE_PRE_INTEGRATION_ONLY",
       "severity_counts": {
         "critical": 0,
         "high": 0,
         "medium": 0
-      }
+      },
+      "staleness": "Binds canonical Theory/06 and Theory/07b bytes that were edited after this review approved; its own post-review-mutation falsifier is met. See POST-RELEASE-CORRECTIONS.md (C1)."
     },
     {
       "review_id": "VIEW-DYNAMICS-SCOPE",
@@ -58,6 +63,8 @@
     "review_input_snapshot": "corrected-pre-review-add1a69",
     "final_release_snapshot_record": "evidence/release-provenance.json",
     "binding_direction": "reviews bind corrected pre-review payload bytes; final metadata binds review hashes",
-    "non_circularity": "No mutual raw-hash fixed point is claimed or required."
-  }
+    "non_circularity": "No mutual raw-hash fixed point is claimed or required.",
+    "review_input_snapshot_audit": "UNAUDITABLE: 0 of 15 recorded artifact hashes verify at add1a69. See POST-RELEASE-CORRECTIONS.md (H1)."
+  },
+  "post_release_corrections": "POST-RELEASE-CORRECTIONS.md"
 }

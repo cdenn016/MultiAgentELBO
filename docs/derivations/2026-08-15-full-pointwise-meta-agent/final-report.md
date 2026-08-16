@@ -7,13 +7,15 @@ The frozen mixed target is bound to SHA-256 `15336a68593c1523eeeffe97101fbbaaf48
 
 ## Terminal status
 
-`COMPLETE_AFFIRMATIVE`. The exact ledger/release target identifier is `target` (descriptive title: full pointwise meta-agent target), and its ledger state is `EVIDENCE_VERIFIED`.
+`COMPLETE_AFFIRMATIVE_WITH_CORRECTIONS`. The exact ledger/release target identifier is `target` (descriptive title: full pointwise meta-agent target), and its ledger state is `EVIDENCE_VERIFIED`. The affirmative mathematical content is unchanged; the qualifier records the certification defects in `POST-RELEASE-CORRECTIONS.md`.
 
 ## Certificate
 
-The certificate claim is `target`. Direct mathematical support spans Task 3 (`evidence/direct-derivation.md`, SHA-256 `2aa70b07751d07712a3d9395f77817317d48d77d97c3fd5fb8cd1a3f6fda226a`) and Task 4 (`evidence/counterexample-proofs.md`, SHA-256 `59c38ed4181b2f8fbf2b573c79cb7257516c7e2d91e44dbea870c953406de6fc`), with an independent Task-5 derivation, semantic oracle erasure, and a sixteen-attack adversarial pass. The corrected-byte reviews are current `APPROVE` records with Critical/High/Medium counts of zero: probability/kernel `14f7f00fdbc0a3e2f67357c249aa631eae336940f7ea99d9aad3b164f423b27e`, information/VFE `c291869ccb7d518f2df85c43f60319e59654c2769e0fdc8b07373a53430525d4`, gauge/holonomy `431a63b06b90277ce2697d6d57a86054346564d2bb449cf11fe3673bd6fb42ba`, and dynamics/scope `71401ff15af3c1ce033ddbd9b01cace311f04c1eeef17a09d13b7f8125b8461b`.
+The certificate claim is `target`. Direct mathematical support spans Task 3 (`evidence/direct-derivation.md`, SHA-256 `2aa70b07751d07712a3d9395f77817317d48d77d97c3fd5fb8cd1a3f6fda226a`) and Task 4 (`evidence/counterexample-proofs.md`, SHA-256 `59c38ed4181b2f8fbf2b573c79cb7257516c7e2d91e44dbea870c953406de6fc`), with an independent Task-5 derivation and semantic oracle erasure. A sixteen-attack adversarial pass is recorded but is **not** part of the certificate: fifteen of the sixteen dispositions are fixed by a frozen premise or an explicit non-claim, so the rejection count carries no information about the theorem (`POST-RELEASE-CORRECTIONS.md`, H2).
 
-The provenance is non-circular: the original domain reviews bind the corrected pre-review mathematical/payload snapshot at `HEAD add1a69`; the Fix Round 1 post-commit review binds the prior final-release snapshot at `HEAD 1b18842`; and the repaired final metadata binds the finding-driven bytes. `evidence/release-provenance.json` records all three one-way snapshots and makes no mutual raw-hash fixed-point claim.
+Of the domain reviews, two are current `APPROVE` records with Critical/High/Medium counts of zero — information/VFE `c291869ccb7d518f2df85c43f60319e59654c2769e0fdc8b07373a53430525d4` and dynamics/scope `71401ff15af3c1ce033ddbd9b01cace311f04c1eeef17a09d13b7f8125b8461b`. The other two — probability/kernel `14f7f00fdbc0a3e2f67357c249aa631eae336940f7ea99d9aad3b164f423b27e` and gauge/holonomy `431a63b06b90277ce2697d6d57a86054346564d2bb449cf11fe3673bd6fb42ba` — are `BOUND_STALE_PRE_INTEGRATION`; their approvals cover the pre-integration snapshot only (`POST-RELEASE-CORRECTIONS.md`, C1).
+
+The provenance is non-circular in structure — three one-way snapshots, no mutual raw-hash fixed-point claim — but the first stage is **unauditable**: `review_input_snapshot` verifies 0 of its 15 entries at the `HEAD add1a69` it names, 11 being unrecoverable from the object store and 4 naming paths absent at that commit. The Fix Round 1 snapshot at `HEAD 1b18842` and the final snapshot at `HEAD 8ce6358` each verify 26 of 26 (`POST-RELEASE-CORRECTIONS.md`, H1).
 
 ## Strongest verified result
 
@@ -33,7 +35,17 @@ The release closure contains `target` plus exactly seventeen transitive ancestor
 
 ## Unresolved obligations
 
-None within the frozen target and its transitive dependency closure.
+None **mathematical** within the frozen target and its transitive dependency closure.
+
+Two **certification** obligations are open, recorded in `POST-RELEASE-CORRECTIONS.md`:
+
+1. **(C1)** Re-run `VIEW-PROBABILITY-KERNEL` and `VIEW-GAUGE-HOLONOMY` against `8ce6358` bytes and
+   re-stamp. Both bind canonical `Theory/06` and `Theory/07b` bytes that were edited after they
+   approved — the `Theory/07b` edit inserted `thm:rg-pointwise-parent-datum` itself — so each review's
+   own post-review-mutation falsification clause is met.
+2. **(H1)** Repair or replace `review_input_snapshot` in `evidence/release-provenance.json`. It
+   verifies 0 of 15 entries at the `add1a69` it names; 11 are unrecoverable from the object store and
+   4 name paths that did not exist at that commit.
 
 ## Scope and limitations
 

@@ -15,7 +15,7 @@ The earlier two-channel certificate proved that zero positive-weight transported
 
 ## Status key
 
-ESTABLISHED means proved in the contained package or in the cited canonical theorem source. CONDITIONAL means exact under hypotheses stated beside the result. DIAGNOSTIC means a finite control or heuristic that is not a theorem. OPEN/TODO names an obligation that the pointwise certificate does not close. The manuscript status of the full datum is ESTABLISHED. Its release metadata records ledger state `EVIDENCE_VERIFIED`, terminal status `COMPLETE_AFFIRMATIVE`, and target digest `15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87`.
+ESTABLISHED means proved in the contained package or in the cited canonical theorem source. CONDITIONAL means exact under hypotheses stated beside the result. DIAGNOSTIC means a finite control or heuristic that is not a theorem. OPEN/TODO names an obligation that the pointwise certificate does not close. The manuscript status of the full datum is ESTABLISHED. Its release metadata records ledger state `EVIDENCE_VERIFIED`, terminal status `COMPLETE_AFFIRMATIVE_WITH_CORRECTIONS`, and target digest `15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87`. The corrections are to the certification apparatus, not the mathematics: two of four domain approvals are stale against canonical sources edited after they approved, the first provenance snapshot is unauditable, and the sixteen-attack rejection count is not evidence. See [POST-RELEASE-CORRECTIONS.md](docs/derivations/2026-08-15-full-pointwise-meta-agent/POST-RELEASE-CORRECTIONS.md).
 
 ## 1. Fixed-point data and conventions
 
@@ -346,7 +346,7 @@ OPEN/TODO: family-wide common recovery absent simultaneous hypotheses; the froze
 | [Full-datum certification package](docs/derivations/2026-08-15-full-pointwise-meta-agent/) | Current hash-bound proof, reconstruction, adversarial, counterexample, reviews, and release metadata |
 | [Marginal-pair certification package](docs/derivations/2026-08-14-pointwise-meta-agent-rg/) | Historical two-channel marginal theorem and normalized network closure |
 
-The current package terminal status is COMPLETE_AFFIRMATIVE for the exact frozen full-datum conjunction, and its `target` ledger entry is EVIDENCE_VERIFIED. Those package labels report release evidence; the canonical manuscript theorem is ESTABLISHED. No status crosses an OPEN/TODO boundary above; the machine-readable certificate is `docs/derivations/2026-08-15-full-pointwise-meta-agent/release.json`.
+The current package terminal status is COMPLETE_AFFIRMATIVE_WITH_CORRECTIONS for the exact frozen full-datum conjunction, and its `target` ledger entry is EVIDENCE_VERIFIED. Those package labels report release evidence; the canonical manuscript theorem is ESTABLISHED. No status crosses an OPEN/TODO boundary above; the machine-readable certificate is `docs/derivations/2026-08-15-full-pointwise-meta-agent/release.json`. Two certification obligations are open and are recorded in `docs/derivations/2026-08-15-full-pointwise-meta-agent/POST-RELEASE-CORRECTIONS.md`: re-running the two stale domain reviews against the released bytes, and repairing or replacing the unauditable first provenance snapshot. Neither affects the mathematics.
 
 ## 12. Ordered TODO roadmap beyond the pointwise certificate
 
