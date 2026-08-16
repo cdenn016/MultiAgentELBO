@@ -33,16 +33,18 @@
 \begin{abstract}
 This note summarizes what the gauge-covariant variational free-energy program has
 actually established about renormalization, what it has not, and which obligations
-block progress. The short version is that an exact finite theory of coarse-graining
-exists and is in good order, while a renormalization \emph{group} does not exist:
-there is no rescaling map, no beta function, no blocking ratio, and no
-relevant--irrelevant classification for the two-channel gauge network. Recent work
-has sharpened three things worth knowing. Descent of the multiscale free energy, on
-its own, ranks no partition at all. The directed edge-event law supplies a genuine
-gauge-invariant length scale where the attention weights do not. And nontrivial
-holonomy on a cyclic graph can make a coherent meta-agent not merely expensive but
-nonexistent. Everything involving the words flow, persistence, or emergence remains
-unproved.
+block progress. The short version is that an exact finite coarse-graining calculus
+has been derived under explicit hypotheses and internally checked, while a
+renormalization \emph{group} has not yet been constructed: there is no endogenous
+rescaling map, RG beta function, blocking ratio, or relevant--irrelevant
+classification for the two-channel gauge network. Recent work has sharpened three
+things worth knowing. With an unrestricted copy-capable parent and downward-kernel
+family, descent of the multiscale free energy ranks no partition. After
+Perron-occupancy symmetrization of an irreducible chain, the directed edge-event law
+supplies an intrinsic gauge-invariant graph metric and diffusion scale where the
+attention weights do not. And nontrivial holonomy on a cyclic graph can make a
+zero-distortion parent nonexistent within a declared admitted family. Persistence,
+emergent hierarchy, and physical RG flow remain unproved.
 \end{abstract}
 
 \section{Where things stand}
@@ -55,15 +57,16 @@ single variational free energy, and whether that hierarchy constitutes a
 renormalization group.
 
 The answer at present separates cleanly into three layers. The exact finite layer
-works and is not in doubt: normalized coarse-graining channels, the free-energy
-identity they satisfy, the construction of a parent from a block of children, the
-correct way to coarse-grain directed attention, and the exact treatment of non-flat
-connection data. The selection layer does not work, and a recent result explains
-why in a stronger way than had been appreciated: the free energy is exactly
-indifferent to the choice of partition unless extra structure is declared. The
-dynamical layer, meaning persistence of blocks, closure across scales, and any
-identification of the descent parameter with physical time, remains open, and the
-project's own claim ledger has said so consistently.
+has explicit derivations under stated hypotheses and has been internally checked,
+but the current multiscale package remains formally \textsc{inconclusive} rather
+than independently claim-verified. This layer includes normalized coarse-graining
+channels, the free-energy identity they satisfy, the construction of a parent from
+a block of children, the correct way to coarse-grain directed attention, and the
+exact treatment of non-flat connection data. In the unrestricted copy-capable
+family, the selection layer is degenerate: the free energy is exactly indifferent
+to the choice of partition unless extra structure is declared. Block persistence,
+closure across scales, and any identification of the descent parameter with physical
+time remain open, and the project's own claim ledger has said so consistently.
 
 What has changed recently is mostly negative in the productive sense. Several
 plausible shortcuts have been closed off by explicit counterexamples rather than
@@ -90,7 +93,7 @@ $\mathbb Q_\phi(dW\mid o,X)$. The entire theory is the single identity
 + \KL\!\left(\mathbb Q_\phi \,\middle\Vert\, \bm\Pi_{\theta,o,X}\right),
 \label{eq:vfe}
 \end{equation}
-where $\bm\Pi$ is the posterior. The evidence term is the ground-state energy of the
+where $\bm\Pi$ is the posterior. The evidence term plays the role of a fixed baseline for the
 record: fixed once the model and the observation are fixed, and immovable by
 variational work. The divergence is the only thing descent can lower.
 
@@ -104,10 +107,12 @@ Bayesian reading. This distinction does real work below.
 
 Two structural facts about \eqref{eq:vfe} deserve emphasis. First, because every
 factor in the generative law is a normalized transition kernel of finite scope, the
-tower carries no partition function at all: the only normalizer anywhere is the
-evidence. Local normalization of node and edge potentials does not give a finite
-global normalizer, as the Gaussian pair with edge potential $e^{c y_1 y_2}$,
-$c \ge 1$, shows by having a negative exchange eigenvalue. Any same-time reciprocal
+tower requires no additional global Gibbs partition function beyond the evidence;
+the normalized kernels retain their own declared local normalization. Local
+normalization of node and edge potentials does not by itself give a finite global
+normalizer, as the Gaussian pair with edge potential $e^{c y_1 y_2}$ shows: its
+precision loses positive definiteness at $c\ge1$, with a zero eigenvalue at $c=1$
+and a negative eigenvalue for $c>1$. Any same-time reciprocal
 coupling between scales reintroduces that obligation and must discharge it. Second,
 no generative factor may read the recognition law or the posterior it is supposed to
 determine. Violating this turns the model into a family indexed by the recognition
@@ -130,18 +135,20 @@ If the agent's latent variable \emph{is} a law, so that $q^b_i$ is a point of th
 statistical fiber and a component of the sample, then $D^b_{ij}$ is a function of
 the state and may legitimately appear inside a generative likelihood factor. Under
 that reading, plus a label-exclusivity hypothesis on an augmented source label and a
-restriction of the recognition law to constant rows, the row free energy
+restriction of the recognition law to constant rows, define the familiar row
+functional
 \begin{equation}
 \Phi^b_i = \sum_j \beta_{ij} \E_{\mathbb Q} D^b_{ij}
 + \tau^b_i \KL(\beta_i \Vert \pi^b_i)
 \end{equation}
-is an exact sector of the collective free energy, with softmax optimum
+with softmax optimum
 $\beta^\star_{ij} \propto \pi_{ij} \exp(-\E_{\mathbb Q} D_{ij}/\tau_i)$. Note the
 expectation: the energy is the recognition average of the transported divergence,
 not the divergence evaluated at an average, and the two differ unless the state law
-is degenerate. Note also that the temperature is not free. Taking $\tau \ne 1$ gives
-the same optimizer but a different objective value, and it is an evidence bound only
-for a correspondingly tempered generative law.
+is degenerate. The exact categorical VFE sector is $\tau_i^{-1}\Phi_i$. Thus
+$\Phi_i$ has the same optimizer, but for $\tau_i\ne1$ it is not an independently
+weighted sector of one standard ELBO unless the entire objective is scaled or a
+different generalized free energy is declared.
 
 If instead $q^b_i$ denotes the recognition marginal, then $D^b_{ij}$ is a functional
 of the recognition law, inserting it into a generative factor violates the typing
@@ -206,7 +213,7 @@ which one is in force matters more than it looks.
 through normalized kernels $K_\downarrow$, with the likelihood attached only at the
 finest scale. Coarse-graining runs upward and acts on \emph{measures}, pushing the
 directed edge-event laws through one normalized channel and then disintegrating. Both
-directions are exact. What does not exist is the rescaling and identification map
+directions are exact. What has not been constructed is the rescaling and identification map
 $I_b$ that would return the coarse description to a common comparison space, and
 without it the family of coarse-grainings never becomes a semigroup.}
 \label{fig:ladder}
@@ -336,12 +343,14 @@ is gauge-invariant and has exactly zero row sums, so it generates an honest diff
 rather than a killed one. If the receiver occupancy is chosen self-consistently as the
 stationary vector of the attention chain, then the additive symmetrization of the
 edge-event law preserves the occupancy exactly and coincides with the standard
-symmetrization used to define a directed graph Laplacian. On the resulting symmetric
-operator, effective resistance and commute time \emph{are} metrics, and the diffusion
-time at which the entropic susceptibility peaks supplies an intrinsic scale that
-requires no embedding. Running the two channels separately gives two scale spectra,
-and their disagreement is itself a diagnostic: a system whose belief and model
-channels peak at different times has no single hierarchy.
+symmetrization used to define a directed graph Laplacian. On each connected component
+of the resulting symmetric operator, effective resistance and commute time \emph{are}
+metrics; across components they are naturally treated as infinite extended distances.
+A diffusion time at which the entropic susceptibility peaks supplies an intrinsic
+candidate scale that requires no ambient embedding. Running the two channels
+separately gives two scale spectra, and their disagreement diagnoses tension with a
+proposed single-scale hierarchy. It does not prove that no common hierarchy exists;
+a declared joint two-channel selector could reconcile them.
 
 The one cost to keep in view is that symmetrization discards directionality, which is
 the entire content of having two directed channels. Any block proposal built on the
@@ -371,7 +380,7 @@ to the input is not a single fixed channel, and the exact free-energy chain rule
 depends on precisely that fixed-channel structure. Linear aggregation is therefore
 the unique member of the family compatible with an exact evidence decomposition.
 
-\subsection{Holonomy can forbid a meta-agent outright}
+\subsection{Holonomy can forbid a zero-distortion parent within an admitted family}
 
 On a cyclic graph the transports around a loop compose to a holonomy that need not be
 the identity, and the program deliberately does not penalize it toward one. The
@@ -386,7 +395,7 @@ agents, and stabilization does not imply flatness, the latter witnessed by a
 reflection that fixes an isotropic Gaussian. More consequentially, if the holonomy
 group has no fixed point inside the admitted family of parent laws, then no
 zero-distortion parent exists for that block at any belief configuration, and the
-block-formation energy has a strictly positive floor set by the geometry alone. A
+block-formation energy has a strictly positive floor within that family. A
 reflection acting on a family of nonzero-mean laws is enough to produce this. Cycles
 are therefore not a benign complication of the tree case; they can forbid coherence.
 
@@ -446,7 +455,8 @@ clock, a calibration, and discriminating evidence, none of which exists.
 Finally, a negative result constrains the participatory ambitions of the program. If
 the enlarged system, including any cross-scale feedback fields, evolves as a gradient
 flow of one scalar with a symmetric positive mobility, then the scalar decreases and
-bounded trajectories converge to critical points. Multistability, hysteresis, and long
+bounded trajectories approach the largest invariant subset of the critical set.
+Multistability, hysteresis, and long
 transients are all compatible with this and none of them is sustained nonequilibrium.
 Obtaining a nonequilibrium steady state requires breaking the hypotheses in one of four
 ways: driven time-dependent controls with the corresponding work accounted, a
@@ -464,19 +474,19 @@ derivable from the same scalar changes nothing observable, so the technical cont
 \toprule
 Statement & Status \\
 \midrule
-Exact free-energy identity and its conditional decomposition & established \\
-Coarse-graining chain rule with nonnegative discarded information & established \\
-Parent construction from a block by one normalized channel & established \\
-Coarse attention by pushing the edge-event law and disintegrating & established \\
-Exact closure generates hyperedges; pairwise closure is false & established \\
-Holonomy retained as a distribution of dressed transports & established \\
-Free energy alone ranks no partition & established \\
-Gauge-invariant Laplacian, effective resistance as a metric & established \\
-Linear aggregation is the unique choice compatible with the chain rule & established \\
-Empty holonomy fixed set forbids a coherent parent & established \\
+Exact free-energy identity and its conditional decomposition & derived \\
+Coarse-graining chain rule with nonnegative discarded information & derived \\
+Parent construction from a block by one normalized channel & derived \\
+Coarse attention by pushing the edge-event law and disintegrating & derived \\
+Exact closure generates hyperedges; pairwise closure is false & derived \\
+Holonomy retained as a distribution of dressed transports & derived \\
+Unrestricted copy-capable family is partition-blind & derived \\
+Connected symmetrized graph: resistance is a metric & derived \\
+Linear Markov pushforward is uniquely compatible with the chain rule & derived \\
+Empty fixed sector in an admitted family forbids a zero-distortion parent & derived \\
 Mean-field block-formation instability threshold & conditional \\
-Maximum-weight blocking on the resistance scale & conjecture \\
-Rescaling map, semigroup, beta function, relevance classes & open \\
+Resistance-based block proposal; maximum aggregation after supplied blocks & conjecture \\
+Endogenous rescaling map, RG semigroup, beta function, relevance classes & open \\
 Nondegenerate partition selector & open \\
 Persistence of blocks under descent; second scale & open \\
 Cross-scale dynamical closure and semiconjugacy & open \\
@@ -485,8 +495,9 @@ Physical time, autonomous agency, sustained nonequilibrium & open \\
 \bottomrule
 \end{tabular}
 \caption{Current disposition of the main claims. ``Conditional'' means proved under
-hypotheses not verified for the actual system; ``conjecture'' means favored and
-unproved.}
+hypotheses not verified for the actual system; ``derived'' means proved in the
+manuscript under its stated hypotheses but not independently claim-verified;
+``conjecture'' means proposed and unproved.}
 \end{table}
 
 \section{What would settle it}
@@ -504,8 +515,9 @@ the term decomposition agree to machine precision, and report the overcount incu
 naively summing local potentials; verify that nested coarse-grainings compose and that
 row averaging differs from the event-law push by the predicted amount; measure the
 closure residual and the largest generated three-body coefficient; compute the holonomy
-score and the support of the dressed-transport distribution; measure partition residence
-times against the belief relaxation time and fit exit times against noise amplitude; and
+score, the positive-mass atoms of the finite dressed-transport law, and its measure-one
+stabilizer criterion; measure partition residence times against the belief relaxation
+time and fit exit times against noise amplitude; and
 finally intervene on a parent to measure downward influence, with the deterministic
 pushforward as a control that should collapse it. A null control on randomized
 transports and beliefs is mandatory, since a pipeline that finds blocks there is
@@ -513,15 +525,17 @@ detecting its own blocking algorithm.
 
 \section{Confidence and provenance}
 
-The exact finite results are solid and several are certified in the program's own
-released derivation packages. The most recent package covering the multiscale
-construction released with terminal status \textsc{inconclusive}, and no claim in it
-carries a verified state, because no independent model checked the derivations. An
-external review of that package found four substantive defects and six lesser ones,
-all now repaired; one of the four had been raised by the package's own adversarial pass
-and then wrongly dismissed on a repair that was described but never implemented. That
-episode is the reason for the reporting discipline in this note: treat the exact finite
-layer as reliable, and treat anything containing the words flow, persistence, or
-emergence as unproved until a specific obligation in the table above is discharged.
+The exact finite derivations are explicit and internally checked, and several related
+finite results are certified in other released derivation packages. The most recent
+package covering the multiscale construction released with terminal status
+\textsc{inconclusive}, and no claim in it carries a verified state, because no
+independent model checked the derivations. An external review of that package found
+four substantive defects and six lesser ones, all now repaired; one of the four had
+been raised by the package's own adversarial pass and then wrongly dismissed on a
+repair that was described but never implemented. That episode is the reason for the
+reporting discipline in this note: treat the finite layer as the current author-derived
+working calculus, not as an independently certified package, and treat claims of
+persistence, emergent hierarchy, or physical RG flow as unproved until a specific
+obligation in the table above is discharged.
 
 \end{document}
