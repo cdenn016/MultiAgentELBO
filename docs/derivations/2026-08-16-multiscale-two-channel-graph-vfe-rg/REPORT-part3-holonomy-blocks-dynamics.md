@@ -264,7 +264,7 @@ statement, not a descent statement; and (c) on a cyclic graph holonomy can make 
 target object nonexistent (Proposition 8). Scale-2 blocks require in addition a
 closure hypothesis that is unproved.
 
-### 10.1 Four competing block-formation mechanisms
+### 10.1 Five competing block-formation mechanisms
 
 **M1 — Annealed attention (canonical Gibbs feedback).** Beliefs and rows coevolve:
 $\beta^\star_{ij}\propto\pi_{ij}e^{-\mathbb E_{\mathbb Q}D_{ij}/\tau_i}$ while
@@ -316,10 +316,54 @@ is gauge-invariant by construction, and use a directed Laplacian built from it.
 the model family whose functional form is invariant under *every* partition, so no
 block selection is needed. The uniqueness result behind this
 (Garuccio–Lalli–Garlaschelli) is for edge-independent Bernoulli graphs with an
-additive scalar fitness, $p_{ij}=1-e^{-\delta x_ix_jf(d_{ij})}$. Its transferable
-content here is the criterion, not the formula: **renormalizability is additivity
-of the defining parameter.** $\eta$ is additive; $\beta$ is not. The two-channel,
-matrix/group-valued analogue of the uniqueness theorem is open.
+additive scalar fitness, $p_{ij}=1-e^{-\delta x_ix_jf(d_{ij})}$. What transfers is
+a **cautionary criterion, not a licence**: their closure is *parametric*, tied to
+that ensemble, that OR coarse map, and that prescribed dyadic update, so additivity
+of one coarse statistic here does not import it. The two-channel,
+matrix/group-valued analogue of the uniqueness theorem is unformulated. Part 2
+§8.1 pushes $\eta$ linearly for an internal reason instead — $\phi=1$ is the unique
+$\phi$-norm that is a fixed input-independent Markov pushforward, which is what the
+exact KL chain rule requires.
+
+**M5 — Weighted aggregation at $\phi\ne1$ (sup-GRW route).** \status{CONJECTURE}
+Zheng, García-Pérez, Boguñá and Serrano renormalize *weighted* networks by the
+$\phi$-norm
+$\omega'_{IJ}=C\big(\sum_{e\in E(I,J)}\omega_e^{\phi}\big)^{1/\phi}$,
+$\phi\equiv\beta/(D(\eta-1)+\alpha)$, with the sum rule at $\phi=1$ and sup-GRW
+recovered as $\phi\to\infty$; empirically their real networks are self-similar at
+the supremum end (*Communications Physics* **7**, 97 (2024), arXiv:2307.00879).
+Their blocks come from consecutive angular sectors of a latent $\mathbb S^1$
+embedding, which this theory does not have — every scale-0 agent sits at one
+context point $c_\*$.
+
+The transplant that is *available* is narrower than it first appears, and three
+separate caveats have to travel with it.
+
+1. **The missing length scale can be supplied.** GR needs only a notion of
+   "increasingly longer length scales," not a hyperbolic embedding. Proposition 11
+   of Part 4 §12.3 supplies one intrinsically and gauge-invariantly: effective
+   resistance or commute time on $L^{x,\rm sym}$. So a max-weight blocking
+   *protocol* becomes statable here.
+2. **The theorems do not come with it.** Transplanting a protocol is not
+   transplanting a result. Their self-similarity findings, the hidden-degree
+   recursion $\langle\sigma'\rangle=\langle\sigma\rangle r^{\psi}$, and the angular
+   sector construction all depend on the weighted-$\mathbb S^1$ hidden-degree model
+   and none of them follows here. This mechanism is a **conjecture about where to
+   propose blocks**, nothing more.
+3. **It is outside the exact VFE pushforward, and it discards directionality.**
+   Any $\phi\ne1$ requires the global constant $C$, so the coarse object is no
+   longer the image of the fine measure under one input-independent Markov kernel,
+   and the exact KL chain rule of Part 1 §5 is lost with it. Separately, effective
+   resistance is computed on the *symmetrized* graph, so a mechanism built on it
+   throws away the directed structure that $\beta$ and $\gamma$ exist to carry.
+
+The disciplined use is therefore: **propose** candidate blocks with a $\sup$ or
+$\phi$-norm rule on the resistance scale, then **score and coarse-grain** them with
+the exact linear $\eta$ pushforward of Part 2 §8.1. Proposal and accounting are
+different jobs, and only the second is bound by the VFE identity. Whether a
+directed analogue of the $\phi$-family exists that preserves both the composition
+semigroup and the Markov-pushforward property is open; the authors themselves name
+directionality as essential future work.
 
 ### 10.2 Why low transported KL alone is insufficient
 

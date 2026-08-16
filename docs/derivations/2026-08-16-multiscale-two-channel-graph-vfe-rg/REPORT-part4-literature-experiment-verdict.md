@@ -104,12 +104,31 @@ equations** across its ~9.9k characters: it is a stated direction, not a derivat
 * *Multiscale model (MSM).* The only uniqueness result of the three:
   $p_{ij}=1-e^{-\delta x_ix_jf(d_{ij})}$ is the unique connection probability whose
   functional form survives *every* partition, with fitness $x$ additive, $d$
-  renormalizing as a fitness-weighted $f$-mean, and $\delta$ exactly invariant. Its
-  transferable content here is the **criterion**, not the formula: renormalizability
-  is additivity of the defining parameter. That is precisely why Part 2 pushes $\eta$
-  and not $\beta$. The $\alpha$-stable annealed variant makes the flow a two-sided
-  *group* by infinite divisibility, which is the only route in this literature to an
-  invertible (fine-graining) direction.
+  renormalizing as a fitness-weighted $f$-mean, and $\delta$ exactly invariant.
+  What transfers here is a **cautionary criterion, not a licence**: the closure is
+  *parametric*, tied to that independent-edge ensemble, that OR coarse map, and
+  that prescribed dyadic update. Additivity of one coarse statistic does not import
+  it, and calling the $\eta$-pushforward "MSM-consistent" would overstate the
+  connection. Part 2 §8.1 pushes $\eta$ linearly for an internal reason instead:
+  $\phi=1$ is the unique $\phi$-norm that is a fixed input-independent Markov
+  pushforward, which is what the exact KL chain rule requires. The $\alpha$-stable
+  annealed variant makes the flow a two-sided *group* by infinite divisibility,
+  which is the only route in this literature to an invertible (fine-graining)
+  direction.
+* *Weighted geometric renormalization (GRW).* Zheng, García-Pérez, Boguñá and
+  Serrano extend GR to weighted networks by the $\phi$-norm
+  $\omega'_{IJ}=C\big(\sum_{e}\omega_e^{\phi}\big)^{1/\phi}$ with
+  $\phi\equiv\beta/(D(\eta-1)+\alpha)$, the sum rule at $\phi=1$ and sup-GRW as
+  $\phi\to\infty$ (*Communications Physics* **7**, 97 (2024), arXiv:2307.00879).
+  Two things follow for this program. It **refutes** any claim that
+  renormalizability universally means additivity — closure is relative to a
+  declared family and protocol. And it isolates why $\phi=1$ is nonetheless forced
+  here: it is the only member of the family that is a fixed input-independent
+  Markov pushforward, which the KL chain rule needs. Their blocks still come from
+  latent geometric order, and the authors name directionality as essential future
+  work, so nothing in it covers directed row-stochastic $\beta,\gamma$ channels,
+  gauge transports, or partition persistence. Mechanism M5 of Part 3 §10.1 records
+  the conjectural transplant and its three caveats.
 
 **What is unsolved for a directed two-channel gauge network.** None of the three
 frameworks handles: row-normalized directed conditionals $\beta,\gamma$ as opposed
@@ -413,6 +432,11 @@ present system); **J** conjecture; **N** numerical/diagnostic only; **O** open.
 | 68 | Autonomous agency; participatory nonequilibrium as a distinguishable model | **O** | P3 §11.6 |
 | 69 | Two-channel spectra $C^b,C^m$ peaking at a common $\tau^\*$ on real systems | **J** | P4 §12.3 |
 | 70 | Consecutive coarse-edge marks are conditionally independent (needed for convolution) | **J** | P3 Prop. 9 |
+| 71 | Renormalizability universally means additivity of the defining parameter | **REFUTED** | P4 §12.2 — the $\phi$-GRW family closes at every $\phi$; closure is protocol-relative |
+| 72 | $\phi=1$ is the unique $\phi$-norm that is a fixed input-independent Markov pushforward, hence the only one compatible with the exact KL chain rule | **E** | P2 §8.1 |
+| 73 | A $\sup$ or $\phi$-norm rule on the effective-resistance scale proposes usable blocks here (mechanism M5) | **J** | P3 §10.1 — protocol only; no self-similarity, hidden-degree recursion, or angular-sector result transfers |
+| 74 | Mechanism M5 lies outside the exact $\eta$ pushforward and discards directionality via the symmetrized Laplacian | **E** | P3 §10.1 |
+| 75 | A directed $\phi$-family preserving both semigroup composition and Markov pushforward | **O** | P3 §10.1; named as future work by Zheng et al. |
 
 ## 15. The strongest defensible theorem
 

@@ -102,7 +102,7 @@
         "Barycenters require Bochner integrability and need not lie in the represented group."
       ],
       "artifact_path": "REPORT-part3-holonomy-blocks-dynamics.md",
-      "artifact_sha256": "8493f2f26fcfeae5a2ed1e13ab86d5aec833097986479696130595d0fa28d51f"
+      "artifact_sha256": "f0fa4d68e97d2f70174a9266a562d55f532c0ebd0b4bfaee2bf0b159a5f32f02"
     },
     {
       "id": "ev-nonequilibrium",
@@ -114,7 +114,7 @@
         "Not extended to projected flows on the simplex boundary or indefinite preconditioners; that extension is an open obligation."
       ],
       "artifact_path": "REPORT-part3-holonomy-blocks-dynamics.md",
-      "artifact_sha256": "8493f2f26fcfeae5a2ed1e13ab86d5aec833097986479696130595d0fa28d51f"
+      "artifact_sha256": "f0fa4d68e97d2f70174a9266a562d55f532c0ebd0b4bfaee2bf0b159a5f32f02"
     },
     {
       "id": "ev-intrinsic-scale",
@@ -127,7 +127,7 @@
         "Transported Fisher-Rao is a pseudometric; path independence needs holonomy stabilization."
       ],
       "artifact_path": "REPORT-part4-literature-experiment-verdict.md",
-      "artifact_sha256": "536c9d446de77861d3e51db053c4c7bfe002cf5e0fdbd5d575eef253b9e17ccc"
+      "artifact_sha256": "dd7a1aeeffb517cc41e7b82c02d58d73cb0dab3a0eab8d6c0a01b9f45fafe2b4"
     },
     {
       "id": "ev-literature-bks",
@@ -140,7 +140,7 @@
         "Authors describe the connections as largely conceptual."
       ],
       "artifact_path": "REPORT-part4-literature-experiment-verdict.md",
-      "artifact_sha256": "536c9d446de77861d3e51db053c4c7bfe002cf5e0fdbd5d575eef253b9e17ccc"
+      "artifact_sha256": "dd7a1aeeffb517cc41e7b82c02d58d73cb0dab3a0eab8d6c0a01b9f45fafe2b4"
     },
     {
       "id": "ev-literature-netrg",
@@ -152,7 +152,7 @@
         "A review's open problem is not cited as a solved theorem anywhere in this run."
       ],
       "artifact_path": "REPORT-part4-literature-experiment-verdict.md",
-      "artifact_sha256": "536c9d446de77861d3e51db053c4c7bfe002cf5e0fdbd5d575eef253b9e17ccc"
+      "artifact_sha256": "dd7a1aeeffb517cc41e7b82c02d58d73cb0dab3a0eab8d6c0a01b9f45fafe2b4"
     },
     {
       "id": "ev-counterexamples",
