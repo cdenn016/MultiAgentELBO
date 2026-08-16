@@ -18,6 +18,7 @@
     "CE3_mismatch_on_positive_generative_model_mass": true,
     "CE3_swapped_rows_normalized": true,
     "CE4_bit_flip_stabilizes_fair_law": true,
+    "CE4_directed_KL_form_rejects_other_node_laws": true,
     "CE4_first_marginal_invariant": true,
     "CE4_full_joint_not_invariant": true,
     "CE4_identity_transport_preserves_node_laws": true,
@@ -25,6 +26,7 @@
     "CE4_nontrivial_bit_flip": true,
     "CE4_second_marginal_invariant": true,
     "CE4_tree_directed_KL_symbolic_half_log_3": true,
+    "CE4_tree_directed_KL_symmetric_under_swap": true,
     "CE4_tree_has_trivial_holonomy": true,
     "CE4_trivial_holonomy_unequal_laws": true,
     "main_K_0_B1": true,
@@ -162,10 +164,10 @@
   "schema_version": "rigorous-theory-search/v1",
   "status": "PASS",
   "summary": {
-    "check_count": 51,
+    "check_count": 53,
     "failed_check_count": 0,
     "negative_claim_count": 5,
-    "passed_check_count": 51
+    "passed_check_count": 53
   },
   "target_digest": "15336a68593c1523eeeffe97101fbbaaf484e32145cdd1b762d7372bda94ad87",
   "witness": {

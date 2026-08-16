@@ -335,7 +335,21 @@ CONDITIONAL: holonomy blindness under typed actions, full fine-law covariance, c
 
 DIAGNOSTIC: raw connection spectral gaps, KL thresholds, and finite symbolic or numerical checks. They can test a proposed construction but do not select a partition or prove a theorem.
 
-OPEN/TODO: family-wide common recovery absent simultaneous hypotheses; the frozen comparison category; extension across $\mathcal U_A$; parent local sections and patch gluing; active-set changes; canonical channel, membership, and partition selection; literal replicated-parent semantics; a geometric meta-agent; autonomous agency; nonequilibrium persistence; physical time; continuum limits; unique latent DAG or microscopic physics; ontology; an intrinsic threshold; general noncompact holonomy averaging; adaptive attention dynamics; nonlinear full-law VFE semiconjugacy; and dynamically selected memberships.
+OPEN/TODO: **the renormalization group itself** — see below; family-wide common recovery absent simultaneous hypotheses; the frozen comparison category; extension across $\mathcal U_A$; parent local sections and patch gluing; active-set changes; canonical channel, membership, and partition selection; literal replicated-parent semantics; a geometric meta-agent; autonomous agency; nonequilibrium persistence; physical time; continuum limits; unique latent DAG or microscopic physics; ontology; an intrinsic threshold; general noncompact holonomy averaging; adaptive attention dynamics; nonlinear full-law VFE semiconjugacy; and dynamically selected memberships.
+
+**The obligation named in this file's own title is OPEN.** This page is titled for a renormalization
+*group*, and nothing on it establishes one. There is no rescaling or identification map, no beta
+function, no blocking ratio, no relevant/irrelevant operator classification, and no universality
+statement; the only fixed point named anywhere above is the base point $r_*$, which is a chosen
+location and not a fixed point of a flow. The certified channel $C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A$
+has no declared inverse-direction map, so it admits no iterate and no flow. What *is* established is a
+composed-scale composition law for coarse channels at three levels (§ above,
+$C_{20}(B\mid i)=\sum_A C_{21}(B\mid A)\,C_{10}(A\mid i)$) together with the exact pointwise
+coarse-graining identities — that is a consistent family of coarse-grainings, which is a prerequisite
+for an RG semigroup, not an RG semigroup. Closing this requires at minimum a scale parameter with a
+composition law in that parameter, a flow on a space of couplings or laws, and a fixed-point analysis.
+Recorded by the 2026-08-16 remediation of finding M3 in
+`docs/reviews/2026-08-15-deep-review/REPORT.md`.
 
 | Location | Role |
 |---|---|

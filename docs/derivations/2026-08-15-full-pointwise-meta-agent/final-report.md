@@ -27,7 +27,9 @@ The release closure contains `target` plus exactly seventeen transitive ancestor
 
 ## Independent reconstruction
 
-`evidence/independent-reconstruction.md` rebuilds the closure without using the direct proof as its outline: it begins from observation-indexed versions and finite falsifiers, isolates the evaluator disintegration, factors conditional density loss, and treats holonomy as declared branch data. It covers `target`, all seventeen ancestors, and the separate dynamics boundary. Result: `PASS`.
+`evidence/independent-reconstruction.md` rebuilds the closure: it begins from observation-indexed versions and finite falsifiers, isolates the evaluator disintegration, factors conditional density loss, and treats holonomy as declared branch data. It covers `target`, all seventeen ancestors, and the separate dynamics boundary. Result: `PASS` **as a second derivation**.
+
+**The outline-independence claim is withdrawn** (2026-08-16 remediation, finding M6). This document previously asserted that the reconstruction proceeds "without using the direct proof as its outline". That claim is unsupported: once a prepended block sourced from `evidence/counterexample-proofs.md` is set aside, the section order is the direct proof's order exactly, and the order is *contingent* rather than forced — 42,636 orderings of the load-bearing steps are admissible under the actual dependency relation, so agreement on one of them is evidence of dependence, not of mathematical necessity. What the artifact supports is that the closure was derived a second time and reached the same result; it does not support that the second derivation was structurally independent of the first. A reconstruction meeting the stronger claim would have to be produced without sight of the direct proof, and that has not been done.
 
 ## Oracle erasure
 

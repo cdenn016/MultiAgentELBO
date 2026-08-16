@@ -176,6 +176,70 @@ required for the ordinary subtraction $\Fenergy_I-\Fenergy_A=\Delta_A$ and for t
 pairwise common-recovery equivalence. Family-wide common recovery requires simultaneous hypotheses
 for every family member. A bare equality $+\infty=+\infty$ supplies neither the zero-defect
 criterion nor a recovery consequence. \status{ESTABLISHED}
+
+\paragraph{Proof.}
+Normalization and the observation marginal.  Since $C_A(Y,\mathsf Z_A)=1$ for every
+$Y\in\mathsf Y_I$, integrating \eqref{eq:rg-pointwise-parent-generative} against the constant
+function gives $\mathbb P_A(\mathsf O\times\mathsf Z_A\mid X)=1$, and the same computation applied
+to $\boldsymbol\Pi_{I,o,X}$ and $\mathbb Q_{I,o,X}$ normalizes the other two laws in
+\eqref{eq:rg-pointwise-parent-triple}.  Testing
+\eqref{eq:rg-pointwise-parent-generative} with a bounded measurable function of $o$ alone gives
+$\mathbb P_A^{\mathsf O}=\mathbb P_I^{\mathsf O}$, because $C_A$ leaves the observation coordinate
+unchanged.
+
+Posterior version.  Let $f$ be bounded measurable on $\mathsf Z_A$ and $g$ bounded measurable on
+$\mathsf O$, and put $h(Y)=\int f(z)C_A(Y,dz)$, which is bounded and measurable because $C_A$ is a
+kernel.  Then
+\[
+\int g\Bigl(\int f\,d\boldsymbol\Pi_{A,o,X}\Bigr)\mathbb P_A^{\mathsf O}(do)
+=\int g\Bigl(\int h\,d\boldsymbol\Pi_{I,o,X}\Bigr)\mathbb P_I^{\mathsf O}(do)
+=\int g(o)h(Y)\,\mathbb P_I(do,dY\mid X)
+=\int g(o)f(z)\,\mathbb P_A(do,dz\mid X),
+\]
+using the preserved observation marginal, then the defining property of the selected fine version,
+then \eqref{eq:rg-pointwise-parent-generative}.  Hence $o\mapsto\boldsymbol\Pi_{A,o,X}$ is a selected
+parent posterior version, including at its declared exceptional points.  The step uses that $C_A$
+acts on the conditioned variable only; a channel that also coarsened $\mathsf O$ would not descend.
+
+Absolute continuity.  If $\boldsymbol\Pi_{A,o,X}(N)=0$ then
+$\int C_A(Y,N)\boldsymbol\Pi_{I,o,X}(dY)=0$, so $C_A(\cdot,N)=0$ holds
+$\boldsymbol\Pi_{I,o,X}$-almost surely, hence $\mathbb Q_{I,o,X}$-almost surely by
+$\mathbb Q_{I,o,X}\ll\boldsymbol\Pi_{I,o,X}$, and therefore
+$\mathbb Q_{A,o,X}(N)=\int C_A(Y,N)\mathbb Q_{I,o,X}(dY)=0$.
+
+Evaluator.  On standard-Borel spaces a selected disintegration of $\mathbb P_A(\cdot\mid X)$ over
+$(M_A,\Xi_A)$ exists and is jointly measurable, which supplies the induced tier of
+\eqref{eq:rg-pointwise-parent-evaluator} together with
+\eqref{eq:rg-pointwise-parent-evaluator-compatibility} by construction.  For a family declared
+independently of $\mathbb P_A$, \eqref{eq:rg-pointwise-parent-evaluator-compatibility} is the stated
+separate hypothesis; disintegration alone does not supply it.
+
+Marginals.  Equations \eqref{eq:rg-pointwise-parent-recognition-marginals} and the accompanying
+prior and posterior displays are coordinate pushforwards by definition, obtained by testing each
+parent law with functions of a single coordinate.
+
+Chain identity and defect.  Form the joint lifts of
+\eqref{eq:rg-bridge-lifts} with $C=C_A$, $Q_o=\mathbb Q_{I,o,X}$ and
+$\Pi_o=\boldsymbol\Pi_{I,o,X}$.  Applying \Cref{thm:rg-exact-coarse-vfe} verbatim yields
+\eqref{eq:rg-pointwise-parent-defect} and the extended-real additive identity, every term lying in
+$[0,+\infty]$ with no infinite quantity subtracted.  Adding the common finite real $-\log p_X(o)$ to
+both KL terms gives $\Fenergy_I=\Fenergy_A+\Delta_A$ in the extended reals; the sum of a finite real
+and a nonnegative extended real is no longer nonnegative, which is why a finite VFE may be negative.
+
+Zero defect.  $\Delta_A$ is the integral of a nonnegative measurable integrand against
+$\mathbb Q_{A,o,X}$, so it vanishes exactly when that integrand vanishes
+$\mathbb Q_{A,o,X}$-almost surely; the integrand is a relative entropy, which vanishes exactly when
+its two arguments agree.  No finiteness hypothesis enters here.
+
+Finite tier.  If the fine KL is finite then both right-hand terms are finite, so the subtraction
+$\Fenergy_I-\Fenergy_A=\Delta_A$ is an ordinary difference of reals.  On that tier the selected
+posterior reverse kernel recovers both declared laws under $\Delta_A=0$; conversely, one normalized
+kernel $R$ recovering both laws sandwiches the fine and coarse KL values by data processing through
+$C_A$ and then through $R$, forcing equality and hence $\Delta_A=0$.  This is the equality case of
+data processing, i.e.\ sufficiency of $C_A$ for the pair, and it is pairwise: a single kernel serving
+an entire family requires the hypothesis for every member simultaneously.  If both KL values are
+$+\infty$ the equality is vacuous and yields neither conclusion.  $\square$
+
 \medskip
 
 This theorem constructs a full normalized, generally lossy pointwise probabilistic datum. The coarse
@@ -1807,6 +1871,22 @@ On the retention alternative, the raw root-framed state above places component r
 based holonomy representations, and the dressed boundary marks in $\mathsf H_A$ and pushes their
 joint law forward without a holonomy-blind claim. This alternative preserves path information; it
 does not select $I$, $A$, a partition, or a membership kernel. \status{ESTABLISHED}
+
+\paragraph{Scope of the word ``holonomy'' in the blindness alternative.}
+The name is inherited from
+\Cref{thm:cg-holonomy-kl-marginal}, where the acting object is the genuine based-loop transport group
+$\mathfrak h_I^x(r)=\{T_\lambda:\lambda\ \text{a loop at}\ r\}$ and the statement is about parallel
+marginal-law sections. The full-law alternative above generalizes that statement by widening the
+acting object to an \emph{arbitrary typed groupoid of bimeasurable isomorphisms}, and no connection
+form, horizontal distribution, lift, loop, or curvature enters its hypotheses or its proof: the
+argument is substitution of an equivariant channel into
+\eqref{eq:rg-pointwise-parent-generative} and \eqref{eq:rg-pointwise-parent-triple}. What is proved is
+therefore \emph{covariance of the full parent laws under a declared groupoid action}, with
+same-slice invariance on the isotropy subgroup of $(o,X)$; it is not a statement that a holonomy has
+been computed or quotiented away. Loop transports are one admissible instance of that groupoid, which
+is why the inherited name is retained, but a reader should not infer connection-theoretic content
+from it. The retention alternative, by contrast, does carry literal holonomy data: the based holonomy
+representations are stored in $\mathsf H_A$ as raw records. \status{ESTABLISHED}
 
 On a separately declared linear feature fiber $V_x$, let
 $R_x:G\to\operatorname{GL}(V_x)$ be a linear representation.  Choose
