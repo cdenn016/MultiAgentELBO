@@ -1,4 +1,4 @@
-STATUS: IN_PROGRESS
+STATUS: COMPLETE
 AGENT: principal reviewer (Claude Opus 5), independent of the wave-1 panel
 TARGET: 8ce635807a6ca2a388255fc996c98f7c535e5843
 
@@ -181,6 +181,62 @@ I verified the rest in Fourier. On the circle \(H_\tau\) is the multiplier \(e^{
 
 **Verdict: CHECKS OUT in full.** This is a clean, genuinely good construction and the strongest
 single item across both packages. It should be reported as such.
+
+## CONFIRMED BY MY OWN INSPECTION: the flagship theorem restates this repository's own prior results
+
+Wave-1 investigator P1 reported that the 8/15 derivation restates theorems already `ESTABLISHED` in
+this repository. I verified this independently rather than taking it on report, because it is the
+finding that most changes the assessment of the work. It holds.
+
+`Theory/06_general_coarsegraining.tex` **at the 8/15 diff base** (i.e. before any of this work),
+added by commit `bd46058`, already contains:
+
+**`thm:cg-evidence-preserving-channel`** (`\status{ESTABLISHED}`), verbatim:
+
+> Define \(\bar P(do,dy)=\int K(x,dy)P(do,dx)\), \(\bar P_o:=P_oK\) for every \(o\) […] The declared
+> kernel \(o\mapsto\bar P_o\) is a regular conditional law of \(Y\) given \(O\) under \(\bar P\),
+> including its selected exceptional-point values. […] Then \(\bar P^O=P^O\).
+
+That is statement 1 of the 8/15 "full pointwise meta-agent" theorem, symbol for symbol, with \(C_A\)
+in place of \(K\): the channel pushforward, the pushed posterior being a *version* including its
+selected exceptional values, and preservation of the observation marginal. It is also exactly the
+identity I reconstructed at the top of this file and marked CHECKS OUT — I was re-deriving the repo's
+own week-old theorem, as was the 8/15 package.
+
+**`cor:cg-pairwise-bayes-recovery`** (`\status{ESTABLISHED}`), verbatim:
+
+> Then \(QKR_Q=Q\), and under \eqref{eq:cg-kl-equality}, \(PKR_Q=P\). Conversely, any one kernel \(R\)
+> recovering both \(P\) and \(Q\) forces equality in \eqref{eq:cg-kl-dpi}.
+> **Proof.** […] The converse follows by applying data processing through \(K\) and then \(R\).
+
+That is the 8/15 (6.9)–(6.12) recovery theorem, including the *same one-line converse argument*
+("data processing through \(C_A\) and then through \(R\)", new derivation line 370).
+
+**`cor:cg-dpi-infinite-equality-warning`** (`\status{ESTABLISHED}`) is the new line 379
+("\(+\infty=+\infty\) supplies neither (6.8) nor (6.12)"), and the prior version proves it with an
+exhibited three-point counterexample.
+
+**`thm:cg-kl-dpi-extended`** (`\status{ESTABLISHED}`) is the extended-real DPI, proved with the same
+nonnegative generator \(\phi_0(t)=t\log t-t+1\) that reappears at line 286 of the new derivation — and
+it carries `\citet{Kullback1951,Csiszar1967}`, the attribution the new package does not repeat.
+
+**Assessment.** The measure-theoretic and information-theoretic core of the 8/15 flagship release is a
+re-derivation of four results this repository already had marked `ESTABLISHED` a week earlier, shipped
+as a new hash-bound `COMPLETE_AFFIRMATIVE` release with no citation to the prior internal results and
+without the Kullback/Csiszár attribution the prior version carried. My earlier note that these results
+are "classical, not new" understated it: they are not merely classical, they are *already in this
+repo*, with proofs, with correct citations.
+
+This does **not** make the 8/15 work empty. What is genuinely added is the typed parent
+belief/model/evaluator/holonomy decoration, the pointwise \(r_*\)/\(X\)/admitted-\(o\) framing, and the
+five finite witnesses. But those are the parts the panel found weakest (see P3 on the witnesses and P4
+on "holonomy"), and the strongest-looking parts of the release are the borrowed ones.
+
+**Severity: High**, and it is an *attribution and process* defect, not a correctness defect. The
+mathematics is right. What failed is the certification apparatus: a process that runs sixteen
+adversarial attacks, an oracle-erasure pass, an independent reconstruction, and four expert reviews,
+and does not notice that the theorem was already proved in the same repository, is not measuring what
+its `EVIDENCE_VERIFIED` label claims to measure.
 
 ## Note on the certification language
 
