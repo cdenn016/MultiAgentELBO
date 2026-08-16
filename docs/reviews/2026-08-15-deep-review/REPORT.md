@@ -213,8 +213,29 @@ unauditable is the honest terminal state rather than a repair.
 | M6 | Reconstruction claimed outline-independent | **Repaired** — claim withdrawn in `final-report.md`; the order is contingent (42,636 admissible orderings), so agreement evidences dependence, not necessity |
 | M7 | Evidence discipline weaker than the 8/14 package | **Recorded, not repaired** — partly explained by subject matter; repairing it means re-deriving the ledger's evidence attachments, a new certification pass |
 
-Manuscript build verified after the LaTeX edits: `pdflatex` → `bibtex` → two further passes, all exit 0,
-no undefined references, no multiply-defined labels, all five new citations resolved into `main.bbl`.
+**All nine Low findings were addressed on 2026-08-16**; seven repaired, two recorded.
+
+| | Finding | Disposition |
+|---|---|---|
+| L1 | Derivation cites none of the theorems it re-derives | **Repaired additively** — new `evidence/prior-results-map.md` gives the section-by-section correspondence to the six prior `ESTABLISHED` results plus the Kullback–Leibler / Csiszár attribution |
+| L2 | Limitation lists omit the null-slice version dependence | **Repaired** — added to `final-report.md` and `construction-or-strongest-theorem.md` |
+| L3 | One sentence over-reads the five negative witnesses | **Repaired** — restated as two-atom insufficiency witnesses, separated from the affirmative content |
+| L4 | Snapshot fingerprints not reproducible | **Recorded** — a `fingerprint_note` on each; inventing a rule after the fact would not reproduce the values |
+| L5 | Unhedged nonreconstruction claim in `Theory/07b` | **Repaired** — now carries the nondegeneracy hypothesis `prop:prob-marginals-do-not-determine-joint` requires, with the singleton case named |
+| L6 | Cross-`X` notation in the evaluator equation | **Recorded** — already defused by the `:190` caveat; nothing downstream uses a cross-`X` factorization |
+| L7 | Frozen contract self-contradictory in one clause | **Recorded, governing reading stated** — `problem-contract.json` is not edited because its bytes define the target digest |
+| L8 | 0/0/0 counts from a fix-then-count loop | **Repaired** — explicit `severity_count_convention` on all four review slots |
+| L9 | Fourth conjunct is a modeling declaration | **Repaired** — labeled as such in `final-report.md` |
+
+`evidence/direct-derivation.md`, `evidence/counterexample-proofs.md` and `problem-contract.json`
+remain byte-identical to `8ce6358` throughout. L1, L2 and L6 are therefore repaired *around* the
+derivation rather than inside it: its SHA-256 `2aa70b07…` is the one binding in the package that still
+verifies end to end, and preserving it keeps a third party able to check exactly the derivation the
+domain reviews read. If the inline form is preferred, it is one line per section at that cost.
+
+Manuscript build verified after each round of LaTeX edits: `pdflatex` → `bibtex` → two further passes,
+all exit 0, no undefined references, no multiply-defined labels, all five new citations resolved into
+`main.bbl`, and the new proof, scope paragraph, attribution and hedge all present in the rendered PDF.
 
 ## Punch list
 

@@ -182,6 +182,80 @@ derivation, and keeping agent assessments out of the closure set for mathematica
 available here too and were applied less consistently. Recorded, not repaired: repairing it means
 re-deriving the ledger's evidence attachments, which is a new certification pass.
 
+## Low findings, corrected 2026-08-16
+
+**L1 — the mathematics document cites none of the theorems it re-derives.** `direct-derivation.md`
+contains no `Theory/` reference, no canonical theorem label, and no `Kullback1951`/`Csiszar1967`, so
+§3 and §6 read alone as first derivations. They restate `thm:cg-evidence-preserving-channel`,
+`thm:cg-kl-dpi-extended`, `thm:cg-dpi-equality`, `cor:cg-pairwise-bayes-recovery`,
+`cor:cg-dpi-infinite-equality-warning` and `thm:rg-exact-coarse-vfe`, all `ESTABLISHED` at commit
+`bd46058` a week earlier. The section-by-section mapping and the external attribution are now in
+**`evidence/prior-results-map.md`**, and `construction-or-strongest-theorem.md` points at it. The
+mapping is additive rather than inline because `direct-derivation.md`'s SHA-256
+`2aa70b07…` is the one binding in this package that still verifies end to end and is byte-identical
+at `1b18842`, `8ce6358` and `HEAD`; editing it would destroy the third party's ability to check
+exactly the derivation the domain reviews read. No priority was ever claimed: the contract's
+`literature_policy` permits released repository derivations and ends "No novelty or priority claim is
+made."
+
+**L2 — three limitation lists omitted the null-slice version dependence.** Added to
+`final-report.md` and `construction-or-strongest-theorem.md`. Every displayed quantity at the admitted
+`o` is a property of the *selected* posterior version; when the admitted `o` is null for the
+observation reference, another admissible version changes the fine VFE (a two-point example moves it
+from `log 2` to `0`) with every frozen premise intact. The package already disclosed this at
+`direct-derivation.md:45` and dispositioned it as attack `A4`; only the lists advertised as complete
+omitted it. `direct-derivation.md` §9's own list is left unedited for the binding reason above.
+
+**L3 — one sentence over-read the five negative witnesses.** `final-report.md`'s "strongest verified
+result" paragraph listed them without a type marker. They are now stated separately and explicitly as
+**two-atom insufficiency witnesses**, not substantive theorems, with the note that two of the five
+refute premise-deleted versions of the affirmative theorem rather than any claim made here.
+
+**L4 — the snapshot fingerprints are not reproducible.** No `fingerprint_sha256` in any of the three
+provenance snapshots can be recomputed, because the package documents no construction rule for the
+field. Each now carries a `fingerprint_note` recording that. Not repaired: inventing a rule after the
+fact would not reproduce the recorded values, and the correct fix is to define the rule and
+regenerate, which is a new certification pass.
+
+**L5 — an unhedged nonreconstruction claim.** `Theory/07b` asserted flatly that "no displayed marginal
+pair reconstructs any of the corresponding full laws". `prop:prob-marginals-do-not-determine-joint`
+requires at least two nondegenerate coordinates and explicitly records that the conclusion fails
+without it — a one-point parent space has its unique law determined by its marginals, and the
+surrounding text permits that case. The sentence now carries the hypothesis and says why it is not
+decorative.
+
+**L6 — cross-`X` notation in the evaluator equation.** In the induced tier the evaluator is defined as
+$K^{X_A}_{A,m_A}:=G_A^X$, built by disintegrating $\mathbb P_A(\cdot\mid X)$, so it depends on the
+fine $X$; displaying it with an $X_A$ superscript reads on its face as the factorization through
+$X_A$ that the limitations disclaim. The document already defuses this in the caveat at
+`direct-derivation.md:190`, and nothing downstream uses a cross-`X` factorization, so the residue is
+notation hygiene in a frozen artifact. Recorded here rather than edited, for the binding reason under
+L1.
+
+**L7 — the frozen contract is self-contradictory in one clause.** `/target/regularity` says "finite
+terms wherever KL or VFE expressions are displayed", which contradicts `/target/statement`,
+`/target/quantifiers`, the `VFE-CHAIN-EXTENDED` ledger claim, and `final-report.md`'s own scope
+sentence, all of which correctly carry the extended-real chain with no finiteness premise. **The
+governing reading is the extended-real one**, and the unconditional zero-defect criterion is
+mathematically correct without any finiteness hypothesis. `problem-contract.json` is *not* edited:
+its bytes define the target digest `15336a68…`, and changing them would break every binding in the
+package. Note also that the defect runs opposite to how it was first filed — `git show --stat fe08359`
+shows the commit that introduced the unconditional wording touched no package file, so the manuscript
+is the corrected surface and the package's summary labels are the stale ones.
+
+**L8 — the 0/0/0 severity counts are produced by a fix-then-count loop.** All four review slots in
+`evidence/release-assembly.json` now carry an explicit `severity_count_convention` stating that counts
+are findings remaining against the *corrected* bytes, that a nonzero count is therefore unreachable by
+construction, and that at least one real pre-fix mathematical error is recoverable from git for this
+package. The convention is defensible; leaving it undisclosed while presenting 0/0/0 as a certification
+ground was not.
+
+**L9 — the fourth affirmative conjunct is a modeling declaration.** It fixes how a parent datum is to
+be presented rather than asserting a proposition with an independent truth value, so certifying it
+records that the declaration was adopted and used consistently, not that anything was verified in the
+sense the other conjuncts are. `final-report.md` now says so. The stronger charge — that the released
+theorem *contradicts* the contract's wording for this conjunct — was tested and refuted.
+
 ## What the release status now means
 
 `terminal_status` is `COMPLETE_AFFIRMATIVE_WITH_CORRECTIONS`. The affirmative mathematical content is
