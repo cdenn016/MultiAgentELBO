@@ -117,3 +117,28 @@ materially narrowed and two headline clauses were outright refuted.
 **Remaining work, if this is picked up again:** the unchallenged wave-1 findings (~14 High, 46 Medium,
 29 Low by investigator label) were never put to a skeptic and must not be treated as confirmed. The
 five highest-value ones to test next are named in `REPORT.md` under "Coverage".
+
+## Wave 4 — PENDING (scheduled 2026-08-16 01:05, and runnable any time)
+
+Waves 1-3 finished ahead of the rate limit. The remaining work is adversarial testing of the
+UNCHALLENGED wave-1 findings. Do not redo waves 1-3.
+
+Dispatch skeptics against these five first:
+
+| # | Finding | Location |
+|---|---|---|
+| 1 | (4.5) asserts the cross-`X` factorization §9 disclaims | `findings/P1-measure-probability.md:150` |
+| 2 | Unconditional zero-defect criterion asserted `ESTABLISHED` on a release whose contract excludes the infinite tier | `findings/P2-information-vfe.md:160` |
+| 3 | `CE4_tree_directed_KL_symbolic_half_log_3` does not test its named claim | `findings/P3-counterexamples-pointwise.md:163` |
+| 4 | "Holonomy blindness" is inherited invariance, not blindness | `findings/P4-gauge-holonomy.md:33` |
+| 5 | Six new `ESTABLISHED` theorems in `Theory/05d` carry no citation | `findings/P10-rigor-sweep.md:153` |
+
+Then P9's eight remaining High findings on the certification machinery — the largest untested block.
+
+**Do not re-test:** `P7-rg-coarsegraining.md:110` (duplicate of adjudicated M1) and
+`P8-integration-overclaim.md:353` (duplicate of adjudicated C1).
+
+Run with `workflows/wave2.js`, passing `args.contested` as `{id, severity, title, location,
+one_line_evidence, source_file}` records; raise `MAX_SKEPTICS` above 8 if needed. Binding rules carry
+over: CONFIRMED only on a reconstructed derivation, an executed command with real output, or a cited
+primary source — never on agent agreement. Append a "Wave 4" section to `REPORT.md` when done.
