@@ -118,7 +118,14 @@ materially narrowed and two headline clauses were outright refuted.
 29 Low by investigator label) were never put to a skeptic and must not be treated as confirmed. The
 five highest-value ones to test next are named in `REPORT.md` under "Coverage".
 
-## Wave 4 — PENDING (scheduled 2026-08-16 01:05, and runnable any time)
+## Wave 4 — IN_PROGRESS (launched 2026-08-16 01:05)
+
+Run ID `wf_a1fd026a-2f3` (task `w0fj9gyeh`): 11 skeptics + adjudicator. Five named targets plus six
+grouped blocks covering all nine P9 High findings. `MAX_SKEPTICS` raised to 12.
+
+Target-revision check at launch: `8ce6358` is an ancestor of HEAD and no target artifact differs;
+the only working-tree changes are new uncommitted WIP (`solid_RG_theory.tex` guide and its change-log
+entry), which this review does not touch.
 
 Waves 1-3 finished ahead of the rate limit. The remaining work is adversarial testing of the
 UNCHALLENGED wave-1 findings. Do not redo waves 1-3.

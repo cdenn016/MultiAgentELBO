@@ -15,7 +15,7 @@ const REPO = 'C:/Users/chris and christine/Desktop/MultiAgentELBO'
 const DIR = REPO + '/docs/reviews/2026-08-15-deep-review'
 const OUT = DIR + '/findings'
 const HEAD = '8ce635807a6ca2a388255fc996c98f7c535e5843'
-const MAX_SKEPTICS = 8
+const MAX_SKEPTICS = 12
 
 const contested = (args && args.contested) || []
 
