@@ -21,6 +21,9 @@ from multiagent_elbo.finite.agent_network_experiment import (
     run_agent_network_experiment,
 )
 from multiagent_elbo.finite.attention_experiment import run_attention_experiment
+from multiagent_elbo.finite.categorical_falsification_experiment import (
+    run_categorical_falsification_experiment,
+)
 from multiagent_elbo.finite.categorical_dqm_experiment import (
     run_categorical_dqm_experiment,
 )
@@ -200,8 +203,23 @@ def _gaussian_fixed_ray_config(root: Path) -> ExperimentConfig:
     )
 
 
+def _categorical_falsification_config(root: Path) -> ExperimentConfig:
+    return _lab_config(
+        root,
+        {
+            "experiment": "categorical_falsification",
+            "fixture": "two_channel_z3_v1",
+            "admitted_family": "both",
+            "null_control_seeds": 2,
+            "descent_restarts": 4,
+            "arithmetic": "exact_rational",
+        },
+    )
+
+
 ALL_LAB_RUNNERS = (
     (run_agent_network_experiment, _network_config),
+    (run_categorical_falsification_experiment, _categorical_falsification_config),
     (run_attention_experiment, _attention_config),
     (run_categorical_dqm_experiment, _categorical_dqm_config),
     (run_finite_counterexample_experiment, _counterexample_config),

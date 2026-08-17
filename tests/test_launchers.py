@@ -28,6 +28,9 @@ INFORMATION_HISTORY_LAUNCHER = REPO_ROOT / "run_information_history_lab.py"
 GAUGE_HOLONOMY_LAUNCHER = REPO_ROOT / "run_gauge_holonomy_lab.py"
 SCALE_COCYCLE_LAUNCHER = REPO_ROOT / "run_scale_cocycle_lab.py"
 GAUSSIAN_FIXED_RAY_LAUNCHER = REPO_ROOT / "run_gaussian_fixed_ray_lab.py"
+CATEGORICAL_FALSIFICATION_LAUNCHER = (
+    REPO_ROOT / "run_categorical_falsification_lab.py"
+)
 GAUSSIAN_FIXED_RAY_DIAGNOSTIC_LAUNCHER = (
     REPO_ROOT / "run_gaussian_fixed_ray_diagnostic.py"
 )
@@ -48,6 +51,7 @@ NEW_LAUNCHERS = (
     ("gauge_holonomy", GAUGE_HOLONOMY_LAUNCHER, "pass"),
     ("scale_cocycle", SCALE_COCYCLE_LAUNCHER, "pass"),
     ("gaussian_fixed_ray", GAUSSIAN_FIXED_RAY_LAUNCHER, "inconclusive"),
+    ("categorical_falsification", CATEGORICAL_FALSIFICATION_LAUNCHER, "pass"),
 )
 
 
