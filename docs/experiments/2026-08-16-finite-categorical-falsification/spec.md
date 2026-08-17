@@ -319,6 +319,22 @@ $2\,\mathrm{sech}^2(h_0)\tanh(h_0)J_1J_2J_3$.
 three-body coefficient is nonzero while the implementation reports a pairwise
 coarse theory.
 
+*Amendment, 2026-08-17.* This section is amended rather than rewritten, so that
+what was frozen stays legible. Two things were left open here and were settled
+after the first measurements, which is recorded because it bears on what the
+result is worth. First, the direction: the Möbius inversion above is written on
+the scale-0 factor graph, and the projection is named onto a *parent* family, so
+the two reported items were not registered in the same direction and the
+three-body item was not registered in either. Both are now measured in the
+coarse-graining direction, children eliminated and the surviving parent theory
+read off; the against-direction elimination is retained separately under
+`model_closure_residual` and is not a renormalization step. Second, the falsifier
+above is a conjunction, and its second conjunct was never implemented: the shipped
+verdict tested only whether the three-body coefficient was nonzero, which the
+Ising-star reference calculation on this page already says is generically true.
+That verdict is withdrawn. The replacement criterion, a coarse three-to-two ratio
+above one tenth, is a stipulation made after the data and is not pre-registered.
+
 ### M4 — Holonomy retention
 
 Per candidate block $I$, per channel $x$, at a chosen root $r_I$:

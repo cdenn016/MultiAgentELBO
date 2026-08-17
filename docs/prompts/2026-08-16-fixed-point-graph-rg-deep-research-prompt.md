@@ -12,7 +12,7 @@ Use the Research vault at `C:\Users\chris and christine\Desktop\Research`. Read 
 
 All scale-0 agents lie at one fixed contextual point (c_*\in\mathcal C). There is no assumed physical length, lattice, translation symmetry, momentum space, or tree. The finite directed network may contain cycles. Each ordered edge has two generally non-flat transports, (Omega_{ij}^b) for beliefs and (Omega_{ij}^m) for model presentations. Nontrivial loop holonomy is allowed and must not be penalized to the identity without a separately justified physical hypothesis.
 
-The belief and model channels have normalized directed source rows (eta_{ij}) and (gamma_{ij}), external receiver occupancies (alpha_i^b,alpha_i^m), and joint edge-event laws (eta_{ij}^b=alpha_i^beta_{ij}), (eta_{ij}^m=alpha_i^mgamma_{ij}). Their transported energies are
+The belief and model channels have normalized directed source rows (eta_{ij}) and (gamma_{ij}), external receiver occupancies (alpha_i^b,alpha_i^m), and joint edge-event laws (eta_{ij}^b=alpha_i^beta_{ij}), (eta_{ij}^m=alpha_i^mgamma_{ij}). Their transported energies are
 
 [
 D_{ij}^b=D_{\rm KL}(q_i^b\Vert(\Omega_{ij}^b)_\#q_j^b),
@@ -30,25 +30,25 @@ The correct row free energies include entropy relative to reference rows:
 
 Both divergences and rows evolve under descent. The heuristic (1/\beta_{ij}) is only a directed row-relative interaction length, not automatically a metric. Investigate better intrinsic scales based on edge-event laws, raw conductances, reversible symmetrizations, directed Laplacians, diffusion, or information geometry.
 
-The full VFE must come from one normalized multiscale generative kernel (mathbb P_	heta(do,dW\mid X)) fixed before recognition and one normalized correlated recognition kernel (mathbb Q_phi(dW\mid o,X)):
+The full VFE must come from one normalized multiscale generative kernel (mathbb P_    heta(do,dW\mid X)) fixed before recognition and one normalized correlated recognition kernel (mathbb Q_phi(dW\mid o,X)):
 
 [
 \mathcal F^{\rm ext}[\mathbb Q_phi;X,o]
-=-\log p_	heta(o\mid X)
-+D_{\rm KL}(\mathbb Q_phi\Vert\boldsymbol\Pi_{	heta,o,X}).
+=-\log p_    heta(o\mid X)
++D_{\rm KL}(\mathbb Q_phi\Vert\boldsymbol\Pi_{    heta,o,X}).
 ]
 
 Any decomposition into observation, self, graph-edge, partition, parent-child, connection, or residual terms must be derived from a declared factorization of these laws or a normalized Gibbs factor with its partition function. Otherwise call it a composite free-energy potential, not an ELBO. Do not double-count a shared interaction factor by summing local coordinate potentials. Do not reconstruct a correlated recognition law from its marginals.
 
 Answer these questions:
 
-1. Construct the most general tractable normalized finite-depth joint containing belief laws, model-presentation laws, (eta,gamma), non-flat transports, stochastic partitions, retained holonomy marks, and parent variables.
+1. Construct the most general tractable normalized finite-depth joint containing belief laws, model-presentation laws, (eta,gamma), non-flat transports, stochastic partitions, retained holonomy marks, and parent variables.
 2. Derive the exact VFE and conditional-KL decomposition. Identify every normalizer, base measure, absolute-continuity condition, and finite-versus-extended-real boundary.
 3. Compare three mechanisms for parent influence: top-down generative kernels with bottom-up recognition, delayed parent-to-child feedback, and normalized undirected reciprocal Gibbs factors. Explain why an instantaneous deterministic pushforward parent and an independent same-time parent cause cannot simply be imposed together.
 4. Put partition variables inside the probabilistic model. Derive their variational update and the priors or complexity terms preventing all-singleton and all-in-one-block degeneracies.
 5. Define graph RG by pushing (eta^b,eta^m) and then disintegrating parent rows. Treat directed graphs, zero weights, overlaps, distinct belief/model partitions, and nested composition.
 6. Treat non-flat connection data exactly. Determine when (H_\#Q=Q) is necessary or sufficient for a holonomy-blind parent and when the parent must retain root, path, representation, or boundary data. Study the distribution of dressed microscopic transports (Theta_{ij}^{IJ}=\Omega_{Ii}\Omega_{ij}\Omega_{jJ}), not only a mean.
-7. Determine whether descent can spontaneously produce persistent scale-1 blocks, then scale-2 blocks, on a generic cyclic graph. State timescale-separation, spectral-gap, metastability, closure, and persistence hypotheses. Give counterexamples showing why low transported KL or large (eta) alone is insufficient.
+7. Determine whether descent can spontaneously produce persistent scale-1 blocks, then scale-2 blocks, on a generic cyclic graph. State timescale-separation, spectral-gap, metastability, closure, and persistence hypotheses. Give counterexamples showing why low transported KL or large (eta) alone is insufficient.
 8. Derive cross-scale natural-gradient equations and the semiconjugacy or lumpability defect. Separate optimization time from physical time. State what flux, delay, nonreciprocity, stochastic drive, or antisymmetric sector is needed for sustained nonequilibrium and Wheelerian feedback.
 9. Evaluate Bayesian renormalization as a model-space relevance criterion and network-renormalization frameworks as topology/scale mechanisms. Identify what each contributes and what remains unsolved for a directed two-channel gauge network. Include Laplacian RG and the additive-hidden-variable multiscale model.
 10. Propose a minimal finite categorical or non-Gaussian experiment falsifying the hierarchy mechanism before any Gaussian implementation. Measure partition persistence, VFE accounting, closure residual, holonomy retention, coarse-edge composition, and downward influence.

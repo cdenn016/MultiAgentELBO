@@ -91,42 +91,90 @@ which is why a general endpoint kernel over ordered pairs had to be added.
 
 ### M3, corrected: measured in the coarse direction the residual is small
 
-**This measurement was redirected on 2026-08-17 and its earlier verdict withdrawn.**
-The original implementation eliminated a block's parent and reported the interaction
-content induced among its children. That runs against the coarse-graining direction:
-it describes children in variables that omit their parent, and it is not a step of
-any renormalization scheme. The specification pre-registered the other elimination,
-the projection onto the declared parent family, and the implementation deviated from
-it. The deviation was flagged by its author at the time on the grounds that the
-un-eliminated action is exactly pairwise so there would be nothing to measure. That
-was the answer, not a reason to measure something else.
+**This measurement was redirected on 2026-08-17, its earlier verdict withdrawn, and
+its implementation corrected on the same day after an audit.** Three things went
+wrong and they should be separated.
 
-Measured as pre-registered, eliminating the children and reading off the coarse
-theory the parents obey:
+First, the verdict. The falsifier as pre-registered is a conjunction: the three-body
+coefficient is nonzero *while the implementation reports a pairwise coarse theory*.
+The shipped verdict function evaluated only the first conjunct, and the first
+conjunct is generically true — the specification's own source says so. So the
+falsifier that fired was never the pre-registered falsifier, and it could not have
+fired as written on either direction's data. That alone withdraws the verdict, and it
+does so without appeal to anything decided after the fact.
+
+Second, the direction. The original implementation eliminated a block's parent and
+reported the interaction content induced among its children, which runs against the
+coarse-graining direction. For CFL-07 the redirect is a genuine correction: the
+specification asks for the residual of projecting onto the declared *parent* family
+and the implementation was not doing that. For CFL-06 the honest account is
+different. The specification's three-body item names no direction, and the
+pre-registration entry asked only for a nonzero coefficient. Both the direction and
+the smallness threshold were fixed after the first measurement. That is
+accommodation, not a passed test, and the pre-registration now says so.
+
+Third, the implementation. An audit on 2026-08-17 found four defects in the coarse
+measurement itself, all now fixed: divergence tables were broadcast transposed
+whenever the receiver's agent index exceeded the source's, which mis-oriented three
+of the eight reference edges; the $\kappa$ factors that every other module applies to
+the same edge-event law were omitted, running the closure module at half the declared
+coupling; the parent measure was hard-coded uniform where the declared law is not;
+and the blocking kernel was normalized over children rather than parents, so it did
+not preserve the partition function and was a Bayes posterior rather than a blocking
+map. Every number below is post-fix. The coarse action is now verified against the
+declared per-edge energy to $3\times10^{-15}$ and the blocking kernel sums to one
+over parents exactly.
+
+Measured in the coarse-graining direction, eliminating the children and reading off
+the theory the parents obey:
 
 | partition | two-body | three-body | ratio | flow residual |
 |---|---|---|---|---|
-| $\{1,2\}\{3,4\}\{5,6\}$ | $3.74\times10^{-2}$ | $4.43\times10^{-4}$ | $0.012$ | $0.0029$ |
-| $\{2,3\}\{1,6\}\{4,5\}$ | $4.19\times10^{-2}$ | $1.81\times10^{-4}$ | $0.004$ | $0.0012$ |
-| $\{1,2,3\}\{4,5\}\{6\}$ | $4.12\times10^{-2}$ | $3.13\times10^{-4}$ | $0.008$ | $0.0029$ |
+| $\{1,2\}\{3,4\}\{5,6\}$ (declared) | $9.90\times10^{-2}$ | $6.20\times10^{-4}$ | $0.0063$ | $0.00016$ |
+| $\{2,3\}\{1,6\}\{4,5\}$ (exploratory) | $1.12\times10^{-1}$ | $1.54\times10^{-4}$ | $0.0014$ | $0.00004$ |
+| $\{1,2,3\}\{4,5\}\{6\}$ (exploratory) | $1.35\times10^{-1}$ | $1.98\times10^{-3}$ | $0.0147$ | $0.00051$ |
 
-The generated coupling is under about one percent of the pairwise one, the
-flow-weighted residual is a few parts in a thousand, and the interaction orders
-decay. **The M3 falsifier no longer fires.** Real-space blocking generates couplings
-outside the starting family in every renormalization scheme, decimating an Ising
-model included, so a nonzero coefficient was never the right test; smallness is.
+Only the first partition is a declared candidate of the design; the other two were
+added on 2026-08-17 and are labeled as exploratory because they were not
+pre-registered. Of the six declared candidate partitions only two carry three or more
+blocks, which is the minimum for a three-body coarse coupling to be expressible at
+all, and the second of those, $\{1,4\}\{2,5\}\{3,6\}$, cannot be measured because
+none of its blocks is connected in the declared edge set. The single measurable
+declared candidate is therefore the first row.
+
+The generated coupling is between a tenth of a percent and one and a half percent of
+the pairwise one, the flow-weighted residual is at most a few parts in ten thousand,
+and the interaction orders decay, $1.47$ then $9.9\times10^{-2}$ then
+$6.2\times10^{-4}$ on the declared partition. **The M3 falsifier does not fire.**
+Real-space blocking generates couplings outside the starting family in every
+renormalization scheme, decimating an Ising model included, so a nonzero coefficient
+was never the right test.
 
 The against-direction measurement is retained under its own name because it remains
-the generic mechanism by which a hidden common cause induces higher-order structure,
-and there the behavior is severe: a three-body term of $6.7\times10^{-2}$, comparable
-to the pairwise ones, with interaction magnitudes that do not decay with order. That
-is a statement about a choice of variables nobody adopts, not about the coarse
-theory.
+the generic mechanism by which a hidden common cause induces higher-order structure.
+On the same footing — the dimensionless three-to-two ratio, under the same corrected
+parent measure and couplings — it runs at $0.28$ and $0.21$ on the two declared
+blocks, against $0.0063$ for the coarse direction, and its interaction magnitudes do
+not decay with order. The earlier characterization of it as "comparable to the
+pairwise terms" was wrong even on the old numbers, where the ratio was $0.046$; what
+distinguishes the two directions is a factor of roughly forty in the ratio and the
+presence or absence of decay, not comparability with the pairwise term.
 
-One thing this does not settle: smallness at one blocking step and irrelevance under
-iteration are different claims, and only the first is measured. A one percent
-coupling that grows under repeated blocking is still fatal, and deciding that needs a
-fixed point to linearize about.
+Two things this does not settle. Smallness at one blocking step and irrelevance under
+iteration are different claims, and only the first is measured; a small coupling that
+grows under repeated blocking is still fatal, and deciding that needs a fixed point to
+linearize about. And the instance caps the parent label pool at three, so a
+three-block partition yields exactly one order above pair order: the decay reported
+here is a single above-pair datum, not a measured hierarchy.
+
+The fine object being blocked is worth naming precisely. It is the auxiliary pairwise
+child theory — the per-agent likelihood together with the declared edge divergences
+evaluated at child states — and not the declared generative tower, whose scale-0
+conditional factorizes over agents given the parent and therefore blocks to an exactly
+pairwise parent theory with no three-body term at all. The question this measurement
+answers is whether blocking a genuinely pairwise child theory stays pairwise, which is
+the question real-space renormalization asks. It is not a measurement of the tower's
+own coarse-graining.
 
 The control that pins both directions as real rather than numerical is the
 un-eliminated action, built from the per-agent likelihood and the declared per-edge
@@ -233,7 +281,7 @@ blocks. That explanation is plausible and unverified.
 
 ## Status of the sixteen metrics
 
-Eleven metrics pass as implementation checks. Four are inconclusive by construction
+Twelve metrics pass as implementation checks. Four are inconclusive by construction
 rather than by outcome, because they bear on open hypotheses that one finite
 instance can neither establish nor refute: claiming a pass would overstate what the
 run shows, and claiming a failure would read as a software fault. The sharp
@@ -242,9 +290,13 @@ metrics, and the run status is inconclusive overall.
 
 A metric status and a falsifier verdict are different things, and the laboratory
 keeps them separate. A metric fails when the code fails; a falsifier fires when the
-system behaves as the pre-registered refutation describes. The two disagree here on
-purpose: the three-body metric passes precisely by correctly detecting the nonzero
-coefficient that refutes pairwise closure.
+system behaves as the pre-registered refutation describes. They can disagree, because
+a metric can be an implementation check on a quantity whose value carries a separate
+refutation criterion. The earlier example given here — the three-body metric passing
+by detecting a coefficient that refutes pairwise closure — rested on the withdrawn M3
+verdict and on a metric that could not fail, and both have been corrected: CFL-06 is
+now an upper-bounded check against the stated threshold, so it can fail, and the M3
+falsifier does not fire.
 
 Falsifiers fired: `M5_no_timescale_separation`,
 `M6_deterministic_control_did_not_collapse`, and

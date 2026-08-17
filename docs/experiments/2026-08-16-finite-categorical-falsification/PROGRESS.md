@@ -85,7 +85,7 @@ reports. Full detail is in the results document.
 |---|---|
 | M1 accounting | holds, residual $2.66\times10^{-15}$ vs $10^{-12}$; falsifier did not fire |
 | M2 composition | holds to $5.6\times10^{-17}$; witness gap exactly $0.4$; product-form trap $0.0514$ |
-| M3 closure | **falsifier FIRED**, three-body $6.672\times10^{-2}$, flow-weighted $2\%$ |
+| M3 closure | verdict WITHDRAWN 2026-08-17, measurement redirected and corrected; coarse ratio $0.0063$, flow-weighted $1.6\times10^{-4}$; falsifier does not fire |
 | M4 holonomy | all three predictions held; theory falsifier did not fire |
 | M5 persistence | **falsifier FIRED**, ratio $1.02$ vs threshold $10$ |
 | Null control | **PIPELINE FAILS IT** — reference sits inside the null range on every statistic |
@@ -210,18 +210,26 @@ declare an extension for disconnected candidate blocks, rooting each component
 separately and taking an infimum over relative alignments; for connected blocks the
 code reduces to the spec formula and a test pins the agreement.
 
-**M3 closure residual — REDIRECTED 2026-08-17; its earlier falsifier withdrawn.**
-The original implementation eliminated a block's parent and read off the
-interaction content among its children. That runs *against* the coarse-graining
-direction and is not a renormalization step; the specification had pre-registered
-the projection onto the declared parent family, and the implementation deviated.
-Measured as pre-registered, eliminating the children and reading off the theory the
-parents obey, the generated three-body coarse coupling is under about one percent
-of the pairwise one across three connected partitions, with a flow-weighted
-residual of a few parts in a thousand and interaction orders that decay. **The M3
-falsifier no longer fires.** Real-space blocking generates couplings outside the
-starting family in every scheme, so a nonzero coefficient was never the right test.
-The against-direction number, $6.672\times10^{-2}$ with no decay in order, is kept
+**M3 closure residual — REDIRECTED 2026-08-17, earlier falsifier withdrawn, and
+the implementation corrected the same day after an audit.** The verdict is
+withdrawn on the direction-independent ground: the pre-registered falsifier is a
+conjunction, nonzero three-body coefficient *while the implementation reports a
+pairwise coarse theory*, and the shipped verdict evaluated only the first conjunct,
+which is generically true. It could not have fired as written on either direction's
+data. Separately the measurement was redirected to the coarse-graining direction;
+for CFL-07 that corrects a genuine deviation from the specification, while for
+CFL-06 the specification named no direction and both the direction and the
+smallness threshold were fixed after the first measurement, so CFL-06 accommodates
+its data rather than being tested by it. An audit then found four defects in the
+coarse measurement itself — transposed divergence tables on edges whose receiver
+index exceeds the source index, omitted $\kappa$ factors, a uniform parent measure
+where the declared law is not uniform, and a blocking kernel normalized over
+children rather than parents — all now fixed. Post-fix, the generated three-body
+coarse coupling is $0.0063$ of the pairwise one on the single measurable declared
+partition and between $0.0014$ and $0.0147$ across the two exploratory ones, with
+flow-weighted residuals of a few parts in ten thousand and interaction orders that
+decay. **The M3 falsifier does not fire.** On the same dimensionless footing the
+against direction runs at $0.28$ and $0.21$ with no decay in order, and is kept
 under its own name as the generic common-cause mechanism.
 The result depends on a load-bearing declaration the builder added and flagged:
 the block parent must be eliminated exactly, because an action built from the

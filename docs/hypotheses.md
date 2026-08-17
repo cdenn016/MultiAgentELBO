@@ -581,18 +581,31 @@ continuum limit, or physical time.
 - **Operationalization:** `CFL-06_coarse_three_body_ratio`, the largest generated
   three-body coarse coupling measured against the largest pairwise one, and
   `CFL-07_pairwise_closure_residual_ratio` reported against the retained flow.
-- **Direction, which is load bearing.** Both are measured in the coarse-graining
+- **Direction, which is load bearing.** Both are now measured in the coarse-graining
   direction: the children are eliminated and the interaction content of the
   surviving parents is read off. Eliminating a block's parent and keeping its
   children runs the other way, describes children in variables that omit their
-  parent, and is not a step of any renormalization scheme. An earlier
-  implementation measured that direction while this entry described this one; the
-  discrepancy is recorded in the results document rather than quietly corrected.
+  parent, and is not a step of any renormalization scheme.
+- **Provenance of this entry, recorded because it bears on what the result is worth.**
+  The two halves have different standing. CFL-07's redirect is a correction toward
+  text that already existed: the frozen specification says the residual is the one
+  left by projecting onto the declared *parent* family, and the implementation was
+  not doing that. CFL-06 is different. The specification's three-body item names no
+  elimination direction at all, and the entry as it stood before 2026-08-17 asked
+  only for a nonzero coefficient with a lower bound above zero. The direction and the
+  smallness threshold below were both fixed on 2026-08-17, after the first
+  measurements were in hand. A criterion chosen after the data accommodates that data
+  rather than being tested by it, so CFL-06 not firing corroborates nothing; it
+  records a number. Treat it as a measurement report, not as a survived test.
 - **Refutation threshold:** The generated coarse three-body coupling is not small
-  against the pairwise one, taken as a ratio above one tenth, or the flow-weighted
-  residual is comparable to the retained flow. A nonzero coefficient on its own does
-  not refute anything, since real-space blocking generates couplings outside the
-  starting family in every renormalization scheme.
+  against the pairwise one, taken as a ratio above one tenth. A nonzero coefficient
+  on its own does not refute anything, since real-space blocking generates couplings
+  outside the starting family in every renormalization scheme. The one tenth is not
+  derived from anything and is not pre-registered; it is a stipulation made after the
+  first measurement. What can be said for it is only that it separates the two
+  elimination directions on this instance, the coarse one running at $0.001$ to
+  $0.015$ and the against one at $0.21$ to $0.28$. The flow-weighted residual is
+  reported without a threshold and defines no falsifier.
 - **Control:** The Ising star, whose leading-order three-body coefficient
   `2 sech(h)^2 tanh(h) J1 J2 J3` is derived independently and must be approached as
   the couplings shrink. Exact equality at finite coupling is not expected and is not
