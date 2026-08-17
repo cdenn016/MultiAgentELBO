@@ -43,11 +43,58 @@ clean apart from four untracked PDFs, which are intentional and must not be touc
 | 2 | Frozen spec `spec.md` | **done** | 6 agents, two 3-cycles, $\mathbb Z_3$ with $\rho_b(k)=k$, $\rho_m(k)=2k$; two admitted families |
 | 3 | Core modules written and smoke-tested | **done** | `finite/two_channel_gauge.py`, `finite/categorical_falsification_model.py` |
 | 4 | Build measurement modules: M1, M2, M3, M4 | **done** | 54 new measurement tests passing |
-| 4b | Build M5 partition persistence and M6 downward influence | **running** | last builder |
-| 5 | Config registration, experiment runner, launcher, both test registries | **done** | 11 metrics published; lab runs end to end and finalizes a complete manifest |
-| 6 | Integrate M5 and M6 into the runner, run the full suite | pending | |
-| 7 | Cross-model verification (Opus author ⇒ **fable** verifiers, per CLAUDE.md) | pending | |
-| 8 | Results document, commit, push, PR, merge, ff | pending | |
+| 4b | Build M5 partition persistence and M6 downward influence | **done** | both return negative results |
+| 5 | Config registration, experiment runner, launcher, both test registries | **done** | 16 metrics published; complete manifest |
+| 6 | Integrate all six, run the full suite | **done** | 19 failed / 1291 passed, exactly the pre-existing baseline; 78 new tests all pass |
+| 7 | Results document | **done** | `docs/results/2026-08-16-categorical-falsification-results.md` |
+| 8 | Cross-model verification (Opus author ⇒ **fable** verifiers) | **BLOCKED** | all four verifiers died on the session rate limit; see below |
+| 9 | Push, PR, merge, ff | pending | |
+
+## Cross-model verification is NOT done — resume here
+
+Four Fable verifiers were dispatched and **all four terminated on the session
+limit** before returning findings: a `verifier-math` pass on the four load-bearing
+derivations, a `verifier-code` pass on implementation-versus-spec, an
+`audit-skeptic` attack on the headline claims, and a second `audit-skeptic` on the
+two negative results. Nothing in this package carries `EVIDENCE_VERIFIED`; every
+claim is a candidate supported by executed output on one declared instance.
+
+Re-dispatch all four on `model: "fable"` (this session deploys Opus 5, so Fable is
+the required verifier side). The four briefs are recoverable from the session
+transcript. The highest-value targets, in order:
+
+1. Whether the M6 pre-registered prediction is mis-stated. A deterministic parent
+   has disjoint fibers, so a supremum of total variation across distinct parent
+   values may be near maximal by construction rather than near zero. If so the spec
+   named the wrong statistic and the implementation is behaving correctly.
+2. Whether the M5 null-control failure is real or an artifact of a null that is too
+   weak. The present null holds the partition prior and capacity bound fixed, so it
+   cannot separate their contribution from the transports'.
+3. Whether the measured relaxation time is trustworthy enough to support the
+   timescale verdict; the transient is small (rate 0.40 to 0.36) so it is pinned
+   only to about a factor of four.
+4. Whether the identical influence supremum across all six agents and both blocks
+   has the proposed explanation, which is currently plausible and unverified.
+
+## Final measured results
+
+All numbers below were re-executed by the integrator, not taken from builder
+reports. Full detail is in the results document.
+
+| Measurement | Outcome |
+|---|---|
+| M1 accounting | holds, residual $2.66\times10^{-15}$ vs $10^{-12}$; falsifier did not fire |
+| M2 composition | holds to $5.6\times10^{-17}$; witness gap exactly $0.4$; product-form trap $0.0514$ |
+| M3 closure | **falsifier FIRED**, three-body $6.672\times10^{-2}$, flow-weighted $2\%$ |
+| M4 holonomy | all three predictions held; theory falsifier did not fire |
+| M5 persistence | **falsifier FIRED**, ratio $1.02$ vs threshold $10$ |
+| Null control | **PIPELINE FAILS IT** — reference sits inside the null range on every statistic |
+| M6 influence | supremum $0.557$, not decorative; **control did not collapse** |
+
+The single most important result is the null-control failure: randomizing every
+transport and the belief family, with the skeleton fixed, changes no
+block-formation statistic. The declared prior and capacity structure are doing all
+of the work, which is exactly what the mandatory control exists to detect.
 
 ## Commits on branch `experiments/finite-categorical-falsification`
 
