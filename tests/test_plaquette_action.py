@@ -152,6 +152,36 @@ def test_a_fully_flat_connection_has_zero_action_on_every_face() -> None:
             )
 
 
+def test_faces_are_attributed_to_the_blocks_that_contain_them() -> None:
+    """Mutation caught: charging a block for a face it does not contain."""
+    model = build_reference_model()
+    assert faces.faces_inside(model, (1, 2, 3)) == (CURVED,)
+    assert faces.faces_inside(model, (4, 5, 6)) == (FLAT,)
+    assert faces.faces_inside(model, (1, 2)) == ()
+    assert set(faces.faces_inside(model, (1, 2, 3, 4, 5, 6))) == {CURVED, FLAT, LONG}
+
+
+def test_cutting_a_partition_disposes_of_the_faces_it_severs() -> None:
+    """Mutation caught: a partition charged for curvature no parent carries."""
+    model = build_reference_model()
+    assert faces.cut_faces(model, ((1, 2, 3, 4, 5, 6),)) == ()
+    assert set(faces.cut_faces(model, ((1, 2), (3, 4), (5, 6)))) == {
+        CURVED,
+        FLAT,
+        LONG,
+    }
+    for partition in (((1, 2), (3, 4), (5, 6)), ((1, 4), (2, 5), (3, 6))):
+        assert faces.partition_wilson_action(model, partition, "peaked") == 0.0
+
+
+def test_the_whole_block_is_charged_more_than_a_block_holding_one_curved_face() -> None:
+    """Mutation caught: a charge blind to how many curved faces a block encloses."""
+    model = build_reference_model()
+    single = faces.partition_wilson_action(model, ((1, 2, 3), (4, 5, 6)), "peaked")
+    whole = faces.partition_wilson_action(model, ((1, 2, 3, 4, 5, 6),), "peaked")
+    assert whole > single > 0.0
+
+
 def test_concentrating_attention_on_the_loop_raises_the_action() -> None:
     """Mutation caught: an action insensitive to the attention configuration.
 

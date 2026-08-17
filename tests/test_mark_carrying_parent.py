@@ -10,6 +10,7 @@ import pytest
 from multiagent_elbo.finite.categorical_falsification_model import build_reference_model
 from multiagent_elbo.finite import holonomy_selection as selection
 from multiagent_elbo.finite import mark_carrying_parent as marks
+from multiagent_elbo.finite import plaquette_action as plaquettes
 from multiagent_elbo.finite.holonomy_retention import block_holonomy_group
 
 STATES = [0, 1, 2, 3, 4, 5]
@@ -267,6 +268,80 @@ def test_the_neutral_prior_changes_which_partition_is_selected() -> None:
     assert marks.modal_partition(model, 0.0, 1.0, "ewens") != marks.modal_partition(
         model, 0.0, 1.0, "block_count"
     )
+
+
+def test_the_wilson_term_is_a_state_independent_offset() -> None:
+    """Mutation caught: a face charge that leaks into the per-state enumeration."""
+    model = build_reference_model()
+    block = (1, 2, 3)
+    base = marks.block_log_partition(model, block, 0.0)
+    charge = plaquettes.block_wilson_action(model, block, "peaked")
+    assert charge > 0.0
+    for coupling in (1.0, 5.0):
+        shifted = marks.block_log_partition(model, block, 0.0, coupling, "peaked")
+        assert shifted == pytest.approx(base - coupling * charge, abs=1e-9)
+
+
+def test_a_zero_wilson_coupling_leaves_the_earlier_results_untouched() -> None:
+    """Mutation caught: a new term that is active when it was not asked for."""
+    model = build_reference_model()
+    for price in (0.0, 1.0):
+        assert marks.modal_partition(model, price, 1.0) == marks.modal_partition(
+            model, price, 1.0, "ewens", 0.0, "peaked"
+        )
+
+
+def test_the_attention_configuration_changes_the_selected_partition() -> None:
+    """Mutation caught: attention that still cannot reach partition selection.
+
+    This is the property the earlier block energy lacked. With the face charge in
+    place the two declared row configurations disagree over a band of couplings,
+    so the attention weights select rather than merely accompany.
+    """
+    model = build_reference_model()
+    disagreements = [
+        marks.modal_partition(model, 0.0, 1.0, "ewens", coupling, "peaked")
+        != marks.modal_partition(model, 0.0, 1.0, "ewens", coupling, "uniform")
+        for coupling in (4.0, 5.0, 6.0)
+    ]
+    assert all(disagreements)
+
+
+def test_every_curvature_charge_enters_one_additive_budget() -> None:
+    """Mutation caught: a face charge on a different footing from the mark price.
+
+    At the transition the charge carried by the whole-graph block plus the log
+    concentration is one constant, whether that charge is bought with the retention
+    price against the holonomy group or with the Wilson coupling against the
+    attention-weighted faces.
+    """
+    model = build_reference_model()
+    invariants = []
+    for configuration in ("peaked", "uniform"):
+        weight = plaquettes.partition_wilson_action(
+            model, ((1, 2, 3, 4, 5, 6),), configuration
+        )
+        for concentration in (0.2, 1.0):
+            low, high = 0.0, 400.0
+            start = marks.modal_partition(
+                model, 0.0, concentration, "ewens", low, configuration
+            )
+            for _ in range(45):
+                middle = (low + high) / 2.0
+                if (
+                    marks.modal_partition(
+                        model, 0.0, concentration, "ewens", middle, configuration
+                    )
+                    == start
+                ):
+                    low = middle
+                else:
+                    high = middle
+            critical = (low + high) / 2.0
+            invariants.append(critical * weight + math.log(concentration))
+    price = marks.critical_mark_price(model, 1.0)
+    invariants.append(price * math.log(3.0) + math.log(1.0))
+    assert max(invariants) - min(invariants) < 1e-6
 
 
 def test_the_retained_energy_never_exceeds_the_stabilized_energy() -> None:

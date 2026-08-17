@@ -258,6 +258,71 @@ def attended_faces(
     )
 
 
+def faces_inside(
+    model: FalsificationModel,
+    block: Sequence[int],
+) -> tuple[tuple[int, ...], ...]:
+    """Return the faces lying entirely within one block.
+
+    A face straddling a block boundary is not a face of that block's parent, so it
+    is not charged to it. Which faces survive a partition is therefore a property
+    of the partition, and cutting a curved face removes its cost entirely.
+    """
+    members = set(block)
+    return tuple(
+        cycle for cycle in simple_directed_cycles(model) if set(cycle) <= members
+    )
+
+
+def block_wilson_action(
+    model: FalsificationModel,
+    block: Sequence[int],
+    configuration: str,
+) -> float:
+    """Return the Wilson action carried by the faces internal to one block.
+
+    Both channels are summed, since a parent must reconcile the loops of each. The
+    quantity depends only on the connection and the attention, not on the agent
+    states, so it enters a block energy as a constant offset.
+    """
+    internal = set(faces_inside(model, block))
+    return float(
+        sum(
+            face.weight(channel) * wilson_defect(model, face.holonomy(channel), channel)
+            for face in plaquettes(model, configuration)
+            for channel in CHANNELS
+            if face.cycle in internal
+        )
+    )
+
+
+def partition_wilson_action(
+    model: FalsificationModel,
+    partition: Sequence[Sequence[int]],
+    configuration: str,
+) -> float:
+    """Return the Wilson action retained by a partition, summed over its blocks."""
+    return float(
+        sum(block_wilson_action(model, block, configuration) for block in partition)
+    )
+
+
+def cut_faces(
+    model: FalsificationModel,
+    partition: Sequence[Sequence[int]],
+) -> tuple[tuple[int, ...], ...]:
+    """Return the faces no block of the partition contains.
+
+    These are the loops the partition severs. Their curvature is not carried by any
+    parent, which is the sense in which a partition can dispose of curvature rather
+    than pay for it.
+    """
+    kept = {cycle for block in partition for cycle in faces_inside(model, block)}
+    return tuple(
+        cycle for cycle in simple_directed_cycles(model) if cycle not in kept
+    )
+
+
 def face_count_versus_cycle_rank(model: FalsificationModel) -> tuple[int, int]:
     """Return the number of faces and the cycle rank, so redundancy stays visible.
 
@@ -275,6 +340,10 @@ __all__ = [
     "Plaquette",
     "action_by_face",
     "attended_faces",
+    "block_wilson_action",
+    "cut_faces",
+    "faces_inside",
+    "partition_wilson_action",
     "cycle_attention_weight",
     "cycle_edges",
     "cycle_holonomy",

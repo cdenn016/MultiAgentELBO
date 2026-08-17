@@ -56,6 +56,7 @@ from .categorical_falsification_model import (
 )
 from .holonomy_retention import block_holonomy_group, block_transport_elements
 from .holonomy_selection import admissible_parent_states, _parent_laws
+from .plaquette_action import block_wilson_action
 from .partition_dynamics import _log_partition_prior
 
 CHANNELS = ("belief", "model")
@@ -423,6 +424,8 @@ def block_log_partition(
     model: FalsificationModel,
     block: Sequence[int],
     mark_price: float,
+    wilson_coupling: float = 0.0,
+    configuration: str = "peaked",
 ) -> float:
     """Return the exact log partition function of one block over its own states.
 
@@ -430,11 +433,20 @@ def block_log_partition(
     sampled. Because a block whose stabilized route is unavailable has an energy
     that shifts rigidly with the retention price, its log partition function is
     linear in that price with slope minus the retention charge.
+
+    The Wilson term enters as a constant offset. It is built from the connection
+    and the attention, neither of which is an agent state, so it shifts every
+    configuration of the block equally and subtracts directly from the log
+    partition function. That is what lets the attention reach partition selection
+    without re-enumerating anything.
     """
     stabilized, marked, charge = _block_route_costs(model, tuple(block))
     energies = np.minimum(stabilized, marked + mark_price * charge)
     shift = energies.min()
-    return float(np.log(np.exp(-(energies - shift)).sum()) - shift)
+    value = float(np.log(np.exp(-(energies - shift)).sum()) - shift)
+    if wilson_coupling:
+        value -= wilson_coupling * block_wilson_action(model, block, configuration)
+    return value
 
 
 def log_partition_prior(
@@ -471,6 +483,8 @@ def partition_posterior(
     mark_price: float,
     concentration: float,
     prior: str = "ewens",
+    wilson_coupling: float = 0.0,
+    configuration: str = "peaked",
 ) -> dict[Partition, float]:
     """Return the exact partition posterior at one retention price and concentration.
 
@@ -482,7 +496,12 @@ def partition_posterior(
     """
     values = np.array(
         [
-            sum(block_log_partition(model, block, mark_price) for block in partition)
+            sum(
+                block_log_partition(
+                    model, block, mark_price, wilson_coupling, configuration
+                )
+                for block in partition
+            )
             + log_partition_prior(partition, concentration, prior)
             for partition in model.candidate_partitions
         ]
@@ -497,9 +516,13 @@ def modal_partition(
     mark_price: float,
     concentration: float,
     prior: str = "ewens",
+    wilson_coupling: float = 0.0,
+    configuration: str = "peaked",
 ) -> Partition:
     """Return the partition of greatest exact posterior mass."""
-    posterior = partition_posterior(model, mark_price, concentration, prior)
+    posterior = partition_posterior(
+        model, mark_price, concentration, prior, wilson_coupling, configuration
+    )
     return max(sorted(posterior), key=lambda key: posterior[key])
 
 
