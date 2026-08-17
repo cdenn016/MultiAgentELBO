@@ -2,6 +2,14 @@
 
 This file intentionally does not import ``multiagent_elbo``. It is an internal
 worker process behind click-to-run controllers, not a user-facing CLI.
+
+Protocol v1 carries two job kinds, selected by the input array inventory. The
+fixed-ray kernel is unchanged bit for bit. The blocked-contraction kernel
+receives the factorized child theory of the finite rescaling laboratory, one
+nonnegative factor per site and per edge plus one normalized Bayes kernel per
+block, builds the dense child-weight tensor on the compute device, and
+contracts it to the coarse marginal, so only kilobytes cross the process
+boundary however large the joint state space is.
 """
 
 from __future__ import annotations
@@ -46,6 +54,16 @@ NUMPY_DTYPES = {
 }
 PROVENANCE_SCHEMA = "cuda-worker-provenance-v1"
 PREFLIGHT_SCHEMA = "cuda-worker-preflight-v1"
+FIXED_RAY_INVENTORY = {"coefficients", "spatial_map", "matrix_direction", "batch_size"}
+BLOCKED_CONTRACTION_INVENTORY = {
+    "site_factors",
+    "edge_factors",
+    "edge_axes",
+    "block_kernels",
+    "block_axes",
+    "batch_size",
+}
+CONTRACTION_LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
 class ProtocolError(ValueError):
@@ -244,8 +262,19 @@ def load_and_validate_inputs(
             raise ProtocolError(f"input dtype mismatch: {name}")
         if canonical_array_sha256(name, array, actual_dtype) != descriptor["sha256"]:
             raise ProtocolError(f"input array digest mismatch: {name}")
-    if set(arrays) != {"coefficients", "spatial_map", "matrix_direction", "batch_size"}:
-        raise ProtocolError("fixed-ray input inventory mismatch")
+    inventory = set(arrays)
+    if inventory == FIXED_RAY_INVENTORY:
+        _validate_fixed_ray_inputs(arrays, request)
+    elif inventory == BLOCKED_CONTRACTION_INVENTORY:
+        _validate_blocked_contraction_inputs(arrays, request)
+    else:
+        raise ProtocolError("input inventory matches no declared job kind")
+    return arrays
+
+
+def _validate_fixed_ray_inputs(
+    arrays: Mapping[str, np.ndarray], request: Mapping[str, object]
+) -> None:
     coefficients = arrays["coefficients"]
     spatial_map = arrays["spatial_map"]
     matrix_direction = arrays["matrix_direction"]
@@ -285,7 +314,59 @@ def load_and_validate_inputs(
         raise ProtocolError("bfloat16 exploratory payload encoding is not available")
     if any(array.dtype != requested_numpy_dtype for array in (coefficients, spatial_map, matrix_direction)):
         raise ProtocolError("scientific array dtype differs from requested dtype")
-    return arrays
+
+
+def _validate_blocked_contraction_inputs(
+    arrays: Mapping[str, np.ndarray], request: Mapping[str, object]
+) -> None:
+    if request["requested_dtype"] == "bfloat16":
+        raise ProtocolError(
+            "bfloat16 is inadmissible for the blocked contraction: the measured "
+            "three-body components sit three decades below the pairwise ones"
+        )
+    requested_numpy_dtype = np.dtype(
+        np.float64 if request["requested_dtype"] == "float64" else np.float32
+    )
+    site = arrays["site_factors"]
+    edge = arrays["edge_factors"]
+    edge_axes = arrays["edge_axes"]
+    kernels = arrays["block_kernels"]
+    block_axes = arrays["block_axes"]
+    batch_size = arrays["batch_size"]
+    if any(array.dtype != requested_numpy_dtype for array in (site, edge, kernels)):
+        raise ProtocolError("scientific array dtype differs from requested dtype")
+    if site.ndim != 2 or site.shape[0] < 1 or site.shape[1] < 2:
+        raise ProtocolError("site_factors must carry one factor row per site")
+    sites, states = site.shape
+    if edge.ndim != 3 or edge.shape[1:] != (states, states):
+        raise ProtocolError("edge_factors must be state-square per edge")
+    if edge_axes.dtype != np.dtype(np.int64) or edge_axes.shape != (edge.shape[0], 2):
+        raise ProtocolError("edge_axes must pair one int64 axis pair per edge")
+    for low, high in edge_axes.reshape(-1, 2):
+        if not 0 <= int(low) < int(high) < sites:
+            raise ProtocolError("edge_axes must be ascending pairs of declared sites")
+    if block_axes.dtype != np.dtype(np.int64) or block_axes.ndim != 2:
+        raise ProtocolError("block_axes must be an int64 block-by-member table")
+    if sorted(int(axis) for axis in block_axes.reshape(-1)) != list(range(sites)):
+        raise ProtocolError("block_axes must arrange every site exactly once")
+    blocks, width = block_axes.shape
+    if kernels.shape != (blocks, states) + (states,) * width:
+        raise ProtocolError("block_kernels must be parent-by-block-state tables")
+    if not all(np.all(np.isfinite(array)) for array in (site, edge, kernels)):
+        raise ProtocolError("worker scientific arrays must be finite")
+    if np.any(site < 0.0) or np.any(edge < 0.0) or np.any(kernels < 0.0):
+        raise ProtocolError("blocked-contraction factors must be nonnegative")
+    normalization_atol = (
+        1.0e-12 if request["requested_dtype"] == "float64" else 1.0e-6
+    )
+    if not np.allclose(
+        kernels.sum(axis=1), 1.0, rtol=0.0, atol=normalization_atol
+    ):
+        raise ProtocolError("block_kernels must be normalized over parents")
+    if batch_size.shape != () or batch_size.dtype != np.dtype(np.int64) or int(batch_size) <= 0:
+        raise ProtocolError("batch size must be one positive int64 scalar")
+    if sites + blocks > len(CONTRACTION_LETTERS):
+        raise ProtocolError("the contraction exceeds the declared subscript pool")
 
 
 def _validate_on_device_probability_payload(
@@ -435,6 +516,150 @@ def compute_cuda(
     return outputs, provenance
 
 
+def _contraction_subscripts(sites: int, block_axes: np.ndarray) -> str:
+    """Return the einsum specification contracting child axes into parent axes."""
+    child = CONTRACTION_LETTERS[:sites]
+    terms = [child]
+    output = ""
+    for index, members in enumerate(block_axes):
+        parent = CONTRACTION_LETTERS[sites + index]
+        output += parent
+        terms.append(parent + "".join(child[int(axis)] for axis in members))
+    return ",".join(terms) + "->" + output
+
+
+def _validate_marginal_output(outputs: Mapping[str, np.ndarray]) -> None:
+    marginal = outputs["coarse_marginal"]
+    if not np.all(np.isfinite(marginal)) or np.any(marginal < 0.0):
+        raise ProtocolError("coarse marginal must be finite nonnegative")
+    if float(marginal.sum()) <= 0.0:
+        raise ProtocolError("coarse marginal must carry positive mass")
+
+
+def compute_blocked_cpu(
+    arrays: Mapping[str, np.ndarray],
+) -> tuple[dict[str, np.ndarray], dict[str, object]]:
+    site = arrays["site_factors"]
+    sites, states = site.shape
+    weights = np.ones((states,) * sites, dtype=site.dtype)
+    for index in range(sites):
+        shape = [1] * sites
+        shape[index] = states
+        weights = weights * site[index].reshape(shape)
+    for factor, (low, high) in zip(arrays["edge_factors"], arrays["edge_axes"]):
+        shape = [1] * sites
+        shape[int(low)] = states
+        shape[int(high)] = states
+        weights = weights * factor.reshape(shape)
+    marginal = np.einsum(
+        _contraction_subscripts(sites, arrays["block_axes"]),
+        weights,
+        *arrays["block_kernels"],
+        optimize=True,
+    )
+    outputs = {"coarse_marginal": np.ascontiguousarray(marginal)}
+    _validate_marginal_output(outputs)
+    return (
+        outputs,
+        {
+            "torch_version": None,
+            "torch_cuda_build_runtime": None,
+            "cuda_available": False,
+            "driver_version": None,
+            "cuda_runtime_version": None,
+            "cublas_library_version": None,
+            "device_name": None,
+            "compute_capability": None,
+            "deterministic_algorithms": None,
+            "deterministic_warn_only": None,
+            "matmul_allow_tf32": None,
+            "cudnn_allow_tf32": None,
+            "cudnn_version": None,
+            "library_records": {
+                "cublas_path": None,
+                "cublas_sha256": None,
+                "cublas_version": None,
+                "cublas_lt_path": None,
+                "cublas_lt_sha256": None,
+                "cublas_lt_version": None,
+                "torch_config": None,
+            },
+            "kernel_strategy": "blocked_contraction_numpy",
+            "peak_allocated_bytes": 0,
+            "peak_reserved_bytes": 0,
+        },
+    )
+
+
+def compute_blocked_cuda(
+    arrays: Mapping[str, np.ndarray], requested_dtype: str
+) -> tuple[dict[str, np.ndarray], dict[str, object]]:
+    import torch
+
+    torch.use_deterministic_algorithms(True, warn_only=False)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    if os.environ.get("CUBLAS_WORKSPACE_CONFIG") != ":4096:8":
+        raise ProtocolError("CUBLAS_WORKSPACE_CONFIG must be :4096:8")
+    if not torch.cuda.is_available() or torch.cuda.device_count() < 1:
+        raise ProtocolError("requested CUDA device is unavailable")
+    device = torch.device("cuda:0")
+    torch_dtype = {"float64": torch.float64, "float32": torch.float32}[requested_dtype]
+    torch.cuda.init()
+    torch.cuda.reset_peak_memory_stats(device)
+    site = torch.as_tensor(arrays["site_factors"], dtype=torch_dtype, device=device)
+    sites, states = site.shape
+    weights = torch.ones((states,) * sites, dtype=torch_dtype, device=device)
+    for index in range(sites):
+        shape = [1] * sites
+        shape[index] = states
+        weights = weights * site[index].reshape(shape)
+    for position, (low, high) in enumerate(arrays["edge_axes"]):
+        factor = torch.as_tensor(
+            arrays["edge_factors"][position], dtype=torch_dtype, device=device
+        )
+        shape = [1] * sites
+        shape[int(low)] = states
+        shape[int(high)] = states
+        weights = weights * factor.reshape(shape)
+    kernels = [
+        torch.as_tensor(kernel, dtype=torch_dtype, device=device)
+        for kernel in arrays["block_kernels"]
+    ]
+    marginal = torch.einsum(
+        _contraction_subscripts(sites, arrays["block_axes"]), weights, *kernels
+    )
+    if not bool(marginal.isfinite().all().item()) or bool((marginal < 0.0).any().item()):
+        raise ProtocolError("on-device coarse marginal must be finite nonnegative")
+    torch.cuda.synchronize(device)
+    outputs = {"coarse_marginal": np.ascontiguousarray(marginal.cpu().numpy())}
+    _validate_marginal_output(outputs)
+    capability = torch.cuda.get_device_capability(0)
+    library_root = Path(torch.__file__).resolve().parent / "lib"
+    runtime_version = _cuda_runtime_version(library_root / "cudart64_12.dll")
+    libraries = _cuda_library_records(torch)
+    provenance = {
+        "torch_version": torch.__version__,
+        "torch_cuda_build_runtime": torch.version.cuda,
+        "cuda_available": True,
+        "driver_version": _driver_version(),
+        "cuda_runtime_version": int(runtime_version),
+        "cublas_library_version": libraries["cublas_version"],
+        "device_name": torch.cuda.get_device_name(0),
+        "compute_capability": list(capability),
+        "deterministic_algorithms": torch.are_deterministic_algorithms_enabled(),
+        "deterministic_warn_only": torch.is_deterministic_algorithms_warn_only_enabled(),
+        "matmul_allow_tf32": torch.backends.cuda.matmul.allow_tf32,
+        "cudnn_allow_tf32": torch.backends.cudnn.allow_tf32,
+        "cudnn_version": torch.backends.cudnn.version(),
+        "library_records": libraries,
+        "kernel_strategy": "blocked_contraction_torch",
+        "peak_allocated_bytes": int(torch.cuda.max_memory_allocated(device)),
+        "peak_reserved_bytes": int(torch.cuda.max_memory_reserved(device)),
+    }
+    return outputs, provenance
+
+
 def descriptors(arrays: Mapping[str, np.ndarray]) -> list[dict[str, object]]:
     return [
         {
@@ -496,13 +721,21 @@ def main() -> int:
     request = validate_request(json.loads(request_path.read_text(encoding="utf-8")))
     arrays = load_and_validate_inputs(request, input_path)
     started = time.perf_counter()
+    blocked = set(arrays) == BLOCKED_CONTRACTION_INVENTORY
     if request["requested_backend"] == "cpu":
-        outputs, backend_provenance = compute_cpu(arrays)
-    else:
-        outputs, backend_provenance = compute_cuda(
-            arrays, str(request["requested_dtype"])
+        outputs, backend_provenance = (
+            compute_blocked_cpu(arrays) if blocked else compute_cpu(arrays)
         )
-    _validate_probability_output(outputs)
+    else:
+        outputs, backend_provenance = (
+            compute_blocked_cuda(arrays, str(request["requested_dtype"]))
+            if blocked
+            else compute_cuda(arrays, str(request["requested_dtype"]))
+        )
+    if blocked:
+        _validate_marginal_output(outputs)
+    else:
+        _validate_probability_output(outputs)
     atomic_npz(output_path, outputs)
     response: dict[str, object] = {
         "schema_version": PROTOCOL,

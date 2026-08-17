@@ -33,6 +33,20 @@ _NUMPY_DTYPES = {
     "bool": np.dtype(np.bool_),
 }
 _PROVENANCE_SCHEMA = "cuda-worker-provenance-v1"
+_BLOCKED_CONTRACTION_INVENTORY = {
+    "site_factors",
+    "edge_factors",
+    "edge_axes",
+    "block_kernels",
+    "block_axes",
+    "batch_size",
+}
+_KERNEL_STRATEGIES = {
+    ("fixed_ray", "cpu"): "rowwise_spatial_map_matvec",
+    ("fixed_ray", "cuda"): "batched_spatial_map_matmul",
+    ("blocked_contraction", "cpu"): "blocked_contraction_numpy",
+    ("blocked_contraction", "cuda"): "blocked_contraction_torch",
+}
 _PROVENANCE_KEYS = {
     "schema_version",
     "python_executable",
@@ -190,13 +204,18 @@ def _validate_job_inputs(
         raise WorkerBackendError("requested backend must be cpu or cuda")
     if requested_dtype not in {"float64", "float32", "bfloat16"}:
         raise WorkerBackendError("requested dtype is invalid")
-    if set(arrays) != {
+    inventory = set(arrays)
+    if inventory == _BLOCKED_CONTRACTION_INVENTORY:
+        return _validate_blocked_contraction_job(
+            requested_dtype=requested_dtype, arrays=arrays
+        )
+    if inventory != {
         "coefficients",
         "spatial_map",
         "matrix_direction",
         "batch_size",
     }:
-        raise WorkerBackendError("worker input arrays do not match the fixed-ray kernel")
+        raise WorkerBackendError("worker input arrays match no declared job kind")
     normalized = {name: np.asarray(value) for name, value in arrays.items()}
     coefficients = normalized["coefficients"]
     spatial_map = normalized["spatial_map"]
@@ -241,6 +260,63 @@ def _validate_job_inputs(
     }
 
 
+def _validate_blocked_contraction_job(
+    *,
+    requested_dtype: str,
+    arrays: Mapping[str, np.ndarray],
+) -> dict[str, np.ndarray]:
+    """Validate the blocked-contraction job kind, mirroring the worker's rules."""
+    if requested_dtype == "bfloat16":
+        raise WorkerBackendError(
+            "bfloat16 is inadmissible for the blocked contraction: the measured "
+            "three-body components sit three decades below the pairwise ones"
+        )
+    normalized = {name: np.asarray(value) for name, value in arrays.items()}
+    expected_dtype = np.dtype(np.float64 if requested_dtype == "float64" else np.float32)
+    site = normalized["site_factors"]
+    edge = normalized["edge_factors"]
+    edge_axes = normalized["edge_axes"]
+    kernels = normalized["block_kernels"]
+    block_axes = normalized["block_axes"]
+    batch_size = normalized["batch_size"]
+    if any(array.dtype != expected_dtype for array in (site, edge, kernels)):
+        raise WorkerBackendError("scientific input dtypes must equal requested dtype")
+    if site.ndim != 2 or site.shape[0] < 1 or site.shape[1] < 2:
+        raise WorkerBackendError("site_factors must carry one factor row per site")
+    sites, states = site.shape
+    if edge.ndim != 3 or edge.shape[1:] != (states, states):
+        raise WorkerBackendError("edge_factors must be state-square per edge")
+    if edge_axes.dtype != np.dtype(np.int64) or edge_axes.shape != (edge.shape[0], 2):
+        raise WorkerBackendError("edge_axes must pair one int64 axis pair per edge")
+    for low, high in edge_axes.reshape(-1, 2):
+        if not 0 <= int(low) < int(high) < sites:
+            raise WorkerBackendError("edge_axes must be ascending pairs of declared sites")
+    if block_axes.dtype != np.dtype(np.int64) or block_axes.ndim != 2:
+        raise WorkerBackendError("block_axes must be an int64 block-by-member table")
+    if sorted(int(axis) for axis in block_axes.reshape(-1)) != list(range(sites)):
+        raise WorkerBackendError("block_axes must arrange every site exactly once")
+    blocks, width = block_axes.shape
+    if kernels.shape != (blocks, states) + (states,) * width:
+        raise WorkerBackendError("block_kernels must be parent-by-block-state tables")
+    if not all(np.all(np.isfinite(array)) for array in (site, edge, kernels)):
+        raise WorkerBackendError("scientific worker inputs must be finite")
+    if np.any(site < 0.0) or np.any(edge < 0.0) or np.any(kernels < 0.0):
+        raise WorkerBackendError("blocked-contraction factors must be nonnegative")
+    normalization_atol = 1.0e-12 if requested_dtype == "float64" else 1.0e-6
+    if not np.allclose(kernels.sum(axis=1), 1.0, rtol=0.0, atol=normalization_atol):
+        raise WorkerBackendError("block_kernels must be normalized over parents")
+    if batch_size.shape != () or batch_size.dtype != np.dtype(np.int64) or int(batch_size) <= 0:
+        raise WorkerBackendError("batch_size must be one positive int64 scalar")
+    return {
+        "batch_size": np.array(batch_size, dtype=np.int64, copy=True),
+        "block_axes": np.ascontiguousarray(block_axes),
+        "block_kernels": np.ascontiguousarray(kernels),
+        "edge_axes": np.ascontiguousarray(edge_axes),
+        "edge_factors": np.ascontiguousarray(edge),
+        "site_factors": np.ascontiguousarray(site),
+    }
+
+
 def _descriptors(arrays: Mapping[str, np.ndarray]) -> list[dict[str, object]]:
     descriptors: list[dict[str, object]] = []
     for name in sorted(arrays):
@@ -272,8 +348,11 @@ def validate_worker_provenance(
     requested_dtype: ScientificDtype,
     environment_sha256: str,
     batch_size: int,
+    job_kind: str = "fixed_ray",
 ) -> None:
     """Validate the frozen worker provenance schema and request binding."""
+    if job_kind not in {"fixed_ray", "blocked_contraction"}:
+        raise WorkerBackendError("unknown worker job kind")
     if not isinstance(provenance, Mapping) or set(provenance) != _PROVENANCE_KEYS:
         raise WorkerBackendError("worker provenance schema does not match the freeze")
     if provenance["schema_version"] != _PROVENANCE_SCHEMA:
@@ -320,11 +399,7 @@ def validate_worker_provenance(
         if type(provenance[field]) is not int or provenance[field] < 0:
             raise WorkerBackendError("worker provenance memory record is invalid")
 
-    expected_strategy = (
-        "rowwise_spatial_map_matvec"
-        if requested_backend == "cpu"
-        else "batched_spatial_map_matmul"
-    )
+    expected_strategy = _KERNEL_STRATEGIES[(job_kind, requested_backend)]
     if provenance["kernel_strategy"] != expected_strategy:
         raise WorkerBackendError("worker provenance kernel strategy drifted")
     if requested_backend == "cpu":
@@ -462,25 +537,39 @@ def validate_worker_result(
         request_manifest, expected_message_type="request"
     )
     response_descriptors = {descriptor.name: descriptor for descriptor in validated.arrays}
-    if set(response_descriptors) != {"updated_coefficients", "matrix_condition"}:
-        raise WorkerBackendError(
-            "worker output must match the exact fixed-ray inventory"
-        )
     request_descriptors = {
         descriptor.name: descriptor for descriptor in validated_request.arrays
     }
-    coefficient_shape = request_descriptors["coefficients"].shape
-    spatial_shape = request_descriptors["spatial_map"].shape
-    expected_shape = (coefficient_shape[0], spatial_shape[0])
-    updated = response_descriptors["updated_coefficients"]
-    condition = response_descriptors["matrix_condition"]
-    if updated.shape != expected_shape or condition.shape != ():
-        raise WorkerBackendError("worker output violates the request-derived shape")
-    if (
-        updated.dtype != validated_request.requested_dtype
-        or condition.dtype != "float64"
-    ):
-        raise WorkerBackendError("worker output violates the request-derived dtype")
+    blocked = set(request_descriptors) == _BLOCKED_CONTRACTION_INVENTORY
+    if blocked:
+        if set(response_descriptors) != {"coarse_marginal"}:
+            raise WorkerBackendError(
+                "worker output must match the blocked-contraction inventory"
+            )
+        states = request_descriptors["block_kernels"].shape[1]
+        blocks = request_descriptors["block_axes"].shape[0]
+        marginal = response_descriptors["coarse_marginal"]
+        if marginal.shape != (states,) * blocks:
+            raise WorkerBackendError("worker output violates the request-derived shape")
+        if marginal.dtype != validated_request.requested_dtype:
+            raise WorkerBackendError("worker output violates the request-derived dtype")
+    else:
+        if set(response_descriptors) != {"updated_coefficients", "matrix_condition"}:
+            raise WorkerBackendError(
+                "worker output must match the exact fixed-ray inventory"
+            )
+        coefficient_shape = request_descriptors["coefficients"].shape
+        spatial_shape = request_descriptors["spatial_map"].shape
+        expected_shape = (coefficient_shape[0], spatial_shape[0])
+        updated = response_descriptors["updated_coefficients"]
+        condition = response_descriptors["matrix_condition"]
+        if updated.shape != expected_shape or condition.shape != ():
+            raise WorkerBackendError("worker output violates the request-derived shape")
+        if (
+            updated.dtype != validated_request.requested_dtype
+            or condition.dtype != "float64"
+        ):
+            raise WorkerBackendError("worker output violates the request-derived dtype")
     if not Path(output_npz).is_file():
         raise WorkerBackendError("worker output NPZ is missing")
     if _file_sha256(Path(output_npz)) != validated.npz_sha256:
@@ -502,6 +591,13 @@ def validate_worker_result(
         if canonical_array_sha256(descriptor.name, array, dtype) != descriptor.sha256:
             raise WorkerBackendError(f"worker output array SHA-256 mismatch: {descriptor.name}")
         array.setflags(write=False)
+    if blocked:
+        marginal_values = arrays["coarse_marginal"]
+        if not np.all(np.isfinite(marginal_values)) or np.any(marginal_values < 0.0):
+            raise WorkerBackendError("worker coarse_marginal must be finite nonnegative")
+        if float(marginal_values.sum()) <= 0.0:
+            raise WorkerBackendError("worker coarse_marginal must carry positive mass")
+        return MappingProxyType(arrays)
     updated_values = arrays["updated_coefficients"]
     matrix_condition = arrays["matrix_condition"]
     if not np.all(np.isfinite(updated_values)) or np.any(updated_values < 0.0):
@@ -625,6 +721,11 @@ def run_worker_job(
         requested_dtype=requested_dtype,
         environment_sha256=environment_sha256,
         batch_size=int(normalized["batch_size"]),
+        job_kind=(
+            "blocked_contraction"
+            if set(normalized) == _BLOCKED_CONTRACTION_INVENTORY
+            else "fixed_ray"
+        ),
     )
     if Path(str(provenance["python_executable"])).resolve() != worker_python:
         raise WorkerBackendError("worker provenance executable path drifted")
