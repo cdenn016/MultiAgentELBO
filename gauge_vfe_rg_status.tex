@@ -523,6 +523,116 @@ pushforward as a control that should collapse it. A null control on randomized
 transports and beliefs is mandatory, since a pipeline that finds blocks there is
 detecting its own blocking algorithm.
 
+\section{The system as built}
+
+That experiment has since been built and run, and the object it studies is worth
+displaying because the geometry is what carries the argument.
+Figure~\ref{fig:system} shows it. Six agents sit at one contextual point on two
+directed three-cycles joined by two cross arcs. The structure group is $\mathbb Z_3$
+acting through two distinct representations, $\rho_b(k):z\mapsto z+k$ on the belief
+channel and $\rho_m(k):z\mapsto z+2k$ on the model channel, and each agent carries a
+pair of laws drawn from finite orbit-closed families. Every declared number is
+rational, so the measurements are exact up to their final logarithms, and nothing is
+Gaussian.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  >={Stealth[length=2.4mm]},
+  every node/.style={font=\small},
+  ag/.style={circle, draw=black!70, thick, fill=softg,
+             minimum size=8.5mm, inner sep=0pt, font=\small},
+  arc/.style={->, thick, black!65},
+  cross/.style={->, thick, black!45, densely dashed},
+  lab/.style={font=\scriptsize, inner sep=1.2pt, fill=white, fill opacity=0.85,
+              text opacity=1},
+]
+\node[ag] (a1) at (0,1.75)      {$1$};
+\node[ag] (a2) at (-1.55,-0.85) {$2$};
+\node[ag] (a3) at (1.55,-0.85)  {$3$};
+\node[ag] (a4) at (5.55,-0.85)  {$4$};
+\node[ag] (a5) at (8.65,-0.85)  {$5$};
+\node[ag] (a6) at (7.10,1.75)   {$6$};
+
+\begin{scope}[on background layer]
+  \fill[openc!12] (a1.center) -- (a3.center) -- (a2.center) -- cycle;
+  \fill[parent!14] (a4.center) -- (a6.center) -- (a5.center) -- cycle;
+\end{scope}
+
+\draw[arc] (a1) -- node[lab, pos=.5, right=1pt] {$0\,|\,1$} (a3);
+\draw[arc] (a3) -- node[lab, pos=.5, below=0pt] {$1\,|\,1$} (a2);
+\draw[arc] (a2) -- node[lab, pos=.5, left=1pt] {$1\,|\,1$} (a1);
+\draw[arc] (a4) -- node[lab, pos=.5, left=1pt] {$1\,|\,2$} (a6);
+\draw[arc] (a6) -- node[lab, pos=.5, right=1pt] {$1\,|\,2$} (a5);
+\draw[arc] (a5) -- node[lab, pos=.5, below=0pt] {$1\,|\,2$} (a4);
+
+\draw[cross] (a1) to[out=35, in=145]
+  node[lab, pos=.18, above left=-1pt] {$0\,|\,0$} (a6);
+\draw[cross] (a4) to[out=-145, in=-35]
+  node[lab, pos=.5, below=0pt] {$0\,|\,0$} (a3);
+
+\node[font=\scriptsize, align=center, openc] at (0,-0.05)
+  {$F_A$\\$H^b\!=\!2$, $H^m\!=\!0$\\$w=0.17$};
+\node[font=\scriptsize, align=center, parent] at (7.10,-0.05)
+  {$F_B$\\$H^b\!=\!0$, $H^m\!=\!0$\\$w=0.17$};
+\node[font=\scriptsize, align=center, openc, draw=openc!45, dashed,
+      rounded corners, fill=white, inner sep=3pt] at (3.55,0.75)
+  {$F_L$ outer face\\$H^b\!=\!1$, $H^m\!=\!0$\\$w=0.03$};
+
+\node[align=center, font=\scriptsize] at (3.55,-2.75) {%
+  each agent carries $(q^b_i,q^m_i)$, laws on $\mathbb Z_3$;\quad
+  arc label $g^b\,|\,g^m$ is the transport of each channel\\
+  \textcolor{openc}{$\blacksquare$}~curved face (nontrivial belief holonomy)\qquad
+  \textcolor{parent}{$\blacksquare$}~flat face\qquad
+  $w=\prod_{e\in F}\beta_e$, the attention traversal weight};
+\end{tikzpicture}
+\caption{\textbf{The finite categorical system.} Six agents on two directed
+three-cycles joined by two cross arcs, with one $\mathbb Z_3$ element per arc per
+channel. The skeleton has three simple directed cycles, equal to its cycle rank, so
+its faces form a basis. The belief connection is curved on $F_A$ and on the outer
+face $F_L$ and flat on $F_B$; the model connection is flat on every face. Cycle $B$
+carries nonzero transports on every arc and still has trivial holonomy, which is
+what separates curvature from mere nonidentity. Each face also carries an attention
+weight, the probability that the attention walk traverses it, so the long outer face
+is suppressed by roughly a factor of six.}
+\label{fig:system}
+\end{figure}
+
+The faces are where the gauge content lives. A face is a simple directed cycle of the
+skeleton; there are three of them here and the cycle rank is also three, so they form
+a basis with no redundancy. Each face carries a holonomy from the connection and a
+coupling from the attention, and the two are independent: $F_B$ is fully attended and
+perfectly flat, while $F_L$ is curved and barely attended. Pairing them gives a
+Wilson action, a sum over faces of the traversal weight times the normalized
+character defect, which is gauge invariant because both factors are. On this system
+the model action is exactly zero and the belief action is positive and dominated by
+the short curved face.
+
+What the measurements found separates cleanly. The exact finite layer survives every
+check: the tower accounting identity holds to $10^{-15}$, nested coarse-grainings
+compose, the dressed-transport law normalizes only when the endpoint factor is
+carried, and the predicted belief-against-model asymmetry is directly observable.
+The block-formation story does not survive in the form the design anticipated.
+Eliminating the block parent exactly generates a three-body term, so pairwise closure
+is false here. There is no timescale separation between partition persistence and
+belief relaxation. And the designed partition into the two cycles is never selected,
+for a reason that is structural rather than incidental: that partition contains the
+curved block, so every curvature charge taxes it, and a mechanism that penalizes
+enclosed curvature necessarily pushes away from the blocks the design named. An
+observable asymmetry is not a selected one.
+
+The most useful thing to come out of the sweep is that the declared knobs are not
+independent. At the transition between keeping the curved loop inside one block and
+cutting it, the curvature charge carried by that block plus the log of the partition
+prior's concentration is a single constant, and this holds whether the charge is
+bought with a retention price against the holonomy group or with a Wilson coupling
+against the attention-weighted faces. Only the sum matters. That sharpens
+Corollary~6 rather than escaping it: selection still lives entirely in declared
+structure, but the structure is now one number with three interchangeable dials, one
+of which is the attention. The dynamics does not yet carry the Wilson term, so the
+persistence and null-control results above describe the earlier energy and should not
+be reread in its light.
+
 \section{Confidence and provenance}
 
 The exact finite derivations are explicit and internally checked, and several related
