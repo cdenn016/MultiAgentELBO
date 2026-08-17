@@ -845,10 +845,10 @@ Conditional &
 Holonomy blindness requires declared full-law actions, compatible posterior versions, channel equivariance, evaluator covariance, and the appropriate fixed-\((o,X)\) stabilizer. Compact continuous holonomy averaging needs domination and integrability assumptions. Gaussian stability results apply only in their declared finite realization. \\
 \addlinespace
 Diagnostic &
-Spectral gaps, finite KL thresholds, symbolic checks, and numerical experiments can test a proposed construction. They do not select the coarse channel or prove a universal theorem. \\
+Spectral gaps, finite KL thresholds, symbolic checks, and numerical experiments can test a proposed construction; the 2026-08-17 rescaling-map measurements of Section~\ref{sec:rescaling-measured} are of this kind: exact covariance and holonomy-conservation checks passed, the compatibility law refuted at its pre-registered tolerance, and per-ratio contraction onto factorized, ratio-typed fixed structures. They do not select the coarse channel or prove a universal theorem. \\
 \addlinespace
 Open &
-A comparison-category theorem; extension across \(\mathcal U_A\); local sections and gluing; changing active sets; canonical channel, membership, and partition selection; geometric meta-agents; autonomous agency; nonequilibrium persistence; physical time; continuum limits; unique microscopic physics; ontology; adaptive attention dynamics; and nonlinear full-law dynamical closure. \\
+A comparison-category theorem; extension across \(\mathcal U_A\); local sections and gluing; changing active sets; canonical channel, membership, and partition selection; geometric meta-agents; autonomous agency; nonequilibrium persistence; physical time; continuum limits; unique microscopic physics; ontology; adaptive attention dynamics; nonlinear full-law dynamical closure; whether the measured composition defect contracts on deeper flows; and which boundary-multiplicity architectures sustain interacting fixed structures. \\
 \bottomrule
 \end{tabularx}
 \caption{The current boundary of the theory.}
@@ -875,6 +875,21 @@ The certification does not cross the open boundaries in Table~\ref{tab:status}. 
 Two qualifications attach to the packaging rather than to the mathematics, and are recorded here because an earlier version of this guide reported the status as a clean \texttt{COMPLETE\_AFFIRMATIVE}. The release file actually records \texttt{COMPLETE\_AFFIRMATIVE\_WITH\_CORRECTIONS}, which is not among the three terminal values the release schema admits, and the package does not currently pass its own release-mode validator: that check reports the invalid status token together with several stale artifact hashes. The package's erratum documents both as known and deliberate, on the stated ground that a stale hash on a corrected file is preferable to a current hash on a false claim, and it leaves two obligations explicitly open. What is in question is the packaging metadata, not the theorem.
 \end{boundarybox}
 
+\section{The rescaling map, built and measured}
+\label{sec:rescaling-measured}
+
+Everything above concerns one blocking step: the coarse channel and its exact information cost. A renormalization step is that channel followed by an identification returning the coarse theory to the form of the fine one, and until 2026-08-17 the identification did not exist. It now does, in the finite categorical laboratory (\path{src/multiagent_elbo/finite/rescaling.py}, \path{coupling_readback.py}, \path{cocycle_flow.py}, with design and dated amendments in \path{docs/superpowers/specs/2026-08-17-rescaling-map-design.md}), and this section reports what the completed composite measured. Every tolerance was fixed before measurement; every number is a computation on declared finite instances.
+
+Three checks behaved exactly. The coarse connection, the Wilson line between block roots composed from the dressed boundary generators the mark-carrying parents retain, transforms as a link and conserves holonomy: the coarse cycle's group element equals the fine element of the loop it encloses, exactly, with each block's interior holonomy carried as marks. Gauge covariance of the full step holds to $10^{-12}$ on the coarse action, under the group the coupled two-channel system actually has (per-vertex gauges inducing equal sample shifts in both channels), and it forces the declared parent law to transform as data attached to the root frame; a frame-fixed prior breaks covariance by orders of magnitude. The variational coupling read-back is deterministic: for the admitted exponential family the Kullback--Leibler minimizer is the marginal-matching member, and iterative proportional fitting from the exact truncation seed converges to it, so the projection agreement check resolves at every measured step.
+
+One check failed, and its failure is the section's principal result. The compatibility law $K_{b_1 b_2} = K_{b_1} K_{b_2}$, blocking by the full ratio against blocking in stages, fails by $0.204$ in sup norm on the final couplings against a pre-registered $10^{-10}$, with a provably lossless intermediate projection: the defect is the Bayes blocking kernel composition itself, which is not closed across levels for the same generic reason that lumped Markov chains are not Markov. The defect is order one at every accessible depth and factorization, including two-then-three against three-then-two on a homogeneous cycle where both orderings are legitimate. The scale maps of this theory therefore form a typed cocycle, one map per level pair, and not an autonomous flow; fixed-point language is licensed only per declared ratio and identification.
+
+Within that license, fixed structures exist and were found. Each ratio's composite of blocking with self-similar re-tiling is a measured local contraction on the reduced coupling space (spectral radius near $0.8$), and its fixed structure is exactly factorized: the pairwise block is zero at machine precision, on a subspace that is provably invariant because the block-local kernel sends factorized theories to factorized theories, and measured attracting with pair-sector eigenvalues near $0.17$. The ratio-two and ratio-three fixed structures differ by $0.81$ in relative sup norm, so the endpoints are ratio-typed as well. The diagnosis is architectural rather than mysterious: the declared tower joins blocks through single boundary agents, its instances are quasi-one-dimensional, and one-dimensional finite-range systems with positive weights have no interacting fixed structure by the Perron--Frobenius transfer-matrix argument. The hierarchical lattices on which real-space recursions compose exactly aggregate bundles of parallel paths per coarse bond; for a directed agent network the open question is which boundary-multiplicity architectures sustain interaction, and it is a declared, compute-cheap measurement on the same machinery.
+
+\begin{boundarybox}
+These are numerical results on declared finite instances, level-local by construction. They license no universality claim, no relevance exponents, and no statement about deeper flows than were run; whether the composition defect contracts under iteration or persists is open and measurable. They do, however, retire one claim: the agent-network RG chapter's autonomous-semigroup framing is refuted on its own pre-registered criterion, and its trivial fixed sectors now carry a mechanism, a contraction rate, and an architectural cause.
+\end{boundarybox}
+
 \section{The next three theory steps}
 \label{sec:next-steps}
 
@@ -883,6 +898,8 @@ The first open step is the comparison theorem. It should state how mechanistic e
 The second step is geometric extension. The pointwise laws must become local sections over \(\mathcal U_A\), with measurable or smooth dependence, gluing, cocycle consistency, changing active sets, and possible rank or stabilizer jumps. Only this step can promote the pointwise probabilistic datum toward a geometric meta-agent.
 
 The third step is participatory nonequilibrium dynamics. A coupled multiscale action must account for both upward and downward influence without double counting, and it must identify the flux, driving, antisymmetric structure, stochasticity, or adaptive geometry that prevents ordinary dissipative relaxation. Agency is a further claim requiring its own operational definition and falsifiers.
+
+All three steps now inherit one constraint from Section~\ref{sec:rescaling-measured}: the scale maps are a typed cocycle, so any statement quantified over levels must carry its level pair and identification explicitly, and any fixed-point or flow language must name the declared ratio and architecture it is fixed for. Ahead of the three theory steps sit two bounded pieces of housekeeping the measurements force: rewriting the agent-network RG chapter in cocycle terms, and the bundled-tower measurement of boundary multiplicity against per-link attenuation.
 
 \section{Repository map and provenance}
 \label{sec:provenance}
@@ -901,6 +918,11 @@ The hash-bound full-datum proof and release package is under
 \[
   \texttt{docs/derivations/2026-08-15-full-pointwise-meta-agent/}.
 \]
+The rescaling-map implementation and measurements of Section~\ref{sec:rescaling-measured} live in
+\path{src/multiagent_elbo/finite/} (\path{rescaling.py}, \path{coupling_readback.py},
+\path{cocycle_flow.py}, \path{contraction_backend.py}) with their tests under \path{tests/}, and
+the pre-registered design with its two dated amendments is
+\path{docs/superpowers/specs/2026-08-17-rescaling-map-design.md}.
 The earlier two-channel marginal result is retained under
 \[
   \texttt{docs/derivations/2026-08-14-pointwise-meta-agent-rg/}.
