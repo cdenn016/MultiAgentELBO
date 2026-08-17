@@ -4,13 +4,16 @@ from __future__ import annotations
 
 from fractions import Fraction
 
+import numpy as np
 import pytest
 
+from multiagent_elbo.finite.categorical_falsification_model import build_reference_model
 from multiagent_elbo.finite.two_channel_gauge import (
     CyclicRepresentation,
     DirectedEdge,
     TwoChannelGraph,
     based_holonomy_generators,
+    declared_reverse_arcs,
     fixed_laws,
     fixed_simplex_laws,
     generated_subgroup,
@@ -168,6 +171,104 @@ def test_walk_elements_are_signed_and_reverse_to_the_inverse() -> None:
     forward = walk_element(graph, "belief", ((0, +1), (1, +1)))
     backward = walk_element(graph, "belief", ((1, -1), (0, -1)))
     assert (forward + backward) % 3 == 0
+
+
+def test_a_backward_step_reads_the_declared_reverse_arc_where_one_exists() -> None:
+    """Mutation caught: writing reciprocity into the walk primitive.
+
+    On a graph carrying both orientations of a pair, traversing the pair backward is
+    traversing the declared reverse arc, so the transport is that arc's own element.
+    Reading it as the negated forward element would report the holonomy of a
+    connection the graph does not declare, and would make the independent convention
+    unobservable downstream.
+    """
+    graph = TwoChannelGraph(
+        order=3,
+        vertices=(1, 2),
+        edges=(DirectedEdge(1, 2), DirectedEdge(2, 1)),
+        belief_elements=(1, 1),
+        model_elements=(1, 2),
+    )
+    assert declared_reverse_arcs(graph) == {0: 1, 1: 0}
+    assert walk_element(graph, "belief", ((0, -1),)) == 1
+    assert walk_element(graph, "model", ((0, -1),)) == 2
+    assert walk_element(graph, "belief", ((0, +1), (1, +1))) == 2
+    one_way = TwoChannelGraph(
+        order=3,
+        vertices=(1, 2),
+        edges=(DirectedEdge(1, 2),),
+        belief_elements=(1,),
+        model_elements=(1,),
+    )
+    assert declared_reverse_arcs(one_way) == {}
+    assert walk_element(one_way, "belief", ((0, -1),)) == 2
+
+
+def test_the_declared_one_way_skeleton_is_untouched_by_the_reverse_arc_rule() -> None:
+    """Mutation caught: a reverse-arc branch that moves the reference measurements.
+
+    The declared instance carries no reciprocal pair, so no backward step has a
+    reverse arc to read and the walk primitive is exactly the signed sum it always
+    was. These are the pinned pre-change values of the two quantities the closure and
+    holonomy measurements consume, and they must not move when the reverse-arc rule
+    is added.
+    """
+    graph = _reference_graph()
+    assert declared_reverse_arcs(graph) == {}
+    assert holonomy_group(graph, "belief", 1) == (0, 1, 2)
+    assert holonomy_group(graph, "model", 1) == (0,)
+    for root in graph.vertices:
+        assert holonomy_group(graph, "belief", root) == (0, 1, 2)
+        assert holonomy_group(graph, "model", root) == (0,)
+    assert tree_transport_elements(graph, "belief", 1) == {
+        1: 0,
+        2: 1,
+        3: 0,
+        4: 0,
+        5: 2,
+        6: 0,
+    }
+    assert tree_transport_elements(graph, "model", 1) == {
+        1: 0,
+        2: 1,
+        3: 2,
+        4: 2,
+        5: 1,
+        6: 0,
+    }
+    model = build_reference_model()
+    assert np.allclose(
+        model.downward_kernel((1, 2, 3), 2, 0),
+        [
+            0.04682274101033171,
+            0.04682274101033171,
+            0.18729096404132684,
+            0.04254128345135986,
+            0.04254128345135986,
+            0.17016513380543943,
+            0.0773026422049751,
+            0.0773026422049751,
+            0.3092105688199004,
+        ],
+        atol=0.0,
+        rtol=1e-15,
+    )
+    assert np.allclose(
+        model.downward_kernel((4, 5, 6), 6, 4),
+        [
+            0.18729096404132684,
+            0.04682274101033171,
+            0.04682274101033171,
+            0.17016513380543943,
+            0.04254128345135986,
+            0.04254128345135986,
+            0.3092105688199004,
+            0.0773026422049751,
+            0.0773026422049751,
+        ],
+        atol=0.0,
+        rtol=1e-15,
+    )
 
 
 @pytest.mark.parametrize(

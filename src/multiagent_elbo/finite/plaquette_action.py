@@ -14,11 +14,14 @@ is the sense in which the attention weights say which plaquettes are present and
 much each one counts.
 
 Two properties make this legitimate rather than decorative. The weights are built
-from the directed rows and the receiver occupancies, which are gauge-invariant
-scalars, so the action is gauge invariant even though the holonomy is not gauge
-invariant edgewise. And the defect is a class function of the holonomy, one minus
-the normalized character of the representation, so it vanishes exactly on a flat
-face and does not depend on where the loop is based.
+from the directed attention rows alone, and in this laboratory those rows are
+declared constants that no gauge transformation reads, so the action is gauge
+invariant even though the holonomy is not gauge invariant edgewise. That is an
+argument from the declaration and not from a property of attention: in the wider
+program the rows are built from divergences between transported beliefs, and there
+the invariance of the coupling is a theorem to prove rather than one to inherit. And
+the defect is a class function of the holonomy, so it vanishes exactly on a flat face
+and does not depend on where the loop is based.
 
 One difference from the lattice case is structural and should not be glossed. There
 the plaquette coupling is a declared constant; here it is the attention, which is a
@@ -164,16 +167,28 @@ def cycle_attention_weight(
 
 
 def wilson_defect(model: FalsificationModel, element: int, channel: str) -> float:
-    """Return one minus the normalized character of the holonomy, a class function.
+    r"""Return the Z_n flatness indicator of a holonomy element, a class function.
 
-    The representation permutes the finite sample space, so its character counts
-    fixed points and the defect is zero exactly on the identity and one on any
-    nontrivial shift of a faithful cyclic action. Being a class function it does not
-    depend on the base point of the loop.
+    The representation permutes the finite sample space, so one minus its normalized
+    permutation character counts the fixed points that a shift destroys. On a
+    faithful cyclic action every nontrivial element moves the whole sample space, so
+    the value is the indicator [U_p != identity], the delta-function action of the
+    finite gauge theory rather than the Wilson plaquette term 1 - Re chi(U_p). The two
+    agree up to a scale only at n = 3, where the indicator reads 0, 1, 1 and the
+    character defect reads 0, 3/2, 3/2; at larger n the indicator is blind to how far
+    from the identity a holonomy sits, which is a declared choice of action and not an
+    approximation to the character one.
+
+    Faithfulness is required rather than assumed. An unfaithful representation sends
+    some nontrivial group element to the identity permutation, and the defect would
+    then report a curved face as flat, so any reading of this quantity as a curvature
+    magnitude would be measuring the kernel of the representation instead.
     """
     representation = (
         model.belief_representation if channel == "belief" else model.model_representation
     )
+    if not representation.is_faithful():
+        raise ValueError("the flatness indicator needs a faithful representation")
     order = model.graph.order
     permutation = representation.permutation(element % order)
     fixed = sum(1 for position, image in enumerate(permutation) if position == image)

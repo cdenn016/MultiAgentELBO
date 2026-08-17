@@ -28,14 +28,24 @@ results resting on reciprocity have to be restated rather than inherited.
 Both are built here so the reciprocity hypothesis is measured rather than assumed,
 which is how this laboratory treats every other declared choice.
 
-Faces are taken as the two orientations of a spanning-tree cycle basis. The full
-set of simple directed cycles of a bi-directed graph is far larger than the cycle
-rank, twenty against three on this skeleton, and summing an action over all of them
-would count curvature a number of times fixed by graph topology rather than by
-anything physical. A basis is exactly rank-many undirected loops, doubled by
-orientation because the two traversals of a loop carry different attention weights
-even when their holonomies are related. The basis depends on the spanning tree, so
-the face set is a declared choice and is reported as one.
+Faces are taken as the two orientations of a cycle basis of the directed skeleton.
+The full set of simple directed cycles of a bi-directed graph is far larger than the
+cycle rank, twenty against eleven on this skeleton, and summing an action over all
+of them would count curvature a number of times fixed by graph topology rather than
+by anything physical. The basis has one two-cell per reciprocal pair together with a
+spanning-tree fundamental loop per chord, which is exactly the directed cycle rank,
+edges minus vertices plus one. Excluding the two-cycles would put the face set at
+the undirected rank and blind the complex to curvature at the shortest scale, which
+is the only scale at which the two conventions differ by construction. Each basis
+loop is doubled by orientation because the two traversals carry different attention
+weights even when their holonomies are related, and the action averages the two so
+that a two-cell is charged once. The longer part of the basis depends on the
+spanning tree, so the face set is a declared choice and is reported as one.
+
+The two conventions are built as matched controls. The reverse-arc elements are
+drawn from their own stream, so the attention rows and the forward elements are
+identical across conventions and a numerical difference between the two instances is
+attributable to the reverse-transport hypothesis alone.
 """
 
 from __future__ import annotations
@@ -48,7 +58,7 @@ import numpy as np
 
 from .categorical_falsification_model import FalsificationModel, build_reference_model
 from .plaquette_action import wilson_defect
-from .two_channel_gauge import DirectedEdge, TwoChannelGraph
+from .two_channel_gauge import DirectedEdge, TwoChannelGraph, declared_reverse_arcs
 
 CONVENTIONS = ("reciprocal", "independent")
 
@@ -58,6 +68,7 @@ class OrientedFace:
     """One orientation of a basis loop, with its holonomy and attention weight."""
 
     cycle: tuple[int, ...]
+    edges: tuple[int, ...]
     orientation: str
     belief_holonomy: int
     model_holonomy: int
@@ -124,19 +135,26 @@ def build_bidirected_model(
     partitions are inherited unchanged from the declared instance, so the only
     differences are the added reverse arcs, their transports under the chosen
     convention, and genuinely two-sided attention.
+
+    The reverse elements draw from a stream of their own so that the two conventions
+    are matched controls: the forward elements and every attention row are identical
+    across conventions, and the reciprocal branch consumes no draws it would then
+    have to pay for elsewhere. Sharing one stream would confound the reverse-transport
+    hypothesis with a different attention configuration.
     """
     if convention not in CONVENTIONS:
         raise ValueError("convention must be 'reciprocal' or 'independent'")
     reference = build_reference_model()
     order = reference.graph.order
     generator = np.random.default_rng(seed)
+    element_generator = np.random.default_rng((seed, 1))
     forward = reference.graph.edges
     reverse = tuple(DirectedEdge(edge.source, edge.receiver) for edge in forward)
     belief = reference.graph.belief_elements + _reverse_elements(
-        reference.graph.belief_elements, order, convention, generator
+        reference.graph.belief_elements, order, convention, element_generator
     )
     model_elements = reference.graph.model_elements + _reverse_elements(
-        reference.graph.model_elements, order, convention, generator
+        reference.graph.model_elements, order, convention, element_generator
     )
     graph = TwoChannelGraph(
         order=order,
@@ -163,11 +181,17 @@ def build_bidirected_model(
 
 @lru_cache(maxsize=None)
 def basis_loops(model: FalsificationModel) -> tuple[tuple[int, ...], ...]:
-    """Return one undirected spanning-tree cycle basis of the skeleton.
+    """Return one cycle basis of the directed skeleton, two-cycles included.
 
-    The basis is built on the underlying undirected graph, so a bi-directed pair
-    counts once. Its size is the cycle rank, and it depends on the spanning tree,
-    which makes the face set a declared choice rather than an invariant.
+    The longer loops are the fundamental loops of a spanning tree of the underlying
+    undirected graph, one per chord, so a bi-directed pair contributes at most one of
+    them. To those is added one two-cycle per reciprocal pair, the shortest two-cell
+    the complex admits and the only place where the independent convention can put
+    curvature that the reciprocal convention cannot. Their count together is the
+    cycle rank of the directed graph, edges minus vertices plus one, which is three
+    on the one-way skeleton and eleven on the bi-directed one. The longer part
+    depends on the spanning tree, which makes the face set a declared choice rather
+    than an invariant.
     """
     neighbors: dict[int, set[int]] = {v: set() for v in model.graph.vertices}
     for edge in model.graph.edges:
@@ -186,13 +210,19 @@ def basis_loops(model: FalsificationModel) -> tuple[tuple[int, ...], ...]:
                 order_seen.append(following)
                 frontier.append(following)
     tree = {frozenset((child, mother)) for child, mother in parent.items() if child != mother}
+    arcs = {(edge.source, edge.receiver) for edge in model.graph.edges}
     loops: list[tuple[int, ...]] = []
+    two_cycles: list[tuple[int, ...]] = []
     for left in sorted(model.graph.vertices):
         for right in sorted(neighbors[left]):
-            if right <= left or frozenset((left, right)) in tree:
+            if right <= left:
+                continue
+            if (left, right) in arcs and (right, left) in arcs:
+                two_cycles.append((left, right))
+            if frozenset((left, right)) in tree:
                 continue
             loops.append(tuple(_fundamental_loop(parent, left, right)))
-    return tuple(loops)
+    return tuple(two_cycles) + tuple(loops)
 
 
 def _fundamental_loop(parent: dict[int, int], left: int, right: int) -> list[int]:
@@ -239,17 +269,20 @@ def oriented_faces(
         for orientation, walk in (("forward", loop), ("reverse", loop[::-1])):
             holonomy: dict[str, int] = {}
             weight: dict[str, float] = {}
+            traversed: list[int] = []
             usable = True
             for channel in ("belief", "model"):
                 elements = model.graph.channel_elements(channel)
                 total = 0
                 product = 1.0
+                traversed = []
                 for step in range(len(walk)):
                     source = walk[step]
                     receiver = walk[(step + 1) % len(walk)]
                     if (source, receiver) not in arcs:
                         usable = False
                         break
+                    traversed.append(arcs[(source, receiver)])
                     total += elements[arcs[(source, receiver)]]
                     product *= float(
                         rows[channel][position[receiver], position[source]]
@@ -263,6 +296,7 @@ def oriented_faces(
             faces.append(
                 OrientedFace(
                     cycle=tuple(walk),
+                    edges=tuple(traversed),
                     orientation=orientation,
                     belief_holonomy=holonomy["belief"],
                     model_holonomy=holonomy["model"],
@@ -273,39 +307,75 @@ def oriented_faces(
     return tuple(faces)
 
 
+def _two_cell_key(model: FalsificationModel, face: OrientedFace) -> tuple[int, ...]:
+    """Return the orientation-blind edge-index multiset naming one basis two-cell.
+
+    Each traversed arc is named by the smaller of its own index and its declared
+    reverse arc's, so the two orientations of a loop share a key while two distinct
+    loops over the same vertices do not. Keying by the vertex set instead would merge
+    loops that happen to visit the same vertices in a different order.
+    """
+    reverse = declared_reverse_arcs(model.graph)
+    return tuple(sorted(min(index, reverse.get(index, index)) for index in face.edges))
+
+
+def _faces_by_two_cell(
+    model: FalsificationModel,
+    configuration: str,
+) -> dict[tuple[int, ...], dict[str, OrientedFace]]:
+    """Return the oriented faces grouped by the two-cell they orient."""
+    grouped: dict[tuple[int, ...], dict[str, OrientedFace]] = {}
+    for face in oriented_faces(model, configuration):
+        grouped.setdefault(_two_cell_key(model, face), {})[face.orientation] = face
+    return grouped
+
+
 def wilson_action(
     model: FalsificationModel,
     channel: str,
     configuration: str = "peaked",
 ) -> float:
-    """Return the Wilson action over both orientations of the basis loops."""
-    return float(
-        sum(
+    """Return the Wilson action of the basis two-cells, averaged over orientation.
+
+    A geometric two-cell is charged once. Both traversals carry the same defect,
+    because the defect is a class function and the two holonomies are inverse under
+    either convention, but they carry different attention weights, so the coupling of
+    the cell is the mean of the two directed traversal probabilities. Summing the
+    orientations instead would charge every cell twice and put this quantity at a
+    different normalization from the same-named function in `plaquette_action`, which
+    sums simple directed cycles once each.
+    """
+    total = 0.0
+    for entry in _faces_by_two_cell(model, configuration).values():
+        faces = tuple(entry.values())
+        total += sum(
             face.weight(channel) * wilson_defect(model, face.holonomy(channel), channel)
-            for face in oriented_faces(model, configuration)
-        )
-    )
+            for face in faces
+        ) / len(faces)
+    return float(total)
 
 
 def reversal_is_inverse(
     model: FalsificationModel,
     configuration: str = "peaked",
 ) -> bool:
-    """Report whether reversing every basis loop negates its holonomy.
+    """Report whether reversing every basis two-cell negates its holonomy.
 
     This is the operational signature of the reciprocal convention. It holds by
     construction there and fails generically under independent reverse transports,
     which makes the two conventions distinguishable from the faces alone rather
     than from the declaration.
+
+    A two-cell that carries only one orientation is a different fact about the model
+    and is raised rather than reported as a failure of reciprocity: a one-way
+    skeleton has no reverse arc whose transport could disagree with the inverse, and
+    reporting False there would read as a refuted hypothesis instead of an untestable
+    one.
     """
-    faces = oriented_faces(model, configuration)
     order = model.graph.order
-    paired: dict[tuple, dict[str, OrientedFace]] = {}
-    for face in faces:
-        paired.setdefault(tuple(sorted(face.cycle)), {})[face.orientation] = face
-    for entry in paired.values():
+    for entry in _faces_by_two_cell(model, configuration).values():
         if set(entry) != {"forward", "reverse"}:
-            return False
+            raise ValueError("a basis two-cell carries only one orientation")
         for channel in ("belief", "model"):
             forward = entry["forward"].holonomy(channel)
             reverse = entry["reverse"].holonomy(channel)

@@ -7,7 +7,7 @@ import pytest
 
 from multiagent_elbo.finite.categorical_falsification_model import build_reference_model
 from multiagent_elbo.finite import plaquette_action as faces
-from multiagent_elbo.finite.two_channel_gauge import TwoChannelGraph
+from multiagent_elbo.finite.two_channel_gauge import CyclicRepresentation, TwoChannelGraph
 
 CURVED = (1, 3, 2)
 FLAT = (4, 6, 5)
@@ -49,7 +49,12 @@ def test_the_faces_are_the_simple_directed_cycles_and_form_a_basis() -> None:
 
 
 def test_the_wilson_defect_is_a_class_function_vanishing_only_on_the_identity() -> None:
-    """Mutation caught: a defect that ranks nontrivial group elements against each other."""
+    """Mutation caught: a defect that ranks nontrivial group elements against each other.
+
+    The quantity is the flatness indicator of the finite theory, not the character
+    defect 1 - Re chi, which on Z_3 would read 0, 3/2, 3/2. The two agree up to that
+    scale here and nowhere else, so the values are pinned as the indicator.
+    """
     model = build_reference_model()
     for channel in faces.CHANNELS:
         assert faces.wilson_defect(model, 0, channel) == pytest.approx(0.0)
@@ -57,6 +62,24 @@ def test_the_wilson_defect_is_a_class_function_vanishing_only_on_the_identity() 
         assert faces.wilson_defect(model, 2, channel) == pytest.approx(1.0)
     with pytest.raises(ValueError):
         faces.plaquettes(model, "uniform")[0].holonomy("neither")
+
+
+def test_the_defect_refuses_an_unfaithful_representation() -> None:
+    """Mutation caught: a curvature magnitude measuring the kernel of the action.
+
+    A representation of Z_4 by doubling sends the element two to the identity
+    permutation, so a face carrying that holonomy would be reported flat. Read as a
+    magnitude the indicator then measures the kernel rather than the curvature, so
+    faithfulness is required rather than assumed.
+    """
+    model = build_reference_model()
+    unfaithful = CyclicRepresentation(4, 2, "unfaithful")
+    assert not unfaithful.is_faithful()
+    assert unfaithful.permutation(2) == (0, 1, 2, 3)
+    broken = type(model)(**{**vars(model), "belief_representation": unfaithful})
+    with pytest.raises(ValueError):
+        faces.wilson_defect(broken, 1, "belief")
+    assert faces.wilson_defect(broken, 1, "model") == pytest.approx(1.0)
 
 
 def test_the_flat_channel_carries_no_action_and_the_curved_channel_does() -> None:

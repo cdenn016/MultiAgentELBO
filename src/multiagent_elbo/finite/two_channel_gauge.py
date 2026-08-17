@@ -13,10 +13,16 @@ row indexed by the receiver is a conditional law over sources, the occupancy
 attaches to the receiver, and the edge transport carries the source frame into the
 receiver frame. A walk is a sequence of steps, each step traversing one declared
 edge either forward (source frame to receiver frame) or backward. Because the
-structure group here is abelian, a walk transport is the signed sum of its edge
-elements, and reversing every direction convention at once negates every holonomy.
-Trivial holonomy is therefore convention independent, which is what the belief
-against model separation in the falsification design actually tests.
+structure group here is abelian, a walk transport is a signed sum of edge elements,
+and reversing every direction convention at once negates every holonomy. Trivial
+holonomy is therefore convention independent, which is what the belief against
+model separation in the falsification design actually tests.
+
+A backward step is where the reciprocity hypothesis would otherwise be smuggled in.
+When the graph declares the reverse arc, that arc's own element is the transport of
+the backward step, whatever it happens to be; the reciprocal element is used only
+where no reverse arc is declared and the inverse is the sole reading available. On a
+one-way skeleton the two agree identically, so nothing measured there moves.
 
 All arithmetic is exact: laws are tuples of ``Fraction`` and group elements are
 integers modulo the group order. No floating point enters this module.
@@ -293,18 +299,48 @@ def _walk_to_root(
     return tuple(steps)
 
 
+def declared_reverse_arcs(graph: TwoChannelGraph) -> dict[int, int]:
+    """Return, per edge index, the index of its declared reverse arc where one exists.
+
+    Self loops are excluded because their reverse is themselves, which would read a
+    backward traversal as a forward one rather than as an inverse.
+    """
+    position = {
+        (edge.receiver, edge.source): index for index, edge in enumerate(graph.edges)
+    }
+    return {
+        index: position[(edge.source, edge.receiver)]
+        for index, edge in enumerate(graph.edges)
+        if edge.source != edge.receiver and (edge.source, edge.receiver) in position
+    }
+
+
 def walk_element(
     graph: TwoChannelGraph,
     channel: str,
     steps: Sequence[tuple[int, int]],
 ) -> int:
-    """Return the group element of a signed edge walk in one channel."""
+    r"""Return the group element of a signed edge walk in one channel.
+
+    A forward step contributes the traversed arc's own element. A backward step of
+    edge e contributes the element declared on the reverse arc when the graph
+    declares one, and only otherwise the reciprocal -Theta_e. Reading a backward
+    step as -Theta_e unconditionally would write the reciprocity hypothesis into the
+    primitive, so a bi-directed instance with independent reverse transports would
+    report the holonomy of a connection it does not declare.
+    """
     elements = graph.channel_elements(channel)
+    reverse = declared_reverse_arcs(graph)
     total = 0
     for index, sign in steps:
         if sign not in (+1, -1):
             raise ValueError("walk signs must be +1 or -1")
-        total += sign * elements[index]
+        if sign == +1:
+            total += elements[index]
+        elif index in reverse:
+            total += elements[reverse[index]]
+        else:
+            total -= elements[index]
     return total % graph.order
 
 
@@ -389,6 +425,7 @@ __all__ = [
     "Law",
     "TwoChannelGraph",
     "based_holonomy_generators",
+    "declared_reverse_arcs",
     "fixed_laws",
     "fixed_simplex_laws",
     "generated_subgroup",

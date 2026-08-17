@@ -8,14 +8,41 @@ import numpy as np
 import pytest
 
 from multiagent_elbo.finite.categorical_falsification_model import build_reference_model
+from multiagent_elbo.finite import bidirected as bidi
 from multiagent_elbo.finite import holonomy_selection as selection
 from multiagent_elbo.finite import mark_carrying_parent as marks
 from multiagent_elbo.finite import plaquette_action as plaquettes
 from multiagent_elbo.finite.holonomy_retention import block_holonomy_group
+from multiagent_elbo.finite.two_channel_gauge import TwoChannelGraph
 
 STATES = [0, 1, 2, 3, 4, 5]
 CURVED = (1, 2, 3)
 FLAT = (4, 5, 6)
+
+
+def _regauged(model, shifts: dict[int, int]):
+    """Return the model with a per-agent regauging applied to both channels.
+
+    An edge carries the source frame into the receiver frame, so a regauging adds
+    the source shift and subtracts the receiver shift. This is the same convention
+    the plaquette tests declare, and it is the action a root gauge induces on the
+    connection once the shift is held constant over a block.
+    """
+    order = model.graph.order
+    belief = []
+    model_elements = []
+    for index, edge in enumerate(model.graph.edges):
+        delta = shifts.get(edge.source, 0) - shifts.get(edge.receiver, 0)
+        belief.append((model.graph.belief_elements[index] + delta) % order)
+        model_elements.append((model.graph.model_elements[index] + delta) % order)
+    graph = TwoChannelGraph(
+        order=order,
+        vertices=model.graph.vertices,
+        edges=model.graph.edges,
+        belief_elements=tuple(belief),
+        model_elements=tuple(model_elements),
+    )
+    return type(model)(**{**vars(model), "graph": graph})
 
 
 def test_the_retention_route_gives_every_block_a_finite_energy() -> None:
@@ -81,14 +108,100 @@ def test_a_root_regauge_moves_presentation_and_boundary_together() -> None:
     assert marks.regauge(model, twice, 1) == datum
 
 
+def test_regauge_reproduces_the_datum_recomputed_from_a_regauged_connection() -> None:
+    """Mutation caught: a uniform boundary shift where the gauge action is signed.
+
+    A root gauge is the block-constant regauging of the connection, under which
+    every tree transport is fixed. The boundary generators are not: a leg whose
+    inside endpoint is the receiver absorbs minus the shift, while a leg whose inside
+    endpoint is the source absorbs plus the shift, because the edge action carries
+    opposite signs at its two endpoints. Block (1, 2, 3) has exactly one leg of each
+    orientation, so charging both the same way preserves their difference and breaks
+    their sum. The check is not circular: the right-hand side rebuilds the model and
+    recomputes `mark_datum` from scratch.
+    """
+    model = build_reference_model()
+    for channel in marks.CHANNELS:
+        datum = marks.mark_datum(model, CURVED, channel, 0)
+        assert {pair for pair, _ in datum.boundary} == {(3, 4), (6, 1)}
+        for shift in range(model.graph.order):
+            moved = _regauged(model, {agent: shift for agent in CURVED})
+            recomputed = marks.mark_datum(moved, CURVED, channel, 0)
+            predicted = marks.regauge(model, datum, shift)
+            assert recomputed.boundary == predicted.boundary
+            assert recomputed.holonomy == predicted.holonomy
+
+
+def test_the_boundary_legs_of_a_bidirected_block_all_transform_correctly() -> None:
+    """Mutation caught: a sign rule tuned to a block with one leg per orientation.
+
+    On the bi-directed instance the same block leaves four boundary arcs, two in each
+    orientation, so a rule that happened to fit the one-way skeleton by symmetry is
+    separated from the induced action here.
+    """
+    model = bidi.build_bidirected_model("independent")
+    for channel in marks.CHANNELS:
+        datum = marks.mark_datum(model, CURVED, channel, 0)
+        assert {pair for pair, _ in datum.boundary} == {(3, 4), (4, 3), (6, 1), (1, 6)}
+        for shift in range(model.graph.order):
+            moved = _regauged(model, {agent: shift for agent in CURVED})
+            recomputed = marks.mark_datum(moved, CURVED, channel, 0)
+            assert recomputed.boundary == marks.regauge(model, datum, shift).boundary
+
+
+def test_the_presentation_is_pushed_by_the_inverse_of_the_root_gauge() -> None:
+    """Mutation caught: pushing the presentation forward by the gauge instead.
+
+    Matter transforms by the inverse of the gauge, which is what leaves the
+    transported mismatch invariant: the cost table of the regauged model, read at the
+    parent and child states pushed by minus the per-agent shift, reproduces the
+    original table exactly. A root gauge is block constant, so the parent state moves
+    by minus the shift and that is the action `regauge` must implement on the
+    presentation.
+    """
+    model = build_reference_model()
+    size = len(model.model_family)
+    table = marks._unrestricted_cost_table(model, CURVED)
+
+    def pushed(index: int, element: int) -> int:
+        belief_index, model_index = divmod(index, size)
+        belief = model.belief_representation.act(
+            element % model.graph.order, model.belief_family[belief_index]
+        )
+        law = model.model_representation.act(
+            element % model.graph.order, model.model_family[model_index]
+        )
+        return model.belief_family.index(belief) * size + model.model_family.index(law)
+
+    for shifts in ({1: 1, 2: 2, 3: 0}, {1: 2, 2: 1, 3: 1}, {1: 1, 2: 1, 3: 1}):
+        moved = marks._unrestricted_cost_table(_regauged(model, shifts), CURVED)
+        for parent in range(table.shape[0]):
+            for column, agent in enumerate(CURVED):
+                for child in range(table.shape[2]):
+                    assert moved[
+                        pushed(parent, -shifts[min(CURVED)]), column,
+                        pushed(child, -shifts[agent]),
+                    ] == table[parent, column, child]
+    datum = marks.mark_datum(model, CURVED, "belief", 0)
+    for shift in range(model.graph.order):
+        expected = pushed(0, -shift) // size
+        assert marks.regauge(model, datum, shift).presentation // size == expected
+
+
 def test_the_orbit_representative_is_stable_across_the_whole_orbit() -> None:
     """Mutation caught: an orbit label that depends on the chosen frame."""
-    model = build_reference_model()
-    datum = marks.mark_datum(model, CURVED, "belief", 0)
-    representative = marks.orbit_representative(model, datum)
-    for shift in range(model.graph.order):
-        moved = marks.regauge(model, datum, shift)
-        assert marks.orbit_representative(model, moved) == representative
+    for source in (build_reference_model(), bidi.build_bidirected_model("independent")):
+        for channel in marks.CHANNELS:
+            datum = marks.mark_datum(source, CURVED, channel, 0)
+            representative = marks.orbit_representative(source, datum)
+            for shift in range(source.graph.order):
+                moved = marks.regauge(source, datum, shift)
+                assert marks.orbit_representative(source, moved) == representative
+                rebuilt = marks.mark_datum(
+                    _regauged(source, {agent: shift for agent in CURVED}), CURVED,
+                    channel, moved.presentation,
+                )
+                assert marks.orbit_representative(source, rebuilt) == representative
 
 
 def test_the_boundary_generators_are_the_declared_leaving_edges() -> None:

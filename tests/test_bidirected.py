@@ -46,38 +46,138 @@ def test_reciprocity_is_detectable_from_the_faces_alone() -> None:
         bidi.build_bidirected_model("neither")
 
 
-def test_the_face_set_is_the_cycle_basis_in_both_orientations() -> None:
-    """Mutation caught: summing over every cycle of a bi-directed graph."""
+def test_a_missing_orientation_is_reported_apart_from_a_failure_of_reciprocity() -> None:
+    """Mutation caught: reading a one-way skeleton as a refutation of reciprocity.
+
+    The declared instance carries no reverse arc at all, so there is no reverse
+    transport that could disagree with the inverse and the hypothesis is untestable
+    rather than refuted. Returning False there would read as evidence against
+    reciprocity produced by a graph that cannot supply any.
+    """
+    with pytest.raises(ValueError):
+        bidi.reversal_is_inverse(build_reference_model())
+
+
+def test_the_face_set_is_the_directed_cycle_basis_in_both_orientations() -> None:
+    """Mutation caught: a face set at the undirected rank, blind to two-cycles.
+
+    A two-cycle is a two-cell of the bi-directed complex and it is exactly where the
+    independent convention puts curvature the reciprocal one cannot. The basis is
+    therefore one loop per reciprocal pair plus one fundamental loop per chord, which
+    is the directed cycle rank, edges minus vertices plus one: eight plus three on
+    this skeleton against the three the undirected count would report.
+    """
     model = bidi.build_bidirected_model("reciprocal")
     loops = bidi.basis_loops(model)
-    rank = len(model.graph.edges) // 2 - len(model.graph.vertices) + 1
-    assert len(loops) == rank == 3
+    rank = len(model.graph.edges) - len(model.graph.vertices) + 1
+    assert len(loops) == rank == 11
+    assert len([loop for loop in loops if len(loop) == 2]) == 8
+    arcs = {
+        (edge.source, edge.receiver): index
+        for index, edge in enumerate(model.graph.edges)
+    }
+    incidence = np.zeros((len(loops), len(model.graph.edges)))
+    for row, loop in enumerate(loops):
+        for step, source in enumerate(loop):
+            incidence[row, arcs[(source, loop[(step + 1) % len(loop)])]] += 1.0
+    assert np.linalg.matrix_rank(incidence) == rank
     faces = bidi.oriented_faces(model)
     assert len(faces) == 2 * len(loops)
     assert {face.orientation for face in faces} == {"forward", "reverse"}
 
 
 def test_the_two_orientations_carry_different_attention_weights() -> None:
-    """Mutation caught: an orientation-blind weight on a two-sided network."""
+    """Mutation caught: an orientation-blind weight on a two-sided network.
+
+    A two-cycle is its own reversal, so its two traversals visit the same pair of
+    arcs and necessarily carry the same weight. The claim is about the loops that
+    have two genuinely distinct traversals, so it is asserted there and the
+    coincidence is asserted on the two-cycles rather than left unstated.
+    """
     model = bidi.build_bidirected_model("reciprocal")
     paired: dict[tuple, list] = {}
     for face in bidi.oriented_faces(model):
         paired.setdefault(tuple(sorted(face.cycle)), []).append(face)
-    differing = [
-        entry
-        for entry in paired.values()
-        if entry[0].belief_weight != entry[1].belief_weight
-    ]
-    assert len(differing) == len(paired)
+    longer = [entry for entry in paired.values() if len(entry[0].cycle) > 2]
+    assert len(longer) == 3
+    assert all(entry[0].belief_weight != entry[1].belief_weight for entry in longer)
+    two_cycles = [entry for entry in paired.values() if len(entry[0].cycle) == 2]
+    assert len(two_cycles) == 8
+    assert all(entry[0].belief_weight == entry[1].belief_weight for entry in two_cycles)
 
 
 def test_reciprocity_preserves_the_flatness_of_the_model_channel() -> None:
-    """Mutation caught: a convention change silently destroying the design."""
+    """Mutation caught: a convention change silently destroying the design.
+
+    Every two-cycle is flat under the reciprocal convention by construction, since
+    its holonomy is the forward element plus its own inverse, so admitting the
+    two-cycles into the face set leaves every reciprocal result exactly where it was.
+    Under the independent convention they are curved, which is the shortest-scale
+    curvature the face set previously could not see.
+    """
     reciprocal = bidi.build_bidirected_model("reciprocal")
+    two_cycles = [
+        face for face in bidi.oriented_faces(reciprocal) if len(face.cycle) == 2
+    ]
+    assert len(two_cycles) == 16
+    assert all(
+        face.belief_holonomy == 0 and face.model_holonomy == 0 for face in two_cycles
+    )
     assert bidi.wilson_action(reciprocal, "model") == pytest.approx(0.0, abs=1e-15)
     assert bidi.wilson_action(reciprocal, "belief") > 0.0
     independent = bidi.build_bidirected_model("independent")
+    curved = [
+        face
+        for face in bidi.oriented_faces(independent)
+        if len(face.cycle) == 2 and (face.belief_holonomy or face.model_holonomy)
+    ]
+    assert curved
     assert bidi.wilson_action(independent, "model") > 0.0
+
+
+def test_the_two_conventions_are_matched_controls() -> None:
+    """Mutation caught: a shared rng stream confounding the convention comparison.
+
+    The reverse elements draw from their own stream, so the forward elements and
+    every attention row are bit-identical across conventions and the only declared
+    difference between the two instances is the reverse transport itself.
+    """
+    reciprocal = bidi.build_bidirected_model("reciprocal")
+    independent = bidi.build_bidirected_model("independent")
+    edges = len(build_reference_model().graph.edges)
+    assert reciprocal.graph.edges == independent.graph.edges
+    assert reciprocal.graph.belief_elements[:edges] == (
+        independent.graph.belief_elements[:edges]
+    )
+    assert reciprocal.graph.model_elements[:edges] == (
+        independent.graph.model_elements[:edges]
+    )
+    assert reciprocal.graph.belief_elements[edges:] != (
+        independent.graph.belief_elements[edges:]
+    )
+    left = reciprocal.attention_rows("peaked")
+    right = independent.attention_rows("peaked")
+    for channel in ("belief", "model"):
+        assert np.array_equal(left[channel], right[channel])
+
+
+def test_each_two_cell_is_charged_once_by_the_bidirected_action() -> None:
+    """Mutation caught: summing the orientations and charging every face twice.
+
+    Both traversals of a two-cell carry the same defect, so summing them charged the
+    cell twice at a normalization no other module uses. The action is the mean of the
+    two directed traversal probabilities times that defect, which puts one charge on
+    one geometric two-cell and matches how `plaquette_action.wilson_action` counts a
+    simple directed cycle.
+    """
+    model = bidi.build_bidirected_model("reciprocal")
+    faces = bidi.oriented_faces(model)
+    doubled = sum(
+        face.weight("belief") * plaquettes.wilson_defect(model, face.holonomy("belief"), "belief")
+        for face in faces
+    )
+    assert bidi.wilson_action(model, "belief") == pytest.approx(doubled / 2.0, abs=1e-15)
+    assert bidi.wilson_action(model, "belief") == pytest.approx(0.0428236615, abs=1e-9)
 
 
 def test_a_globally_frame_derived_connection_is_flat_on_every_face() -> None:

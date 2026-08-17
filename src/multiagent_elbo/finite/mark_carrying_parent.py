@@ -126,12 +126,31 @@ def mark_datum(
 
 
 def regauge(model: FalsificationModel, datum: MarkDatum, shift: int) -> MarkDatum:
-    """Apply one root gauge simultaneously to every component of the datum.
+    r"""Apply one root gauge simultaneously to every component of the datum.
 
-    The root presentation is pushed forward by the gauge, the boundary generators
-    absorb it on their inside leg, and the holonomy is unchanged because the group
-    is abelian and conjugation is trivial. Applying the gauge to the presentation
-    alone, or to the boundary alone, would not be a legitimate quotient.
+    A root gauge is the residual freedom in naming the block's root frame, and it
+    acts on the model as the block-constant regauging h_v = shift for every member
+    and h_v = 0 outside. The declared edge action is
+
+        Theta'_e = Theta_e + h_source - h_receiver,
+
+    under which every tree transport tau_{I<-v} = tau + h_v - h_root is left fixed
+    by a block-constant gauge, so the holonomy and the tree frames do not move. What
+    does move is everything carrying a free index in the root frame.
+
+    The boundary generator of a leaving edge is V_e = tau_{I<-i} + Theta_e - tau_{J<-j}
+    with the tree contribution of the endpoint outside the block taken as the
+    identity, so its shift is orientation dependent: a leg whose inside endpoint is
+    the receiver absorbs -shift, while a leg whose inside endpoint is the source
+    absorbs +shift. Charging both the same way would preserve their difference and
+    break their sum, which is the reverse of the induced action.
+
+    Matter transforms as z'_v = rho(-h_v) z_v, the compensating action that leaves
+    the transported mismatch KL(z_i || rho(-tau_{I<-i}) zbar_I) invariant, so the
+    root presentation is pushed by rho(-shift) rather than by rho(+shift). The
+    holonomy is unchanged because the group is abelian and conjugation is trivial.
+    Applying the gauge to the presentation alone, or to the boundary alone, would
+    not be a legitimate quotient.
     """
     order = model.graph.order
     representation = (
@@ -141,7 +160,7 @@ def regauge(model: FalsificationModel, datum: MarkDatum, shift: int) -> MarkDatu
     )
     pairs = _parent_laws(model, False)
     law = pairs[datum.presentation][0 if datum.channel == "belief" else 1]
-    moved = representation.act(shift % order, law)
+    moved = representation.act((-shift) % order, law)
     family = model.belief_family if datum.channel == "belief" else model.model_family
     position = family.index(moved)
     size = len(model.model_family)
@@ -149,9 +168,15 @@ def regauge(model: FalsificationModel, datum: MarkDatum, shift: int) -> MarkDatu
         presentation = position * size + (datum.presentation % size)
     else:
         presentation = (datum.presentation // size) * size + position
+    members = set(datum.block)
     boundary = tuple(
         sorted(
-            (endpoints, (dressed - shift) % order)
+            (
+                endpoints,
+                (dressed - shift) % order
+                if endpoints[0] in members
+                else (dressed + shift) % order,
+            )
             for endpoints, dressed in datum.boundary
         )
     )
