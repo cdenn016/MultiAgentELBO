@@ -269,6 +269,9 @@ Pairwise closure is false in general, as the Ising star shows by producing a non
 three-body coefficient $2\,\mathrm{sech}^2(h_0)\tanh(h_0) J_1 J_2 J_3$ at leading
 order whenever the field and all three couplings are nonzero. Any pairwise coarse
 theory is therefore a truncation carrying a residual, not an exact effective theory.
+How large that residual is depends on which variables are eliminated, and is
+measured in \S10.1: in the coarse-graining direction it is one to two percent of the
+pairwise coupling.
 
 \paragraph{Non-flat connections are retained, not averaged away.} The exact coarse
 connection datum is the conditional \emph{law} of the dressed microscopic transports
@@ -633,14 +636,53 @@ of which is the attention. The dynamics does not yet carry the Wilson term, so t
 persistence and null-control results above describe the earlier energy and should not
 be reread in its light.
 
-\subsection{Why the coarse theory is not pairwise}
+\subsection{Which direction the closure question is about}
 
-The statement that exact closure generates many-body terms is easy to misread off
-the architecture, so it is worth locating precisely. Looking at the two blocks of
-the declared instance one sees two meta-agents joined by two cross arcs, which is a
-pairwise coupling, and that reading is correct. The generated three-body term is
-not there. It sits \emph{inside} a block, among the three children of one parent,
-and deleting both cross arcs leaves it bit-identical.
+Two eliminations are possible in a two-scale model and they answer different
+questions, so the closure statement has to name one. Integrating out the children
+and keeping the parents is the renormalization direction, the one that asks what
+theory the coarse variables obey. Integrating out the parent and keeping the
+children is the opposite move, zooming out and then back in, and it is not a step
+of any renormalization scheme. The two give quantitatively different answers here,
+and an earlier version of this section reported the second while describing the
+first.
+
+In the renormalization direction the coarse theory is dominantly pairwise. Blocking
+the six agents into three parents and eliminating the children exactly gives a
+parent action whose interaction content is
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+partition & two-body & three-body & ratio \\
+\midrule
+$\{1,2\}\{3,4\}\{5,6\}$ & $9.55\times10^{-2}$ & $1.79\times10^{-3}$ & $0.019$ \\
+$\{2,3\}\{1,6\}\{4,5\}$ & $1.12\times10^{-1}$ & $7.02\times10^{-4}$ & $0.006$ \\
+$\{1,2,3\}\{4,5\}\{6\}$ & $1.07\times10^{-1}$ & $1.93\times10^{-3}$ & $0.018$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+so a three-body parent coupling is generated, it is nonzero, and it is between half
+a percent and two percent of the pairwise coupling. The orders decay rather than
+staying comparable. That is the ordinary situation in real-space renormalization,
+where decimating an Ising model generates four-spin couplings and nobody regards
+the model as thereby broken; what matters is whether the generated couplings are
+small and whether they are irrelevant, and the first of those is answered here in
+the affirmative. Blocking the two cycles into two parents leaves only two coarse
+variables, so no three-body term can arise at all, which is what a reading of the
+architecture as two meta-agents joined pairwise correctly suggests.
+
+The opposite elimination behaves quite differently, and it is worth showing because
+it is the generic mechanism by which a hidden common cause induces higher-order
+structure. There the generated three-body term among the children is
+$6.7\times10^{-2}$, comparable to the pairwise terms rather than one percent of
+them, and the interaction magnitudes do not decay with order at all: on a
+five-agent block the one- through five-body sup norms are $0.93$, $1.61$, $0.85$,
+$1.62$ and $0.64$. That is a genuine failure of any order truncation, but it is a
+statement about describing children without naming their parent, not about the
+coarse theory.
 
 \begin{figure}[t]
 \centering
@@ -692,7 +734,11 @@ are conditionally independent: the measured three-body coefficient is at the
 arithmetic noise floor. Marginalizing the parent couples everything it touched, all
 at once rather than pairwise, and an irreducible triple appears fourteen orders of
 magnitude above that floor. The higher-order structure is the price of describing
-the children without naming the parent.}
+the children without naming the parent. This is the elimination that runs
+\emph{against} the renormalization direction, shown because it is the generic
+mechanism by which a hidden common cause induces higher-order structure; the
+coarse-graining direction, which eliminates children and keeps parents, generates a
+three-body coupling one to two percent of its pairwise one.}
 \label{fig:star}
 \end{figure}
 
@@ -746,33 +792,21 @@ successive ratios $0.470$, $0.815$, $0.951$, $0.988$ and $0.997$ over halvings o
 the coupling scale, the gap quartering each time as an order-$\varepsilon^2$
 correction should.
 
-Both statements are therefore true at once, at different levels. At the coarse
-level the two meta-agents are joined pairwise. At the fine level the exact
-effective theory on the children, after parents are eliminated, is not pairwise.
-It is the second that obstructs iteration: a pairwise scale-zero theory produces a
-scale-one theory outside the pairwise family, so the same machinery cannot simply
-be applied again. This is an obstruction to a second scale independent of the
-missing rescaling map.
+So the honest closure statement is a quantitative one rather than a categorical
+one. Exact blocking does generate couplings outside the pairwise family, which was
+never in doubt and is what \eqref{eq:ising-star} illustrates. In the direction that
+a renormalization step actually runs, what it generates is small: a three-body
+parent coupling at one or two percent of the pairwise scale, with the orders
+decaying. A pairwise coarse theory is therefore a truncation carrying a residual of
+that size, not a misdescription. That is a far weaker obstruction to a second scale
+than the earlier reading suggested, and it leaves the missing rescaling map as the
+binding constraint rather than one obstruction among two.
 
-Two measurements qualify how severe it is, and they disagree in an informative
-way. Write $\Vert\Phi_k\Vert_\infty=\max_{|A|=k}\max_{z_A}|\Phi_A(z_A)|$ for the
-unweighted size of the $k$-body content. On a five-agent block,
-\begin{equation}
-\big(\Vert\Phi_1\Vert_\infty,\dots,\Vert\Phi_5\Vert_\infty\big)
-=(0.93,\;1.61,\;0.85,\;1.62,\;0.64),
-\end{equation}
-which does not decay with order at all, so there is no small parameter organizing
-a hierarchy of the kind an effective field theory relies on. Against the Boltzmann
-measure the model itself assigns, $\rho\propto e^{-H_{\rm eff}}$, the same content
-measured as
-\begin{equation}
-\frac{\mathbb E_\rho\big\vert\sum_{|A|\ge3}\Phi_A\big\vert}
-{\mathbb E_\rho\big\vert H^{\rm pair}_{\rm eff}-\mathbb E_\rho H^{\rm pair}_{\rm eff}\big\vert}
-\approx 0.02 .
-\end{equation}
-The higher-order terms are large in magnitude and concentrated where the measure
-is small. Whether truncation is controlled therefore depends on the norm, and in
-the norm that governs expectations it appears to be.
+What this does not settle is whether the generated coupling is \emph{irrelevant} in
+the technical sense, which is the question that decides whether truncation is safe
+under iteration rather than merely at one step. Smallness at one step and
+irrelevance under many are different claims, and only the first is measured here.
+The second needs a fixed point to linearize about.
 
 None of this licenses calling the construction nonrenormalizable. That is a
 statement about a flow: linearize about a fixed point, count relevant directions,
