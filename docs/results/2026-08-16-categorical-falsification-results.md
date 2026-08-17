@@ -421,9 +421,47 @@ The negative result from the sweep is worth stating plainly. **The designed
 partition $\{1,2,3\}\{4,5,6\}$ is never modal anywhere in the window**, reaching a
 maximum posterior mass of $0.0703$. The system does separate its two cycles, but not
 into the blocks the design named: it prefers to isolate the single agent whose
-removal breaks the curved loop. That the mechanism works and the intended answer
-still does not appear is exactly the sort of outcome a pre-registered falsifier
-exists to make visible.
+removal breaks the curved loop.
+
+### Why the designed partition loses, and why that is not about holonomy
+
+Decomposing the comparison against the winner settles it, and the answer is the
+prior rather than the gauge structure. Both partitions have two blocks, so the
+concentration cancels exactly between them. What differs is the Ewens family's
+product of block-size factorials, $0!\cdot4!=24$ against $2!\cdot2!=4$, a fixed
+advantage of $\log 6=1.7918$ nats to the lopsided split **at every concentration**.
+The designed partition can therefore never overtake it by tuning $\vartheta$.
+
+At zero retention price, where holonomy costs nothing at all, the split already
+wins by $1.7223$ nats. Its energy is in fact slightly worse, $9.5272$ against
+$9.5967$, so the free energy mildly prefers the designed partition and the prior
+overrides it. Turning the retention price on adds $\log 3$ to the designed
+partition and widens a gap that was already decided. On energy alone the designed
+partition ranks only third behind the two three-block partitions at $10.1890$,
+because more blocks mean more parent states and so more capacity to fit the
+children.
+
+Replacing the Ewens family with the balance-neutral alternative the theory names,
+a strictly positive cost per parent node with no dependence on block sizes,
+$P(\pi)\propto\kappa^{|\pi|}$, changes the picture. The designed partition now does
+become modal, but only in two of $1089$ swept cells, at exactly zero retention
+price and $\kappa$ near $0.5$, with a peak posterior mass of $0.1952$. The dominant
+phase over that window is $\{1,2\}\{3,4\}\{5,6\}$ in $725$ cells, with
+$\{1\}\{2,3,4,5,6\}$ in $318$ and the single block in $44$.
+
+The reason is structural and settles the interpretation. **The designed partition
+contains the curved block, so the holonomy mechanism taxes it.** Its total
+retention charge is $\log 3$, while every partition that cuts the curved loop pays
+nothing. The mechanism selects *against* enclosing curvature, so it can only ever
+push away from the partition the design named, and does so at any positive price.
+
+That is a defect in the experiment's expectation rather than in the mechanism. The
+design established that the two cycles differ observably, and the holonomy
+measurement confirmed all three of its predictions. It then assumed that an
+observable asymmetry would be a selected one. It is not: making a block expensive
+is not the same as making it chosen, and here the two point in opposite directions.
+A design in which the free energy selects the intended blocks would have to place
+the curvature on the loops it wants cut, not on the blocks it wants formed.
 
 ## Obligations left open
 

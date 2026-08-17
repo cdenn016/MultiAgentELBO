@@ -437,23 +437,53 @@ def block_log_partition(
     return float(np.log(np.exp(-(energies - shift)).sum()) - shift)
 
 
+def log_partition_prior(
+    partition: Partition,
+    concentration: float,
+    prior: str = "ewens",
+) -> float:
+    """Return the log prior mass of a partition under one declared family.
+
+    The Ewens family is the exchangeable partition prior used elsewhere in this
+    laboratory. It charges for block count through a power of the concentration and
+    also carries a product of block-size factorials, which is not neutral on block
+    balance: with the count held fixed it prefers one large block beside a
+    singleton over two equal blocks, by the log of the ratio of those factorials.
+
+    The block-count family charges only for the number of parent nodes and is
+    silent on their sizes. It is the alternative the theory names when it asks for a
+    strictly positive cost per parent node, and it is the right prior against which
+    to ask whether a gauge quantity selects a partition, because it does not decide
+    the balance question in advance.
+    """
+    if not concentration > 0.0:
+        raise ValueError("concentration must be positive")
+    if prior == "ewens":
+        rate = Fraction(concentration).limit_denominator(10**9)
+        return math.log(float(crp_partition_prior(partition, rate)))
+    if prior == "block_count":
+        return len(partition) * math.log(concentration)
+    raise ValueError("prior must be 'ewens' or 'block_count'")
+
+
 def partition_posterior(
     model: FalsificationModel,
     mark_price: float,
     concentration: float,
+    prior: str = "ewens",
 ) -> dict[Partition, float]:
     """Return the exact partition posterior at one retention price and concentration.
 
     The state configurations are summed out exactly, block by block, so the result
-    is the marginal partition law rather than a slice at frozen states.
+    is the marginal partition law rather than a slice at frozen states. The prior is
+    normalized over the declared candidate set rather than over all set partitions,
+    which is why an unnormalized family such as the block-count charge is admissible
+    here.
     """
-    if not concentration > 0.0:
-        raise ValueError("concentration must be positive")
-    prior = Fraction(concentration).limit_denominator(10**9)
     values = np.array(
         [
             sum(block_log_partition(model, block, mark_price) for block in partition)
-            + math.log(float(crp_partition_prior(partition, prior)))
+            + log_partition_prior(partition, concentration, prior)
             for partition in model.candidate_partitions
         ]
     )
@@ -466,9 +496,10 @@ def modal_partition(
     model: FalsificationModel,
     mark_price: float,
     concentration: float,
+    prior: str = "ewens",
 ) -> Partition:
     """Return the partition of greatest exact posterior mass."""
-    posterior = partition_posterior(model, mark_price, concentration)
+    posterior = partition_posterior(model, mark_price, concentration, prior)
     return max(sorted(posterior), key=lambda key: posterior[key])
 
 
@@ -477,6 +508,7 @@ def critical_mark_price(
     concentration: float,
     upper: float = 40.0,
     steps: int = 40,
+    prior: str = "ewens",
 ) -> float | None:
     """Return the retention price at which the modal partition changes, if it does.
 
@@ -485,12 +517,12 @@ def critical_mark_price(
     transition occurs in that window.
     """
     low, high = 0.0, float(upper)
-    start = modal_partition(model, low, concentration)
-    if start == modal_partition(model, high, concentration):
+    start = modal_partition(model, low, concentration, prior)
+    if start == modal_partition(model, high, concentration, prior):
         return None
     for _ in range(int(steps)):
         middle = (low + high) / 2.0
-        if modal_partition(model, middle, concentration) == start:
+        if modal_partition(model, middle, concentration, prior) == start:
             low = middle
         else:
             high = middle
@@ -501,6 +533,7 @@ __all__ = [
     "CHANNELS",
     "block_log_partition",
     "critical_mark_price",
+    "log_partition_prior",
     "modal_partition",
     "partition_posterior",
     "MarkDatum",

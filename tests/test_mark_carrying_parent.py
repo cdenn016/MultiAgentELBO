@@ -216,6 +216,59 @@ def test_the_designed_partition_is_never_modal_in_the_swept_window() -> None:
             assert marks.modal_partition(model, price, concentration) != designed
 
 
+def test_the_block_count_prior_is_neutral_on_block_balance() -> None:
+    """Mutation caught: a prior that decides the balance question in advance."""
+    balanced = ((1, 2, 3), (4, 5, 6))
+    lopsided = ((1,), (2, 3, 4, 5, 6))
+    for concentration in (0.2, 1.0, 7.0):
+        neutral = marks.log_partition_prior(
+            balanced, concentration, "block_count"
+        ) - marks.log_partition_prior(lopsided, concentration, "block_count")
+        assert neutral == pytest.approx(0.0, abs=1e-12)
+        ewens = marks.log_partition_prior(
+            balanced, concentration, "ewens"
+        ) - marks.log_partition_prior(lopsided, concentration, "ewens")
+        assert ewens == pytest.approx(-math.log(6.0), abs=1e-12)
+
+
+def test_the_block_count_prior_still_charges_for_parent_nodes() -> None:
+    """Mutation caught: a neutral prior that also stops penalizing block count."""
+    one = ((1, 2, 3, 4, 5, 6),)
+    three = ((1, 2), (3, 4), (5, 6))
+    small = marks.log_partition_prior(three, 0.2, "block_count")
+    assert small < marks.log_partition_prior(one, 0.2, "block_count")
+    large = marks.log_partition_prior(three, 5.0, "block_count")
+    assert large > marks.log_partition_prior(one, 5.0, "block_count")
+    with pytest.raises(ValueError):
+        marks.log_partition_prior(one, 1.0, "not_a_prior")
+
+
+def test_the_designed_partition_carries_a_retention_charge() -> None:
+    """Mutation caught: expecting selection of the very block the mechanism taxes."""
+    model = build_reference_model()
+    designed = ((1, 2, 3), (4, 5, 6))
+    assert sum(marks.mark_retention_cost(model, b) for b in designed) > 0.0
+    for partition in (((1, 2), (3, 4), (5, 6)), ((1,), (2, 3, 4, 5, 6))):
+        assert sum(marks.mark_retention_cost(model, b) for b in partition) == 0.0
+
+
+def test_a_neutral_prior_lets_the_designed_partition_win_only_at_zero_price() -> None:
+    """Mutation caught: claiming a gauge selection the retention charge forbids."""
+    model = build_reference_model()
+    designed = ((1, 2, 3), (4, 5, 6))
+    assert marks.modal_partition(model, 0.0, 0.5, "block_count") == designed
+    for price in (0.5, 1.0, 3.0):
+        assert marks.modal_partition(model, price, 0.5, "block_count") != designed
+
+
+def test_the_neutral_prior_changes_which_partition_is_selected() -> None:
+    """Mutation caught: a prior argument that is accepted and then ignored."""
+    model = build_reference_model()
+    assert marks.modal_partition(model, 0.0, 1.0, "ewens") != marks.modal_partition(
+        model, 0.0, 1.0, "block_count"
+    )
+
+
 def test_the_retained_energy_never_exceeds_the_stabilized_energy() -> None:
     """Mutation caught: a disjunction implemented as a replacement."""
     model = build_reference_model()
