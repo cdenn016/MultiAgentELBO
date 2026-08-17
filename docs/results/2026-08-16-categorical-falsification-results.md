@@ -383,6 +383,48 @@ stands: the selection lives in the declared restrictions, not in the variational
 principle. What the implementation adds is that the restriction is now a single
 interpretable number with a located transition, rather than a prohibition.
 
+### The two declared knobs trade off exactly one for one
+
+Sweeping the retention price against the partition prior's concentration, with the
+state configurations summed out exactly block by block rather than sampled, gives
+three phases over the window $\mu\in[0,10]$, $\vartheta\in[0.02,200]$: the single
+six-agent block, the split $\{1\}\{2,3,4,5,6\}$, and the pairing
+$\{1,2\}\{3,4\}\{5,6\}$ at large concentration.
+
+| $\vartheta$ | $0.05$ | $0.1$ | $0.2$ | $0.5$ | $1.0$ | $\ge 2$ |
+|---|---|---|---|---|---|---|
+| critical $\mu^\*$ | $3.3303$ | $2.6994$ | $2.0684$ | $1.2344$ | $0.6035$ | none |
+
+The boundary is exactly a straight line in the plane of retention price against log
+concentration. Across $\vartheta$ spanning a factor of one hundred fifty the
+quantity $\mu^\*\log 3+\log\vartheta$ is constant to $1.4\times10^{-9}$, and its
+value has a closed form which the run reproduces to $1.7\times10^{-10}$,
+
+$$
+\mu^\*\log 3+\log\vartheta
+=\log Z_{\{1,\dots,6\}}(0)-\log Z_{\{1\}}-\log Z_{\{2,\dots,6\}}+\log 5
+=0.6629738 .
+$$
+
+The reason is structural rather than numerical. Below the transition the modal
+partition holds the curved loop inside one block, whose energy shifts rigidly with
+the price because it has no stabilized route; above it the modal partition contains
+no curved block at all and does not move with the price. The prior enters only
+through the block count, contributing $\log\vartheta$ between one block and two, and
+the factorial term contributes the $\log 5$. So the retention charge and the
+concentration are the same knob viewed twice: a factor of $e$ in the concentration
+is worth $1/\log 3$ of retention price, and neither is more fundamental than the
+other. Above $\vartheta\approx2$ the concentration alone already breaks the loop and
+no retention price is needed.
+
+The negative result from the sweep is worth stating plainly. **The designed
+partition $\{1,2,3\}\{4,5,6\}$ is never modal anywhere in the window**, reaching a
+maximum posterior mass of $0.0703$. The system does separate its two cycles, but not
+into the blocks the design named: it prefers to isolate the single agent whose
+removal breaks the curved loop. That the mechanism works and the intended answer
+still does not appear is exactly the sort of outcome a pre-registered falsifier
+exists to make visible.
+
 ## Obligations left open
 
 Whether the M6 control was mis-specified or mis-implemented is unresolved, and it

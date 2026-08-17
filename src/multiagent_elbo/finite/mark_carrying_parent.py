@@ -39,13 +39,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import lru_cache
+import itertools
 import math
 from typing import Sequence
 
 import numpy as np
 
+from fractions import Fraction
+
 from .categorical_falsification_model import (
     FalsificationModel,
+    crp_partition_prior,
     Partition,
     kl_laws,
     transported,
@@ -386,8 +390,119 @@ def marginal_partition_posterior(
     return {p: float(w) for p, w in zip(model.candidate_partitions, weights)}
 
 
+@lru_cache(maxsize=None)
+def _block_route_costs(
+    model: FalsificationModel,
+    block: tuple[int, ...],
+) -> tuple[np.ndarray, np.ndarray, float]:
+    """Return the per-configuration stabilized cost, mark cost, and retention charge.
+
+    Both cost vectors are indexed by the block's own state configurations in
+    lexicographic order, so a block is enumerated once and then reused at every
+    retention price. The stabilized entry is positive infinity where the block has
+    no admissible parent.
+    """
+    table = _unrestricted_cost_table(model, block)
+    parents = admissible_parent_states(model, block, False)
+    size = len(block)
+    grids = np.array(
+        list(itertools.product(range(model.state_count), repeat=size)), dtype=np.int64
+    )
+    cost = np.zeros((table.shape[0], len(grids)), dtype=np.float64)
+    for position in range(size):
+        cost += table[:, position, :][:, grids[:, position]]
+    stabilized = (
+        cost[list(parents)].min(axis=0)
+        if parents
+        else np.full(len(grids), np.inf, dtype=np.float64)
+    )
+    return stabilized, cost.min(axis=0), mark_retention_cost(model, block)
+
+
+def block_log_partition(
+    model: FalsificationModel,
+    block: Sequence[int],
+    mark_price: float,
+) -> float:
+    """Return the exact log partition function of one block over its own states.
+
+    The block's states are enumerated in full, so this is exact rather than
+    sampled. Because a block whose stabilized route is unavailable has an energy
+    that shifts rigidly with the retention price, its log partition function is
+    linear in that price with slope minus the retention charge.
+    """
+    stabilized, marked, charge = _block_route_costs(model, tuple(block))
+    energies = np.minimum(stabilized, marked + mark_price * charge)
+    shift = energies.min()
+    return float(np.log(np.exp(-(energies - shift)).sum()) - shift)
+
+
+def partition_posterior(
+    model: FalsificationModel,
+    mark_price: float,
+    concentration: float,
+) -> dict[Partition, float]:
+    """Return the exact partition posterior at one retention price and concentration.
+
+    The state configurations are summed out exactly, block by block, so the result
+    is the marginal partition law rather than a slice at frozen states.
+    """
+    if not concentration > 0.0:
+        raise ValueError("concentration must be positive")
+    prior = Fraction(concentration).limit_denominator(10**9)
+    values = np.array(
+        [
+            sum(block_log_partition(model, block, mark_price) for block in partition)
+            + math.log(float(crp_partition_prior(partition, prior)))
+            for partition in model.candidate_partitions
+        ]
+    )
+    weights = np.exp(values - values.max())
+    weights /= weights.sum()
+    return {p: float(w) for p, w in zip(model.candidate_partitions, weights)}
+
+
+def modal_partition(
+    model: FalsificationModel,
+    mark_price: float,
+    concentration: float,
+) -> Partition:
+    """Return the partition of greatest exact posterior mass."""
+    posterior = partition_posterior(model, mark_price, concentration)
+    return max(sorted(posterior), key=lambda key: posterior[key])
+
+
+def critical_mark_price(
+    model: FalsificationModel,
+    concentration: float,
+    upper: float = 40.0,
+    steps: int = 40,
+) -> float | None:
+    """Return the retention price at which the modal partition changes, if it does.
+
+    The search is a bisection between a zero price and the declared upper bound.
+    A result of None means the modal partition is the same at both ends, so no
+    transition occurs in that window.
+    """
+    low, high = 0.0, float(upper)
+    start = modal_partition(model, low, concentration)
+    if start == modal_partition(model, high, concentration):
+        return None
+    for _ in range(int(steps)):
+        middle = (low + high) / 2.0
+        if modal_partition(model, middle, concentration) == start:
+            low = middle
+        else:
+            high = middle
+    return (low + high) / 2.0
+
+
 __all__ = [
     "CHANNELS",
+    "block_log_partition",
+    "critical_mark_price",
+    "modal_partition",
+    "partition_posterior",
     "MarkDatum",
     "RouteChoice",
     "block_route",
