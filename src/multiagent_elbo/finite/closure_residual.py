@@ -470,6 +470,7 @@ def _coarse_action(
     model: FalsificationModel,
     observation: Sequence[int],
     partition: Sequence[Sequence[int]],
+    parent_priors: Mapping[int, Sequence[float]] | None = None,
 ) -> tuple[Mapping[State, Fraction], Mapping[State, Fraction]]:
     """Return the exact coarse action on parents and its Boltzmann flow weights.
 
@@ -487,12 +488,37 @@ def _coarse_action(
     different blocks are coupled by the declared cross edges, which is what can
     induce interactions among parents beyond pair order, so the whole edge set
     enters rather than the induced one.
+
+    The parent measure defaults to the declared parent law at every block. A
+    caller may instead declare one law per block root, keyed by the root label,
+    which is what gauge covariance requires: the parent law is data attached to
+    the root frame, and regauging a root re-expresses its law rather than
+    leaving it fixed while everything else moves.
+    """
+    return _blocked_action(
+        model, _coarse_child_weights(model, observation), partition, parent_priors
+    )
+
+
+def _blocked_action(
+    model: FalsificationModel,
+    weight_tensor: np.ndarray,
+    partition: Sequence[Sequence[int]],
+    parent_priors: Mapping[int, Sequence[float]] | None = None,
+) -> tuple[Mapping[State, Fraction], Mapping[State, Fraction]]:
+    """Block one explicit child-weight tensor and return the coarse action.
+
+    The tensor carries one axis per declared agent, in agent order, holding
+    exp(-E) of whatever fine theory is being blocked; the blocking kernel per
+    block is the Bayes posterior under the declared parent law, exactly as in
+    the coarse closure measurement. Factoring the contraction away from the
+    construction of the weights is what lets a coarse instance, whose theory
+    is a coupling action rather than a likelihood with edge divergences, be
+    blocked again by the same audited kernel.
     """
     size = model.state_count
     agents = model.agents
     index_of = {agent: position for position, agent in enumerate(agents)}
-    weight_tensor = _coarse_child_weights(model, observation)
-    prior = np.asarray(_declared_parent_prior(size), dtype=np.float64)
     letters = "abcdefghijkl"
     operands: list[np.ndarray] = [weight_tensor]
     subscripts: list[str] = [letters[: len(agents)]]
@@ -500,26 +526,74 @@ def _coarse_action(
     for block_index, block in enumerate(partition):
         label = letters[len(agents) + block_index]
         output += label
-        block_kernel = prior.reshape((size,) + (1,) * len(block)).copy()
-        for offset, agent in enumerate(block):
-            rows = np.stack(
-                [model.downward_kernel(block, agent, parent) for parent in range(size)]
+        operands.append(
+            _block_bayes_kernel(
+                model, block, _block_prior_vector(model, block, parent_priors)
             )
-            shape = [1] * (1 + len(block))
-            shape[0] = size
-            shape[1 + offset] = size
-            block_kernel = block_kernel * rows.reshape(shape)
-        block_kernel = block_kernel / block_kernel.sum(axis=0, keepdims=True)
-        operands.append(block_kernel)
+        )
         subscripts.append(
             label + "".join(letters[index_of[agent]] for agent in block)
         )
     marginal = np.einsum(
         ",".join(subscripts) + "->" + output, *operands, optimize=True
     )
+    return _action_and_flow_from_marginal(marginal)
+
+
+def _block_prior_vector(
+    model: FalsificationModel,
+    block: Sequence[int],
+    parent_priors: Mapping[int, Sequence[float]] | None,
+) -> np.ndarray:
+    """Return the parent law of one block, declared or per-root as data."""
+    size = model.state_count
+    if parent_priors is None:
+        return np.asarray(_declared_parent_prior(size), dtype=np.float64)
+    if min(block) not in parent_priors:
+        raise ValueError("declared parent priors must cover every block root")
+    block_prior = np.asarray(
+        [float(value) for value in parent_priors[min(block)]],
+        dtype=np.float64,
+    )
+    if block_prior.shape != (size,) or np.any(block_prior < 0.0):
+        raise ValueError("a declared parent prior must be a law on parents")
+    return block_prior
+
+
+def _block_bayes_kernel(
+    model: FalsificationModel,
+    block: Sequence[int],
+    block_prior: np.ndarray,
+) -> np.ndarray:
+    r"""Return the Bayes blocking kernel $T(p \mid x_B)$ of one block.
+
+    The kernel is the parent law times the product of downward kernels over
+    the block's members, normalized over parents, so it sums to one at every
+    child configuration and the blocking preserves the partition function.
+    """
+    size = model.state_count
+    kernel = np.asarray(block_prior, dtype=np.float64).reshape(
+        (size,) + (1,) * len(block)
+    ).copy()
+    for offset, agent in enumerate(block):
+        rows = np.stack(
+            [model.downward_kernel(block, agent, parent) for parent in range(size)]
+        )
+        shape = [1] * (1 + len(block))
+        shape[0] = size
+        shape[1 + offset] = size
+        kernel = kernel * rows.reshape(shape)
+    return kernel / kernel.sum(axis=0, keepdims=True)
+
+
+def _action_and_flow_from_marginal(
+    marginal: np.ndarray,
+) -> tuple[Mapping[State, Fraction], Mapping[State, Fraction]]:
+    """Return the coarse action and its Boltzmann flow weights of one marginal."""
     energies = -np.log(marginal)
+    size = marginal.shape[0] if marginal.ndim else 1
     action: dict[State, Fraction] = {}
-    for state in product(range(size), repeat=len(partition)):
+    for state in product(range(size), repeat=marginal.ndim):
         action[state] = Fraction(float(energies[state]))
     floor = float(energies.min())
     unnormalized = {
