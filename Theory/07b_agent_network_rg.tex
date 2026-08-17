@@ -2366,7 +2366,7 @@ kernel $K_b=C_bI_b$.  Compatibility means, after the declared canonical
 identifications,
 \begin{equation}
 K_{b_1b_2}=K_{b_1}K_{b_2}.
-\label{eq:rg-kernel-semigroup}
+\label{eq:rg-kernel-compatibility}
 \end{equation}
 On the primary measure pair,
 define
@@ -2378,9 +2378,36 @@ define
 \end{equation}
 Write $\mathcal R_b^\rho\rho=(\rho C_b)I_b=\rho K_b$ for its reference
 component.
-Equation~\eqref{eq:rg-kernel-semigroup} makes
+Equation~\eqref{eq:rg-kernel-compatibility} makes
 $\mathcal R_{b_1b_2}=\mathcal R_{b_2}\mathcal R_{b_1}$; otherwise the sequence
 is a typed cocycle rather than an autonomous semigroup.  \status{ESTABLISHED}
+
+The dichotomy is no longer hypothetical: the compatibility law was
+instantiated and tested, and it failed.  On 2026-08-17 the finite categorical
+laboratory declared the identification kernels for the nested-cycle family
+(the Wilson-line coarse connection composed from retained dressed boundary
+generators, the cyclic graph identification, and the identity state
+identification), verified gauge covariance of the composite step to $10^{-12}$
+and exact holonomy conservation, and then tested
+\eqref{eq:rg-kernel-compatibility} against a tolerance of $10^{-10}$ fixed
+before measurement.  Blocking six agents by the full ratio against blocking in
+declared stages disagrees by $0.204$ in sup norm on the final couplings, with
+a provably lossless intermediate projection, so the defect is the Bayes
+blocking kernel composition itself: the declared downward-kernel family is not
+closed under composition across levels, for the same generic reason that
+lumped Markov chains are not Markov.  The defect is order one, between $0.12$
+and $0.19$, at every accessible depth and factorization, including
+two-then-three against three-then-two on a homogeneous six-cycle where both
+orderings are legitimate consecutive blockings.  For the exhibited
+construction the second branch of the dichotomy is therefore the operative
+one: the scale maps of this chapter form a typed cocycle, and every statement
+below that assumes \eqref{eq:rg-kernel-compatibility} is a hypothesis that the
+first exhibited rescaling construction fails.  Implementation, pre-registered
+design, and measurements:
+\texttt{src/multiagent\_elbo/finite/rescaling.py},
+\texttt{coupling\_readback.py}, \texttt{cocycle\_flow.py}, and
+\texttt{docs/superpowers/specs/2026-08-17-rescaling-map-design.md}.
+\status{NUMERICAL}
 
 On a dominated tier, the action map retains its reference argument:
 \begin{equation}
@@ -2817,6 +2844,33 @@ written as an eigenvalue equation in one unnamed space.  These are
 classification definitions; no autonomous spectrum, mode, or exponent is
 asserted for a general nonautonomous sequence. \status{DEFINITION}
 
+On the declared finite family the autonomous branch of these conventions is
+not available, because its blocking-ratio hypothesis is the compatibility law
+that the measurements following \eqref{eq:rg-kernel-compatibility} refute.
+What the cocycle branch licenses was measured instead.  For each declared
+ratio, the composite of the blocking with the self-similar re-tiling
+identification is a self-map of the reduced homogeneous coupling space, and it
+is a local contraction: spectral radius $0.78$ at the declared seed and
+$0.83$ at its fixed point for ratio two, with every eigenvalue inside the unit
+circle.  Iterating converges to a fixed structure whose pairwise block is zero
+at machine precision.  That factorized subspace is invariant by construction,
+since the block-local Bayes kernel sends factorized theories to factorized
+theories, and the measurements show it is attracting, with pair-sector
+eigenvalues near $0.17$; in the level-local sense of the cocycle conventions
+above, interaction between parents is irrelevant at every declared ratio.
+The ratio-two and ratio-three fixed structures differ by $0.81$ in relative
+sup norm, so the fixed structures themselves are typed by the ratio.  The
+cause is architectural rather than dynamical: the declared family joins
+adjacent blocks through single boundary agents, its instances are
+quasi-one-dimensional, and a one-dimensional finite-range system with strictly
+positive weights has a Perron--Frobenius transfer matrix and no interacting
+fixed structure.  Whether boundary-multiplicity architectures, in which each
+coarse edge aggregates a bundle of parallel cross-links as on hierarchical
+lattices, sustain an interacting fixed structure is a declared open
+measurement.  These are numerical results on declared finite instances,
+level-local by construction; they license no universality claim and no
+relevance exponent.  \status{NUMERICAL}
+
 \definitionheading{Typed invariant and fixed objects}{def:rg-typed-fixed-objects}
 Write $Y_\ell^{(\tau)}$ for the object of one declared tier $\tau$ and
 $F_\ell^{(\tau)}:Y_\ell^{(\tau)}\to Y_{\ell+1}^{(\tau)}$ for its declared step.
@@ -2987,7 +3041,7 @@ root-framed holonomy maps, root features, and dressed boundary generators;
 joint marked attention-event laws; every
 induced effective hyperedge; full path laws or their exact memory kernels; and
 rescaling kernels satisfying
-\eqref{eq:rg-kernel-semigroup}.  Then the global and local ELBOs,
+\eqref{eq:rg-kernel-compatibility}.  Then the global and local ELBOs,
 agent--meta bridge kernels, meta-agent interaction kernels, meta-attention,
 effective likelihoods, measure-pair scale composition, and measure-pair fixed
 equations defined in this and the preceding chapter are simultaneously
@@ -3008,6 +3062,20 @@ disintegration of $\eta$ give exact attention.  Path pushforward supplies
 dynamic closure, and the explicit common-space kernel identity types and
 composes the measure-pair RG.  Each operation is closed in the stated
 collection, so their finite composition is closed.  $\square$
+
+The rescaling-kernel hypothesis deserves one caution the other hypotheses do
+not need.  Every other premise is satisfied by the declared finite
+constructions of this and the preceding chapter, but rescaling kernels
+satisfying \eqref{eq:rg-kernel-compatibility} are, as of 2026-08-17, not
+exhibited: the first declared rescaling construction fails the compatibility
+law at order one on its pre-registered criterion, as recorded after
+\eqref{eq:rg-kernel-compatibility}.  The theorem is unaffected as a
+conditional statement, and every clause of it except scale composition
+applies to the exhibited construction per level pair.  But its
+scale-composition clause is currently satisfied by no exhibited instance, and
+a reader instantiating the theorem must either supply a kernel family proved
+closed under composition, which is a separate open design, or restate the
+composed clauses in typed-cocycle form.  \status{NUMERICAL}
 
 \corollaryheading{Exact analytic action, beta, and scaling tier}{cor:rg-complete-analytic-tier}
 In addition to the hypotheses of \Cref{thm:rg-complete-effective-theory},

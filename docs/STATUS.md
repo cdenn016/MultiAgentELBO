@@ -337,3 +337,20 @@ meta-agent; autonomy; agency; nonequilibrium persistence; continuum limits; phys
 latent DAG or microscopic physics; and ontology remain **OPEN**. Dynamics also remains **OPEN**:
 neither a deterministic semiconjugacy nor a Markov semigroup or generator intertwining follows from
 the static release.
+
+## 15. 2026-08-17 rescaling map and the refuted compatibility law -- current authority
+
+This section supersedes conflicting readings of the `Theory/07b` RG sections and of §2's
+"Agent-network RG equations" row, while those earlier entries stand as the dated record. The
+rescaling map's identification half was built in the finite categorical laboratory
+(`src/multiagent_elbo/finite/rescaling.py`, `coupling_readback.py`, `cocycle_flow.py`;
+pre-registered design and two dated amendments in
+`docs/superpowers/specs/2026-08-17-rescaling-map-design.md`), and its checks ran with thresholds
+fixed before measurement. All results below are **C** (computed on declared finite instances).
+
+| Topic | Result and boundary |
+|---|---|
+| Step construction | **C.** Gauge covariance of the composite step to `1e-12`, with the declared parent law forced to transform as root-frame data; exact Wilson-line holonomy conservation with interior block holonomy retained as marks. |
+| Compatibility law | **R (measured).** `K_{b1 b2} = K_{b1} K_{b2}` fails by `0.204` sup against the pre-registered `1e-10`, with a lossless intermediate projection; the defect is the Bayes kernel composition and is order one (`0.12`–`0.19`) at every accessible depth and factorization. The flow is a typed cocycle; `07b` now records this after its compatibility equation, whose label is renamed `eq:rg-kernel-compatibility`, and its closure theorem carries the caution that no exhibited kernel family satisfies the scale-composition hypothesis. |
+| Fixed structures | **C.** Per-ratio composites (blocking plus self-similar re-tiling) contract (spectral radius `0.78`–`0.83`) onto factorized fixed structures (pairwise block at machine zero, on a provably invariant and measured-attracting subspace; pair-sector eigenvalues near `0.17`); ratio-two and ratio-three fixed structures differ by `0.81` relative sup. Level-local only; no universality or exponent claim. |
+| Diagnosis | **D.** Single-boundary towers are quasi-one-dimensional (Perron–Frobenius transfer matrix), so factorized fixed structures are the expected 1D outcome; which boundary-multiplicity architectures sustain interaction is a declared open measurement (bundled towers). |
