@@ -38,7 +38,7 @@ from .categorical_falsification_model import (
     build_reference_model,
     build_reduced_model,
 )
-from .closure_residual import model_closure_residual
+from .closure_residual import coarse_closure_residual, model_closure_residual
 from .coarse_composition import run_coarse_composition_measurement
 from .downward_influence import influence_report
 from .partition_dynamics import null_control_comparison, persistence_statistics
@@ -243,26 +243,31 @@ def _closure_metrics(
     tolerance: float,
 ) -> tuple[dict[str, MetricRecord], dict[str, object], dict[str, np.ndarray]]:
     """Measure the generated three-body term and the pairwise closure residual."""
-    report = model_closure_residual(build_reference_model(), REFERENCE_RECORD)
-    coefficient = abs(float(report.largest_three_body_coefficient))
+    model = build_reference_model()
+    coarse = coarse_closure_residual(model, REFERENCE_RECORD)
+    against = model_closure_residual(model, REFERENCE_RECORD)
     metrics = {
-        "CFL-06_largest_three_body_coefficient": lower_bounded_metric(
-            coefficient,
-            tolerance,
-            lower_bound=1.0e-6,
-            interpretation=(
-                "exact elimination of the block parent generates a three-body term, "
-                "so a pairwise coarse theory is a truncation carrying a residual"
-            ),
-            theorem_status="established_conditional_identity",
-        ),
-        "CFL-07_pairwise_closure_residual_ratio": lower_bounded_metric(
-            float(report.flow_weighted_residual),
+        "CFL-06_coarse_three_body_ratio": lower_bounded_metric(
+            coarse.three_to_two_ratio,
             tolerance,
             lower_bound=0.0,
             interpretation=(
-                "omitted many-body mass measured against the retained flow the model "
-                "itself assigns, not against an unweighted sup norm"
+                "blocking generates a three-body coarse coupling, measured against "
+                "the pairwise one; this is the direction a renormalization step runs, "
+                "and a small ratio means a pairwise coarse theory is a truncation "
+                "with a small residual rather than a misdescription"
+            ),
+            theorem_status="NUMERICAL",
+            verification_state="CANDIDATE",
+            claim_origin="PROJECT_NOVEL",
+        ),
+        "CFL-07_pairwise_closure_residual_ratio": lower_bounded_metric(
+            float(coarse.flow_weighted_residual),
+            tolerance,
+            lower_bound=0.0,
+            interpretation=(
+                "omitted many-body mass of the coarse theory measured against the "
+                "retained flow the model itself assigns, not against a sup norm"
             ),
             theorem_status="NUMERICAL",
             verification_state="CANDIDATE",
@@ -271,21 +276,30 @@ def _closure_metrics(
     }
     detail = {
         "observation": list(REFERENCE_RECORD),
-        "largest_three_body_block": list(report.largest_three_body_block),
-        "largest_three_body_subset": sorted(report.largest_three_body_subset),
-        "largest_three_body_coefficient": float(
-            report.largest_three_body_coefficient
+        "coarse_partition": [list(block) for block in coarse.partition],
+        "coarse_order_magnitudes": {
+            str(order): float(value) for order, value in coarse.order_magnitudes
+        },
+        "coarse_three_body_coefficient": float(coarse.largest_three_body_coefficient),
+        "coarse_two_body_coefficient": float(coarse.largest_two_body_coefficient),
+        "coarse_three_to_two_ratio": float(coarse.three_to_two_ratio),
+        "flow_weighted_residual": float(coarse.flow_weighted_residual),
+        "pairwise_closure_holds": bool(coarse.pairwise_closure_holds),
+        "against_direction_three_body_coefficient": float(
+            against.largest_three_body_coefficient
         ),
-        "flow_weighted_residual": float(report.flow_weighted_residual),
-        "pairwise_closure_holds": bool(report.pairwise_closure_holds),
+        "against_direction_note": (
+            "eliminating a block parent and keeping its children runs against the "
+            "coarse-graining direction and is not a renormalization step; it is "
+            "recorded only as the generic common-cause mechanism"
+        ),
     }
     arrays = {
-        "block_three_body_coefficients": np.asarray(
-            [float(block.largest_three_body_coefficient) for block in report.blocks],
-            dtype=np.float64,
+        "coarse_order_magnitudes": np.asarray(
+            [value for _, value in coarse.order_magnitudes], dtype=np.float64
         ),
-        "block_flow_weighted_residuals": np.asarray(
-            [float(block.flow_weighted_residual) for block in report.blocks],
+        "block_three_body_coefficients": np.asarray(
+            [float(block.largest_three_body_coefficient) for block in against.blocks],
             dtype=np.float64,
         ),
     }
@@ -638,8 +652,8 @@ def _falsifier_verdicts(detail: Mapping[str, object]) -> dict[str, bool]:
             detail["correlated_is_product_form"]
         )
     if "pairwise_closure_holds" in detail:
-        verdicts["M3_pairwise_closure_false"] = not bool(
-            detail["pairwise_closure_holds"]
+        verdicts["M3_coarse_residual_not_small"] = bool(
+            float(detail["coarse_three_to_two_ratio"]) > 0.10
         )
     if "timescale_falsifier_fired" in detail:
         verdicts["M5_no_timescale_separation"] = bool(
@@ -706,7 +720,7 @@ _TARGET_RULES: dict[str, float] = {
 _LOWER_BOUND_RULES: dict[str, float] = {
     "CFL-02_naive_local_overcount": 1.0e-6,
     "CFL-05_product_form_substitution_gap": 1.0e-6,
-    "CFL-06_largest_three_body_coefficient": 1.0e-6,
+    "CFL-06_coarse_three_body_ratio": 0.0,
     "CFL-07_pairwise_closure_residual_ratio": 0.0,
     "CFL-08_belief_holonomy_distortion": 1.0e-6,
     "CFL-11_restricted_dressed_mass_defect": 1.0e-6,

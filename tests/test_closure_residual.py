@@ -15,6 +15,7 @@ from multiagent_elbo.finite.closure_residual import (
     ising_star_leading_order,
     ising_star_three_body_coefficient,
     largest_k_body_coefficient,
+    coarse_closure_residual,
     model_closure_residual,
 )
 from multiagent_elbo.finite.scale_cocycle import anchored_mobius_decompose
@@ -130,3 +131,51 @@ def test_every_declared_block_omits_exactly_its_triple_component() -> None:
         assert block.residual_sup_norm == pytest.approx(
             abs(block.largest_three_body_coefficient)
         )
+
+
+def test_the_coarse_direction_eliminates_children_and_keeps_parents() -> None:
+    """Mutation caught: measuring the elimination that runs against coarse-graining."""
+    model = build_reference_model()
+    report = coarse_closure_residual(model, (1, 0, 1, 0, 1, 0))
+    assert len(report.partition) >= 3
+    assert set(report.partition) <= set(model.candidate_partitions[1])
+    orders = dict(report.order_magnitudes)
+    assert set(orders) == {1, 2, 3}
+    assert all(value > 0.0 for value in orders.values())
+
+
+def test_the_generated_coarse_triple_is_small_against_the_pairwise_coupling() -> None:
+    """Mutation caught: reporting a coarse residual that is not actually small."""
+    model = build_reference_model()
+    for partition in (
+        ((1, 2), (3, 4), (5, 6)),
+        ((2, 3), (1, 6), (4, 5)),
+        ((1, 2, 3), (4, 5), (6,)),
+    ):
+        report = coarse_closure_residual(model, (1, 0, 1, 0, 1, 0), partition)
+        assert 0.0 < report.three_to_two_ratio < 0.05
+        assert 0.0 < report.flow_weighted_residual < 0.02
+
+
+def test_the_coarse_interaction_orders_decay() -> None:
+    """Mutation caught: claiming decay where the orders stay comparable."""
+    model = build_reference_model()
+    orders = dict(coarse_closure_residual(model, (1, 0, 1, 0, 1, 0)).order_magnitudes)
+    assert orders[3] < orders[2] < orders[1]
+
+
+def test_a_two_block_partition_cannot_carry_a_coarse_triple() -> None:
+    """Mutation caught: asking for a three-body term where none is expressible."""
+    model = build_reference_model()
+    with pytest.raises(ValueError):
+        coarse_closure_residual(model, (1, 0, 1, 0, 1, 0), ((1, 2, 3), (4, 5, 6)))
+
+
+def test_the_against_direction_is_much_larger_than_the_coarse_one() -> None:
+    """Mutation caught: conflating the two eliminations because both are nonzero."""
+    model = build_reference_model()
+    coarse = coarse_closure_residual(model, (1, 0, 1, 0, 1, 0))
+    against = model_closure_residual(model, (1, 0, 1, 0, 1, 0))
+    assert abs(against.largest_three_body_coefficient) > 20.0 * abs(
+        coarse.largest_three_body_coefficient
+    )

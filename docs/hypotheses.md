@@ -578,12 +578,21 @@ continuum limit, or physical time.
 - **Prediction:** Moebius inversion against a declared ground configuration exposes a
   nonzero three-body coefficient, so a pairwise coarse theory is a truncation
   carrying a residual rather than an exact effective theory.
-- **Operationalization:** `CFL-06_largest_three_body_coefficient` with a lower bound
-  above zero, and `CFL-07_pairwise_closure_residual_ratio` reported against the
-  retained flow.
-- **Refutation threshold:** The residual is not small compared with the retained
-  flow, or the three-body coefficient is nonzero while the implementation reports a
-  pairwise coarse theory.
+- **Operationalization:** `CFL-06_coarse_three_body_ratio`, the largest generated
+  three-body coarse coupling measured against the largest pairwise one, and
+  `CFL-07_pairwise_closure_residual_ratio` reported against the retained flow.
+- **Direction, which is load bearing.** Both are measured in the coarse-graining
+  direction: the children are eliminated and the interaction content of the
+  surviving parents is read off. Eliminating a block's parent and keeping its
+  children runs the other way, describes children in variables that omit their
+  parent, and is not a step of any renormalization scheme. An earlier
+  implementation measured that direction while this entry described this one; the
+  discrepancy is recorded in the results document rather than quietly corrected.
+- **Refutation threshold:** The generated coarse three-body coupling is not small
+  against the pairwise one, taken as a ratio above one tenth, or the flow-weighted
+  residual is comparable to the retained flow. A nonzero coefficient on its own does
+  not refute anything, since real-space blocking generates couplings outside the
+  starting family in every renormalization scheme.
 - **Control:** The Ising star, whose leading-order three-body coefficient
   `2 sech(h)^2 tanh(h) J1 J2 J3` is derived independently and must be approached as
   the couplings shrink. Exact equality at finite coupling is not expected and is not

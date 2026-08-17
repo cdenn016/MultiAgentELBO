@@ -20,9 +20,12 @@ confound a failure of the mechanism with a failure of the ansatz.
 What follows is mechanical implementation and finite experimental evidence on one
 declared instance. It does not prove a theorem, construct a rescaling map or a
 renormalization group, establish persistence, or establish a continuum limit or
-physical time. Two pre-registered falsifiers fired and one mandatory control
-failed; those are the substantive results, and they are reported as results rather
-than treated as defects to be tuned away.
+physical time. One pre-registered falsifier fired, one control did not behave as
+pre-registered, and one mandatory control failed; those are the substantive
+results, and they are reported as results rather than treated as defects to be
+tuned away. A second falsifier fired in an earlier version of this record and has
+since been withdrawn, because the measurement behind it ran in the wrong direction;
+that correction is recorded in the M3 section rather than silently applied.
 
 ## Environment and commands
 
@@ -86,20 +89,49 @@ therefore measurable rather than hypothetical. The existing attention coarsening
 this repository hardwires that product form and cannot express the correlated case,
 which is why a general endpoint kernel over ordered pairs had to be added.
 
-### M3, pairwise closure is false here, and its falsifier fired
+### M3, corrected: measured in the coarse direction the residual is small
 
-The largest generated three-body coefficient is $6.672\times10^{-2}$, so any
-implementation reporting a pairwise coarse theory for this system is falsified.
-Measured against the retained flow the model itself assigns, rather than against an
-unweighted sup norm, the omitted many-body part is about two percent, and two
-percent is the honest number to quote.
+**This measurement was redirected on 2026-08-17 and its earlier verdict withdrawn.**
+The original implementation eliminated a block's parent and reported the interaction
+content induced among its children. That runs against the coarse-graining direction:
+it describes children in variables that omit their parent, and it is not a step of
+any renormalization scheme. The specification pre-registered the other elimination,
+the projection onto the declared parent family, and the implementation deviated from
+it. The deviation was flagged by its author at the time on the grounds that the
+un-eliminated action is exactly pairwise so there would be nothing to measure. That
+was the answer, not a reason to measure something else.
 
-The measurement rests on a declaration the builder added and flagged: the block
-parent must be eliminated exactly. An action built from the per-agent likelihood
-and the declared per-edge divergences alone is exactly pairwise and would leave
-nothing to measure. That control returns a triple coefficient of
-$-4.4\times10^{-16}$, pure floating-point rounding and fourteen orders of magnitude
-below the measured value, which is what pins the result as real.
+Measured as pre-registered, eliminating the children and reading off the coarse
+theory the parents obey:
+
+| partition | two-body | three-body | ratio | flow residual |
+|---|---|---|---|---|
+| $\{1,2\}\{3,4\}\{5,6\}$ | $3.74\times10^{-2}$ | $4.43\times10^{-4}$ | $0.012$ | $0.0029$ |
+| $\{2,3\}\{1,6\}\{4,5\}$ | $4.19\times10^{-2}$ | $1.81\times10^{-4}$ | $0.004$ | $0.0012$ |
+| $\{1,2,3\}\{4,5\}\{6\}$ | $4.12\times10^{-2}$ | $3.13\times10^{-4}$ | $0.008$ | $0.0029$ |
+
+The generated coupling is under about one percent of the pairwise one, the
+flow-weighted residual is a few parts in a thousand, and the interaction orders
+decay. **The M3 falsifier no longer fires.** Real-space blocking generates couplings
+outside the starting family in every renormalization scheme, decimating an Ising
+model included, so a nonzero coefficient was never the right test; smallness is.
+
+The against-direction measurement is retained under its own name because it remains
+the generic mechanism by which a hidden common cause induces higher-order structure,
+and there the behavior is severe: a three-body term of $6.7\times10^{-2}$, comparable
+to the pairwise ones, with interaction magnitudes that do not decay with order. That
+is a statement about a choice of variables nobody adopts, not about the coarse
+theory.
+
+One thing this does not settle: smallness at one blocking step and irrelevance under
+iteration are different claims, and only the first is measured. A one percent
+coupling that grows under repeated blocking is still fatal, and deciding that needs a
+fixed point to linearize about.
+
+The control that pins both directions as real rather than numerical is the
+un-eliminated action, built from the per-agent likelihood and the declared per-edge
+divergences alone. It is exactly pairwise and returns a triple coefficient of
+$-4.4\times10^{-16}$, pure floating-point rounding.
 
 An independent oracle checks the machinery. Eliminating the centre spin of an Ising
 star with field $h_0$ and couplings $J_1,J_2,J_3$ gives a leading-order three-body
@@ -214,7 +246,7 @@ system behaves as the pre-registered refutation describes. The two disagree here
 purpose: the three-body metric passes precisely by correctly detecting the nonzero
 coefficient that refutes pairwise closure.
 
-Falsifiers fired: `M3_pairwise_closure_false`, `M5_no_timescale_separation`,
+Falsifiers fired: `M5_no_timescale_separation`,
 `M6_deterministic_control_did_not_collapse`, and
 `NULL_pipeline_detects_its_own_blocking`.
 

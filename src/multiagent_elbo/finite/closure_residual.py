@@ -373,11 +373,181 @@ def _block_action(
     return MappingProxyType(action), MappingProxyType(weights)
 
 
+@dataclass(frozen=True)
+class CoarseClosureReport:
+    """Closure diagnostics of the coarse theory obtained by blocking.
+
+    This is the renormalization direction: the children are eliminated exactly and
+    the interaction content of the surviving parents is read off. A coarse theory
+    is pairwise exactly when every component above pair order vanishes.
+    """
+
+    partition: tuple[tuple[int, ...], ...]
+    order_magnitudes: tuple[tuple[int, float], ...]
+    largest_three_body_blocks: tuple[tuple[int, ...], ...]
+    largest_three_body_coefficient: float
+    largest_two_body_coefficient: float
+    three_to_two_ratio: float
+    flow_weighted_residual: float
+    pairwise_closure_holds: bool
+
+
+def _coarse_action(
+    model: FalsificationModel,
+    observation: Sequence[int],
+    partition: Sequence[Sequence[int]],
+) -> tuple[Mapping[State, Fraction], Mapping[State, Fraction]]:
+    """Return the exact coarse action on parents and its Boltzmann flow weights.
+
+    Every child is integrated out exactly, so the result is the effective theory
+    the coarse variables obey. Children in different blocks are coupled by the
+    declared cross edges, which is what can induce interactions among parents
+    beyond pair order, so the whole edge set enters rather than the induced one.
+    """
+    size = model.state_count
+    agents = model.agents
+    index_of = {agent: position for position, agent in enumerate(agents)}
+    likelihood = model.likelihood_table()
+    configuration = model.row_configurations[0]
+    event_law = {
+        channel: model.edge_event_law(configuration, channel)
+        for channel in ("belief", "model")
+    }
+    weight_tensor = np.ones((size,) * len(agents), dtype=np.float64)
+    for position, agent in enumerate(agents):
+        shape = [1] * len(agents)
+        shape[position] = size
+        column = likelihood[:, observation[index_of[agent]]]
+        weight_tensor = weight_tensor * column.reshape(shape)
+    for edge_index, edge in enumerate(model.graph.edges):
+        if edge.receiver == edge.source:
+            continue
+        table = np.zeros((size, size), dtype=np.float64)
+        for channel in ("belief", "model"):
+            strength = float(
+                event_law[channel][index_of[edge.receiver], index_of[edge.source]]
+            )
+            element = model.graph.channel_elements(channel)[edge_index]
+            table = table + strength * _divergence_table(model, channel, element)
+        shape = [1] * len(agents)
+        shape[index_of[edge.receiver]] = size
+        shape[index_of[edge.source]] = size
+        weight_tensor = weight_tensor * np.exp(-table).reshape(shape)
+    letters = "abcdefghijkl"
+    operands: list[np.ndarray] = [weight_tensor]
+    subscripts: list[str] = [letters[: len(agents)]]
+    output = ""
+    for block_index, block in enumerate(partition):
+        label = letters[len(agents) + block_index]
+        output += label
+        kernel = np.stack(
+            [
+                np.stack([model.downward_kernel(block, agent, parent) for agent in block])
+                for parent in range(size)
+            ]
+        )
+        for offset, agent in enumerate(block):
+            operands.append(kernel[:, offset, :])
+            subscripts.append(label + letters[index_of[agent]])
+    marginal = np.einsum(
+        ",".join(subscripts) + "->" + output, *operands, optimize=True
+    )
+    energies = -np.log(marginal)
+    action: dict[State, Fraction] = {}
+    for state in product(range(size), repeat=len(partition)):
+        action[state] = Fraction(float(energies[state]))
+    floor = float(energies.min())
+    unnormalized = {
+        state: math.exp(floor - float(energies[state])) for state in action
+    }
+    mass = sum(unnormalized.values())
+    weights = {state: Fraction(value / mass) for state, value in unnormalized.items()}
+    return MappingProxyType(action), MappingProxyType(weights)
+
+
+def coarse_closure_residual(
+    model: FalsificationModel,
+    observation: Sequence[int],
+    partition: Sequence[Sequence[int]] | None = None,
+) -> CoarseClosureReport:
+    """Measure the interaction content of the coarse theory after blocking.
+
+    This is the direction a renormalization step actually runs. A partition with
+    at least three blocks is required for a three-body coarse coupling to be
+    expressible at all; with two blocks the coarse theory cannot carry one and
+    reporting its absence would say nothing.
+    """
+    if type(model) is not FalsificationModel:
+        raise TypeError("model must be a FalsificationModel")
+    record = tuple(observation)
+    if len(record) != len(model.agents):
+        raise ValueError("the observation must carry one record per declared agent")
+    if any(type(value) is not int or value not in (0, 1) for value in record):
+        raise ValueError("every observation record must be binary")
+    chosen = tuple(
+        tuple(block)
+        for block in (
+            partition
+            if partition is not None
+            else next(
+                candidate
+                for candidate in model.candidate_partitions
+                if len(candidate) >= 3
+            )
+        )
+    )
+    if len(chosen) < 3:
+        raise ValueError("a three-body coarse coupling needs at least three blocks")
+    action, weights = _coarse_action(model, record, chosen)
+    decomposition = anchored_mobius_decompose(
+        action, anchor=tuple(DECLARED_GROUND_STATE_INDEX for _ in chosen)
+    )
+    magnitudes: dict[int, float] = {}
+    for subset, table in decomposition.components.items():
+        order = len(subset)
+        if not order:
+            continue
+        magnitudes[order] = max(
+            magnitudes.get(order, 0.0),
+            max(abs(float(value)) for value in table.values()),
+        )
+    triple_subset, triple = largest_k_body_coefficient(decomposition, 3)
+    _, pair = largest_k_body_coefficient(decomposition, 2)
+    admitted = [
+        (),
+        *((position,) for position in range(len(chosen))),
+        *(
+            (left, right)
+            for left in range(len(chosen))
+            for right in range(left + 1, len(chosen))
+        ),
+    ]
+    projection = declared_family_projection(decomposition, admitted)
+    ratio = abs(float(triple)) / abs(float(pair)) if float(pair) else math.inf
+    return CoarseClosureReport(
+        partition=chosen,
+        order_magnitudes=tuple(sorted(magnitudes.items())),
+        largest_three_body_blocks=tuple(chosen[position] for position in sorted(triple_subset)),
+        largest_three_body_coefficient=float(triple),
+        largest_two_body_coefficient=float(pair),
+        three_to_two_ratio=float(ratio),
+        flow_weighted_residual=flow_weighted_residual(projection, weights),
+        pairwise_closure_holds=abs(float(triple)) <= 1.0e-12,
+    )
+
+
 def model_closure_residual(
     model: FalsificationModel,
     observation: Sequence[int],
 ) -> ClosureResidualReport:
-    """Measure the generated three-body coefficient and the pairwise closure residual."""
+    """Measure the marginal-child closure, which runs against the coarse direction.
+
+    This eliminates a block's parent and reports the interaction content induced
+    among its children. It is the generic mechanism by which a hidden common cause
+    creates higher-order structure, and it is not a renormalization step: it
+    describes children in variables that omit their parent. For the coarse theory a
+    blocking step actually produces, use `coarse_closure_residual`.
+    """
     if type(model) is not FalsificationModel:
         raise TypeError("model must be a FalsificationModel")
     record = tuple(observation)
@@ -444,6 +614,8 @@ def model_closure_residual(
 __all__ = [
     "BlockClosureResidual",
     "ClosureResidualReport",
+    "CoarseClosureReport",
+    "coarse_closure_residual",
     "DECLARED_GROUND_STATE_INDEX",
     "DeclaredFamilyProjection",
     "ISING_STAR_ANCHOR",

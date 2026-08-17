@@ -210,12 +210,19 @@ declare an extension for disconnected candidate blocks, rooting each component
 separately and taking an infimum over relative alignments; for connected blocks the
 code reduces to the spec formula and a test pins the agreement.
 
-**M3 closure residual — complete, 12 tests passing, and its falsifier FIRED.**
-The largest generated three-body coefficient on the declared system is
-$6.672\times10^{-2}$, so pairwise closure is false here and any implementation
-reporting a pairwise coarse theory for this system is falsified. The omitted
-three-body part is about two percent of the retained flow's spread, weighted by the
-Boltzmann law the model itself assigns rather than by an unweighted sup norm.
+**M3 closure residual — REDIRECTED 2026-08-17; its earlier falsifier withdrawn.**
+The original implementation eliminated a block's parent and read off the
+interaction content among its children. That runs *against* the coarse-graining
+direction and is not a renormalization step; the specification had pre-registered
+the projection onto the declared parent family, and the implementation deviated.
+Measured as pre-registered, eliminating the children and reading off the theory the
+parents obey, the generated three-body coarse coupling is under about one percent
+of the pairwise one across three connected partitions, with a flow-weighted
+residual of a few parts in a thousand and interaction orders that decay. **The M3
+falsifier no longer fires.** Real-space blocking generates couplings outside the
+starting family in every scheme, so a nonzero coefficient was never the right test.
+The against-direction number, $6.672\times10^{-2}$ with no decay in order, is kept
+under its own name as the generic common-cause mechanism.
 The result depends on a load-bearing declaration the builder added and flagged:
 the block parent must be eliminated exactly, because an action built from the
 per-agent likelihood and the declared per-edge divergences alone is *exactly*
