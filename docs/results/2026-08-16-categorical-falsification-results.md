@@ -234,6 +234,105 @@ partition and selection must come from declared structure. Here the declared
 structure is doing all of the work, and the experiment makes that visible instead of
 letting it hide behind a plausible-looking hierarchy.
 
+## Addendum, 2026-08-17: the holonomy-constrained selector and what the null can prove
+
+The block energy reported above was later found to be **holonomy-blind**, and the
+repair and its cross-model review change two of the conclusions.
+
+The defect is exact. The downward kernel carries a parent to each child along a
+spanning tree, and a spanning tree contains no cycles, so a chord edge never enters
+the energy. Varying a chord at fixed tree transports moves the holonomy group from
+the whole structure group to the trivial group, moves the obstruction from
+$+\infty$ to $0.1003$, and moves the block energy by $1.8\times10^{-4}$, which is
+0.0015 percent. The earlier statement that the null control showed holonomy failing
+to drive block formation was therefore wrong: the obstruction was never in the
+objective, and the control correctly detected the absence of a coupling that had
+not been built.
+
+The repair puts the stabilization condition into the support of the downward
+kernel, so a block whose holonomy fixes no admitted presentation has no coherent
+parent and every partition containing it is excluded. On the declared instance this
+forbids exactly the three partitions leaving a belief-holonomy loop intact.
+
+Adversarial review confirmed the mechanism and refuted three attacks on it. A cycle
+with nonzero transports but trivial holonomy is admissible, so cycles are not
+forbidden as such. Swapping which cycle is curved makes a four-agent block
+admissible and a three-agent block forbidden, which is the anti-size signature.
+Making the belief channel flat and the model channel curved flips the forbidden set
+to the model channel, so the mechanism is channel-symmetric rather than
+belief-specific. A fully flat connection forbids nothing at any block size.
+
+Two reporting defects were sustained, and both are corrected here.
+
+**The null control cannot separate a designed curvature pattern from a matching
+random one, and no separation should have been claimed.** Over two thousand null
+models the admissible-count distribution is $\{2:0.781,\ 3:0.210,\ 5:0.009,\
+6:0.001\}$, against the analytic prediction $\{64/81,\ 16/81,\ 8/729,\ 1/729\}$
+obtained by treating each basis cycle's holonomy as uniform on the structure group
+per channel, with a cycle trivial in both channels with probability one ninth. The
+reference count of three is matched by about 21 percent of nulls, its exact
+admissible set by about 10 percent, and its modal partition by about 10 percent.
+That is the base rate for drawing the reference's holonomy pattern at random, and a
+faithful holonomy selector is *obliged* to match on those draws. The control
+therefore has power to detect whether the statistic depends on the gauge structure
+at all, which it now does and previously did not, and it has no power to single out
+the declared instance. The earlier phrasing presented a p-value near 0.2 as though
+it were separation.
+
+**The absence of a tuning constant is literal but the admitted family is load
+bearing.** Admitting the uniform law does not soften the exclusion, it inverts the
+result: by exact enumeration over all $9^6$ state configurations the modal partition
+moves from the five-plus-one split at posterior mass $0.861$ to the single
+six-agent block at $0.605$, because the declared partition prior favors large blocks
+and a uniform parent's finite energy floor is cheaper than that prior gap. Every
+statement of the mechanism must carry that condition. The choice is pre-registered
+rather than reverse-engineered, and on a cyclic group the uniform law is the unique
+fixed point of a nontrivial shift, so any free-orbit family excludes it
+automatically; but the conditionality belongs in the claim.
+
+One scope note also sustained: the augmented parent space is the orbit family
+together with the uniform law, which is a third family and not the specification's
+declared pair. It coincides with the simplex fixed sector on curved blocks and
+differs on flat ones.
+
+Independent mathematical review sustained four further points, all about how the
+construction was described rather than about what it computes.
+
+The phrase "the stabilization condition in the support of the downward kernel" is
+ill-typed and has been withdrawn. A Markov kernel must be a probability measure at
+every value of its conditioning variables, while stabilization constrains the
+parent, which is a conditioning variable; and in the declared generative order the
+parent is drawn before the partition, so no later factor could restrict it. What is
+implemented is a reordered depth-one tower in which the partition is drawn first
+from an admissibility-conditioned prior and each parent then draws its presentation
+on the stabilized sector. That tower normalizes, so an infinite energy is exactly
+zero prior mass on a partition, and the object is a legitimate generative law; the
+reordering is a redeclared model rather than the frozen one.
+
+The free-energy reading holds only for the unaugmented path and only up to a
+partition-independent constant, since the partition prior is not renormalized over
+the admissible set. Differences and the induced posterior are meaningful; the raw
+values are not evidence bounds. The augmented path is a composite potential: with
+the uniform law admitted the child kernel normalizer takes more than one value and
+the stabilized sector size varies across blocks, measured as four against sixteen,
+so the omitted terms no longer cancel between partitions. In the unaugmented path
+both are constant, one normalizer and sector size nine whenever nonzero, which is
+what licenses the reading there.
+
+The hard exclusion is stronger than Proposition 8, which gives an infinite mark-free
+score and a strictly positive energy floor rather than an infinite block energy.
+Excluding a curved block outright forecloses the retention alternative in which such
+a block still forms a parent carrying its holonomy marks. That is a modeling
+declaration and is now recorded as one.
+
+Finally, the selection does not escape Proposition 5. It is a declared capacity
+restriction in support-condition form, which is what Corollary 6 says any
+nondegenerate selection must be. The review also derived the general
+characterization: for a cyclic group of prime order acting by a faithful shift, the
+fixed sector meets a finite orbit-closed family exactly when the holonomy is trivial
+or the uniform law is admitted, which is why the one degenerate null instance
+behaves as it does.
+
 ## Obligations left open
 
 Whether the M6 control was mis-specified or mis-implemented is unresolved, and it

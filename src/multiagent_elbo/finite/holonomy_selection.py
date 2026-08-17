@@ -11,14 +11,41 @@ sensitive only to the tree transports, which a rechoice of parent state can
 largely absorb. That is backwards: the tree transports are the gauge-like part and
 the holonomy is the gauge-invariant part.
 
-The repair puts the stabilization condition into the support of the downward
-kernel rather than into a diagnostic computed beside it. A parent presentation is
-admissible for a block only if every based loop transport of that block fixes it,
-which is the condition H_# Q = Q read as a restriction on the parent space. A
-block whose holonomy group has no fixed point among the admitted presentations
-then has no coherent parent at all, its energy is positive infinity, and every
-partition containing it is excluded before any energy comparison happens. That is
-the block-formation obstruction acting as a selector instead of as a score.
+The repair makes the stabilization condition select, rather than merely score. A
+parent presentation is admissible for a block only if every based loop transport
+of that block fixes it, which is the condition H_# Q = Q read as a restriction on
+the parent space. A block whose holonomy group has no fixed point among the
+admitted presentations then has no coherent parent at all, its energy is positive
+infinity, and every partition containing it is excluded before any energy
+comparison happens.
+
+Describing that as a restriction on the support of the downward kernel would be
+ill-typed, and the earlier phrasing of this module said exactly that. A Markov
+kernel must be a probability measure for every value of its conditioning
+variables, whereas stabilization constrains the parent, which is a conditioning
+variable and not an outcome; and in the declared generative order the parent is
+sampled before the partition, so no later factor could restrict it in any case.
+The object actually implemented is a reordered depth-one tower: the partition is
+drawn first from an admissibility-conditioned prior, each occupied parent label
+then draws its presentation uniformly on the stabilized sector, which is nonempty
+by that conditioning, and the children follow the declared Gibbs kernel. Every
+factor is a normalized kernel on finite spaces and conditions only on strictly
+earlier variables, so the tower normalizes and an infinite energy is exactly zero
+prior mass on that partition. The reordering is a redeclared model, not a
+rearrangement of the frozen one.
+
+Three consequences follow, and none of them is cosmetic. The selection is a
+declared capacity restriction wearing a support condition's clothes, which is what
+Corollary 6 says any nondegenerate selection must be; it does not escape the
+partition-degeneracy result and does not derive from the gauge structure alone.
+The hard exclusion is also stronger than Proposition 8, which yields an infinite
+mark-free score and a strictly positive energy floor, not an infinite block
+energy; excluding the block outright forecloses the retention alternative in which
+a curved block still forms a parent that carries its holonomy marks. And because
+the partition prior is not renormalized over the admissible set, the returned
+numbers are free energies only up to a partition-independent constant: differences
+and the induced posterior are meaningful, the raw values are not evidence bounds
+and must not be quoted beside the unconstrained laboratory's.
 
 Two parent spaces are offered because they separate a hard mechanism from a soft
 one. The declared presentation family excludes the uniform law, so a nontrivial
@@ -26,6 +53,26 @@ holonomy empties the fixed sector and the exclusion is absolute. Augmenting the
 parent space with the uniform law makes the fixed sector nonempty for every block,
 so the obstruction becomes a finite energy difference instead; that variant also
 enlarges parent capacity, which is a declared modeling change and not a free one.
+
+Two consequences of that choice must be read with the mechanism rather than after
+it. First, the augmented space is the orbit family together with the uniform law,
+which is a third family and not the frozen specification's declared pair of the
+orbit family and the whole simplex. It agrees with the simplex fixed sector on a
+block carrying nontrivial holonomy, where that sector is the uniform law alone,
+and disagrees on a flat block, where the simplex fixed sector is the whole
+simplex. Second, admitting the uniform law does not merely soften the exclusion,
+it inverts the outcome: by exact enumeration over all state configurations the
+modal partition moves from the five-plus-one split at posterior mass 0.861 to the
+single six-agent block at 0.605, because the declared partition prior favors large
+blocks and a uniform parent's finite energy floor is cheaper than that prior gap.
+The selection reported here is therefore conditional on the declared family, and
+the condition is load bearing rather than incidental. Third, the augmented path is
+a composite potential and not an exact free energy of any declared normalized law:
+once the uniform law is admitted the child kernel normalizer takes several
+distinct values across parents and the stabilized sector changes size across
+blocks, so the omitted normalizer and sector-size terms no longer cancel between
+partitions. Only the unaugmented path carries the free-energy reading, and even
+there only up to a partition-independent constant.
 """
 
 from __future__ import annotations
@@ -81,7 +128,13 @@ class SelectionReport:
 
 
 def _parent_laws(model: FalsificationModel, augmented: bool) -> tuple[tuple, ...]:
-    """Return the declared parent presentation pairs, optionally with the uniform law."""
+    """Return the declared parent presentation pairs, optionally with the uniform law.
+
+    The augmented space is the orbit family together with the uniform law. It is
+    not the frozen specification's simplex family: it agrees with the simplex fixed
+    sector on a block with nontrivial holonomy, where that sector is the uniform law
+    alone, and disagrees on a flat block, where that sector is the whole simplex.
+    """
     beliefs = list(model.belief_family)
     models = list(model.model_family)
     if augmented:
@@ -134,6 +187,14 @@ def _block_cost_table(
     presentation carried into that child's frame along the block spanning tree.
     Only admissible parents are tabulated, so the tree transports still set the
     frames while the holonomy sets which parents exist at all.
+
+    On a disconnected block each component is framed by its own spanning tree and
+    the components are aligned by the identity. The holonomy retention module
+    instead infimizes over the relative alignments of the component roots, so the
+    two modules compute different finite scores on disconnected blocks while
+    agreeing on the exclusion set, which is all that selection uses. Collapsing the
+    component roots this way is the further declared coarse channel the theory
+    requires for a disconnected parent, and it is declared here rather than derived.
     """
     parents = admissible_parent_states(model, block, augmented)
     pairs = _parent_laws(model, augmented)
@@ -193,7 +254,14 @@ def constrained_free_energy(
     states: Sequence[int],
     augmented: bool = False,
 ) -> float:
-    """Return the constrained block energy plus the declared partition prior term."""
+    """Return the constrained block energy plus the declared partition prior term.
+
+    The partition prior is the raw declared mass and is not renormalized over the
+    admissible set, so the returned number is a free energy only up to a constant
+    that does not depend on the partition. Differences between partitions and the
+    posterior induced by them are meaningful; the raw values are not evidence
+    bounds and must not be quoted beside the unconstrained laboratory's.
+    """
     energy = constrained_block_energy(model, partition, states, augmented)
     if energy == float("inf"):
         return float("inf")
