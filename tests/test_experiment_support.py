@@ -21,6 +21,9 @@ from multiagent_elbo.finite.agent_network_experiment import (
     run_agent_network_experiment,
 )
 from multiagent_elbo.finite.attention_experiment import run_attention_experiment
+from multiagent_elbo.finite.categorical_falsification_experiment import (
+    run_categorical_falsification_experiment,
+)
 from multiagent_elbo.finite.categorical_dqm_experiment import (
     run_categorical_dqm_experiment,
 )
@@ -200,8 +203,23 @@ def _gaussian_fixed_ray_config(root: Path) -> ExperimentConfig:
     )
 
 
+def _categorical_falsification_config(root: Path) -> ExperimentConfig:
+    return _lab_config(
+        root,
+        {
+            "experiment": "categorical_falsification",
+            "fixture": "two_channel_z3_v1",
+            "admitted_family": "both",
+            "null_control_seeds": 2,
+            "descent_restarts": 4,
+            "arithmetic": "exact_rational",
+        },
+    )
+
+
 ALL_LAB_RUNNERS = (
     (run_agent_network_experiment, _network_config),
+    (run_categorical_falsification_experiment, _categorical_falsification_config),
     (run_attention_experiment, _attention_config),
     (run_categorical_dqm_experiment, _categorical_dqm_config),
     (run_finite_counterexample_experiment, _counterexample_config),
@@ -212,6 +230,12 @@ ALL_LAB_RUNNERS = (
     (run_gaussian_fixed_ray_experiment, _gaussian_fixed_ray_config),
 )
 _EXPECTED_INCONCLUSIVE_METRICS = {
+    run_categorical_falsification_experiment: {
+        "CFL-12_partition_residence_ratio",
+        "CFL-13_exit_time_fit_r_squared",
+        "CFL-15_deterministic_control_collapse",
+        "CFL-16_null_control_separation",
+    },
     run_information_history_experiment: {"semiconjugacy_defect_norm"},
     run_gaussian_fixed_ray_experiment: {"cpu_cuda_parity_residual"},
 }

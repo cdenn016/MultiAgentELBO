@@ -122,9 +122,20 @@ class GaussianFixedRayTheoryConfig:
     matrix_dimension: int
 
 
+@dataclass(frozen=True)
+class CategoricalFalsificationTheoryConfig:
+    experiment: Literal["categorical_falsification"]
+    fixture: Literal["two_channel_z3_v1"]
+    admitted_family: Literal["orbit", "simplex", "both"]
+    null_control_seeds: int
+    descent_restarts: int
+    arithmetic: Literal["exact_rational"]
+
+
 ExperimentTheoryConfig = (
     TheoryConfig
     | AttentionTheoryConfig
+    | CategoricalFalsificationTheoryConfig
     | CategoricalDqmTheoryConfig
     | MultiagentNetworkTheoryConfig
     | TheoryOracleTheoryConfig
@@ -531,9 +542,44 @@ def _resolve_theory_config(theory: Mapping[str, object]) -> ExperimentTheoryConf
             ),
         )
 
+    if experiment == "categorical_falsification":
+        _require_exact_keys(
+            theory,
+            "theory",
+            {
+                "experiment",
+                "fixture",
+                "admitted_family",
+                "null_control_seeds",
+                "descent_restarts",
+                "arithmetic",
+            },
+        )
+        return CategoricalFalsificationTheoryConfig(
+            experiment=experiment,
+            fixture=_require_literal(
+                theory["fixture"], "fixture", ("two_channel_z3_v1",)
+            ),
+            admitted_family=_require_literal(
+                theory["admitted_family"],
+                "admitted_family",
+                ("orbit", "simplex", "both"),
+            ),
+            null_control_seeds=_require_positive_int(
+                theory["null_control_seeds"], "null_control_seeds"
+            ),
+            descent_restarts=_require_positive_int(
+                theory["descent_restarts"], "descent_restarts"
+            ),
+            arithmetic=_require_literal(
+                theory["arithmetic"], "arithmetic", ("exact_rational",)
+            ),
+        )
+
     raise ConfigError(
         "experiment must be one of: finite_exact, gaussian_realization, "
-        "attention_marked_event, categorical_dqm, " + ", ".join(NEW_EXPERIMENT_NAMES)
+        "attention_marked_event, categorical_dqm, categorical_falsification, "
+        + ", ".join(NEW_EXPERIMENT_NAMES)
     )
 
 

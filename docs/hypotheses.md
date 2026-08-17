@@ -493,3 +493,162 @@ named implementation or fixture claim.
   integration-wide state is assigned only by the validated live final-SHA ledger.
   CUDA parity and confirmatory attraction remain `INCONCLUSIVE`.
   `heavy_sweep_enabled=false` and `confirmatory_executed=false`.
+
+## Finite categorical falsification registry supplement
+
+This supplement registers the laboratory declared in
+`docs/experiments/2026-08-16-finite-categorical-falsification/spec.md`. That
+specification is the pre-registration of record: it was frozen before any
+measurement ran, and it fixes the system, the six measurements, and each
+measurement's falsifier. The entries below name the metrics the laboratory emits
+and restate the threshold each is judged against.
+
+One scope boundary applies to every entry. This laboratory is finite, categorical,
+and deliberately not Gaussian, because Gaussian closure properties are special and
+would confound a failure of the mechanism with a failure of the ansatz. It can
+refute a proposed mechanism. It cannot certify a theorem, establish a
+renormalization group, exhibit a rescaling map, or establish persistence, a
+continuum limit, or physical time.
+
+### CFL-01 — Tower VFE accounting
+
+- **Epistemic status:** Established conditional identity; the laboratory is an
+  implementation check of the decomposition theorem at depth one.
+- **Prediction:** The tower free energy computed by flat enumeration of the joint
+  agrees with the sum of its six conditional-KL groups.
+- **Null and controls:** Setting the recognition law to the exact posterior must
+  close the gap to zero and return the negative log evidence; the flat joint must
+  normalize over all observation records.
+- **Operationalization:** `CFL-01_tower_accounting_residual`, target `0`.
+- **Refutation threshold:** Residual above `1e-12`.
+- **Inconclusive rule:** A nonfinite observation term, a failed support assumption,
+  or an unnormalized declared factor is inconclusive about the identity and
+  diagnoses the implementation first.
+- **Theory source pointer:** `REPORT-part1-vfe-and-construction.md`, Theorem 2 and
+  Proposition 1.
+
+### CFL-02 — Local-potential overcount control
+
+- **Epistemic status:** Negative control on an accounting error.
+- **Prediction:** Summing singleton local row potentials double counts every shared
+  interaction factor, so the naive sum exceeds the free energy by the incident-scope
+  overcount. Every declared factor here is an edge of boundary size two, so the naive
+  sum is exactly twice the overcount.
+- **Operationalization:** `CFL-02_naive_local_overcount`, lower bound strictly above
+  zero.
+- **Refutation threshold:** A vanishing overcount, which would mean the control is
+  not exercising the error it exists to expose.
+- **Secondary falsifier:** Any code path that reports the naive sum as the ELBO.
+
+### CFL-03 — Coarse-edge composition
+
+- **Epistemic status:** Established conditional identity for a fixed
+  input-independent Markov pushforward.
+- **Prediction:** Pushing the directed edge-event law through nested normalized
+  endpoint kernels composes, and mass is preserved at every step.
+- **Operationalization:** `CFL-03_coarse_composition_residual`, target `0`.
+- **Refutation threshold:** Residual above `atol + rtol`, which in practice means a
+  product form was assumed while the intermediate endpoint assignments are
+  correlated.
+- **Theory source pointer:** `REPORT-part2-parent-partition-graphrg.md`, section 8.
+
+### CFL-04 — Row averaging is not event-law pushforward
+
+- **Epistemic status:** Negative control with a literal rational oracle.
+- **Prediction:** On the declared three-node witness with skewed occupancy, pushing
+  the event law gives `0.9` where uniform row averaging gives `0.5`.
+- **Operationalization:** `CFL-04_row_average_discrepancy`, target `0.4`.
+- **Refutation threshold:** Any departure beyond floating-point equality, since both
+  sides are exact rationals here.
+
+### CFL-05 — Product-form endpoint substitution control
+
+- **Epistemic status:** Negative control.
+- **Prediction:** Replacing a correlated endpoint kernel by the product of its own
+  endpoint marginals changes the coarse event law by a strictly positive amount.
+- **Operationalization:** `CFL-05_product_form_substitution_gap`, lower bound above
+  zero.
+- **Refutation threshold:** A vanishing gap, which would mean the declared kernel is
+  not genuinely correlated and the trap is not being exercised.
+
+### CFL-06 and CFL-07 — Generated many-body terms and closure residual
+
+- **Epistemic status:** Established that exact elimination generates hyperedges; the
+  measured coefficients are numerical.
+- **Prediction:** Moebius inversion against a declared ground configuration exposes a
+  nonzero three-body coefficient, so a pairwise coarse theory is a truncation
+  carrying a residual rather than an exact effective theory.
+- **Operationalization:** `CFL-06_largest_three_body_coefficient` with a lower bound
+  above zero, and `CFL-07_pairwise_closure_residual_ratio` reported against the
+  retained flow.
+- **Refutation threshold:** The residual is not small compared with the retained
+  flow, or the three-body coefficient is nonzero while the implementation reports a
+  pairwise coarse theory.
+- **Control:** The Ising star, whose leading-order three-body coefficient
+  `2 sech(h)^2 tanh(h) J1 J2 J3` is derived independently and must be approached as
+  the couplings shrink. Exact equality at finite coupling is not expected and is not
+  asserted.
+
+### CFL-08 through CFL-11 — Holonomy retention
+
+- **Epistemic status:** Established for the zero-distortion sector; the
+  empty-fixed-sector obstruction is established as a property of the pair formed by
+  the holonomy group and the admitted family.
+- **Prediction:** The declared transports give block `{1,2,3}` nontrivial belief
+  holonomy and trivial model holonomy, so its belief distortion is strictly positive
+  while its model distortion can vanish; block `{4,5,6}` can vanish in both channels.
+  Under the orbit family, which excludes the uniform law, the belief fixed sector is
+  empty and the score is infinite.
+- **Operationalization:** `CFL-08_belief_holonomy_distortion` with a lower bound above
+  zero, `CFL-09_model_holonomy_distortion` with target zero,
+  `CFL-10_dressed_transport_mass` with target one, and
+  `CFL-11_restricted_dressed_mass_defect` with a lower bound above zero.
+- **Refutation threshold, implementation:** The dressed-transport law fails to
+  normalize when the endpoint factor is carried correctly, or the barycenter is used
+  as a group element while it is not one.
+- **Refutation threshold, theory:** A strictly positive belief distortion on every
+  candidate block, which would mean no zero-distortion belief parent exists anywhere
+  on this cyclic graph.
+- **Inconclusive rule:** The stabilizer criterion is a mass statement at the
+  measurable tier, not support containment; a support-only check is inconclusive.
+
+### CFL-12 and CFL-13 — Partition persistence
+
+- **Epistemic status:** Open. Persistence is unproved for the coupled flow, and this
+  laboratory tests one finite instance rather than a theorem.
+- **Prediction:** Some partition is metastable, with residence time exceeding ten
+  belief relaxation times and exit times growing exponentially in the inverse noise.
+- **Operationalization:** `CFL-12_partition_residence_ratio` against a lower bound of
+  ten, and `CFL-13_exit_time_fit_r_squared` for linearity of log exit time in inverse
+  noise.
+- **Refutation threshold:** No partition reaches the residence ratio, meaning there is
+  no timescale separation and the persistence hypothesis fails on this instance; or
+  the exit-time fit is not linear, meaning the configuration is not a metastable basin
+  and persistence is a misnomer.
+- **Control:** The mandatory null control on randomized transports and beliefs. A
+  pipeline that finds blocks there is detecting its own blocking algorithm.
+
+### CFL-14 and CFL-15 — Downward influence
+
+- **Epistemic status:** Established impossibility for the deterministic-pushforward
+  case; the measured supremum is numerical.
+- **Prediction:** The declared downward kernel gives a strictly positive supremum of
+  total variation between child optima across parent states, while the deterministic
+  fiber disintegration collapses it to the within-fiber variation only.
+- **Operationalization:** `CFL-14_downward_influence_supremum` with a lower bound
+  above zero, and `CFL-15_deterministic_control_collapse` recording the control value.
+- **Refutation threshold:** A vanishing supremum for the declared kernel, meaning the
+  meta-agent exerts no downward influence and is decorative.
+- **Theory source pointer:** `REPORT-part2-parent-partition-graphrg.md`,
+  Proposition 3.
+
+### CFL-16 — Null control separation
+
+- **Epistemic status:** Mandatory control, not a claim.
+- **Prediction:** Block-formation statistics on the declared system separate from
+  their null distribution under randomized transports and beliefs with the skeleton
+  held fixed.
+- **Operationalization:** `CFL-16_null_control_separation`, reported with its null
+  distribution beside it.
+- **Inconclusive rule:** Absent separation, no block-formation statement is supported
+  and the pipeline is reporting its own algorithm.
