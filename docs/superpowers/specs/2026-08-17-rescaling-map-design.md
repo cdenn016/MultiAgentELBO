@@ -244,6 +244,92 @@ A continuum limit, a persistence claim, physical RG flow, and any statement abou
 nonrenormalizability. Transfer-matrix contraction. Instances past ten agents. Deeper towers
 than two levels except where a third level is needed for C3.
 
+## Amendment, 2026-08-17: phase three under the failed C3
+
+Reason. C3 was run and failed decisively: blocking the declared C(2, 3) tower by
+six directly disagrees with blocking by the inner triangles and then by two, by
+$0.204$ in sup norm on the final site couplings against the declared $10^{-10}$,
+with a provably lossless intermediate projection, so the failure is the Bayes
+kernel composition itself and not the truncation. Per the gate declared above,
+phase three runs but reports a cocycle, and this amendment fixes, before any
+phase-three measurement, what that means.
+
+**Restatement.** The renormalization data is a typed cocycle: one map per level
+pair, composing only along the tower of levels, with no autonomous map on
+coupling space. "Fixed point" is replaced by **fixed ray at a declared ratio**:
+a reduced coupling vector reproduced up to a per-step scale $\lambda_k$ under
+the declared identification, with the rescaled residual reported. No relevance,
+universality, or exponent claim is licensed; eigenvalues reported below are
+level-local contraction data of the cocycle at a declared point, nothing more.
+
+**Declared flow instances.** Deeper flows come from directly declared
+homogeneous cycle instances, which the risk section anticipated would need an
+amendment; they are compute-cheap because iteration runs on couplings.
+Homogeneous seeds are constructed by procedure, not by hand: tile the site
+table of coarse site one and the pair table of coarse edge one-two from the
+measured C(3, 3) working-case step, with belief element $1$ and model element
+$0$ on every edge. F1: the C(3, 3) tower blocked to a 3-cycle and then to one
+site (the inhomogeneous working case; C5 sequence). F2: the homogeneous
+8-cycle at ratio two, $8 \to 4 \to 2$ (belief holonomy $2$, conserved). F2b:
+the homogeneous 9-cycle at ratio three, $9 \to 3 \to 1$. F3: the homogeneous
+6-cycle blocked three ways, by six directly, by two then three, and by three
+then two — on a plain cycle every consecutive-block partition is legitimate,
+so this recovers the full factorization panel that the nested tower could not
+license. A uniform element on a 6-cycle is necessarily flat in $Z_3$; F3
+therefore probes composition, not holonomy, and says so.
+
+**Declared measurements.** C5 as declared: the per-step truncation residual
+and projection gap, reported without a threshold. C6, composition defect: at
+matched final levels, the sup-norm disagreement of coupling vectors between
+staged and direct routes, reported as a sequence with successive ratios and
+**no pass threshold**, because none is justifiable in advance; whether the
+defect contracts (asymptotic semigroup, the standard situation off a fixed
+point) or persists (irreducibly typed cocycle) is stated after the fact and
+labeled as such. C7, fixed-ray residual: on homogeneous flows at cycle length
+at least three (the 2-cycle merges both edge directions into one pair table
+and leaves the reduced type), reduce each level to one site table and one
+pair table, fit $\lambda_k$ by least squares over the order-one-and-two
+block, and report the relative sup residual. The label "fixed ray" may be
+applied only when that residual lies within the step's own instrument
+resolution, the larger of its C4 ratio and its relative truncation residual —
+a claim below the level at which the two read-back routes themselves agree is
+not resolvable by this instrument. **Linearization**: the reduced homogeneous
+self-map at ratio two on the declared 6-cycle (site plus pair block, 72
+anchored parameters), differentiated centrally on the Moebius read-back for
+determinism, its spectrum reported under the level-local label above.
+
+**Out of scope of this amendment.** Modifying the kernel family so that it
+closes under composition and restores a semigroup is the natural next design;
+it is a separate one and is not smuggled in here.
+
+## Amendment 2, 2026-08-17: the reduced self-map and its fixed structure
+
+Reason. The linearization declared above was run and returned spectral radius
+$0.779$ at the declared 6-cycle seed: the reduced self-map at ratio two, which
+is the blocking composed with the self-similar re-tiling identification that
+`Theory/07b` says a fixed connection requires, is a local contraction. A
+contraction's fixed point is reachable by iteration at negligible cost, and
+measuring it is the completion of "looks for fixed points" that the typed
+cocycle actually licenses. What is fixed is a point of the declared composite
+map $R_b = \mathrm{reduce} \circ C_b \circ \mathrm{tile}_L$, not of an
+autonomous flow; the C6 result stands, and the composite's dependence on the
+declared ratio is itself the next falsifier.
+
+Declared measurements, fixed before running. M-fix: iterate $R_2$ on the
+6-cycle and $R_3$ on the 9-cycle from the declared seed until the sup change
+falls below $10^{-9}$ or a declared iteration cap; report the iteration count,
+the final change, the fixed vector's site and pair sup norms, and, at the
+ratio-two fixed point, the Jacobian spectrum. M-cross: the relative sup
+difference between the ratio-two and ratio-three fixed vectors, reported with
+**no threshold** — agreement would be a cross-ratio universality of the fixed
+structure, disagreement would confirm that even the fixed structures are typed
+by the ratio, and which of these obtains is stated after the fact and labeled
+as such. The trivial outcome is declared in advance: the zero coupling vector
+is not fixed under $R_b$, because the downward kernels inject transported
+mismatch content on their own, so a fixed point is nontrivial by construction
+and finding one is not by itself evidence of anything beyond the map's
+continuity.
+
 ## Risks
 
 The optimizer is the main one, and C4 exists to expose it rather than to hope. Second, the
