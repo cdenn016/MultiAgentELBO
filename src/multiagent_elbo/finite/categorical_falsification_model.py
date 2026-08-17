@@ -127,6 +127,9 @@ class FalsificationModel:
     crp_concentration: Fraction
     identity_holonomy_weight: Fraction
     row_configurations: tuple[str, ...]
+    declared_rows: tuple[tuple[str, str, tuple[tuple[float, ...], ...]], ...] | None = (
+        None
+    )
 
     @property
     def agents(self) -> tuple[int, ...]:
@@ -207,10 +210,26 @@ class FalsificationModel:
     def attention_rows(self, configuration: str) -> dict[str, np.ndarray]:
         """Return the declared per-channel row matrices of one graph configuration.
 
+        A model may declare its rows outright, which is what a genuinely
+        bi-directed instance needs: with both arcs of a pair present the two
+        directions carry independent weights, and no symmetric rule generates
+        them. When no rows are declared the two built-in configurations are used.
+
         Rows are indexed by receiver and normalized over sources, with the self
         loop always admitted so that no row is forced to be a point mass. The two
         configurations are the declared finite support of the graph variable.
         """
+        if self.declared_rows is not None:
+            declared: dict[str, np.ndarray] = {}
+            for name, channel, matrix in self.declared_rows:
+                if name == configuration:
+                    declared[channel] = np.array(matrix, dtype=np.float64)
+            if set(declared) != {"belief", "model"}:
+                raise ValueError("declared rows must cover both channels")
+            for matrix in declared.values():
+                if not np.allclose(matrix.sum(axis=1), 1.0, atol=1e-12):
+                    raise ValueError("declared rows must be normalized over sources")
+            return declared
         size = len(self.agents)
         index_of = {agent: position for position, agent in enumerate(self.agents)}
         rows: dict[str, np.ndarray] = {}
