@@ -633,6 +633,113 @@ of which is the attention. The dynamics does not yet carry the Wilson term, so t
 persistence and null-control results above describe the earlier energy and should not
 be reread in its light.
 
+\subsection{Why the coarse theory is not pairwise}
+
+The statement that exact closure generates many-body terms is easy to misread off
+the architecture, so it is worth locating precisely. Looking at the two blocks of
+the declared instance one sees two meta-agents joined by two cross arcs, which is a
+pairwise coupling, and that reading is correct. The generated three-body term is
+not there. It sits \emph{inside} a block, among the three children of one parent,
+and deleting both cross arcs leaves it bit-identical.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  >={Stealth[length=2.2mm]},
+  every node/.style={font=\small},
+  ch/.style={circle, draw=black!70, thick, fill=softg,
+             minimum size=8mm, inner sep=0pt, font=\small},
+  pa/.style={circle, draw=parent, very thick, fill=parent!14,
+             minimum size=9mm, inner sep=0pt, font=\small},
+  down/.style={->, thick, parent},
+  pair/.style={-, thick, openc!80},
+]
+\node[pa] (p) at (0,1.9) {$z_1$};
+\node[ch] (c4) at (-1.5,-0.2) {$z_4$};
+\node[ch] (c5) at (0,-0.2)    {$z_5$};
+\node[ch] (c6) at (1.5,-0.2)  {$z_6$};
+\draw[down] (p) -- (c4);
+\draw[down] (p) -- (c5);
+\draw[down] (p) -- (c6);
+\node[font=\scriptsize, align=center, anchor=north] at (0,-1.05) {%
+  parent retained\\
+  $K_\downarrow=\prod_i K(z_i\mid z_1)$\\
+  a star: pairwise, no loop\\[1.5pt]
+  \textbf{largest 3-body $=2\times10^{-15}$}};
+
+\node[font=\scriptsize, align=center] at (3.5,0.95) {marginalize $z_1$};
+\draw[->, very thick, black!55] (2.55,0.55) -- (4.45,0.55);
+
+\node[ch] (d4) at (6.0,-0.2)  {$z_4$};
+\node[ch] (d6) at (9.0,-0.2)  {$z_6$};
+\node[ch] (d5) at (7.5,1.9)   {$z_5$};
+\begin{scope}[on background layer]
+  \fill[openc!16] (d4.center) -- (d5.center) -- (d6.center) -- cycle;
+\end{scope}
+\draw[pair] (d4) -- (d5);
+\draw[pair] (d5) -- (d6);
+\draw[pair] (d4) -- (d6);
+\node[font=\scriptsize, openc] at (7.5,0.55) {3-body};
+\node[font=\scriptsize, align=center, anchor=north] at (7.5,-1.05) {%
+  parent eliminated\\
+  $-\log\sum_{z_1}P(z_1)\prod_i K(z_i\mid z_1)$\\
+  every pair, plus an irreducible triple\\[1.5pt]
+  \textbf{largest 3-body $=6.7\times10^{-2}$}};
+\end{tikzpicture}
+\caption{\textbf{A hub, eliminated.} The downward kernel factorizes over children
+given the parent, so with the parent retained the block is a star and the children
+are conditionally independent: the measured three-body coefficient is at the
+arithmetic noise floor. Marginalizing the parent couples everything it touched, all
+at once rather than pairwise, and an irreducible triple appears fourteen orders of
+magnitude above that floor. The higher-order structure is the price of describing
+the children without naming the parent.}
+\label{fig:star}
+\end{figure}
+
+The mechanism is the one shown in Figure~\ref{fig:star}. The downward kernel
+factorizes over children given the parent, so conditionally on $z_1$ the children
+are independent and the block is a star, which is pairwise and carries no loop.
+Marginalizing the parent leaves $-\log\sum_{z_1}P(z_1)\prod_i K(z_i\mid z_1)$,
+which is not additively separable in the children. A common cause, once integrated
+out, couples everything it touched simultaneously.
+
+This is the Ising star exactly: one center spin coupled to three leaves, eliminate
+the center, and a genuine three-leaf term
+$2\,\mathrm{sech}^2(h_0)\tanh(h_0)J_1J_2J_3$ appears at leading order. The exact
+coefficient of the finite model converges to that closed form as the couplings
+shrink, with successive ratios $0.470$, $0.815$, $0.951$, $0.988$, $0.997$ over
+halvings of the coupling scale, and vanishes exactly when the field or any one
+coupling does.
+
+Both statements are therefore true at once, at different levels. At the coarse
+level the two meta-agents are joined pairwise. At the fine level the exact
+effective theory on the children, after parents are eliminated, is not pairwise.
+It is the second that obstructs iteration: a pairwise scale-zero theory produces a
+scale-one theory outside the pairwise family, so the same machinery cannot simply
+be applied again. This is an obstruction to a second scale independent of the
+missing rescaling map.
+
+Two measurements qualify how severe it is, and they disagree in an informative
+way. Unweighted, the interaction coefficients do not decay with order at all: on a
+five-agent block the one- through five-body magnitudes are $0.93$, $1.61$, $0.85$,
+$1.62$ and $0.64$, so there is no small parameter organizing a hierarchy of the
+kind an effective field theory relies on. Weighted by the Boltzmann measure the
+model itself assigns, the omitted three-and-higher content is about two percent of
+the retained flow. The higher-order terms are large in magnitude and concentrated
+where the measure is small. Whether truncation is controlled therefore depends on
+the norm, and in the norm that governs expectations it appears to be.
+
+None of this licenses calling the construction nonrenormalizable. That is a
+statement about a flow: linearize about a fixed point, count relevant directions,
+find infinitely many. With no rescaling map and no fixed point, the question
+cannot be posed. Generated operators are in any case universal rather than
+diagnostic, since real-space decimation of an Ising model generates four-spin
+couplings and that model is perfectly renormalizable; what separates the cases is
+whether the generated operators are irrelevant, which is exactly what cannot be
+asked here. The tower also terminates at $N$-body on $N$ agents rather than
+continuing indefinitely, and a finite system at one contextual point has no short
+distance for a nonrenormalizability statement to be about.
+
 \section{Confidence and provenance}
 
 The exact finite derivations are explicit and internally checked, and several related
