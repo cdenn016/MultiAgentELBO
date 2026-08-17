@@ -134,6 +134,32 @@ def lower_bounded_metric(
     )
 
 
+def upper_bounded_metric(
+    value: float,
+    tolerance: float,
+    *,
+    upper_bound: float,
+    interpretation: str,
+    theorem_status: TheoremStatus,
+    verification_state: VerificationState | None = None,
+    claim_origin: ClaimOrigin | None = None,
+) -> MetricRecord:
+    """Create a metric which passes when it stays under its upper bound."""
+    verification_state, claim_origin = _resolve_metric_metadata(
+        theorem_status, verification_state, claim_origin
+    )
+    return MetricRecord(
+        value=float(value),
+        tolerance=float(tolerance),
+        status="pass" if value <= upper_bound + tolerance else "fail",
+        interpretation=interpretation,
+        assessment_scope="implementation_check",
+        theorem_status=theorem_status,
+        verification_state=verification_state,
+        claim_origin=claim_origin,
+    )
+
+
 def _resolve_metric_metadata(
     theorem_status: TheoremStatus,
     verification_state: VerificationState | None,
@@ -802,6 +828,7 @@ __all__ = [
     "lower_bounded_metric",
     "readonly_array",
     "target_metric",
+    "upper_bounded_metric",
     "validate_two_scale_application_fixture",
     "validate_worker_protocol_manifest",
     "worker_output_identity",

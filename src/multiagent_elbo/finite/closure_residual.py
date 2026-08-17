@@ -4,10 +4,16 @@ Exactly eliminating an internal variable from a finite model generates the whole
 hyperedge family on the variables that survive, and that hierarchy is recovered by
 Moebius inversion of the surviving action against a declared ground configuration.
 This module measures two consequences on the declared categorical system. The
-first is the largest generated three-body coefficient, which decides whether a
-pairwise coarse theory can be exact at all. The second is the residual left by
-projecting the action onto a declared parent family, reported as a ratio against
-the retained flow rather than as a bare sup norm.
+primary measurement runs in the coarse-graining direction: children are
+eliminated, the surviving parent theory is read off, and its generated
+three-body coupling is reported as a ratio against its own pairwise coupling,
+because real-space blocking always generates couplings outside the starting
+family and a nonzero coefficient is therefore never by itself a defect. The
+second is the residual left by projecting that action onto a declared parent
+family, reported as a ratio against the retained flow rather than as a bare sup
+norm. The elimination that runs against the coarse-graining direction, deleting
+a block parent and keeping its children, is retained separately as the generic
+common-cause mechanism and is not a renormalization step.
 
 The projection admits a declared set of subsets rather than an order cutoff. On
 the declared blocks of the reference design the graph's edge pairs exhaust the
@@ -15,14 +21,13 @@ pairs, so there the declared family and the order-two cutoff coincide; the
 distinction is real for any block whose induced edge set is a proper subset of the
 pairs, and it is exercised directly in the tests.
 
-The flow weighting is the exact block configuration law of the declared model,
-which is the normalized Boltzmann measure of the same action being decomposed. The
-reported ratio divides the flow-averaged magnitude of the omitted part by the
-flow-averaged deviation of the retained part from its own flow average. The
-constant component of the retained part carries no physical content because it
-cancels in every probability, so removing it is what turns the ratio into a
-statement about the retained flow rather than about an arbitrary offset. The ratio
-is invariant under rescaling the weights.
+The flow weighting is the normalized Boltzmann measure of the same action being
+decomposed, formed under the declared parent law. The reported ratio divides the
+flow-averaged deviation of the omitted part from its own flow average by the
+same quantity for the retained part. A constant carries no physical content in
+either part because it cancels in every probability, so both are centered and
+the ratio is a statement about varying content rather than about an arbitrary
+offset. The ratio is invariant under rescaling the weights.
 
 On arithmetic. The Moebius inversion is exact: every action value is carried into a
 Fraction before any subset sum is formed, and the alternating sums are performed on
@@ -55,6 +60,7 @@ from typing import Iterable, Mapping, Sequence
 import numpy as np
 
 from .categorical_falsification_model import FalsificationModel, kl_laws, transported
+from .tower_vfe import PARENT_STATE_WEIGHTS
 from .scale_cocycle import (
     AnchoredMobiusDecomposition,
     State,
@@ -198,7 +204,11 @@ def flow_weighted_residual(
     projection: DeclaredFamilyProjection,
     flow_weights: Mapping[State, object],
 ) -> float:
-    """Return the flow-averaged omitted magnitude over the flow-averaged retained spread."""
+    """Return the flow-averaged omitted spread over the flow-averaged retained spread.
+
+    Both parts are centered on their own flow average, because an additive
+    constant cancels in every probability on either side of the ratio.
+    """
     if type(projection) is not DeclaredFamilyProjection:
         raise TypeError("projection must be a DeclaredFamilyProjection")
     if set(flow_weights) != set(projection.omitted_value):
@@ -211,8 +221,15 @@ def flow_weighted_residual(
     mass = sum(weights.values(), Fraction(0))
     if mass == 0:
         raise ValueError("the declared flow must carry positive mass")
+    omitted_average = sum(
+        (weights[state] * value for state, value in projection.omitted_value.items()),
+        Fraction(0),
+    ) / mass
     numerator = sum(
-        (weights[state] * abs(value) for state, value in projection.omitted_value.items()),
+        (
+            weights[state] * abs(value - omitted_average)
+            for state, value in projection.omitted_value.items()
+        ),
         Fraction(0),
     )
     average = sum(
@@ -333,10 +350,11 @@ def _block_action(
         channel: model.edge_event_law(configuration, channel)
         for channel in ("belief", "model")
     }
+    kappa = {"belief": model.kappa_belief, "model": model.kappa_model}
     edge_terms: list[tuple[int, int, float, np.ndarray]] = []
     for edge_index, edge in enumerate(induced.edges):
         for channel in ("belief", "model"):
-            weight = float(
+            weight = kappa[channel] * float(
                 event_law[channel][index_of[edge.receiver], index_of[edge.source]]
             )
             element = induced.channel_elements(channel)[edge_index]
@@ -348,7 +366,7 @@ def _block_action(
                     _divergence_table(model, channel, element),
                 )
             )
-    parent_prior = 1.0 / size
+    parent_prior = _declared_parent_prior(size)
     energies: dict[State, float] = {}
     action: dict[State, Fraction] = {}
     for state in product(range(size), repeat=width):
@@ -359,7 +377,7 @@ def _block_action(
             energy += weight * table[state[receiver], state[source]]
         marginal = 0.0
         for parent in range(size):
-            term = parent_prior
+            term = parent_prior[parent]
             for position in range(width):
                 term *= kernels[position][parent, state[position]]
             marginal += term
@@ -392,17 +410,25 @@ class CoarseClosureReport:
     pairwise_closure_holds: bool
 
 
-def _coarse_action(
+def _declared_parent_prior(size: int) -> tuple[float, ...]:
+    """Return the declared per-parent law, matching the tower's parent measure."""
+    if size != len(PARENT_STATE_WEIGHTS):
+        raise ValueError("the declared parent law does not cover this state count")
+    return tuple(float(weight) for weight in PARENT_STATE_WEIGHTS)
+
+
+def _coarse_child_weights(
     model: FalsificationModel,
     observation: Sequence[int],
-    partition: Sequence[Sequence[int]],
-) -> tuple[Mapping[State, Fraction], Mapping[State, Fraction]]:
-    """Return the exact coarse action on parents and its Boltzmann flow weights.
+) -> np.ndarray:
+    r"""Return $\exp(-E)$ of the auxiliary pairwise child theory at every child state.
 
-    Every child is integrated out exactly, so the result is the effective theory
-    the coarse variables obey. Children in different blocks are coupled by the
-    declared cross edges, which is what can induce interactions among parents
-    beyond pair order, so the whole edge set enters rather than the induced one.
+    The energy is the per-agent record likelihood together with the declared edge
+    divergences, $E(x) = -\sum_a \log L(x_a, o_a) + \sum_{(i \leftarrow j)}
+    \kappa^c \eta^c_{ij} D^c_{ij}(x_i, x_j)$, where $D$ is indexed by the receiver
+    state first. A divergence table is transposed before it is broadcast whenever
+    the receiver occupies the later axis, because the reshape fills axes in
+    ascending order and would otherwise place the receiver row axis on the source.
     """
     size = model.state_count
     agents = model.agents
@@ -413,6 +439,7 @@ def _coarse_action(
         channel: model.edge_event_law(configuration, channel)
         for channel in ("belief", "model")
     }
+    kappa = {"belief": model.kappa_belief, "model": model.kappa_model}
     weight_tensor = np.ones((size,) * len(agents), dtype=np.float64)
     for position, agent in enumerate(agents):
         shape = [1] * len(agents)
@@ -422,17 +449,50 @@ def _coarse_action(
     for edge_index, edge in enumerate(model.graph.edges):
         if edge.receiver == edge.source:
             continue
+        receiver = index_of[edge.receiver]
+        source = index_of[edge.source]
         table = np.zeros((size, size), dtype=np.float64)
         for channel in ("belief", "model"):
-            strength = float(
-                event_law[channel][index_of[edge.receiver], index_of[edge.source]]
-            )
+            strength = kappa[channel] * float(event_law[channel][receiver, source])
             element = model.graph.channel_elements(channel)[edge_index]
             table = table + strength * _divergence_table(model, channel, element)
+        factor = np.exp(-table)
+        if receiver > source:
+            factor = factor.T
         shape = [1] * len(agents)
-        shape[index_of[edge.receiver]] = size
-        shape[index_of[edge.source]] = size
-        weight_tensor = weight_tensor * np.exp(-table).reshape(shape)
+        shape[receiver] = size
+        shape[source] = size
+        weight_tensor = weight_tensor * factor.reshape(shape)
+    return weight_tensor
+
+
+def _coarse_action(
+    model: FalsificationModel,
+    observation: Sequence[int],
+    partition: Sequence[Sequence[int]],
+) -> tuple[Mapping[State, Fraction], Mapping[State, Fraction]]:
+    """Return the exact coarse action on parents and its Boltzmann flow weights.
+
+    The fine object being blocked is the auxiliary pairwise child theory: the
+    per-agent record likelihood together with the declared edge divergences
+    $\\kappa\\,\\eta_{ij} D_{ij}(x_i, x_j)$ evaluated at child states. It is not
+    the declared tower joint, whose scale-0 conditional factorizes over agents
+    given the parent and therefore blocks to an exactly pairwise parent theory;
+    the question asked here is whether blocking a genuinely pairwise child
+    theory stays pairwise. The blocking kernel per block is the Bayes posterior
+    $T(p \\mid x_B) = P(p) \\prod_{a \\in B} K(x_a \\mid p) / \\sum_{p'} P(p')
+    \\prod_{a \\in B} K(x_a \\mid p')$ under the declared parent law, so
+    $\\sum_p T(p \\mid x_B) = 1$ and the blocking preserves the partition
+    function exactly, which is the standard real-space condition. Children in
+    different blocks are coupled by the declared cross edges, which is what can
+    induce interactions among parents beyond pair order, so the whole edge set
+    enters rather than the induced one.
+    """
+    size = model.state_count
+    agents = model.agents
+    index_of = {agent: position for position, agent in enumerate(agents)}
+    weight_tensor = _coarse_child_weights(model, observation)
+    prior = np.asarray(_declared_parent_prior(size), dtype=np.float64)
     letters = "abcdefghijkl"
     operands: list[np.ndarray] = [weight_tensor]
     subscripts: list[str] = [letters[: len(agents)]]
@@ -440,15 +500,20 @@ def _coarse_action(
     for block_index, block in enumerate(partition):
         label = letters[len(agents) + block_index]
         output += label
-        kernel = np.stack(
-            [
-                np.stack([model.downward_kernel(block, agent, parent) for agent in block])
-                for parent in range(size)
-            ]
-        )
+        block_kernel = prior.reshape((size,) + (1,) * len(block)).copy()
         for offset, agent in enumerate(block):
-            operands.append(kernel[:, offset, :])
-            subscripts.append(label + letters[index_of[agent]])
+            rows = np.stack(
+                [model.downward_kernel(block, agent, parent) for parent in range(size)]
+            )
+            shape = [1] * (1 + len(block))
+            shape[0] = size
+            shape[1 + offset] = size
+            block_kernel = block_kernel * rows.reshape(shape)
+        block_kernel = block_kernel / block_kernel.sum(axis=0, keepdims=True)
+        operands.append(block_kernel)
+        subscripts.append(
+            label + "".join(letters[index_of[agent]] for agent in block)
+        )
     marginal = np.einsum(
         ",".join(subscripts) + "->" + output, *operands, optimize=True
     )
@@ -472,10 +537,13 @@ def coarse_closure_residual(
 ) -> CoarseClosureReport:
     """Measure the interaction content of the coarse theory after blocking.
 
-    This is the direction a renormalization step actually runs. A partition with
-    at least three blocks is required for a three-body coarse coupling to be
-    expressible at all; with two blocks the coarse theory cannot carry one and
-    reporting its absence would say nothing.
+    This is the direction a renormalization step actually runs, for one blocking
+    step. A partition with at least three blocks is required for a three-body
+    coarse coupling to be expressible at all; with two blocks the coarse theory
+    cannot carry one and reporting its absence would say nothing. Whether a small
+    generated coupling is also irrelevant under iterated blocking is a separate
+    claim that this measurement does not address, since it needs a fixed point to
+    linearize about.
     """
     if type(model) is not FalsificationModel:
         raise TypeError("model must be a FalsificationModel")
@@ -484,20 +552,24 @@ def coarse_closure_residual(
         raise ValueError("the observation must carry one record per declared agent")
     if any(type(value) is not int or value not in (0, 1) for value in record):
         raise ValueError("every observation record must be binary")
-    chosen = tuple(
-        tuple(block)
-        for block in (
-            partition
-            if partition is not None
-            else next(
-                candidate
-                for candidate in model.candidate_partitions
-                if len(candidate) >= 3
+    if partition is None:
+        eligible = [
+            candidate
+            for candidate in model.candidate_partitions
+            if len(candidate) >= 3
+        ]
+        if not eligible:
+            raise ValueError(
+                "no declared candidate partition carries at least three blocks"
             )
-        )
-    )
+        chosen = tuple(tuple(block) for block in eligible[0])
+    else:
+        chosen = tuple(tuple(block) for block in partition)
     if len(chosen) < 3:
         raise ValueError("a three-body coarse coupling needs at least three blocks")
+    arranged = sorted(agent for block in chosen for agent in block)
+    if arranged != sorted(model.agents):
+        raise ValueError("the partition must arrange every declared agent exactly once")
     action, weights = _coarse_action(model, record, chosen)
     decomposition = anchored_mobius_decompose(
         action, anchor=tuple(DECLARED_GROUND_STATE_INDEX for _ in chosen)

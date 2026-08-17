@@ -29,6 +29,7 @@ from multiagent_elbo.experiment_support import (
     MetricRecord,
     MetricStatus,
     lower_bounded_metric,
+    upper_bounded_metric,
     readonly_array,
     target_metric,
 )
@@ -64,6 +65,8 @@ from .tower_vfe import (
 )
 
 ACCOUNTING_TOLERANCE = 1.0e-12
+
+COARSE_RATIO_THRESHOLD = 0.10
 EXIT_SEED_MINIMUM = 32
 REFERENCE_RECORD = (1, 0, 1, 0, 1, 0)
 RECOGNITION_SEEDS = (11, 4243)
@@ -247,15 +250,17 @@ def _closure_metrics(
     coarse = coarse_closure_residual(model, REFERENCE_RECORD)
     against = model_closure_residual(model, REFERENCE_RECORD)
     metrics = {
-        "CFL-06_coarse_three_body_ratio": lower_bounded_metric(
+        "CFL-06_coarse_three_body_ratio": upper_bounded_metric(
             coarse.three_to_two_ratio,
             tolerance,
-            lower_bound=0.0,
+            upper_bound=COARSE_RATIO_THRESHOLD,
             interpretation=(
                 "blocking generates a three-body coarse coupling, measured against "
                 "the pairwise one; this is the direction a renormalization step runs, "
                 "and a small ratio means a pairwise coarse theory is a truncation "
-                "with a small residual rather than a misdescription"
+                "with a small residual rather than a misdescription; the threshold "
+                "was fixed after the first measurement and is not pre-registered, so "
+                "this metric records rather than corroborates"
             ),
             theorem_status="NUMERICAL",
             verification_state="CANDIDATE",
@@ -631,10 +636,9 @@ def _falsifier_verdicts(detail: Mapping[str, object]) -> dict[str, bool]:
 
     A falsifier verdict is not a metric status. A metric fails when the
     implementation check fails; a falsifier fires when the system behaves as the
-    pre-registered refutation describes. The two can and do disagree: the
-    three-body measurement passes as an implementation check precisely because it
-    correctly detects the nonzero coefficient that fires the pairwise-closure
-    falsifier.
+    pre-registered refutation describes. The two can disagree, because a metric
+    can be an implementation check on a quantity whose value carries a separate
+    refutation criterion.
     """
     verdicts: dict[str, bool] = {}
     if "max_accounting_residual" in detail:
@@ -651,9 +655,9 @@ def _falsifier_verdicts(detail: Mapping[str, object]) -> dict[str, bool]:
         verdicts["M2_correlated_kernel_not_exercised"] = bool(
             detail["correlated_is_product_form"]
         )
-    if "pairwise_closure_holds" in detail:
+    if "coarse_three_to_two_ratio" in detail:
         verdicts["M3_coarse_residual_not_small"] = bool(
-            float(detail["coarse_three_to_two_ratio"]) > 0.10
+            float(detail["coarse_three_to_two_ratio"]) > COARSE_RATIO_THRESHOLD
         )
     if "timescale_falsifier_fired" in detail:
         verdicts["M5_no_timescale_separation"] = bool(
@@ -697,15 +701,25 @@ def _metric_decisions(metrics: Mapping[str, MetricRecord]) -> dict[str, object]:
             if name in _TARGET_RULES
             else "lower_bound"
             if name in _LOWER_BOUND_RULES
+            else "upper_bound"
+            if name in _UPPER_BOUND_RULES
             else "not_applicable"
         )
         decisions[name] = {
             "rule": rule,
             "observed_value": metric.value,
-            "reference_value": _TARGET_RULES.get(name, _LOWER_BOUND_RULES.get(name)),
+            "reference_value": _TARGET_RULES.get(
+                name, _LOWER_BOUND_RULES.get(name, _UPPER_BOUND_RULES.get(name))
+            ),
             "tolerance": metric.tolerance,
             "status": metric.status,
         }
+    declared = set(_TARGET_RULES) | set(_LOWER_BOUND_RULES) | set(_UPPER_BOUND_RULES)
+    orphaned = sorted(declared - set(metrics))
+    if orphaned:
+        raise ValueError(
+            "declared decision rules name no measured metric: " + ", ".join(orphaned)
+        )
     return decisions
 
 
@@ -717,10 +731,13 @@ _TARGET_RULES: dict[str, float] = {
     "CFL-10_dressed_transport_mass": 0.0,
 }
 
+_UPPER_BOUND_RULES: dict[str, float] = {
+    "CFL-06_coarse_three_body_ratio": COARSE_RATIO_THRESHOLD,
+}
+
 _LOWER_BOUND_RULES: dict[str, float] = {
     "CFL-02_naive_local_overcount": 1.0e-6,
     "CFL-05_product_form_substitution_gap": 1.0e-6,
-    "CFL-06_coarse_three_body_ratio": 0.0,
     "CFL-07_pairwise_closure_residual_ratio": 0.0,
     "CFL-08_belief_holonomy_distortion": 1.0e-6,
     "CFL-11_restricted_dressed_mass_defect": 1.0e-6,

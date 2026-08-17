@@ -4,11 +4,17 @@ from __future__ import annotations
 
 from fractions import Fraction
 from itertools import product
+import math
 
+import numpy as np
 import pytest
 
 from multiagent_elbo.finite.categorical_falsification_model import build_reference_model
 from multiagent_elbo.finite.closure_residual import (
+    _block_action,
+    _coarse_child_weights,
+    _declared_parent_prior,
+    _divergence_table,
     declared_family_projection,
     flow_weighted_residual,
     ising_star_convergence_ratios,
@@ -145,7 +151,12 @@ def test_the_coarse_direction_eliminates_children_and_keeps_parents() -> None:
 
 
 def test_the_generated_coarse_triple_is_small_against_the_pairwise_coupling() -> None:
-    """Mutation caught: reporting a coarse residual that is not actually small."""
+    """Mutation caught: reporting a coarse residual that is not actually small.
+
+    The bound sits below the against-direction ratios, which are 0.21 and 0.28 on
+    this instance, so a swap of elimination direction fails here rather than
+    passing inside the window.
+    """
     model = build_reference_model()
     for partition in (
         ((1, 2), (3, 4), (5, 6)),
@@ -153,8 +164,79 @@ def test_the_generated_coarse_triple_is_small_against_the_pairwise_coupling() ->
         ((1, 2, 3), (4, 5), (6,)),
     ):
         report = coarse_closure_residual(model, (1, 0, 1, 0, 1, 0), partition)
-        assert 0.0 < report.three_to_two_ratio < 0.05
-        assert 0.0 < report.flow_weighted_residual < 0.02
+        assert 0.0 < report.three_to_two_ratio < 0.02
+        assert 0.0 < report.flow_weighted_residual < 0.001
+
+
+def test_the_blocking_kernel_preserves_the_partition_function() -> None:
+    """Mutation caught: contracting an operand that is not normalized over parents."""
+    model = build_reference_model()
+    size = model.state_count
+    prior = np.asarray(_declared_parent_prior(size), dtype=np.float64)
+    for block in ((1, 2), (1, 2, 3)):
+        kernel = prior.reshape((size,) + (1,) * len(block)).copy()
+        for offset, agent in enumerate(block):
+            rows = np.stack(
+                [model.downward_kernel(block, agent, parent) for parent in range(size)]
+            )
+            shape = [1] * (1 + len(block))
+            shape[0] = size
+            shape[1 + offset] = size
+            kernel = kernel * rows.reshape(shape)
+        kernel = kernel / kernel.sum(axis=0, keepdims=True)
+        assert np.allclose(kernel.sum(axis=0), 1.0, rtol=0.0, atol=1e-12)
+
+
+def test_the_coarse_energy_carries_the_declared_receiver_source_orientation() -> None:
+    """Mutation caught: placing a divergence table on the transposed axis pair."""
+    model = build_reference_model()
+    record = (1, 0, 1, 0, 1, 0)
+    size = model.state_count
+    agents = model.agents
+    index_of = {agent: position for position, agent in enumerate(agents)}
+    likelihood = model.likelihood_table()
+    configuration = model.row_configurations[0]
+    event_law = {
+        channel: model.edge_event_law(configuration, channel)
+        for channel in ("belief", "model")
+    }
+    kappa = {"belief": model.kappa_belief, "model": model.kappa_model}
+    reversed_edges = [
+        edge
+        for edge in model.graph.edges
+        if edge.receiver != edge.source
+        and index_of[edge.receiver] > index_of[edge.source]
+    ]
+    assert reversed_edges, "the instance must exercise the transposed placement"
+    tensor = _coarse_child_weights(model, record)
+    rng = np.random.default_rng(0)
+    for _ in range(25):
+        state = tuple(int(value) for value in rng.integers(0, size, len(agents)))
+        energy = 0.0
+        for position, agent in enumerate(agents):
+            energy -= math.log(likelihood[state[position], record[index_of[agent]]])
+        for edge_index, edge in enumerate(model.graph.edges):
+            if edge.receiver == edge.source:
+                continue
+            receiver = index_of[edge.receiver]
+            source = index_of[edge.source]
+            for channel in ("belief", "model"):
+                strength = kappa[channel] * float(event_law[channel][receiver, source])
+                element = model.graph.channel_elements(channel)[edge_index]
+                table = _divergence_table(model, channel, element)
+                energy += strength * table[state[receiver], state[source]]
+        assert -math.log(tensor[state]) == pytest.approx(energy, abs=1e-12)
+
+
+def test_a_partition_must_arrange_every_declared_agent_exactly_once() -> None:
+    """Mutation caught: accepting a partition that drops or repeats an agent."""
+    model = build_reference_model()
+    for partition in (
+        ((1, 2), (3, 4), (5,)),
+        ((1, 2), (2, 3), (4, 5, 6)),
+    ):
+        with pytest.raises(ValueError):
+            coarse_closure_residual(model, (1, 0, 1, 0, 1, 0), partition)
 
 
 def test_the_coarse_interaction_orders_decay() -> None:
@@ -172,10 +254,22 @@ def test_a_two_block_partition_cannot_carry_a_coarse_triple() -> None:
 
 
 def test_the_against_direction_is_much_larger_than_the_coarse_one() -> None:
-    """Mutation caught: conflating the two eliminations because both are nonzero."""
+    """Mutation caught: conflating the two eliminations because both are nonzero.
+
+    The comparison is on the dimensionless three-to-two ratio rather than on raw
+    coefficients, whose gap is dominated by the difference in overall action
+    scale between the two directions.
+    """
     model = build_reference_model()
     coarse = coarse_closure_residual(model, (1, 0, 1, 0, 1, 0))
     against = model_closure_residual(model, (1, 0, 1, 0, 1, 0))
-    assert abs(against.largest_three_body_coefficient) > 20.0 * abs(
-        coarse.largest_three_body_coefficient
-    )
+    against_ratios = []
+    for block in against.blocks:
+        action, _ = _block_action(model, (1, 0, 1, 0, 1, 0), block.block)
+        decomposition = anchored_mobius_decompose(action, anchor=(0, 0, 0))
+        _, pair = largest_k_body_coefficient(decomposition, 2)
+        against_ratios.append(
+            abs(block.largest_three_body_coefficient) / abs(float(pair))
+        )
+    assert min(against_ratios) > 0.10
+    assert coarse.three_to_two_ratio < 0.02
