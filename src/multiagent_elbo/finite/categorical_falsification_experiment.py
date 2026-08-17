@@ -40,6 +40,19 @@ from .categorical_falsification_model import (
 )
 from .closure_residual import model_closure_residual
 from .coarse_composition import run_coarse_composition_measurement
+from .holonomy_retention import (
+    barycenter_is_group_element,
+    convolution_converse_witness,
+    declared_endpoint_kernel,
+    dressed_barycenter,
+    dressed_transport_law,
+    exact_dressed_transport_law,
+    logical_chain_report,
+    prediction_report,
+    restricted_dressed_mass,
+    retention_report,
+    theory_falsifier_verdict,
+)
 from .tower_vfe import (
     decomposed_tower_free_energy,
     naive_local_potential_sum,
@@ -276,6 +289,157 @@ def _closure_metrics(
     return metrics, detail, arrays
 
 
+def _holonomy_metrics(
+    tolerance: float,
+) -> tuple[dict[str, MetricRecord], dict[str, object], dict[str, np.ndarray]]:
+    """Measure holonomy retention, its distortion scores, and the dressed law."""
+    model = build_reference_model()
+    prediction = prediction_report(model)
+    verdict = theory_falsifier_verdict(model)
+    chain = logical_chain_report(model)
+    witness = convolution_converse_witness()
+
+    kernel = declared_endpoint_kernel(model)
+    pairs = ((kernel.labels[0], kernel.labels[0]), (kernel.labels[0], kernel.labels[1]))
+    mass_errors: list[float] = []
+    restricted_defects: list[float] = []
+    barycenter_flags: list[bool] = []
+    dressed: list[dict[str, object]] = []
+    for channel in ("belief", "model"):
+        for pair in pairs:
+            exact = exact_dressed_transport_law(model, channel, kernel, pair)
+            mass_errors.append(abs(float(sum(exact.values())) - 1.0))
+            restricted = float(restricted_dressed_mass(model, channel, kernel, pair))
+            restricted_defects.append(abs(restricted - 1.0))
+            law = dressed_transport_law(model, channel, kernel, pair)
+            representation = (
+                model.belief_representation
+                if channel == "belief"
+                else model.model_representation
+            )
+            barycenter = dressed_barycenter(law, representation)
+            in_group = barycenter_is_group_element(barycenter, representation)
+            barycenter_flags.append(in_group)
+            dressed.append(
+                {
+                    "channel": channel,
+                    "coarse_pair": list(pair),
+                    "atoms": {str(g): float(w) for g, w in law.items() if w > 0.0},
+                    "exact_mass": float(sum(exact.values())),
+                    "restricted_mass": restricted,
+                    "barycenter_is_group_element": bool(in_group),
+                }
+            )
+
+    metrics = {
+        "CFL-08_belief_holonomy_distortion": lower_bounded_metric(
+            prediction.belief_cyclic_simplex,
+            tolerance,
+            lower_bound=1.0e-6,
+            interpretation=(
+                "the block carrying nontrivial belief holonomy admits no "
+                "zero-distortion belief parent; the orbit family empties the fixed "
+                "sector entirely and the score is infinite there"
+            ),
+            theorem_status="established_conditional_identity",
+        ),
+        "CFL-09_model_holonomy_distortion": target_metric(
+            prediction.model_cyclic_zero_distortion,
+            tolerance,
+            target=0.0,
+            interpretation=(
+                "the same block admits an exactly parallel parent in the flat model "
+                "channel, so the asymmetry between channels is observable"
+            ),
+            theorem_status="established_conditional_identity",
+        ),
+        "CFL-10_dressed_transport_mass": target_metric(
+            max(mass_errors),
+            tolerance,
+            target=0.0,
+            interpretation=(
+                "the dressed-transport law normalizes exactly when the endpoint "
+                "factor is carried over all ordered pairs in the numerator"
+            ),
+            theorem_status="established_conditional_identity",
+        ),
+        "CFL-11_restricted_dressed_mass_defect": lower_bounded_metric(
+            min(restricted_defects),
+            tolerance,
+            lower_bound=1.0e-6,
+            interpretation=(
+                "dropping the endpoint factor and restricting the sum to members of "
+                "the two blocks does not give a probability measure under soft "
+                "memberships"
+            ),
+            theorem_status="negative_control",
+        ),
+    }
+    part = {
+        "holonomy_predictions": {
+            name: (list(value) if isinstance(value, tuple) else value)
+            if not isinstance(value, dict)
+            else {str(k): v for k, v in value.items()}
+            for name, value in vars(prediction).items()
+        },
+        "holonomy_theory_falsifier_fired": bool(verdict.fired),
+        "zero_distortion_block_count": len(verdict.zero_distortion_blocks),
+        "logical_chain": {
+            "flatness_implies_stabilization": bool(chain.flatness_implies_stabilization),
+            "flatness_implies_agreement": bool(chain.flatness_implies_agreement),
+            "stabilization_without_flatness_in_orbit_family": bool(
+                chain.stabilization_without_flatness_in_orbit_family
+            ),
+            "stabilization_without_flatness_on_uniform": bool(
+                chain.stabilization_without_flatness_on_uniform
+            ),
+            "disagreement_distortion_under_flat_transport": float(
+                chain.disagreement_distortion
+            ),
+        },
+        "convolution_converse": {
+            "composite_matches_convolution": bool(witness.composite_matches_convolution),
+            "joint_is_a_product": bool(witness.joint_is_a_product),
+        },
+        "dressed_transports": dressed,
+        "max_dressed_mass_error": max(mass_errors),
+        "min_restricted_mass_defect": min(restricted_defects),
+        "any_barycenter_outside_the_group": not all(barycenter_flags),
+    }
+    arrays = {
+        "dressed_mass_errors": np.asarray(mass_errors, dtype=np.float64),
+        "restricted_mass_defects": np.asarray(restricted_defects, dtype=np.float64),
+        "block_distortions": np.asarray(
+            [row.distortion for row in retention_report(model)], dtype=np.float64
+        ),
+    }
+    return metrics, part, arrays
+
+
+def _json_safe(value: object) -> object:
+    """Rewrite non-finite floats as explicit sentinels so the record stays JSON.
+
+    An infinite distortion score is a scientific result here, not a numerical
+    accident: it is what an empty fixed sector produces under the convention that
+    the infimum over the empty set is positive infinity. The artifact contract
+    forbids non-finite JSON, so the value is carried as the string "+infinity"
+    rather than dropped or silently clamped to a finite surrogate.
+    """
+    if isinstance(value, float):
+        if value == float("inf"):
+            return "+infinity"
+        if value == float("-inf"):
+            return "-infinity"
+        if value != value:
+            return "nan"
+        return value
+    if isinstance(value, dict):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    return value
+
+
 def _falsifier_verdicts(detail: Mapping[str, object]) -> dict[str, bool]:
     """Evaluate each pre-registered falsifier from the measured quantities.
 
@@ -305,6 +469,16 @@ def _falsifier_verdicts(detail: Mapping[str, object]) -> dict[str, bool]:
         verdicts["M3_pairwise_closure_false"] = not bool(
             detail["pairwise_closure_holds"]
         )
+    if "holonomy_theory_falsifier_fired" in detail:
+        verdicts["M4_no_zero_distortion_belief_parent_anywhere"] = bool(
+            detail["holonomy_theory_falsifier_fired"]
+        )
+        verdicts["M4_dressed_law_unnormalized"] = bool(
+            float(detail["max_dressed_mass_error"]) > 1.0e-12
+        )
+        verdicts["M4_restricted_form_not_exercised"] = bool(
+            float(detail["min_restricted_mass_defect"]) <= 0.0
+        )
     return verdicts
 
 
@@ -329,6 +503,8 @@ _TARGET_RULES: dict[str, float] = {
     "CFL-01_tower_accounting_residual": 0.0,
     "CFL-03_coarse_composition_residual": 0.0,
     "CFL-04_row_average_discrepancy": 0.4,
+    "CFL-09_model_holonomy_distortion": 0.0,
+    "CFL-10_dressed_transport_mass": 0.0,
 }
 
 _LOWER_BOUND_RULES: dict[str, float] = {
@@ -336,6 +512,8 @@ _LOWER_BOUND_RULES: dict[str, float] = {
     "CFL-05_product_form_substitution_gap": 1.0e-6,
     "CFL-06_largest_three_body_coefficient": 1.0e-6,
     "CFL-07_pairwise_closure_residual_ratio": 0.0,
+    "CFL-08_belief_holonomy_distortion": 1.0e-6,
+    "CFL-11_restricted_dressed_mass_defect": 1.0e-6,
 }
 
 
@@ -349,7 +527,12 @@ def run_categorical_falsification_experiment(
     metrics: dict[str, MetricRecord] = {}
     detail: dict[str, object] = {}
     arrays: dict[str, np.ndarray] = {}
-    for measure in (_accounting_metrics, _composition_metrics, _closure_metrics):
+    for measure in (
+        _accounting_metrics,
+        _composition_metrics,
+        _closure_metrics,
+        _holonomy_metrics,
+    ):
         part_metrics, part_detail, part_arrays = measure(tolerance)
         metrics.update(part_metrics)
         detail.update(part_detail)
@@ -391,7 +574,7 @@ def run_categorical_falsification_experiment(
     store = RunStore.create(config, provenance)
     store.write_json("metrics", {name: asdict(metrics[name]) for name in sorted(metrics)})
     store.write_json("metric_decisions", _metric_decisions(metrics))
-    store.write_json("measurements", detail)
+    store.write_json("measurements", _json_safe(detail))
     store.write_npz("arrays", arrays)
     store.finalize(("metrics.json", *_SCIENTIFIC_ARTIFACTS))
 
