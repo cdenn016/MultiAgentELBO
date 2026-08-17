@@ -230,6 +230,12 @@ ALL_LAB_RUNNERS = (
     (run_gaussian_fixed_ray_experiment, _gaussian_fixed_ray_config),
 )
 _EXPECTED_INCONCLUSIVE_METRICS = {
+    run_categorical_falsification_experiment: {
+        "CFL-12_partition_residence_ratio",
+        "CFL-13_exit_time_fit_r_squared",
+        "CFL-15_deterministic_control_collapse",
+        "CFL-16_null_control_separation",
+    },
     run_information_history_experiment: {"semiconjugacy_defect_norm"},
     run_gaussian_fixed_ray_experiment: {"cpu_cuda_parity_residual"},
 }

@@ -40,6 +40,8 @@ from .categorical_falsification_model import (
 )
 from .closure_residual import model_closure_residual
 from .coarse_composition import run_coarse_composition_measurement
+from .downward_influence import influence_report
+from .partition_dynamics import null_control_comparison, persistence_statistics
 from .holonomy_retention import (
     barycenter_is_group_element,
     convolution_converse_witness,
@@ -62,6 +64,7 @@ from .tower_vfe import (
 )
 
 ACCOUNTING_TOLERANCE = 1.0e-12
+EXIT_SEED_MINIMUM = 32
 REFERENCE_RECORD = (1, 0, 1, 0, 1, 0)
 RECOGNITION_SEEDS = (11, 4243)
 
@@ -416,6 +419,175 @@ def _holonomy_metrics(
     return metrics, part, arrays
 
 
+def _open_instance_metric(
+    value: float,
+    tolerance: float,
+    *,
+    interpretation: str,
+) -> MetricRecord:
+    """Record a measurement bearing on an open hypothesis at one finite instance.
+
+    These quantities are measured soundly, but a single finite instance neither
+    establishes nor refutes the general hypothesis they bear on, so the metric is
+    inconclusive by construction rather than by outcome. Marking such a metric as
+    passing would claim support the run does not have, and marking it as failing
+    would read as a software fault. The sharp instance-level statement is carried
+    by the pre-registered falsifier verdicts published beside the metrics.
+    """
+    return MetricRecord(
+        value=float(value),
+        tolerance=float(tolerance),
+        status="inconclusive",
+        interpretation=interpretation,
+        assessment_scope="implementation_check",
+        theorem_status="OPEN",
+        verification_state="INCONCLUSIVE",
+        claim_origin="PROJECT_NOVEL",
+    )
+
+
+def _dynamics_metrics(
+    tolerance: float,
+    seed: int,
+    restarts: int,
+    null_seeds: int,
+) -> tuple[dict[str, MetricRecord], dict[str, object], dict[str, np.ndarray]]:
+    """Measure partition persistence, downward influence, and the null control."""
+    model = build_reference_model()
+    steps = max(60, min(300, restarts * 2))
+    exit_seeds = tuple(range(max(8, restarts // 4)))
+    exit_sweep_is_powered = len(exit_seeds) >= EXIT_SEED_MINIMUM
+    persistence = persistence_statistics(
+        model,
+        seed=seed,
+        noise=1.0,
+        steps=steps,
+        initializations=restarts,
+        exit_seeds=exit_seeds,
+        exit_noise_values=(0.3, 0.5, 0.8, 1.0, 1.5, 2.0),
+    )
+    null = null_control_comparison(
+        tuple(range(1, null_seeds + 1)),
+        noise=1.0,
+        steps=max(40, steps // 2),
+        initializations=max(8, restarts // 2),
+    )
+    influence = influence_report(model)
+
+    influences = [row.influence for row in influence]
+    controls = [row.control for row in influence]
+    metrics = {
+        "CFL-12_partition_residence_ratio": _open_instance_metric(
+            persistence.residence_ratio,
+            tolerance,
+            interpretation=(
+                "residence time of the most persistent partition against the belief "
+                "relaxation time, pre-registered support threshold ten; one finite "
+                "instance cannot close an open hypothesis either way, and the "
+                "instance-level verdict is carried by the falsifier record"
+            ),
+        ),
+        "CFL-13_exit_time_fit_r_squared": _open_instance_metric(
+            persistence.exit_fit.r_squared,
+            tolerance,
+            interpretation=(
+                "linearity of log exit time in inverse noise, pre-registered support "
+                "threshold 0.90; the fit is seed-count sensitive, so the verdict is "
+                "published only when the sweep carries at least the declared minimum "
+                "number of exit seeds"
+            ),
+        ),
+        "CFL-14_downward_influence_supremum": lower_bounded_metric(
+            min(influences),
+            tolerance,
+            lower_bound=1.0e-6,
+            interpretation=(
+                "the declared downward kernel moves the child optimum across parent "
+                "states, so the meta-agent is not decorative"
+            ),
+            theorem_status="NUMERICAL",
+            verification_state="CANDIDATE",
+            claim_origin="PROJECT_NOVEL",
+        ),
+        "CFL-15_deterministic_control_collapse": _open_instance_metric(
+            min(controls),
+            tolerance,
+            interpretation=(
+                "the deterministic fiber disintegration measured on the same "
+                "statistic as the declared influence; it does not collapse on the "
+                "small blocks, which is reported rather than tuned away"
+            ),
+        ),
+        "CFL-16_null_control_separation": _open_instance_metric(
+            abs(
+                persistence.residence_ratio
+                - float(np.median(null.null_residence_ratio))
+            ),
+            tolerance,
+            interpretation=(
+                "distance between the reference residence ratio and the median of "
+                "its null distribution under randomized transports and beliefs; the "
+                "reference lying inside the null range means the pipeline is "
+                "reporting its own blocking algorithm"
+            ),
+        ),
+    }
+    null_ratios = [float(value) for value in null.null_residence_ratio]
+    inside_null = bool(
+        min(null_ratios) <= persistence.residence_ratio <= max(null_ratios)
+    )
+    part = {
+        "modal_partition": [list(block) for block in persistence.modal_partition],
+        "modal_occupancy": float(persistence.modal_occupancy),
+        "maximum_residence_time": float(persistence.maximum_residence_time),
+        "belief_relaxation_time": float(persistence.relaxation_time),
+        "residence_ratio": float(persistence.residence_ratio),
+        "timescale_falsifier_fired": bool(persistence.timescale_falsifier_fired),
+        "exit_slope": float(persistence.exit_fit.slope),
+        "exit_r_squared": float(persistence.exit_fit.r_squared),
+        "exit_linearity_falsifier_fired": bool(
+            persistence.exit_fit.linearity_falsifier_fired
+        ),
+        "exit_seed_count": len(exit_seeds),
+        "exit_censored_fraction": max(
+            float(value) for value in persistence.exit_fit.censored_fraction
+        ),
+        "exit_sweep_is_powered": exit_sweep_is_powered,
+        "largest_off_diagonal_co_membership": float(
+            persistence.largest_off_diagonal_co_membership
+        ),
+        "null_residence_ratios": null_ratios,
+        "reference_ratio_inside_null_range": inside_null,
+        "downward_influence": [
+            {
+                "block": list(row.block),
+                "agent": row.agent,
+                "influence": float(row.influence),
+                "control": float(row.control),
+                "generative_reference_control": float(
+                    row.generative_reference_control
+                ),
+                "control_collapsed": bool(row.control_collapsed),
+            }
+            for row in influence
+        ],
+        "min_downward_influence": min(influences),
+        "any_control_collapsed": any(row.control_collapsed for row in influence),
+    }
+    arrays = {
+        "null_residence_ratios": np.asarray(null_ratios, dtype=np.float64),
+        "downward_influences": np.asarray(influences, dtype=np.float64),
+        "deterministic_controls": np.asarray(controls, dtype=np.float64),
+        "exit_mean_times": np.asarray(
+            persistence.exit_fit.mean_exit_times, dtype=np.float64
+        ),
+        "exit_noise_values": np.asarray(
+            persistence.exit_fit.noise_values, dtype=np.float64
+        ),
+    }
+    return metrics, part, arrays
+
+
 def _json_safe(value: object) -> object:
     """Rewrite non-finite floats as explicit sentinels so the record stays JSON.
 
@@ -469,6 +641,24 @@ def _falsifier_verdicts(detail: Mapping[str, object]) -> dict[str, bool]:
         verdicts["M3_pairwise_closure_false"] = not bool(
             detail["pairwise_closure_holds"]
         )
+    if "timescale_falsifier_fired" in detail:
+        verdicts["M5_no_timescale_separation"] = bool(
+            detail["timescale_falsifier_fired"]
+        )
+        if detail["exit_sweep_is_powered"]:
+            verdicts["M5_exit_times_not_arrhenius"] = bool(
+                detail["exit_linearity_falsifier_fired"]
+            )
+        verdicts["NULL_pipeline_detects_its_own_blocking"] = bool(
+            detail["reference_ratio_inside_null_range"]
+        )
+    if "min_downward_influence" in detail:
+        verdicts["M6_meta_agent_is_decorative"] = bool(
+            float(detail["min_downward_influence"]) <= 1.0e-12
+        )
+        verdicts["M6_deterministic_control_did_not_collapse"] = not bool(
+            detail["any_control_collapsed"]
+        )
     if "holonomy_theory_falsifier_fired" in detail:
         verdicts["M4_no_zero_distortion_belief_parent_anywhere"] = bool(
             detail["holonomy_theory_falsifier_fired"]
@@ -488,7 +678,13 @@ def _metric_decisions(metrics: Mapping[str, MetricRecord]) -> dict[str, object]:
     for name, metric in metrics.items():
         if metric.interpretation.startswith("__"):
             continue
-        rule = "target" if name in _TARGET_RULES else "lower_bound"
+        rule = (
+            "target"
+            if name in _TARGET_RULES
+            else "lower_bound"
+            if name in _LOWER_BOUND_RULES
+            else "not_applicable"
+        )
         decisions[name] = {
             "rule": rule,
             "observed_value": metric.value,
@@ -514,6 +710,11 @@ _LOWER_BOUND_RULES: dict[str, float] = {
     "CFL-07_pairwise_closure_residual_ratio": 0.0,
     "CFL-08_belief_holonomy_distortion": 1.0e-6,
     "CFL-11_restricted_dressed_mass_defect": 1.0e-6,
+
+    "CFL-13_exit_time_fit_r_squared": 0.90,
+    "CFL-14_downward_influence_supremum": 1.0e-6,
+
+
 }
 
 
@@ -537,6 +738,16 @@ def run_categorical_falsification_experiment(
         metrics.update(part_metrics)
         detail.update(part_detail)
         arrays.update(part_arrays)
+
+    dynamics = _dynamics_metrics(
+        tolerance,
+        config.run.seed,
+        config.theory.descent_restarts,
+        config.theory.null_control_seeds,
+    )
+    metrics.update(dynamics[0])
+    detail.update(dynamics[1])
+    arrays.update(dynamics[2])
 
     verdicts = _falsifier_verdicts(detail)
     detail["falsifier_verdicts"] = dict(verdicts)

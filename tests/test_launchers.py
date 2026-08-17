@@ -51,7 +51,7 @@ NEW_LAUNCHERS = (
     ("gauge_holonomy", GAUGE_HOLONOMY_LAUNCHER, "pass"),
     ("scale_cocycle", SCALE_COCYCLE_LAUNCHER, "pass"),
     ("gaussian_fixed_ray", GAUSSIAN_FIXED_RAY_LAUNCHER, "inconclusive"),
-    ("categorical_falsification", CATEGORICAL_FALSIFICATION_LAUNCHER, "pass"),
+    ("categorical_falsification", CATEGORICAL_FALSIFICATION_LAUNCHER, "inconclusive"),
 )
 
 
