@@ -697,19 +697,54 @@ the children without naming the parent.}
 \end{figure}
 
 The mechanism is the one shown in Figure~\ref{fig:star}. The downward kernel
-factorizes over children given the parent, so conditionally on $z_1$ the children
-are independent and the block is a star, which is pairwise and carries no loop.
-Marginalizing the parent leaves $-\log\sum_{z_1}P(z_1)\prod_i K(z_i\mid z_1)$,
-which is not additively separable in the children. A common cause, once integrated
-out, couples everything it touched simultaneously.
+factorizes over the children of a block given its parent,
+\begin{equation}
+K_\downarrow\big(z_4,z_5,z_6\,\big\vert\,z_1\big)
+= K(z_4\mid z_1)\,K(z_5\mid z_1)\,K(z_6\mid z_1),
+\label{eq:star-factorized}
+\end{equation}
+so conditionally on $z_1$ the children are independent and the block is a star,
+which is pairwise and carries no loop. Marginalizing the parent leaves the
+effective action
+\begin{equation}
+H_{\rm eff}(z_4,z_5,z_6)
+= -\log\sum_{z_1}P(z_1)\,\prod_{i\in I}K(z_i\mid z_1),
+\label{eq:star-marginal}
+\end{equation}
+and the logarithm of a sum of products is not additively separable in the
+children. A common cause, once integrated out, couples everything it touched
+simultaneously. The interaction content is read off by Moebius inversion against a
+declared ground configuration $z^\circ$,
+\begin{equation}
+\Phi_A(z_A)=\sum_{B\subseteq A}(-1)^{|A|-|B|}\,
+H_{\rm eff}\big(z_B,z^\circ_{A\setminus B}\big),
+\label{eq:mobius}
+\end{equation}
+and a coarse theory is pairwise exactly when $\Phi_A$ vanishes for every $A$ with
+$|A|\ge3$.
 
-This is the Ising star exactly: one center spin coupled to three leaves, eliminate
-the center, and a genuine three-leaf term
-$2\,\mathrm{sech}^2(h_0)\tanh(h_0)J_1J_2J_3$ appears at leading order. The exact
-coefficient of the finite model converges to that closed form as the couplings
-shrink, with successive ratios $0.470$, $0.815$, $0.951$, $0.988$, $0.997$ over
-halvings of the coupling scale, and vanishes exactly when the field or any one
-coupling does.
+The Ising star is the same computation in closed form. Take one center spin
+$s_0$ in a field $h_0$ coupled to three leaves,
+$H=-h_0s_0-\sum_{k}J_ks_0s_k$, and eliminate the center exactly:
+\begin{equation}
+\sum_{s_0=\pm1}e^{h_0s_0+xs_0}=2\cosh(h_0+x),
+\qquad x=\sum_{k}J_ks_k,
+\end{equation}
+so the effective leaf action is $-\log 2-\log\cosh(h_0+x)$. Only the cubic term of
+$x$ carries $s_1s_2s_3$, with coefficient $6J_1J_2J_3$, and
+$\tfrac{d^3}{dx^3}\log\cosh(h_0+x)\big\vert_{0}=-2\,\mathrm{sech}^2(h_0)\tanh(h_0)$,
+so the generated three-leaf coupling is
+\begin{equation}
+\Phi_{\{1,2,3\}}
+=2\,\mathrm{sech}^2(h_0)\,\tanh(h_0)\,J_1J_2J_3
+\label{eq:ising-star}
+\end{equation}
+at leading order. It vanishes exactly when the field vanishes and when any single
+coupling does, and both degeneracies are reproduced. The exact coefficient of the
+finite model converges to \eqref{eq:ising-star} as the couplings shrink, with
+successive ratios $0.470$, $0.815$, $0.951$, $0.988$ and $0.997$ over halvings of
+the coupling scale, the gap quartering each time as an order-$\varepsilon^2$
+correction should.
 
 Both statements are therefore true at once, at different levels. At the coarse
 level the two meta-agents are joined pairwise. At the fine level the exact
@@ -720,14 +755,24 @@ be applied again. This is an obstruction to a second scale independent of the
 missing rescaling map.
 
 Two measurements qualify how severe it is, and they disagree in an informative
-way. Unweighted, the interaction coefficients do not decay with order at all: on a
-five-agent block the one- through five-body magnitudes are $0.93$, $1.61$, $0.85$,
-$1.62$ and $0.64$, so there is no small parameter organizing a hierarchy of the
-kind an effective field theory relies on. Weighted by the Boltzmann measure the
-model itself assigns, the omitted three-and-higher content is about two percent of
-the retained flow. The higher-order terms are large in magnitude and concentrated
-where the measure is small. Whether truncation is controlled therefore depends on
-the norm, and in the norm that governs expectations it appears to be.
+way. Write $\Vert\Phi_k\Vert_\infty=\max_{|A|=k}\max_{z_A}|\Phi_A(z_A)|$ for the
+unweighted size of the $k$-body content. On a five-agent block,
+\begin{equation}
+\big(\Vert\Phi_1\Vert_\infty,\dots,\Vert\Phi_5\Vert_\infty\big)
+=(0.93,\;1.61,\;0.85,\;1.62,\;0.64),
+\end{equation}
+which does not decay with order at all, so there is no small parameter organizing
+a hierarchy of the kind an effective field theory relies on. Against the Boltzmann
+measure the model itself assigns, $\rho\propto e^{-H_{\rm eff}}$, the same content
+measured as
+\begin{equation}
+\frac{\mathbb E_\rho\big\vert\sum_{|A|\ge3}\Phi_A\big\vert}
+{\mathbb E_\rho\big\vert H^{\rm pair}_{\rm eff}-\mathbb E_\rho H^{\rm pair}_{\rm eff}\big\vert}
+\approx 0.02 .
+\end{equation}
+The higher-order terms are large in magnitude and concentrated where the measure
+is small. Whether truncation is controlled therefore depends on the norm, and in
+the norm that governs expectations it appears to be.
 
 None of this licenses calling the construction nonrenormalizable. That is a
 statement about a flow: linearize about a fixed point, count relevant directions,
