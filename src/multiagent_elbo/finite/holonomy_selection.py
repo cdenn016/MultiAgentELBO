@@ -6,7 +6,8 @@ spanning tree contains no cycles, so the chord edges never enter the block energ
 Varying a chord while holding the tree transports fixed moves the holonomy group
 from the whole structure group to the trivial group, moves the holonomy
 obstruction from positive infinity to about one tenth, and moves that block energy
-by under two parts in ten thousand. The energy is therefore blind to holonomy and
+by about two parts in ten thousand, the exact figure depending on which state
+configuration the comparison is made at. The energy is therefore blind to holonomy and
 sensitive only to the tree transports, which a rechoice of parent state can
 largely absorb. That is backwards: the tree transports are the gauge-like part and
 the holonomy is the gauge-invariant part.

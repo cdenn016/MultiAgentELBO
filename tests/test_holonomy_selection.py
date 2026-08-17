@@ -38,6 +38,18 @@ def _empty_fixed_sector(model, block) -> bool:
     return not beliefs or not laws
 
 
+def _belief_variant(model, elements: tuple[int, ...]):
+    """Return the model with only its belief edge elements replaced."""
+    graph = TwoChannelGraph(
+        order=model.graph.order,
+        vertices=model.graph.vertices,
+        edges=model.graph.edges,
+        belief_elements=elements,
+        model_elements=model.graph.model_elements,
+    )
+    return type(model)(**{**vars(model), "graph": graph})
+
+
 def test_a_block_enclosing_nontrivial_belief_holonomy_admits_no_parent() -> None:
     """Mutation caught: a downward kernel that ignores the stabilization condition."""
     model = build_reference_model()
@@ -152,26 +164,24 @@ def test_a_model_whose_belief_family_degenerates_to_uniform_admits_every_block(
     assert selection.admissible_parent_states(model, (4, 5, 6), False) != ()
 
 
-def test_randomizing_transports_changes_the_admissible_set() -> None:
-    """Mutation caught: a selector that is insensitive to the gauge structure."""
-    reference = len(selection.admissible_partitions(build_reference_model(), False))
-    counts = {
-        len(selection.admissible_partitions(build_null_model(seed), False))
-        for seed in range(1, 13)
-    }
-    assert len(counts) > 1 or reference not in counts
+def test_randomizing_transports_alone_changes_the_admissible_set() -> None:
+    """Mutation caught: attributing to transports a sensitivity the family supplies.
 
-
-def _belief_variant(model, elements: tuple[int, ...]):
-    """Return the model with only its belief edge elements replaced."""
-    graph = TwoChannelGraph(
-        order=model.graph.order,
-        vertices=model.graph.vertices,
-        edges=model.graph.edges,
-        belief_elements=elements,
-        model_elements=model.graph.model_elements,
-    )
-    return type(model)(**{**vars(model), "graph": graph})
+    The declared null control randomizes the belief family alongside the
+    transports, so variation under it does not isolate the gauge structure. Here
+    the family, the skeleton, the occupancies and every kernel are held at their
+    declared values and only the edge group elements move.
+    """
+    model = build_reference_model()
+    generator = np.random.default_rng(20260817)
+    counts: set[int] = set()
+    for _ in range(24):
+        elements = tuple(int(value) for value in generator.integers(0, 3, 8))
+        variant = _belief_variant(model, elements)
+        assert variant.belief_family == model.belief_family
+        assert variant.graph.edges == model.graph.edges
+        counts.add(len(selection.admissible_partitions(variant, False)))
+    assert len(counts) > 1
 
 
 def test_a_cycle_with_nonzero_transports_but_trivial_holonomy_is_admissible() -> None:
