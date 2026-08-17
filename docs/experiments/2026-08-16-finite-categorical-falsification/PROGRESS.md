@@ -42,11 +42,25 @@ clean apart from four untracked PDFs, which are intentional and must not be touc
 | 1 | Survey wave: 4 parallel agents map existing API vs the six measurements | **done** | see "Survey findings" below |
 | 2 | Frozen spec `spec.md` | **done** | 6 agents, two 3-cycles, $\mathbb Z_3$ with $\rho_b(k)=k$, $\rho_m(k)=2k$; two admitted families |
 | 3 | Core modules written and smoke-tested | **done** | `finite/two_channel_gauge.py`, `finite/categorical_falsification_model.py` |
-| 4 | Build measurement modules: 5 parallel agents (M1 / M2 / M3 / M4 / M5+M6) | **running** | each writes one module + one test file, no edits to existing files |
-| 5 | Core-module tests, config registration, experiment runner, launcher | in progress (me) | |
-| 6 | Run full suite, record results | pending | |
+| 4 | Build measurement modules: M1, M2, M3, M4 | **done** | 54 new measurement tests passing |
+| 4b | Build M5 partition persistence and M6 downward influence | **running** | last builder |
+| 5 | Config registration, experiment runner, launcher, both test registries | **done** | 11 metrics published; lab runs end to end and finalizes a complete manifest |
+| 6 | Integrate M5 and M6 into the runner, run the full suite | pending | |
 | 7 | Cross-model verification (Opus author ⇒ **fable** verifiers, per CLAUDE.md) | pending | |
-| 8 | Write up, commit, push, PR, merge, ff | pending | |
+| 8 | Results document, commit, push, PR, merge, ff | pending | |
+
+## Commits on branch `experiments/finite-categorical-falsification`
+
+```
+931a73e feat(finite): measure holonomy retention and wire it into the laboratory
+1ffb4af feat(finite): publish the categorical falsification laboratory
+edd41c9 feat(finite): measure the closure residual and the generated three-body term
+4a0cc0b docs: pre-register the finite categorical falsification metric contracts
+63e5d5b feat(finite): measure tower VFE accounting and coarse-edge composition
+af2302a feat(finite): declare the two-channel categorical falsification model
+```
+
+Branched from `main` at `cd8b7b1`, which equals `origin/main`.
 
 ## Survey findings that shape the build
 
@@ -107,7 +121,9 @@ New tests added so far, all passing: `tests/test_two_channel_gauge.py` (16) and
 The two routes agree. Worst residual over three observation records and two
 recognition seeds is $2.66\times10^{-15}$, against a pre-registered falsifier
 threshold of $10^{-12}$, so **the M1 falsifier did not fire**. The flat joint sums to
-exactly $1.0$ over all eight records and all 944,784 tower states. Setting the
+$0.99999999999999989$ over all eight records and all 944,784 tower states, which is
+one ulp below one; the builder reported this as exactly $1.0$ and that is a slight
+overstatement, corrected here from an independent rerun. Setting the
 recognition law to the exact posterior gives a gap of exactly $0.0$ and
 $\mathcal F=-\log p(o\mid X)$ to the bit. The naive sum of local row potentials is
 strictly larger than the free energy in every case, with overcount between $0.7704$
@@ -122,6 +138,52 @@ definition of the kernel, so the two routes share the declared factor builders a
 share nothing of the free-energy assembly. That is the sense in which route (a) is
 independent, and no more is claimed.
 
+**M4 holonomy retention — complete, 20 tests passing, all three predictions held.**
+On the block carrying nontrivial belief holonomy the belief score is $+\infty$ under
+the orbit family, whose fixed sector is empty, and $0.0872080$ under the whole
+simplex, whose fixed sector is the single uniform law. That finite value equals
+$\log 3 - H(p)$ exactly, an independent closed form the integrator reproduced to
+$10^{-16}$. The same block reaches exactly zero in the flat model channel at an
+explicit witness configuration, and both channels reach zero on the flat block.
+**The theory falsifier did not fire**: twenty block-and-family pairs admit a
+zero-distortion belief parent, namely every block whose induced belief holonomy is
+trivial.
+The dressed-transport law normalizes to exactly one in rationals when the endpoint
+factor is carried over all ordered pairs. The restricted form gives masses
+$1.27,\ 2.30,\ 1.50,\ 2.40$, so it is not a probability measure under soft
+memberships, which reproduces counterexample C27. The barycenter lies outside the
+represented group in the measured belief cases and is guarded rather than used. The
+convolution converse is exhibited false by a maximally dependent joint on
+$\mathbb Z_3$, which is counterexample C25.
+Honest limit carried in the record: stabilization without flatness has **no** witness
+inside the orbit families, because no nontrivial element of $\mathbb Z_3$ fixes any
+of their laws. The witness is supplied on the uniform law of the simplex family and
+is reported as exactly that, not as the general statement. The builder also had to
+declare an extension for disconnected candidate blocks, rooting each component
+separately and taking an infimum over relative alignments; for connected blocks the
+code reduces to the spec formula and a test pins the agreement.
+
+**M3 closure residual — complete, 12 tests passing, and its falsifier FIRED.**
+The largest generated three-body coefficient on the declared system is
+$6.672\times10^{-2}$, so pairwise closure is false here and any implementation
+reporting a pairwise coarse theory for this system is falsified. The omitted
+three-body part is about two percent of the retained flow's spread, weighted by the
+Boltzmann law the model itself assigns rather than by an unweighted sup norm.
+The result depends on a load-bearing declaration the builder added and flagged:
+the block parent must be eliminated exactly, because an action built from the
+per-agent likelihood and the declared per-edge divergences alone is *exactly*
+pairwise and would leave M3 nothing to measure. That control returns a triple
+coefficient of $-4.4\times10^{-16}$, pure float rounding and fourteen orders below
+the measured value, which pins the measurement as real rather than numerical.
+The Ising star oracle converges to the leading-order form with ratios
+$0.470,\ 0.815,\ 0.951,\ 0.988,\ 0.997$ over successive halvings of the coupling
+scale, the gap quartering each time as an order-$\varepsilon^2$ correction should,
+and is exactly zero at both analytic degeneracies. No equality is asserted at
+finite coupling.
+Correction to my own brief, recorded: I told the builder that `_fraction` rejects
+`float`. It rejects only `bool`, so the exact rational path was available and was
+used.
+
 **M2 coarse-edge composition — complete, 15 tests passing.**
 The literal three-node witness reproduces exactly: $\beta^c_{IJ}=0.9$ against
 $\beta^{\rm naive}_{IJ}=0.5$, a gap of exactly $0.4$ at bit-exact float equality.
@@ -134,6 +196,14 @@ than bit-exactly, partly because `edge_event_law` already returns $1-1.11\times1
 before any push; and the matrix identity $K_{20}=K_{21}K_{10}$ is near tautological
 because the composition is implemented as a matrix product, so the substantive check
 is the pushed-law agreement, not that identity.
+
+## Independent reruns performed by the integrator, not taken on trust
+
+Every builder headline below was re-executed directly before being recorded. For M1
+the rerun confirmed the posterior gap is exactly zero, the flat-versus-decomposed
+residual is exactly zero at an unseen recognition seed, all five non-observation
+groups are nonnegative, and the naive local sum equals exactly twice the reported
+overcount. It also corrected the total-mass claim from bit-exact to one ulp.
 
 ## Pre-existing defect found, not caused by this work
 
