@@ -333,6 +333,56 @@ fixed sector meets a finite orbit-closed family exactly when the holonomy is tri
 or the uniform law is admitted, which is why the one degenerate null instance
 behaves as it does.
 
+## Addendum, 2026-08-17: the retention alternative, and the price of a curved block
+
+The hard exclusion above was sustained as stronger than the theory requires, and
+the retention branch it foreclosed is now implemented. Proposition 8 gives an
+infinite mark-free score and a strictly positive block-formation floor, not an
+infinite block energy, and the block-formation hypothesis is a disjunction: either
+the fixed sector is nonempty, or the parent retains the connection data and forms
+anyway.
+
+The retained datum is the simultaneous root-framed state, a root presentation, the
+based holonomy, and the dressed boundary generators of the edges leaving the block,
+carried as one root-gauge orbit. For the abelian group here conjugation is trivial,
+so the holonomy is a gauge invariant while the presentation and the boundary legs
+shift together under a root regauging. That is checked rather than assumed: across
+the orbit the holonomy is constant while the boundary generators are not, which is
+precisely why quotienting the holonomy on its own would be illegitimate.
+
+A tree path reaches each member of a block exactly once, so a transported
+prediction is well defined for any root presentation. What fails on a curved block
+is loop closure, and the mark records that failure instead of treating it as an
+error, so a parent exists for every block. What it costs is capacity, charged as
+the log of the number of holonomy elements the parent must resolve, summed over
+channels. A flat block is free; a fully curved block pays $\log 3$. The charge is
+declared rather than derived, and it is an explicit parameter so the competition
+between the two routes can be read off.
+
+The outcome is a phase transition in that price, located at $0.6035$ by bisection
+on the exact state-marginalized posterior.
+
+| retention price | modal partition | posterior | route on curved blocks |
+|---|---|---|---|
+| $0.00$ | $\{1,\dots,6\}$ | $0.551$ | mark-carrying |
+| $0.50$ | $\{1,\dots,6\}$ | $0.444$ | mark-carrying |
+| $0.75$ | $\{1\}\{2,3,4,5,6\}$ | $0.455$ | stabilized |
+| $2.00$ | $\{1\}\{2,3,4,5,6\}$ | $0.702$ | stabilized |
+| $20.0$ | $\{1\}\{2,3,4,5,6\}$ | $0.860947$ | stabilized |
+
+Cheap marks keep the curved loop inside one meta-agent that carries its holonomy.
+Dear marks break the partition so that no block encloses the loop. As the price
+grows the posterior converges exactly to the hard selector's, $0.860947$ against
+$0.860947$, so the exclusion of the previous addendum is recovered as the
+infinite-price limit rather than contradicted. The two treatments are the two ends
+of one declared parameter, which is the disjunction the theory states.
+
+This does not resolve which price is right. The charge is a modeling declaration
+like the capacity bound and the partition prior beside it, and Corollary 6's verdict
+stands: the selection lives in the declared restrictions, not in the variational
+principle. What the implementation adds is that the restriction is now a single
+interpretable number with a located transition, rather than a prohibition.
+
 ## Obligations left open
 
 Whether the M6 control was mis-specified or mis-implemented is unresolved, and it
