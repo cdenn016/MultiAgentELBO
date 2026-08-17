@@ -56,6 +56,8 @@ Then open any laboratory launcher, edit only its `RUN`, `THEORY`, `NUMERICS`, an
 - `run_scale_cocycle_lab.py` runs the exact three-level scale cocycle.
 - `run_gaussian_fixed_ray_lab.py` runs the non-heavy CPU pilot; it does not
   opt into CUDA or the confirmatory sweep.
+- `run_categorical_falsification_lab.py` runs the finite categorical
+  two-channel falsification sweep, deliberately not Gaussian.
 - `make_figures.py` replays figures from an already finalized run without
   rerunning the numerical experiment.
 
@@ -73,6 +75,7 @@ work merely by being imported.
 | `THEORY` (`attention_marked_event`) | `experiment`, `fixture` | Selects the frozen `nested_nonuniform_v1` marked-event fixture. |
 | `THEORY` (`categorical_dqm`) | `experiment`, `fixture`, `theta`, `finite_difference_step`, `dqm_step_sizes` | Selects the frozen positive categorical family, parameter, centered-difference step, and two-sided DQM diagnostic ladder. |
 | `THEORY` (six-session buildout) | Experiment-specific fields frozen in `docs/superpowers/specs/2026-08-09-six-session-laboratory-contract.md` | Selects one of `multiagent_network`, `theory_oracle`, `finite_counterexample`, `information_history`, `gauge_holonomy`, `scale_cocycle`, or `gaussian_fixed_ray`. |
+| `THEORY` (`categorical_falsification`) | `experiment`, `fixture`, `admitted_family`, `null_control_seeds`, `descent_restarts`, `arithmetic` | Selects the frozen `two_channel_z3_v1` six-agent system and the admitted parent family, which decides whether a nontrivial holonomy empties the fixed sector or leaves the distortion score finite. |
 | `NUMERICS` | `dtype`, `atol`, `rtol`, `min_spd_rcond`, `max_frame_condition` | Declares floating-point precision, comparison tolerances, and explicit Gaussian conditioning gates. |
 | `OUTPUT` | `root`, `collect_diagnostics`, `render_figures` | Selects the artifact root and independently toggles diagnostic arrays and post-finalization rendering. |
 | `COMPUTE` (Session 6 only) | Frozen backend, dtype, device, determinism, worker, and heavy-sweep fields | Keeps ordinary CPU execution separate from the gated CUDA worker protocol. |
