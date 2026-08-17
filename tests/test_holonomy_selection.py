@@ -162,6 +162,59 @@ def test_randomizing_transports_changes_the_admissible_set() -> None:
     assert len(counts) > 1 or reference not in counts
 
 
+def _belief_variant(model, elements: tuple[int, ...]):
+    """Return the model with only its belief edge elements replaced."""
+    graph = TwoChannelGraph(
+        order=model.graph.order,
+        vertices=model.graph.vertices,
+        edges=model.graph.edges,
+        belief_elements=elements,
+        model_elements=model.graph.model_elements,
+    )
+    return type(model)(**{**vars(model), "graph": graph})
+
+
+def test_a_cycle_with_nonzero_transports_but_trivial_holonomy_is_admissible() -> None:
+    """Mutation caught: forbidding cycles rather than forbidding nontrivial holonomy."""
+    model = build_reference_model()
+    assert model.graph.induced((4, 5, 6)).channel_elements("belief") == (1, 1, 1)
+    assert block_holonomy_group(model, (4, 5, 6), "belief") == (0,)
+    assert len(selection.admissible_parent_states(model, (4, 5, 6), False)) == 9
+
+
+def test_selection_tracks_holonomy_and_not_block_size() -> None:
+    """Mutation caught: a selector that is a block-size penalty in disguise."""
+    model = build_reference_model()
+    assert selection.admissible_parent_states(model, (1, 2, 3, 4), False) == ()
+    swapped = _belief_variant(model, (1, 1, 1, 1, 1, 0, 0, 0))
+    assert block_holonomy_group(swapped, (1, 2, 3), "belief") == (0,)
+    assert block_holonomy_group(swapped, (4, 5, 6), "belief") != (0,)
+    assert len(selection.admissible_parent_states(swapped, (1, 2, 3, 4), False)) == 9
+    assert selection.admissible_parent_states(swapped, (4, 5, 6), False) == ()
+
+
+def test_a_fully_flat_connection_forbids_no_partition_at_any_block_size() -> None:
+    """Mutation caught: a residual size or cardinality penalty in the selector."""
+    model = build_reference_model()
+    flat = _belief_variant(model, (0,) * 8)
+    flat = type(flat)(
+        **{
+            **vars(flat),
+            "graph": TwoChannelGraph(
+                order=flat.graph.order,
+                vertices=flat.graph.vertices,
+                edges=flat.graph.edges,
+                belief_elements=(0,) * 8,
+                model_elements=(0,) * 8,
+            ),
+        }
+    )
+    assert len(selection.admissible_partitions(flat, False)) == len(
+        flat.candidate_partitions
+    )
+    assert len(selection.admissible_parent_states(flat, (1, 2, 3, 4, 5, 6), False)) == 9
+
+
 @pytest.mark.parametrize("steps", [0, -1])
 def test_the_constrained_descent_rejects_a_nonpositive_step_count(steps: int) -> None:
     """Mutation caught: silently substituting a default for an invalid budget."""
