@@ -25,13 +25,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from fractions import Fraction
+from itertools import product
+import math
 from pathlib import Path
 from typing import Sequence
 
 import numpy as np
 
 from ..cuda_backend import Backend
-from .closure_residual import _blocked_action
+from .closure_residual import _blocked_action, _divergence_table
 from .contraction_backend import iterated_step_via_worker
 from .coupling_readback import (
     PairwiseCouplings,
@@ -44,6 +46,7 @@ from .coupling_readback import (
 )
 from .two_channel_gauge import DirectedEdge, TwoChannelGraph
 
+CHANNELS = ("belief", "model")
 GROUP_ORDER = 3
 
 
@@ -472,6 +475,168 @@ def _reduced_step_map(
     return reduced_couplings(coarse)
 
 
+REGENERATION_TEMPERATURE = 1.0
+
+
+@dataclass(frozen=True)
+class RegeneratedInstance:
+    """One coarse instance with its attention regenerated per amendment 4."""
+
+    instance: PairwiseInstance
+    rows: tuple[tuple[str, tuple[tuple[float, ...], ...]], ...]
+    injected_pair_sup: float
+
+
+def regenerated_instance(
+    step: RescalingStep,
+    tau: float = REGENERATION_TEMPERATURE,
+) -> RegeneratedInstance:
+    r"""Regenerate the coarse level's attention and fold it into the couplings.
+
+    Per channel and per coarse edge, the flow-averaged transported divergence
+    $\overline D^c_{IJ}$ is computed under the step's own coarse flow law with
+    the coarse connection's element; rows over each receiver's sources plus the
+    self loop are $\beta \propto \exp(-\overline D/\tau)$; occupancies are the
+    declared uniform $1/m$; and the regenerated alignment energy
+    $\sum_c \kappa_c\, \alpha \beta\, D^c(p_I, p_J)$ is added to the coarse
+    action before the read-back. The temperature and the uniform occupancies
+    are declared, not derived. Factorized theories are not invariant under the
+    regenerated map, by construction: the added term is a pair-sector source
+    built from the conserved connection.
+    """
+    if step.connection is None or step.instance is None:
+        raise ValueError("regeneration needs a step with a coarse connection")
+    if not tau > 0.0:
+        raise ValueError("the declared temperature must be positive")
+    graph = step.connection.graph
+    model = _kernel_model(graph, "regenerated-attention")
+    width = len(graph.vertices)
+    size = model.state_count
+    flow = np.empty((size,) * width)
+    for state, weight in step.flow_weights.items():
+        flow[state] = float(weight)
+    kappa = {"belief": model.kappa_belief, "model": model.kappa_model}
+    injected = np.zeros((size,) * width)
+    rows_report: list[tuple[str, tuple[tuple[float, ...], ...]]] = []
+    for channel in CHANNELS:
+        averages = np.zeros((width, width))
+        tables: dict[int, np.ndarray] = {}
+        for position, edge in enumerate(graph.edges):
+            element = graph.channel_elements(channel)[position]
+            table = _divergence_table(model, channel, element)
+            tables[position] = table
+            axes = (edge.receiver - 1, edge.source - 1)
+            others = tuple(axis for axis in range(width) if axis not in axes)
+            marginal = flow.sum(axis=others)
+            if axes[0] > axes[1]:
+                marginal = marginal.T
+            averages[axes[0], axes[1]] = float(np.sum(marginal * table))
+        weights = np.zeros((width, width))
+        for receiver in graph.vertices:
+            weights[receiver - 1, receiver - 1] = 1.0
+            for source in graph.sources_of(receiver):
+                weights[receiver - 1, source - 1] = math.exp(
+                    -averages[receiver - 1, source - 1] / tau
+                )
+        rows = weights / weights.sum(axis=1, keepdims=True)
+        rows_report.append(
+            (channel, tuple(tuple(float(v) for v in row) for row in rows))
+        )
+        for position, edge in enumerate(graph.edges):
+            receiver = edge.receiver - 1
+            source = edge.source - 1
+            strength = kappa[channel] * (1.0 / width) * rows[receiver, source]
+            factor = tables[position]
+            if receiver > source:
+                factor = factor.T
+            shape = [1] * width
+            shape[min(receiver, source)] = size
+            shape[max(receiver, source)] = size
+            injected = injected + strength * factor.reshape(shape)
+    total = couplings_action(step.variational) + injected
+    action = {
+        state: Fraction(float(total[state]))
+        for state in product(range(size), repeat=width)
+    }
+    admitted = tuple(
+        sorted(
+            {
+                tuple(sorted((edge.receiver - 1, edge.source - 1)))
+                for edge in graph.edges
+            }
+        )
+    )
+    couplings, _ = mobius_couplings(action, admitted)
+    injected_action = {
+        state: Fraction(float(injected[state]))
+        for state in product(range(size), repeat=width)
+    }
+    injected_couplings, _ = mobius_couplings(injected_action, admitted)
+    injected_sup = max(
+        (
+            abs(float(value))
+            for _, table in injected_couplings.pairs
+            for row in table
+            for value in row
+        ),
+        default=0.0,
+    )
+    return RegeneratedInstance(
+        instance=PairwiseInstance(graph=graph, couplings=couplings),
+        rows=tuple(rows_report),
+        injected_pair_sup=injected_sup,
+    )
+
+
+def regenerated_fixed_point(
+    instance: PairwiseInstance,
+    ratio: int,
+    tau: float = REGENERATION_TEMPERATURE,
+    tolerance: float = 1.0e-9,
+    max_iterations: int = 200,
+) -> ReducedFixedPoint:
+    """Iterate the regenerated composite: block, regenerate, re-tile, repeat.
+
+    Identical to the passive fixed-point iteration except that each level's
+    attention is regenerated before the re-tiling, so the pair sector has a
+    source and the factorized subspace is no longer invariant. Convergence is
+    reported, not assumed.
+    """
+    length = len(instance.graph.vertices)
+    reduced = reduced_couplings(instance.couplings)
+    size = len(instance.couplings.sites[0])
+    change = float("inf")
+    iterations = 0
+    current = instance
+    while iterations < int(max_iterations):
+        step = iterated_step(current, consecutive_blocks(length, int(ratio)))
+        regenerated = regenerated_instance(step, tau)
+        image = reduced_couplings(regenerated.instance.couplings)
+        change = float(np.abs(image - reduced).max())
+        reduced = image
+        iterations += 1
+        if change <= tolerance:
+            break
+        current = homogeneous_cycle_instance(
+            length,
+            tuple(Fraction(float(value)) for value in reduced[:size]),
+            tuple(
+                tuple(Fraction(float(value)) for value in row)
+                for row in reduced[size:].reshape(size, size)
+            ),
+            belief_element=instance.graph.belief_elements[0],
+            model_element=instance.graph.model_elements[0],
+        )
+    return ReducedFixedPoint(
+        length=length,
+        ratio=int(ratio),
+        iterations=iterations,
+        final_change=change,
+        converged=change <= tolerance,
+        vector=reduced,
+    )
+
+
 @dataclass(frozen=True)
 class ReducedFixedPoint:
     """Measurement M-fix: the fixed structure of one reduced self-map.
@@ -619,8 +784,12 @@ __all__ = [
     "ReducedFixedPoint",
     "ReducedLinearization",
     "PairRetention",
+    "REGENERATION_TEMPERATURE",
+    "RegeneratedInstance",
     "cocycle_flow",
     "reduced_fixed_point",
+    "regenerated_fixed_point",
+    "regenerated_instance",
     "composition_defect",
     "consecutive_blocks",
     "homogeneity_defect",

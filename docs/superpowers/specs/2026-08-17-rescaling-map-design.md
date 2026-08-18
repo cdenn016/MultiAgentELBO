@@ -360,6 +360,39 @@ links, so this measurement runs at the coupling level through the blocking contr
 and a bundle-aware coarse connection (one declared link plus retained inter-block plaquette
 marks) is a separate construction with its own checks if $R(k)$ makes it worth building.
 
+## Amendment 4, 2026-08-17: regenerated attention at the coarse level
+
+Reason. Every measurement so far treats the coarse pairwise coupling as passively inherited:
+blocked, read back, blocked again. The theory it instantiates does not work that way — attention
+is regenerated at every level from the current beliefs and the transported divergence,
+$\beta_{IJ} \propto \exp(-\overline D_{IJ}/\tau)$, and the ingredients of that regeneration are
+exactly the objects the measurements showed do **not** decay: the coarse connection is conserved
+and the coarse beliefs are order one. The passive results (factorized fixed structures, the
+M-bundle saturation) therefore bound the inherited channel only, and the regenerated channel
+must be measured before any triviality conclusion is drawn about the theory.
+
+**Declared construction.** After each blocking step: compute, per channel and per coarse edge,
+the flow-averaged transported divergence $\overline D^c_{IJ}$ under the step's own coarse flow
+law using the coarse connection's element (the moment-diagnostic observable); form rows over
+each receiver's declared sources plus the self loop by
+$\beta^c_{IJ} \propto \exp(-\overline D^c_{IJ}/\tau)$ with declared temperature $\tau = 1$;
+take uniform occupancies $\alpha_I = 1/m$; and add the regenerated alignment energy
+$\sum_c \kappa_c\, \alpha_I \beta^c_{IJ}\, D^c_{IJ}(p_I, p_J)$ to the coarse action before the
+next level. Both $\tau$ and the uniform $\alpha$ are declared, not derived, and are recorded as
+such. The construction owes a covariance check before any measurement is read: connection-
+dependent rows lose phase one's rows-independent-of-the-connection argument, so the C1 identity
+must be re-verified for the regenerated action, at the same $10^{-12}$.
+
+**Declared measurement, M-regen.** The fixed structure of the ratio-two regenerated composite
+on the declared 6-cycle, iterated from the declared seed to sup change $10^{-9}$ or a declared
+cap. Declared in advance to keep the reading honest: the regenerated term is a pair-sector
+source built from the conserved connection, so factorized theories are **no longer invariant by
+construction**, and a nonzero pairwise fixed block is expected rather than evidential. What is
+reported, without thresholds: the fixed pairwise sup norm against the one-step injected scale
+(does regeneration sustain more coupling than it injects, or less); whether the map remains a
+contraction; and the passive-versus-regenerated comparison at the same seed. Interpretation
+after the fact, labeled.
+
 ## Risks
 
 The optimizer is the main one, and C4 exists to expose it rather than to hope. Second, the

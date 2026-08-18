@@ -145,3 +145,76 @@ def test_the_fixed_point_iteration_is_deterministic_and_reports_honestly() -> No
     assert not first.converged
     assert first.final_change == second.final_change
     assert np.array_equal(first.vector, second.vector)
+
+
+def test_regeneration_injects_a_pair_source_with_normalized_rows() -> None:
+    from multiagent_elbo.finite.cocycle_flow import regenerated_instance
+    from multiagent_elbo.finite.coupling_readback import iterated_step
+
+    instance = homogeneous_cycle_instance(6, SITE, PAIR)
+    step = iterated_step(instance, consecutive_blocks(6, 2))
+    regenerated = regenerated_instance(step)
+    assert regenerated.injected_pair_sup > 0.0
+    for _, rows in regenerated.rows:
+        for row in rows:
+            assert abs(sum(row) - 1.0) <= 1.0e-12
+            assert all(value >= 0.0 for value in row)
+    coarse_pair_sup = max(
+        abs(float(value))
+        for _, table in regenerated.instance.couplings.pairs
+        for row in table
+        for value in row
+    )
+    assert coarse_pair_sup > 0.0
+    again = regenerated_instance(step)
+    assert again.injected_pair_sup == regenerated.injected_pair_sup
+
+
+def test_the_regenerated_coarse_action_is_gauge_covariant() -> None:
+    from multiagent_elbo.finite.cocycle_flow import regenerated_instance
+    from multiagent_elbo.finite.coupling_readback import couplings_action
+    from multiagent_elbo.finite.coupling_readback import _readback_from_action
+    from multiagent_elbo.finite.closure_residual import _declared_parent_prior
+    from multiagent_elbo.finite.nested_tower import reference_tower, tower_blocks
+    from multiagent_elbo.finite.rescaling import (
+        coarse_action,
+        gauge_transformed_model,
+        state_shift_permutation,
+    )
+
+    tower = reference_tower()
+    blocks = tower_blocks(2, 3)
+    observation = (1, 0, 1, 0, 1, 0)
+    shifts = {1: 1, 2: 2, 3: 0, 4: 2, 5: 1, 6: 2}
+    gauged = gauge_transformed_model(tower, shifts)
+    base_prior = _declared_parent_prior(tower.state_count)
+    permutations = []
+    priors = {}
+    for block in blocks:
+        sigma = state_shift_permutation(tower, shifts[min(block)])
+        permutations.append(sigma)
+        moved = [0.0] * len(base_prior)
+        for state, weight in enumerate(base_prior):
+            moved[sigma[state]] = weight
+        priors[min(block)] = tuple(moved)
+    plain_action, plain_flow = coarse_action(tower, observation, blocks)
+    gauged_action, gauged_flow = coarse_action(gauged, observation, blocks, priors)
+    plain_step = _readback_from_action(tower, plain_action, plain_flow, blocks)
+    gauged_step = _readback_from_action(gauged, gauged_action, gauged_flow, blocks)
+    plain_total = couplings_action(regenerated_instance(plain_step).instance.couplings)
+    gauged_total = couplings_action(regenerated_instance(gauged_step).instance.couplings)
+    inverses = [
+        tuple(sorted(range(len(sigma)), key=sigma.__getitem__))
+        for sigma in permutations
+    ]
+    deviation = 0.0
+    size = tower.state_count
+    for state in product(range(size), repeat=len(blocks)):
+        pulled = tuple(
+            inverses[position][value] for position, value in enumerate(state)
+        )
+        deviation = max(
+            deviation,
+            abs(float(gauged_total[state]) - float(plain_total[pulled])),
+        )
+    assert deviation <= 1.0e-11
