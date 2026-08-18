@@ -581,6 +581,42 @@ cross-level additivity of free energies is claimed, and no claim beyond the decl
 cycle lengths is licensed. Iterating with sector-carrying parents stays out of scope
 (amendment 6's boundary).
 
+## Amendment 11, 2026-08-18: the coupling-scale sweep (M-bind)
+
+Reason. M-info and M-part reached the same verdict from opposite sides: at the declared seed
+the boundary-information ceiling is $5 \times 10^{-6}$ nats and the pair-free null control
+sits within 1% of the coupled partition posterior — there is nothing to bind, so neither the
+capacity nor the formation question was really asked. A single hand-picked "strong" seed
+would introduce exactly the arbitrary knob the amendment-7 sweep existed to kill; instead the
+declared seed's pair table is scaled by a factor $\lambda$, giving one declared ray in
+coupling space with $\lambda = 1$ the published chain and $\lambda = 0$ the existing null.
+
+**Declared family and grid.** Instances: the amendment-6 panel (6-cycle, offsets $\{1\}$ and
+$\{1,2\}$) built from the validated seed with pair table $\lambda \cdot \theta^{\mathrm{pair}}$
+(exact rational scaling), site table unchanged. Grid: $\lambda \in \{0, 1, 3, 10, 30, 100\}$,
+chosen to walk the pair sup from $0.0163$ through order one and beyond; retention ratios are
+not reported at $\lambda = 0$ (zero-over-zero), only the partition posterior is.
+
+**Declared measurements per grid point.** The instruments of amendments 3, 9, and 10, run
+unchanged: the boundary-information ceiling $I(X_{B_1}; X_{B_2})$ in nats; M-info retention
+$R_{\mathrm{MI}}$ at nine-state and 27-label root-framed parents with the constant-sector
+control; M-capacity $R_{\mathrm{cap}}$ and the nine-state sup retention; and the M-part
+class-aggregated partition posterior with its modal class and placement gap.
+
+**Reading rules, fixed now, no thresholds.** (i) "A formation transition exists on this ray"
+is licensed only by an observed modal-class crossing along the grid (singletons to any
+aggregate class); its location is reported as the bracketing grid interval, with no
+interpolation or critical-exponent claim. (ii) The capacity verdict per $\lambda$ follows the
+amendment-9 rule unchanged; whether $R_{\mathrm{MI}}(\lambda)$ rises with signal (an
+adaptive channel) or stays flat (transmission fixed by the kernel, the $t \approx 0.15$
+reading) is the question, and either outcome is reported as measured. (iii) Expected
+directions, declared for honesty: the ceiling should grow roughly as $\lambda^2$ in the weak
+regime and saturate as the flow concentrates; the Ewens prior is $\lambda$-independent, so
+any change in the partition posterior is carried entirely by the derived energy. No
+expectation is declared for the transition itself. (iv) All statements are local to this ray
+and grid; the scaled family is declared, not derived, and universality across seed rays is
+out of scope.
+
 ## Risks
 
 The optimizer is the main one, and C4 exists to expose it rather than to hope. Second, the

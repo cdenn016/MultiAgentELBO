@@ -115,6 +115,7 @@ This layer moved decisively on 2026-08-17, and its results now constrain the oth
 | Sector capacity, corrected 2026-08-18: root-framed belief-charge parents raise retention (0.209/0.568 vs 0.156/0.441 at k = 1/3), still below one | **C** | the 2026-08-17 null was a frame artifact of a gauge-dependent charge (audit F8); capacity was binding at this seed |
 | M-info (amendment 9): MI retention R_MI ≤ 1 by data processing; 0.023→0.025 at k = 1 and 0.067→0.070 at k = 3 going from 9 to 27 labels | **C** | the blocking transmits 2–7% of boundary information; sup-norm retention overstates it by an order of magnitude; the sector gain survives in the law but small |
 | M-part (amendment 10): the partition posterior, given the choice, selects the singleton partition (0.586) over direct (0.306) over staged (0.08/0.025); null control within 1% | **C** | no aggregation is free-energy-favored at this seed; staged is not preferred; the selection is prior-and-kernel dominated because the seed carries nothing to bind |
+| M-bind (amendment 11): coupling-scale sweep lambda 0–100; ceiling grows as lambda² (5e-6 → 5e-2 nats) yet the modal class is singletons at every lambda and R_MI is flat-to-declining | **C** | no formation transition on this ray — the singleton preference is structural, not a weak-coupling artifact; transmission is kernel-limited, not signal-limited; the binding candidate moves to the likelihood sector |
 | Regenerated attention sustains interacting fixed structures (pair sup 0.58–0.62, sustained/injected 1.25) | **C** | horizontal glue is re-bound per level, not inherited |
 | Typing survives regeneration (RC6 0.17–0.27; R-cross 0.64) | **C** | the cocycle reading governs both channels |
 
@@ -143,15 +144,22 @@ with the pair-free null control within 1% of the coupled posteriors — the same
 M-info from the other side: the tiled seed's coupling content is informationally negligible, so
 neither capacity nor formation questions have anything to bind on. Ordered work now:
 
-1. A strongly coupled declared seed. M-info and M-part converge on the same limitation: the
-   C(3,3)-tiled seed carries a boundary-information ceiling of 5e-6 nats, so capacity gains are
-   small fractions of almost nothing and the partition posterior is prior-dominated. Declare a
-   strong-coupling homogeneous seed (pair sup of order one), re-run M-bundle, M-info, and
-   M-part there, and ask the capacity and formation-kinetics questions where there is something
-   to bind.
+1. The likelihood-sector binding question. M-bind (amendment 11) closed the strong-seed item
+   with a structural negative: even at pair sup 1.63, with a lambda²-grown information ceiling
+   four decades above the original seed, the partition posterior prefers singletons at every
+   coupling strength on the declared ray — the derived energy's width penalty is not a
+   weak-coupling artifact. The contrast with M5's fine-instance partition persistence (where
+   observations enter the energy and nontrivial partitions do win) suggests aggregation in this
+   theory binds on shared evidence, not mutual coupling. Declare the comparison: the partition
+   posterior at coarse levels with a likelihood term restored (an observation channel at scale,
+   or the fine instance's data term carried up), against the coupling-only posterior just
+   measured. The sight-limited participatory variant (proposability under bounded visibility)
+   remains the kinetic alternative and would ride the same machinery.
 2. Extended downward kernels for enlarged parent alphabets, which is what iterating
-   sector-carrying parents requires (declared out of scope in amendment 6); paired with item 1's
-   seed, judged by M-info.
+   sector-carrying parents requires (declared out of scope in amendment 6). M-bind prices this
+   down: the sector gain stays small (+10% to +17% in R_MI) at every measured coupling, and
+   transmission is kernel-limited, so a richer alphabet buys little until the kernel family
+   itself changes.
 3. Regenerated-channel dynamics beyond the fixed structure: attention temperature and occupancy
    are declared, not derived — deriving them from the coarse level's own row free energy is the
    theory-faithful upgrade and connects the RG layer to the attention theorems of Layer A.
