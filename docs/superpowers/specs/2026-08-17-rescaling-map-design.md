@@ -532,6 +532,55 @@ reported as measured. No universality, relevance, or cross-seed claim is license
 the statistic down a flow needs the extended downward kernels of the enlarged alphabet and
 stays out of scope exactly as amendment 6 declared.
 
+## Amendment 10, 2026-08-18: participatory blocking (M-part)
+
+Reason. Every blocking so far was declared; the theory carries its own selection mechanism,
+the Proposition-4 partition posterior $Q_R(R) \propto P_R(R)\,e^{-U(R)}$ with $U$ derived
+rather than proposed. Letting that posterior choose the blocking at each level turns the
+formation-kinetics question — does free energy prefer staged aggregation over direct — into a
+measurement inside the lab's own machinery instead of an imported analogy. This amendment
+declares the construction and the measurement before running either.
+
+**Declared construction.** At a level carrying instance couplings with action $A$, the level
+law is the Boltzmann flow $w(x) \propto e^{-A(x)}$ and the level model is the level-invariant
+kernel model of the instance's graph. The block energy of a candidate blocking $R$ is the
+flow-averaged derived energy $\bar U(R) = \mathbb E_w[U(R, x)]$, with $U$ exactly the
+Proposition-4 sum of conditional divergences at the frozen recognition coordinates the M5
+module declares; this equals Proposition 4 with the point-mass $Q_0$ replaced by the level's
+flow law up to an $R$-independent constant (the flow entropy), so the induced Gibbs law over
+candidates is identical — the same flow-averaging convention amendment 4 declared for
+regeneration. The posterior is $Q_R(R) \propto P_{\mathrm{Ewens}}(R)\,e^{-\bar U(R)}$ at
+temperature one and the kernel model's declared concentration (one); no tempered sector.
+
+**Declared candidate set.** For an $L$-cycle: the singleton partition, and every consecutive
+blocking at every ratio $r \mid L$, $2 \le r \le L$, in every rotational placement ($r$
+placements for a proper divisor, one for $r = L$; wrapped blocks are consecutive on the
+cycle). For $L = 6$: seven candidates in four classes — singletons, ratio two (two
+placements), ratio three (three placements), ratio six (the direct single block). Rotational
+placements of one class must carry equal posterior mass on a homogeneous instance; that
+equality is reported as a homogeneity check, not assumed.
+
+**Declared step and path.** The realized step blocks by the modal class, using its
+lexicographically first placement (licensed by the measured placement symmetry), through the
+audited read-back route; the flow stops when the modal class is the singleton partition or the
+level has one site. The path runs in both channels: the regenerated channel (amendment 4's
+rule) as primary, the passive channel as control. On the 6-cycle the reachable paths are
+exactly the C6 factorization panel: $6 \to 3 \to 1$, $6 \to 2 \to 1$, and $6 \to 1$ direct.
+
+**Declared measurement, M-part.** On the declared 6-cycle instances (offsets $\{1\}$ and
+$\{1,2\}$, declared seed): per level of the realized path, the class-aggregated posterior over
+candidates and the flow-averaged energies behind it; the realized path in each channel; and a
+null control on the pair-free instance (site table only, zero pair couplings), which isolates
+what the prior and kernel structure prefer with no coupling content to bind. **Reading rule,
+fixed now, no threshold.** Report the class masses as computed. The statement "staged
+aggregation is free-energy-favored" is licensed exactly when, at every level of the realized
+path, the direct-to-one candidate's class mass lies below the modal proper blocking's class
+mass; a modal singleton class at level zero reads "no aggregation is favored at this seed",
+and a modal direct class reads "direct collapse is favored" — each reported as measured. No
+cross-level additivity of free energies is claimed, and no claim beyond the declared seed and
+cycle lengths is licensed. Iterating with sector-carrying parents stays out of scope
+(amendment 6's boundary).
+
 ## Risks
 
 The optimizer is the main one, and C4 exists to expose it rather than to hope. Second, the

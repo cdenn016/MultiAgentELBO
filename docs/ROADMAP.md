@@ -114,6 +114,7 @@ This layer moved decisively on 2026-08-17, and its results now constrain the oth
 | Boundary multiplicity saturates: retention 0.156/0.441/0.564 at k = 1/3/6 | **C** | thicker boundaries cannot rescue the passive channel |
 | Sector capacity, corrected 2026-08-18: root-framed belief-charge parents raise retention (0.209/0.568 vs 0.156/0.441 at k = 1/3), still below one | **C** | the 2026-08-17 null was a frame artifact of a gauge-dependent charge (audit F8); capacity was binding at this seed |
 | M-info (amendment 9): MI retention R_MI ≤ 1 by data processing; 0.023→0.025 at k = 1 and 0.067→0.070 at k = 3 going from 9 to 27 labels | **C** | the blocking transmits 2–7% of boundary information; sup-norm retention overstates it by an order of magnitude; the sector gain survives in the law but small |
+| M-part (amendment 10): the partition posterior, given the choice, selects the singleton partition (0.586) over direct (0.306) over staged (0.08/0.025); null control within 1% | **C** | no aggregation is free-energy-favored at this seed; staged is not preferred; the selection is prior-and-kernel dominated because the seed carries nothing to bind |
 | Regenerated attention sustains interacting fixed structures (pair sup 0.58–0.62, sustained/injected 1.25) | **C** | horizontal glue is re-bound per level, not inherited |
 | Typing survives regeneration (RC6 0.17–0.27; R-cross 0.64) | **C** | the cocycle reading governs both channels |
 
@@ -135,15 +136,22 @@ the 2026-08-18 audit retired the gauge-dependent sector charge. The alphabet-com
 capacity statistic then closed the same day (amendment 9, M-info): retention is bounded by one
 as a data-processing theorem, the blocking transmits 2–7% of the boundary information at the
 declared seed, and the sector gain is confirmed in direction but only +10%/+5% relative — the
-sup norm overstated both the retention and the sector effect. Ordered work now:
+sup norm overstated both the retention and the sector effect. Participatory blocking then
+closed as declared (amendment 10, M-part): given the choice, the Proposition-4 posterior
+prefers no aggregation at all at this seed (singletons 0.586, direct 0.306, staged 0.08/0.025),
+with the pair-free null control within 1% of the coupled posteriors — the same diagnosis as
+M-info from the other side: the tiled seed's coupling content is informationally negligible, so
+neither capacity nor formation questions have anything to bind on. Ordered work now:
 
-1. Participatory blocking: let the partition posterior select the blocking at each step instead
-   of declaring it, and measure whether free energy prefers staged aggregation over direct — the
-   formation-kinetics question, asked inside the lab's own selection mechanism.
+1. A strongly coupled declared seed. M-info and M-part converge on the same limitation: the
+   C(3,3)-tiled seed carries a boundary-information ceiling of 5e-6 nats, so capacity gains are
+   small fractions of almost nothing and the partition posterior is prior-dominated. Declare a
+   strong-coupling homogeneous seed (pair sup of order one), re-run M-bundle, M-info, and
+   M-part there, and ask the capacity and formation-kinetics questions where there is something
+   to bind.
 2. Extended downward kernels for enlarged parent alphabets, which is what iterating
-   sector-carrying parents requires (declared out of scope in amendment 6). The M-info verdict —
-   a confirmed but small sector gain at a weakly correlated seed — prices this: pair it with a
-   more strongly coupled seed, or a richer sector map judged by M-info, before investing.
+   sector-carrying parents requires (declared out of scope in amendment 6); paired with item 1's
+   seed, judged by M-info.
 3. Regenerated-channel dynamics beyond the fixed structure: attention temperature and occupancy
    are declared, not derived — deriving them from the coarse level's own row free energy is the
    theory-faithful upgrade and connects the RG layer to the attention theorems of Layer A.
