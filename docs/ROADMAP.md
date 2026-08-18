@@ -119,6 +119,7 @@ This layer moved decisively on 2026-08-17, and its results now constrain the oth
 | M-anchor (amendment 12): the environment restored as a blockable agent class; uniform anchors flip modal to direct (0.55/0.84), distinct control anti-binds (0.90 singletons), shared pairs pull the aligned blocking 8x | **C** | environmental binding licensed — condensation follows shared evidence, and the posterior selects the anchor-aligned placement, not just the ratio |
 | M-flow (amendment 12): annealed joint dynamics on (x, R), sampler validated against the exact marginal; bare-instance verdict reverses quenched (direct 0.44 modal vs singletons 0.586) | **C** | the theory's process is more aggregation-prone than its frozen landscape; the M-part/M-bind negatives were statements about the quenched update on environment-free levels |
 | M-cross-env (amendment 13): the aligned-pairing mass saturates at 0.201 by k_env = 32 (quenched = annealed in the frozen limit), no crossing; distinct control clean | **C** | point-mass environments align but cannot correlate — shared and duplicated evidence coincide at infinite inertia; correlation-binding needs finite-inertia environmental agents |
+| M-share (amendment 14): finite-inertia shared environments by exact marginalization; aligned mass rises monotonically to the pinned plateau, never above it; shared beats duplicated 9x at m = 0; free strong sharing tips direct modal | **C** | alignment and correlation are competing channels, not composing ones — pure alignment wins for the aligned-placement statistic; the surviving formation barrier is the derived energy's width penalty |
 | Regenerated attention sustains interacting fixed structures (pair sup 0.58–0.62, sustained/injected 1.25) | **C** | horizontal glue is re-bound per level, not inherited |
 | Typing survives regeneration (RC6 0.17–0.27; R-cross 0.64) | **C** | the cocycle reading governs both channels |
 
@@ -147,15 +148,13 @@ with the pair-free null control within 1% of the coupled posteriors — the same
 M-info from the other side: the tiled seed's coupling content is informationally negligible, so
 neither capacity nor formation questions have anything to bind on. Ordered work now:
 
-1. Finite-inertia environmental agents. M-cross-env closed the crossing question with the
-   declared plateau: point-mass environments align but cannot correlate, so shared and
-   duplicated evidence coincide at infinite inertia and the aligned pairing saturates below
-   modal. The correlation channel of shared evidence requires environmental agents with finite
-   belief inertia — a fluctuating environmental state summed over with its own prior, whose
-   marginalization induces effective coupling between co-attached sites, and whose blocking
-   under the RG step is then a genuine (not point-mass) application of the audited kernel.
-   Declare the construction, verify the induced coupling against the direct calculation, and
-   re-ask the condensation question where sharing means sharing.
+1. Closed 2026-08-18 (amendment 14, M-share): finite-inertia shared environments built by
+   exact marginalization, limits and controls verified. Correlation binding per the strict
+   rule is not licensed — alignment and correlation are competing channels for the aligned
+   placement, and pure alignment wins at this seed — but the correlation channel is real
+   (9× the private-duplicate control at zero inertia) and free strong sharing tips direct
+   collapse. What survives every instrument this week is the derived energy's width penalty;
+   attacking it head-on means the level-invariant kernel family itself (see semigroup item).
 2. The regenerated channel composed with the environmental dressing (deferred in amendment
    12): regeneration reads the dressed flow's transported divergences, the injection is a pair
    term so undressing (a site operation) composes cleanly; declare and measure.

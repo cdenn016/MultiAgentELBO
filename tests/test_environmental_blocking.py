@@ -91,3 +91,76 @@ def test_the_coupled_descent_is_deterministic_and_reports_a_law() -> None:
     assert abs(sum(mass for _, mass in first.class_occupancies) - 1.0) <= 1.0e-9
     assert 0.0 < first.acceptance_rate <= 1.0
     assert len(first.per_replica_modal) == 1
+
+
+def test_shared_environments_reproduce_the_direct_marginalization_exactly() -> None:
+    import numpy as np
+
+    from multiagent_elbo.finite.environmental_blocking import (
+        SharedEnvironment,
+        _state_divergence_table,
+        shared_dressed_instance,
+    )
+
+    instance = homogeneous_cycle_instance(4, SITE, PAIR)
+    environment = SharedEnvironment(
+        groups=((1, 2), (3,)), preferred=(4, 7), strength=2.0, inertia=1.5
+    )
+    dressed = shared_dressed_instance(instance, environment)
+    model = _kernel_model(instance.graph, "test-shared")
+    divergence = _state_divergence_table(model)
+    bare = couplings_action(instance.couplings)
+    total = couplings_action(dressed.couplings)
+    for state in [(0, 0, 0, 0), (3, 1, 4, 5), (8, 2, 7, 6)]:
+        expected = float(bare[state])
+        for group, preferred in zip(environment.groups, environment.preferred):
+            prior = np.exp(-environment.inertia * divergence[:, preferred])
+            prior = prior / prior.sum()
+            weight = float(
+                np.sum(
+                    prior
+                    * np.exp(
+                        -environment.strength
+                        * sum(divergence[state[site - 1], :] for site in group)
+                    )
+                )
+            )
+            expected += -np.log(weight)
+        assert abs(float(total[state]) - expected) <= 1.0e-10
+
+
+def test_the_point_mass_limit_and_the_private_duplicate_control() -> None:
+    from multiagent_elbo.finite.environmental_blocking import (
+        SharedEnvironment,
+        induced_pair_sup,
+        shared_dressed_instance,
+    )
+
+    instance = homogeneous_cycle_instance(4, SITE, PAIR)
+    frozen = SharedEnvironment(
+        groups=((1, 2), (3, 4)), preferred=(4, 7), strength=2.0, inertia=1.0e8
+    )
+    assert induced_pair_sup(instance, frozen) <= 1.0e-6
+    pinned = dressed_instance(
+        instance, EnvironmentalDressing(pinned=(4, 4, 7, 7), strength=2.0)
+    )
+    limit = shared_dressed_instance(instance, frozen)
+    gap = couplings_action(limit.couplings) - couplings_action(pinned.couplings)
+    assert float(abs(gap - gap[(0, 0, 0, 0)]).max()) <= 1.0e-5
+    duplicates = SharedEnvironment(
+        groups=((1,), (2,), (3,), (4,)),
+        preferred=(4, 4, 7, 7),
+        strength=2.0,
+        inertia=1.5,
+    )
+    assert induced_pair_sup(instance, duplicates) == 0.0
+    with pytest.raises(ValueError):
+        shared_dressed_instance(
+            instance,
+            SharedEnvironment(groups=((1, 2), (2, 3)), preferred=(0, 0), strength=1.0, inertia=1.0),
+        )
+    with pytest.raises(ValueError):
+        shared_dressed_instance(
+            instance,
+            SharedEnvironment(groups=((1, 2, 3),), preferred=(0,), strength=1.0, inertia=1.0),
+        )

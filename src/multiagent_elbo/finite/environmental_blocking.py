@@ -45,6 +45,7 @@ from .coupling_readback import (
     _kernel_model,
     couplings_action,
     iterated_step,
+    mobius_couplings,
 )
 from .participatory_blocking import (
     BlockingPosterior,
@@ -215,6 +216,154 @@ def anchored_posterior(
 
 
 @dataclass(frozen=True)
+class SharedEnvironment:
+    """Finite-inertia environmental agents, one per declared disjoint site group."""
+
+    groups: tuple[tuple[int, ...], ...]
+    preferred: tuple[int, ...]
+    strength: float
+    inertia: float
+
+
+def _state_divergence_table(model: FalsificationModel) -> np.ndarray:
+    r"""Return the strength-one two-channel divergence table $F(x, y)$."""
+    size = model.state_count
+    table = np.zeros((size, size), dtype=np.float64)
+    for left in range(size):
+        left_belief, left_model = model.state_pair(left)
+        for right in range(size):
+            right_belief, right_model = model.state_pair(right)
+            value = kl_laws(left_belief, right_belief) + kl_laws(left_model, right_model)
+            if not math.isfinite(value):
+                raise ValueError(
+                    "the declared families must have full support for the dressing"
+                )
+            table[left, right] = value
+    return table
+
+
+def shared_dressed_instance(
+    instance: PairwiseInstance,
+    environment: SharedEnvironment,
+) -> PairwiseInstance:
+    r"""Fold finite-inertia shared environmental agents into the couplings, exactly.
+
+    Each group's agent carries the prior $\rho(y) \propto e^{-m F(y, \epsilon)}$
+    and couples to its attached sites at strength $\kappa_{\mathrm{env}}$; it is
+    integrated out exactly, and the induced group potential
+    $-\log \sum_y \rho(y) e^{-\kappa \sum_a F(x_a, y)}$ is decomposed by the
+    anchored Moebius route into constant, site, and (for pair groups) pair
+    components — the pair component is the correlation channel a point-mass
+    environment cannot carry, and it vanishes as $m \to \infty$. Groups of
+    size one and two are declared; larger groups are deferred.
+    """
+    model = _kernel_model(instance.graph, "shared-environment")
+    size = model.state_count
+    length = len(model.agents)
+    seen: set[int] = set()
+    for group in environment.groups:
+        for site in group:
+            if type(site) is not int or not 1 <= site <= length or site in seen:
+                raise ValueError("groups must be disjoint sets of declared sites")
+            seen.add(site)
+        if len(group) not in (1, 2):
+            raise ValueError("declared group sizes are one and two")
+    if len(environment.preferred) != len(environment.groups):
+        raise ValueError("one preferred state per group is required")
+    if any(
+        type(value) is not int or not 0 <= value < size
+        for value in environment.preferred
+    ):
+        raise ValueError("preferred states must index the declared state space")
+    strength = float(environment.strength)
+    inertia = float(environment.inertia)
+    if not math.isfinite(strength) or strength < 0.0:
+        raise ValueError("the environmental strength must be finite and nonnegative")
+    if not math.isfinite(inertia) or inertia < 0.0:
+        raise ValueError("the environmental inertia must be finite and nonnegative")
+    divergence = _state_divergence_table(model)
+    couplings = instance.couplings
+    site_tables = [list(table) for table in couplings.sites]
+    pair_tables: dict[tuple[int, int], list[list[Fraction]]] = {
+        pair: [list(row) for row in table] for pair, table in couplings.pairs
+    }
+    constant = couplings.constant
+    for group, preferred in zip(environment.groups, environment.preferred):
+        log_prior = -inertia * divergence[:, preferred]
+        log_prior = log_prior - float(np.max(log_prior))
+        prior = np.exp(log_prior)
+        prior = prior / prior.sum()
+        if len(group) == 1:
+            position = group[0] - 1
+            induced = -np.log(
+                np.einsum("y,xy->x", prior, np.exp(-strength * divergence))
+            )
+            for state in range(size):
+                site_tables[position][state] += Fraction(
+                    float(induced[state] - induced[0])
+                )
+            constant += Fraction(float(induced[0]))
+            continue
+        left, right = sorted(position - 1 for position in group)
+        boltzmann = np.exp(-strength * divergence)
+        induced = -np.log(
+            np.einsum("xy,zy,y->xz", boltzmann, boltzmann, prior)
+        )
+        action = {
+            (row, column): Fraction(float(induced[row, column]))
+            for row in range(size)
+            for column in range(size)
+        }
+        decomposed, omitted = mobius_couplings(action, ((0, 1),))
+        if omitted != Fraction(0):
+            raise ValueError("a width-two decomposition cannot omit anything")
+        for state in range(size):
+            site_tables[left][state] += decomposed.sites[0][state]
+            site_tables[right][state] += decomposed.sites[1][state]
+        pair_table = dict(decomposed.pairs)[(0, 1)]
+        existing = pair_tables.setdefault(
+            (left, right), [[Fraction(0)] * size for _ in range(size)]
+        )
+        for row in range(size):
+            for column in range(size):
+                existing[row][column] += pair_table[row][column]
+        constant += decomposed.constant
+    return PairwiseInstance(
+        graph=instance.graph,
+        couplings=PairwiseCouplings(
+            width=couplings.width,
+            constant=constant,
+            sites=tuple(tuple(table) for table in site_tables),
+            pairs=tuple(
+                sorted(
+                    (pair, tuple(tuple(row) for row in table))
+                    for pair, table in pair_tables.items()
+                )
+            ),
+        ),
+    )
+
+
+def induced_pair_sup(
+    instance: PairwiseInstance,
+    environment: SharedEnvironment,
+) -> float:
+    """Return the sup of the environment-induced pair components alone."""
+    bare_pairs = {
+        pair: table for pair, table in instance.couplings.pairs
+    }
+    dressed = shared_dressed_instance(instance, environment)
+    supremum = 0.0
+    for pair, table in dressed.couplings.pairs:
+        bare = bare_pairs.get(pair)
+        for row_index, row in enumerate(table):
+            for column_index, value in enumerate(row):
+                base = bare[row_index][column_index] if bare is not None else Fraction(0)
+                supremum = max(supremum, abs(float(value - base)))
+    return supremum
+
+
+@dataclass(frozen=True)
 class DescentReport:
     """M-flow: dynamical class occupancies of the joint (state, partition) walk."""
 
@@ -326,9 +475,12 @@ def coupled_blocking_descent(
 __all__ = [
     "DescentReport",
     "EnvironmentalDressing",
+    "SharedEnvironment",
     "anchored_posterior",
     "coupled_blocking_descent",
     "dressed_instance",
     "environmental_parent",
     "environmental_step",
+    "induced_pair_sup",
+    "shared_dressed_instance",
 ]

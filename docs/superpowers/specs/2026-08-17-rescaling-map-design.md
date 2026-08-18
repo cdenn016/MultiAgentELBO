@@ -696,6 +696,43 @@ condensing — the residual graph-group and prior preference decides", reported 
 crossing in the distinct control at the same strength voids the corresponding reading as a
 field-strength artifact. No claim beyond this seed, pattern, and grid.
 
+## Amendment 14, 2026-08-18: finite-inertia shared environments (M-share)
+
+Reason. M-cross-env showed that a point-mass environment aligns but cannot correlate: a
+per-site pinned dressing factorizes over sites, so shared and duplicated evidence coincide at
+infinite inertia and the aligned pairing saturates below modal. The correlation channel of
+shared evidence exists only when the shared environmental agent has finite belief inertia — a
+fluctuating state whose exact marginalization couples its co-attached neighbors.
+
+**Declared construction.** A shared environment is a set of disjoint site groups, each
+carrying one environmental agent with the declared nine-state space, a preferred state
+$\epsilon$, an inertia $m \ge 0$, and a coupling strength $\kappa_{\mathrm{env}}$. The agent's
+prior is $\rho(y) \propto e^{-m F(y, \epsilon)}$ and its coupling to each attached site is
+$\kappa_{\mathrm{env}} F(x_a, y)$, with $F$ the strength-one two-channel divergence of the
+declared families at identity transport. The agent is integrated out exactly: the induced
+group potential is $-\log \sum_y \rho(y)\, e^{-\kappa_{\mathrm{env}} \sum_{a} F(x_a, y)}$,
+decomposed by the anchored Moebius route (exact, and complete for the declared group sizes of
+one and two; larger groups are deferred) and added to the instance's couplings — singleton
+groups induce a pure site field, pair groups additionally induce the pair coupling that is the
+correlation channel. Two limits are verified, not assumed: $m \to \infty$ recovers the
+amendment-12 point-mass dressing (induced pair component vanishing), and the
+**private-duplicate control** — singleton groups at the same preferred states, strengths, and
+inertias — induces zero pair coupling by construction and is measured alongside.
+
+**Declared measurement, M-share.** The declared 6-cycle at offsets $\{1\}$, $\lambda = 1$;
+shared pair groups $((1,2),(3,4),(5,6))$ with preferred states $(0, 4, 8)$;
+$\kappa_{\mathrm{env}} \in \{2, 8\}$ and inertia grid $m \in \{0, 1, 4, 16, 64\}$, with the
+amendment-13 pinned plateau as the $m = \infty$ reference. Per point: the quenched class
+masses and the aligned placement's own mass, the induced pair sup (the measured correlation
+strength), and the private-duplicate control at the same grid; the annealed marginal is
+computed exactly at the most-bound grid point as a check. Iterating shared environments under
+blocking is deferred. **Reading rule, fixed now.** "Correlation binding" is licensed exactly
+when the aligned placement's mass at some finite $m$ exceeds the pinned plateau while the
+private-duplicate control shows no such excess; "the aligned pairing condenses" requires the
+aligned placement modal, bracketed in $m$. One direction is declared in advance because it is
+provable: the induced pair component vanishes as $m \to \infty$. No expectation is declared
+for where in $m$ binding peaks; no claim beyond this seed, groups, and grid.
+
 ## Risks
 
 The optimizer is the main one, and C4 exists to expose it rather than to hope. Second, the
