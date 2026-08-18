@@ -116,6 +116,8 @@ This layer moved decisively on 2026-08-17, and its results now constrain the oth
 | M-info (amendment 9): MI retention R_MI ≤ 1 by data processing; 0.023→0.025 at k = 1 and 0.067→0.070 at k = 3 going from 9 to 27 labels | **C** | the blocking transmits 2–7% of boundary information; sup-norm retention overstates it by an order of magnitude; the sector gain survives in the law but small |
 | M-part (amendment 10): the partition posterior, given the choice, selects the singleton partition (0.586) over direct (0.306) over staged (0.08/0.025); null control within 1% | **C** | no aggregation is free-energy-favored at this seed; staged is not preferred; the selection is prior-and-kernel dominated because the seed carries nothing to bind |
 | M-bind (amendment 11): coupling-scale sweep lambda 0–100; ceiling grows as lambda² (5e-6 → 5e-2 nats) yet the modal class is singletons at every lambda and R_MI is flat-to-declining | **C** | no formation transition on this ray — the singleton preference is structural, not a weak-coupling artifact; transmission is kernel-limited, not signal-limited; the binding candidate moves to the likelihood sector |
+| M-anchor (amendment 12): the environment restored as a blockable agent class; uniform anchors flip modal to direct (0.55/0.84), distinct control anti-binds (0.90 singletons), shared pairs pull the aligned blocking 8x | **C** | environmental binding licensed — condensation follows shared evidence, and the posterior selects the anchor-aligned placement, not just the ratio |
+| M-flow (amendment 12): annealed joint dynamics on (x, R), sampler validated against the exact marginal; bare-instance verdict reverses quenched (direct 0.44 modal vs singletons 0.586) | **C** | the theory's process is more aggregation-prone than its frozen landscape; the M-part/M-bind negatives were statements about the quenched update on environment-free levels |
 | Regenerated attention sustains interacting fixed structures (pair sup 0.58–0.62, sustained/injected 1.25) | **C** | horizontal glue is re-bound per level, not inherited |
 | Typing survives regeneration (RC6 0.17–0.27; R-cross 0.64) | **C** | the cocycle reading governs both channels |
 
@@ -144,17 +146,15 @@ with the pair-free null control within 1% of the coupled posteriors — the same
 M-info from the other side: the tiled seed's coupling content is informationally negligible, so
 neither capacity nor formation questions have anything to bind on. Ordered work now:
 
-1. The likelihood-sector binding question. M-bind (amendment 11) closed the strong-seed item
-   with a structural negative: even at pair sup 1.63, with a lambda²-grown information ceiling
-   four decades above the original seed, the partition posterior prefers singletons at every
-   coupling strength on the declared ray — the derived energy's width penalty is not a
-   weak-coupling artifact. The contrast with M5's fine-instance partition persistence (where
-   observations enter the energy and nontrivial partitions do win) suggests aggregation in this
-   theory binds on shared evidence, not mutual coupling. Declare the comparison: the partition
-   posterior at coarse levels with a likelihood term restored (an observation channel at scale,
-   or the fine instance's data term carried up), against the coupling-only posterior just
-   measured. The sight-limited participatory variant (proposability under bounded visibility)
-   remains the kinetic alternative and would ride the same machinery.
+1. Amendment 12 follow-ups. The environmental-binding question is answered (M-anchor: uniform
+   anchors bind, distinct anchors anti-bind, shared pairs pull the aligned placement eightfold
+   without crossing at the declared strengths) and the process-landscape gap is measured
+   (M-flow: the annealed joint reverses the quenched verdict on the bare instance). Open in
+   order of leverage: the shared-pairs condensation crossing (the anchor strength at which the
+   aligned pairing becomes modal — bracketed above k_env = 8 or absent, one declared sweep);
+   the regenerated channel composed with the environmental dressing (deferred in amendment 12);
+   and the sight-limited participatory variant, whose staged-proposability prediction now has a
+   live target since the annealed process actually favors aggregation.
 2. Extended downward kernels for enlarged parent alphabets, which is what iterating
    sector-carrying parents requires (declared out of scope in amendment 6). M-bind prices this
    down: the sector gain stays small (+10% to +17% in R_MI) at every measured coupling, and

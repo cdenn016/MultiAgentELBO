@@ -617,6 +617,58 @@ expectation is declared for the transition itself. (iv) All statements are local
 and grid; the scaled family is declared, not derived, and universality across seed rays is
 out of scope.
 
+## Amendment 12, 2026-08-18: the environment as a blockable agent class (M-anchor), and the coarse coupled-descent instrument (M-flow)
+
+Reason. Two fidelity gaps between the lab and the theory, named in the 2026-08-18 assessment.
+First, the record is consumed at the fine level, so every coarse level is a closed system —
+but under the agent-only ontology an observation *is* a coupling to an environmental agent, an
+agent of effectively infinite belief inertia, and such agents should block like everything
+else rather than be integrated out. Second, the lab evaluates the theory's variational
+objects exactly but never runs its local dynamics at coarse levels: M-part and M-bind measured
+the landscape, not the process. This amendment declares the minimal faithful repair of each.
+
+**Declared construction, environment.** An environmental dressing of a level is one pinned
+state $\epsilon_a$ per site and one strength $\kappa_{\mathrm{env}}$; the environmental agent
+shares its site's frame (identity transport), and its coupling contributes the site field
+$F_a(x) = \kappa_{\mathrm{env}}\,[\,\mathrm{KL}(b_x \| b_{\epsilon_a}) + \mathrm{KL}(m_x \|
+m_{\epsilon_a})\,]$, the two-channel divergence of the declared families. Dressing an instance
+adds the anchored field to its site tables (anchor shift into the constant), so the dressed
+level rides every audited instrument unchanged. Under blocking the environment blocks too: the
+block's environmental parent is pinned at the Bayes-optimal parent of its pinned children
+under the declared downward kernels, $\epsilon_B = \arg\min_p \sum_{a \in B} -\log
+K(\epsilon_a \mid p)$ — the infinite-inertia (point-mass) limit of the audited kernel — and
+the coarse level's couplings are the audited read-back of the dressed contraction with the
+declared coarse field subtracted from the site sector, which is exact because the field is a
+site function. Environmental agents are not themselves partition members (the constituent-only
+boundary); they enter the posterior through the flow they reshape. The regenerated channel's
+composition with dressing is out of scope here; the anchored flow runs the passive channel.
+
+**Declared measurement, M-anchor.** On the declared 6-cycle at offsets $\{1\}$, $\lambda = 1$:
+the amendment-10 class posterior on the dressed instance for three declared pinning patterns —
+shared-per-pair $(\epsilon = 0,0,4,4,8,8)$, uniform $(0,\dots,0)$, and the distinct control
+$(0,1,2,3,4,5)$ — at $\kappa_{\mathrm{env}} \in \{0.5, 2, 8\}$, against the undressed
+baseline. If a modal-class flip occurs, the anchored participatory flow is run and its
+realized path reported. **Reading rule, fixed now:** "environmental binding" is licensed
+exactly when shared anchors flip the modal class away from singletons while the distinct
+control does not; a flip under the distinct control as well reads "field-strength artifact,
+not anchoring". The pinned values are declared, not swept; no claim beyond this seed, pattern
+set, and grid.
+
+**Declared instrument, M-flow.** Joint Gibbs dynamics on $(x, R)$ at level zero targeting
+$\pi(x, R) \propto e^{-A_{\mathrm{dressed}}(x)}\, P_{\mathrm{Ewens}}(R)\, e^{-U(R, x)}$:
+single-site state moves and uniform candidate partition moves (move probability one half),
+Metropolis acceptance on the joint energy. This target is the *annealed* joint, deliberately
+distinct from amendment 10's *quenched* coordinate update $e^{-\mathbb E_w[U]}$ — the
+difference (Jensen) is itself part of the process-versus-landscape comparison and is reported,
+not reconciled. Declared budget: three replicas of 20,000 steps, burn-in 5,000, seeds 0, 1, 2.
+Reported: dynamical class occupancies after burn-in per replica, the modal dynamical class,
+and the comparison against the static posterior on the same dressed instance — for the bare
+instance and the shared-per-pair pattern at $\kappa_{\mathrm{env}} = 2$. **Reading rule:** the
+dynamics are the theory's process; agreement of dynamical occupancies with the static classes
+reads "the landscape verdict survives the process", disagreement is reported as the measured
+gap with no reconciliation claim. No relaxation-time or exit-time claim is made at this
+budget.
+
 ## Risks
 
 The optimizer is the main one, and C4 exists to expose it rather than to hope. Second, the
