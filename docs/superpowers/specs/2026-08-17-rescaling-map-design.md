@@ -393,6 +393,62 @@ reported, without thresholds: the fixed pairwise sup norm against the one-step i
 contraction; and the passive-versus-regenerated comparison at the same seed. Interpretation
 after the fact, labeled.
 
+## Amendment 5, 2026-08-17: completeness measurements on the regenerated cocycle
+
+Reason. M-regen established that the regenerated composite sustains interacting fixed
+structures. Three declared report-only measurements complete the comparison between the passive
+and regenerated readings before the documents are updated; none carries a threshold, and each
+interpretation is stated after the fact and labeled.
+
+**RC6, regenerated composition defect.** The C6 statistic on regenerated flows of the
+homogeneous 6-cycle: staged routes regenerate at every intermediate level with edges, the
+direct route has no intermediate level to regenerate, and the final single-site Moebius site
+tables are compared in sup norm. Declared in advance: under regeneration the staged and direct
+routes differ *by construction*, because intermediate levels act — a larger defect than the
+passive 0.15--0.19 is the expected direction, and the number measures how much level activity
+adds to the typing, not whether typing occurs.
+
+**R-ray.** The one-step ray comparison between the declared 6-cycle seed and the regenerated
+coarse couplings at ratio two, reported as scale and relative residual beside the passive
+values (scale 1.16, residual 0.15 at 8 to 4; the regenerated comparison runs at 6 to 3).
+
+**R-cross.** The regenerated ratio-two fixed vector on the 6-cycle against the regenerated
+ratio-three fixed vector on the 9-cycle, relative sup difference, beside the passive 0.81.
+Whether the interacting fixed structures remain ratio-typed is the question; either answer is
+a result. The 9-cycle iteration routes each application through the declared worker protocol.
+
+## Amendment 6, 2026-08-18: sector-carrying parents and the capacity question
+
+Reason. The parent state space has been pinned to the child's nine states at every level — the
+block-spin convention, declared in the original design as the identity state identification.
+The M-bundle saturation suggested that pin is a genuine information bottleneck: however many
+couplings cross a block boundary, the correlation they mediate must be encoded in nine parent
+states. The theory's retention route already licenses larger parents at a declared capacity
+price, and the physical reading is the irreducible-sector decomposition (two spins jointly
+carry singlet-plus-triplet, and the sector label is what no transport can change). This
+amendment declares the smallest sector extension and its one-step measurement.
+
+**Declared construction.** The sector of a block configuration is its belief-channel $Z_3$
+charge: $s(x_B) = \sum_{a \in B} k_a \bmod 3$, where $k_a$ is the unique orbit coordinate of
+agent $a$'s belief component relative to the first family member (the orbit is free because
+the belief seed is asymmetric). The extended blocking kernel is
+$T\bigl((p,s) \mid x_B\bigr) = T(p \mid x_B)\,\mathbf 1[s = s(x_B)]$, the audited Bayes kernel
+with a deterministic sector readout, normalized over the $27$ parent labels by construction.
+The coarse action lives on the $27$-state parent alphabet and is read back by the exact
+Moebius route with all coarse pairs admitted.
+
+**Declared measurement, M-capacity.** The one-step pair retention factor with sector-carrying
+parents, $R_{\mathrm{cap}}$, on the homogeneous 6-cycle at ratio two with offsets $\{1\}$ and
+$\{1,2\}$, reported beside the passive nine-state values ($0.156$ and $0.441$). **Declared
+control:** the same computation with the sector readout replaced by the constant label must
+reproduce the nine-state retention exactly, which pins the machinery. No pass threshold; the
+declared reading rule, fixed now: retention is compared per unit of injected capacity, the
+sector map is one declared charge among many, and a rise in $R_{\mathrm{cap}}$ licenses only
+the statement that capacity was binding at this seed, not that this sector map is canonical.
+Iterating sector-carrying parents (a 27-state level-two theory) requires extending the
+downward kernels to the enlarged alphabet and is a separate construction, declared out of
+scope for this amendment.
+
 ## Risks
 
 The optimizer is the main one, and C4 exists to expose it rather than to hope. Second, the

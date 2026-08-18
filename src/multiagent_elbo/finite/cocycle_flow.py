@@ -33,7 +33,13 @@ from typing import Sequence
 import numpy as np
 
 from ..cuda_backend import Backend
-from .closure_residual import _blocked_action, _divergence_table
+from .categorical_falsification_model import FalsificationModel
+from .closure_residual import (
+    _block_bayes_kernel,
+    _block_prior_vector,
+    _blocked_action,
+    _divergence_table,
+)
 from .contraction_backend import iterated_step_via_worker
 from .coupling_readback import (
     PairwiseCouplings,
@@ -233,6 +239,155 @@ def one_step_pair_retention(
         coarse_pair_sup=coarse_sup,
         retention=coarse_sup / fine_sup if fine_sup else 0.0,
         omitted_sup=float(omitted),
+    )
+
+
+@dataclass(frozen=True)
+class CapacityRetention:
+    """Measurement M-capacity: one-step retention with sector-carrying parents."""
+
+    length: int
+    offsets: tuple[int, ...]
+    ratio: int
+    sector_count: int
+    fine_pair_sup: float
+    coarse_pair_sup: float
+    retention: float
+
+
+def _belief_orbit_coordinates(model: FalsificationModel) -> np.ndarray:
+    """Return, per joint state, the orbit coordinate of its belief component.
+
+    The coordinate is the unique group element carrying the first family member
+    onto the state's belief law; it exists and is unique because the family is
+    a free orbit of an asymmetric seed.
+    """
+    order = model.graph.order
+    base = model.belief_family[0]
+    coordinate_of_law = {}
+    for k in range(order):
+        coordinate_of_law[model.belief_representation.act(k, base)] = k
+    model_size = len(model.model_family)
+    return np.array(
+        [
+            coordinate_of_law[model.belief_family[index // model_size]]
+            for index in range(model.state_count)
+        ],
+        dtype=np.int64,
+    )
+
+
+def capacity_pair_retention(
+    instance: PairwiseInstance,
+    ratio: int,
+    sector_count: int = GROUP_ORDER,
+    constant_sector: bool = False,
+) -> CapacityRetention:
+    r"""Measure M-capacity: one-step pair retention with sector-carrying parents.
+
+    The parent label is $(p, s)$ with $s(x_B)$ the block's belief-channel $Z_3$
+    charge, and the blocking kernel is the audited Bayes kernel times the
+    deterministic sector readout, $T((p,s) \mid x_B) = T(p \mid x_B)\,
+    \mathbf 1[s = s(x_B)]$, normalized over the enlarged label set by
+    construction. With ``constant_sector`` the readout is replaced by the
+    constant label, which must reproduce the nine-state retention exactly and
+    serves as the declared control.
+    """
+    length = len(instance.graph.vertices)
+    blocks = consecutive_blocks(length, int(ratio))
+    model = _kernel_model(instance.graph, "capacity-retention")
+    size = model.state_count
+    action_array = couplings_action(instance.couplings)
+    weights = np.exp(-(action_array - action_array.min()))
+    coordinates = _belief_orbit_coordinates(model)
+    sectors = int(sector_count)
+    letters = "abcdefghijkl"
+    operands: list[np.ndarray] = [weights]
+    subscripts: list[str] = [letters[: length]]
+    output = ""
+    for block_index, block in enumerate(blocks):
+        label = letters[length + block_index]
+        output += label
+        base_kernel = _block_bayes_kernel(
+            model, block, _block_prior_vector(model, block, None)
+        )
+        width = len(block)
+        extended = np.zeros((size * sectors,) + (size,) * width)
+        grids = np.meshgrid(
+            *[coordinates for _ in range(width)], indexing="ij"
+        )
+        charge = np.zeros((size,) * width, dtype=np.int64)
+        for grid in grids:
+            charge = charge + grid
+        charge = np.zeros((size,) * width, dtype=np.int64) if constant_sector else charge % sectors
+        for presentation in range(size):
+            for sector in range(sectors):
+                extended[presentation * sectors + sector] = base_kernel[
+                    presentation
+                ] * (charge == sector)
+        operands.append(extended)
+        subscripts.append(
+            label
+            + "".join(letters[agent - 1] for agent in block)
+        )
+    marginal = np.einsum(
+        ",".join(subscripts) + "->" + output, *operands, optimize=True
+    )
+    coarse_width = len(blocks)
+    if constant_sector:
+        marginal = marginal.reshape(
+            *[dim for _ in range(coarse_width) for dim in (size, sectors)]
+        ).sum(axis=tuple(2 * position + 1 for position in range(coarse_width)))
+        alphabet = size
+    else:
+        alphabet = size * sectors
+    positive = marginal[marginal > 0.0]
+    floor = float(positive.min())
+    guarded = np.where(marginal > 0.0, marginal, floor * 1.0e-300)
+    action = {
+        state: Fraction(float(-np.log(guarded[state])))
+        for state in product(range(alphabet), repeat=coarse_width)
+    }
+    admitted = tuple(
+        (left, right)
+        for left in range(coarse_width)
+        for right in range(left + 1, coarse_width)
+    )
+    coarse, _ = mobius_couplings(action, admitted)
+    fine_sup = max(
+        abs(float(value))
+        for _, table in instance.couplings.pairs
+        for row in table
+        for value in row
+    )
+    coarse_sup = max(
+        (
+            abs(float(value))
+            for _, table in coarse.pairs
+            for row in table
+            for value in row
+        ),
+        default=0.0,
+    )
+    offsets = tuple(
+        sorted(
+            {
+                min(
+                    (edge.source - edge.receiver) % length,
+                    (edge.receiver - edge.source) % length,
+                )
+                for edge in instance.graph.edges
+            }
+        )
+    )
+    return CapacityRetention(
+        length=length,
+        offsets=offsets,
+        ratio=int(ratio),
+        sector_count=1 if constant_sector else sectors,
+        fine_pair_sup=fine_sup,
+        coarse_pair_sup=coarse_sup,
+        retention=coarse_sup / fine_sup if fine_sup else 0.0,
     )
 
 
@@ -588,19 +743,68 @@ def regenerated_instance(
     )
 
 
+def regenerated_composition_defect(
+    instance: PairwiseInstance,
+    staged_ratios: Sequence[int],
+    direct_ratios: Sequence[int],
+    tau: float = REGENERATION_TEMPERATURE,
+) -> CompositionDefect:
+    """Measure RC6: the composition defect of regenerated flows.
+
+    Each route regenerates at every intermediate level with edges; the direct
+    route has no intermediate level, so under regeneration the two routes
+    differ by construction and the number measures how much level activity
+    adds to the typing. Report-only, as declared in amendment 5.
+    """
+    staged = tuple(int(ratio) for ratio in staged_ratios)
+    direct = tuple(int(ratio) for ratio in direct_ratios)
+    if not staged or not direct:
+        raise ValueError("both routes must declare at least one ratio")
+    if int(np.prod(staged)) != int(np.prod(direct)):
+        raise ValueError("the two routes must contract by the same total ratio")
+    left = _coupling_vector(_regenerated_final_couplings(instance, staged, tau))
+    right = _coupling_vector(_regenerated_final_couplings(instance, direct, tau))
+    return CompositionDefect(
+        staged_ratios=staged,
+        direct_ratios=direct,
+        defect=float(np.abs(left - right).max()),
+    )
+
+
+def _regenerated_final_couplings(
+    instance: PairwiseInstance,
+    ratios: Sequence[int],
+    tau: float,
+) -> PairwiseCouplings:
+    """Run one regenerated flow to a single site and return its couplings."""
+    current = instance
+    for ratio in ratios:
+        length = len(current.graph.vertices)
+        step = iterated_step(current, consecutive_blocks(length, int(ratio)))
+        if step.instance is None:
+            return step.mobius
+        current = regenerated_instance(step, tau).instance
+    raise ValueError("the declared ratios did not reach a single site")
+
+
 def regenerated_fixed_point(
     instance: PairwiseInstance,
     ratio: int,
     tau: float = REGENERATION_TEMPERATURE,
     tolerance: float = 1.0e-9,
     max_iterations: int = 200,
+    *,
+    work_root: Path | None = None,
+    worker_backend: Backend | None = None,
+    worker_min_sites: int = 8,
 ) -> ReducedFixedPoint:
     """Iterate the regenerated composite: block, regenerate, re-tile, repeat.
 
     Identical to the passive fixed-point iteration except that each level's
     attention is regenerated before the re-tiling, so the pair sector has a
     source and the factorized subspace is no longer invariant. Convergence is
-    reported, not assumed.
+    reported, not assumed. Instances at or above the worker threshold route
+    each blocking through the worker protocol when a backend is declared.
     """
     length = len(instance.graph.vertices)
     reduced = reduced_couplings(instance.couplings)
@@ -609,7 +813,18 @@ def regenerated_fixed_point(
     iterations = 0
     current = instance
     while iterations < int(max_iterations):
-        step = iterated_step(current, consecutive_blocks(length, int(ratio)))
+        blocks = consecutive_blocks(length, int(ratio))
+        if worker_backend is not None and length >= worker_min_sites:
+            if work_root is None:
+                raise ValueError("worker routing needs a declared work root")
+            step = iterated_step_via_worker(
+                current,
+                blocks,
+                work_root=work_root / f"regen-fp-{iterations}",
+                backend=worker_backend,
+            )
+        else:
+            step = iterated_step(current, blocks)
         regenerated = regenerated_instance(step, tau)
         image = reduced_couplings(regenerated.instance.couplings)
         change = float(np.abs(image - reduced).max())
@@ -783,11 +998,14 @@ __all__ = [
     "RayComparison",
     "ReducedFixedPoint",
     "ReducedLinearization",
+    "CapacityRetention",
     "PairRetention",
     "REGENERATION_TEMPERATURE",
+    "capacity_pair_retention",
     "RegeneratedInstance",
     "cocycle_flow",
     "reduced_fixed_point",
+    "regenerated_composition_defect",
     "regenerated_fixed_point",
     "regenerated_instance",
     "composition_defect",

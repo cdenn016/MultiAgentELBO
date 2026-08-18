@@ -170,6 +170,38 @@ def test_regeneration_injects_a_pair_source_with_normalized_rows() -> None:
     assert again.injected_pair_sup == regenerated.injected_pair_sup
 
 
+def test_the_constant_sector_control_reproduces_the_plain_retention() -> None:
+    from multiagent_elbo.finite.cocycle_flow import (
+        capacity_pair_retention,
+        one_step_pair_retention,
+    )
+
+    from multiagent_elbo.finite.cocycle_flow import homogeneous_circulant_instance
+
+    instance = homogeneous_circulant_instance(4, (1,), SITE, PAIR)
+    plain = one_step_pair_retention(instance, 2)
+    control = capacity_pair_retention(instance, 2, constant_sector=True)
+    assert abs(control.retention - plain.retention) <= 1.0e-12
+    assert control.sector_count == 1
+    capacity = capacity_pair_retention(instance, 2)
+    assert capacity.sector_count == 3
+    assert capacity.retention >= 0.0
+    again = capacity_pair_retention(instance, 2)
+    assert again == capacity
+
+
+def test_the_regenerated_composition_defect_is_deterministic_and_typed() -> None:
+    from multiagent_elbo.finite.cocycle_flow import regenerated_composition_defect
+
+    instance = homogeneous_cycle_instance(4, SITE, PAIR)
+    first = regenerated_composition_defect(instance, (2, 2), (4,))
+    second = regenerated_composition_defect(instance, (2, 2), (4,))
+    assert first.defect == second.defect
+    assert first.defect >= 0.0
+    with pytest.raises(ValueError):
+        regenerated_composition_defect(instance, (2,), (4,))
+
+
 def test_the_regenerated_coarse_action_is_gauge_covariant() -> None:
     from multiagent_elbo.finite.cocycle_flow import regenerated_instance
     from multiagent_elbo.finite.coupling_readback import couplings_action
