@@ -305,3 +305,35 @@ def test_the_capacity_sector_charge_is_gauge_covariant() -> None:
     plain = capacity_pair_retention(instance, 2)
     moved = capacity_pair_retention(gauged, 2)
     assert abs(plain.coarse_pair_sup - moved.coarse_pair_sup) <= 1.0e-9
+    from multiagent_elbo.finite.cocycle_flow import capacity_information_retention
+
+    plain_information = capacity_information_retention(instance, 2)
+    moved_information = capacity_information_retention(gauged, 2)
+    assert abs(
+        plain_information.coarse_information - moved_information.coarse_information
+    ) <= 1.0e-9
+    assert abs(
+        plain_information.retention - moved_information.retention
+    ) <= 1.0e-9
+
+
+def test_the_information_retention_control_ceiling_and_determinism() -> None:
+    from multiagent_elbo.finite.cocycle_flow import (
+        capacity_information_retention,
+        homogeneous_circulant_instance,
+    )
+
+    instance = homogeneous_circulant_instance(4, (1,), SITE, PAIR)
+    nine_state = capacity_information_retention(instance, 2, sector_count=1)
+    control = capacity_information_retention(instance, 2, constant_sector=True)
+    assert abs(control.retention - nine_state.retention) <= 1.0e-12
+    assert control.sector_count == 1
+    sectored = capacity_information_retention(instance, 2)
+    assert sectored.sector_count == 3
+    assert sectored.fine_information > 0.0
+    assert sectored.coarse_information >= 0.0
+    assert sectored.retention <= 1.0 + 1.0e-9
+    assert nine_state.retention <= 1.0 + 1.0e-9
+    assert abs(sectored.fine_information - nine_state.fine_information) <= 1.0e-12
+    again = capacity_information_retention(instance, 2)
+    assert again == sectored

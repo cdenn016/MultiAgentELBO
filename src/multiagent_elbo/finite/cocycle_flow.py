@@ -279,26 +279,22 @@ def _belief_orbit_coordinates(model: FalsificationModel) -> np.ndarray:
     )
 
 
-def capacity_pair_retention(
+def _capacity_marginal(
     instance: PairwiseInstance,
     ratio: int,
-    sector_count: int = GROUP_ORDER,
-    constant_sector: bool = False,
-) -> CapacityRetention:
-    r"""Measure M-capacity: one-step pair retention with sector-carrying parents.
+    sector_count: int,
+    constant_sector: bool,
+) -> tuple[np.ndarray, int, tuple[tuple[int, ...], ...], np.ndarray]:
+    r"""Contract one instance through the sector-carrying blocking kernel.
 
-    The parent label is $(p, s)$ with $s(x_B)$ the block's belief-channel $Z_3$
-    charge, and the blocking kernel is the audited Bayes kernel times the
+    Returns the unnormalized coarse marginal over the parent alphabet, the
+    alphabet size, the blocking, and the fine child-weight tensor. The parent
+    label is $(p, s)$ with $s(x_B)$ the block's root-framed belief-channel
+    $Z_3$ charge, and the kernel is the audited Bayes kernel times the
     deterministic sector readout, $T((p,s) \mid x_B) = T(p \mid x_B)\,
-    \mathbf 1[s = s(x_B)]$, normalized over the enlarged label set by
-    construction. The charge is root-framed: each member's orbit coordinate is
-    carried into the block root frame by the spanning-tree transport before
-    summing, $s(x_B) = \sum_{a \in B} (k_a + t_a) \bmod n_s$, matching the
-    frame convention of the downward kernels; the family-referenced charge
-    without the transports shifts under a sample-shift gauge (2026-08-18
-    audit, F8). With ``constant_sector`` the readout is replaced by the
-    constant label, which must reproduce the nine-state retention exactly and
-    serves as the declared control.
+    \mathbf 1[s = s(x_B)]$; with ``constant_sector`` the sector axis is
+    collapsed, reproducing the plain nine-state blocking exactly. This is the
+    single contraction both M-capacity and M-info read from.
     """
     length = len(instance.graph.vertices)
     blocks = consecutive_blocks(length, int(ratio))
@@ -360,6 +356,36 @@ def capacity_pair_retention(
         alphabet = size
     else:
         alphabet = size * sectors
+    return marginal, alphabet, blocks, weights
+
+
+def capacity_pair_retention(
+    instance: PairwiseInstance,
+    ratio: int,
+    sector_count: int = GROUP_ORDER,
+    constant_sector: bool = False,
+) -> CapacityRetention:
+    r"""Measure M-capacity: one-step pair retention with sector-carrying parents.
+
+    The parent label is $(p, s)$ with $s(x_B)$ the block's belief-channel $Z_3$
+    charge, and the blocking kernel is the audited Bayes kernel times the
+    deterministic sector readout, $T((p,s) \mid x_B) = T(p \mid x_B)\,
+    \mathbf 1[s = s(x_B)]$, normalized over the enlarged label set by
+    construction. The charge is root-framed: each member's orbit coordinate is
+    carried into the block root frame by the spanning-tree transport before
+    summing, $s(x_B) = \sum_{a \in B} (k_a + t_a) \bmod n_s$, matching the
+    frame convention of the downward kernels; the family-referenced charge
+    without the transports shifts under a sample-shift gauge (2026-08-18
+    audit, F8). With ``constant_sector`` the readout is replaced by the
+    constant label, which must reproduce the nine-state retention exactly and
+    serves as the declared control.
+    """
+    length = len(instance.graph.vertices)
+    marginal, alphabet, blocks, _ = _capacity_marginal(
+        instance, ratio, sector_count, constant_sector
+    )
+    sectors = sector_count
+    coarse_width = len(blocks)
     positive = marginal[marginal > 0.0]
     floor = float(positive.min())
     guarded = np.where(marginal > 0.0, marginal, floor * 1.0e-300)
@@ -407,6 +433,88 @@ def capacity_pair_retention(
         fine_pair_sup=fine_sup,
         coarse_pair_sup=coarse_sup,
         retention=coarse_sup / fine_sup if fine_sup else 0.0,
+    )
+
+
+@dataclass(frozen=True)
+class InformationRetention:
+    """Measurement M-info: one-step boundary mutual-information retention."""
+
+    length: int
+    offsets: tuple[int, ...]
+    ratio: int
+    sector_count: int
+    fine_information: float
+    coarse_information: float
+    retention: float
+
+
+def _mutual_information(joint: np.ndarray) -> float:
+    r"""Return $I(X;Y)$ in nats of one unnormalized nonnegative joint table."""
+    law = joint / joint.sum()
+    product = law.sum(axis=1, keepdims=True) * law.sum(axis=0, keepdims=True)
+    support = law > 0.0
+    return float(np.sum(law[support] * np.log(law[support] / product[support])))
+
+
+def capacity_information_retention(
+    instance: PairwiseInstance,
+    ratio: int,
+    sector_count: int = GROUP_ORDER,
+    constant_sector: bool = False,
+) -> InformationRetention:
+    r"""Measure M-info: the boundary information a parent alphabet carries.
+
+    The statistic is $R_{\mathrm{MI}} = I(P_1; P_2) / I(X_{B_1}; X_{B_2})$,
+    the mutual information between the first two coarse parents under the
+    coarse law against the same quantity between their child blocks under the
+    fine law, both in nats and both by exact marginalization. The coarse law
+    is the pushforward of the fine law through the per-block kernels and each
+    parent depends only on its own block's children, so the data processing
+    inequality gives $R_{\mathrm{MI}} \le 1$ as a theorem; what is measured
+    is the fraction of that ceiling. Unlike the anchored sup norm, the
+    statistic is a functional of the law alone: invariant under per-block
+    parent relabelings and per-site state permutations, hence
+    alphabet-comparable and gauge-invariant by construction (amendment 9).
+    The first adjacent pair is representative by homogeneity on the declared
+    instances. With ``constant_sector`` the collapsed sector axis is a
+    bijection on support, so the control must reproduce the nine-state value
+    exactly.
+    """
+    length = len(instance.graph.vertices)
+    marginal, _, blocks, weights = _capacity_marginal(
+        instance, ratio, sector_count, constant_sector
+    )
+    coarse_width = len(blocks)
+    if coarse_width < 2:
+        raise ValueError("boundary information needs at least two blocks")
+    size = weights.shape[0]
+    width = len(blocks[0])
+    fine_pair = weights.reshape((size**width,) * coarse_width).sum(
+        axis=tuple(range(2, coarse_width))
+    )
+    coarse_pair = marginal.sum(axis=tuple(range(2, coarse_width)))
+    fine_information = _mutual_information(fine_pair)
+    coarse_information = _mutual_information(coarse_pair)
+    offsets = tuple(
+        sorted(
+            {
+                min(
+                    (edge.source - edge.receiver) % length,
+                    (edge.receiver - edge.source) % length,
+                )
+                for edge in instance.graph.edges
+            }
+        )
+    )
+    return InformationRetention(
+        length=length,
+        offsets=offsets,
+        ratio=int(ratio),
+        sector_count=1 if constant_sector else sector_count,
+        fine_information=fine_information,
+        coarse_information=coarse_information,
+        retention=coarse_information / fine_information if fine_information else 0.0,
     )
 
 
@@ -1018,8 +1126,10 @@ __all__ = [
     "ReducedFixedPoint",
     "ReducedLinearization",
     "CapacityRetention",
+    "InformationRetention",
     "PairRetention",
     "REGENERATION_TEMPERATURE",
+    "capacity_information_retention",
     "capacity_pair_retention",
     "RegeneratedInstance",
     "cocycle_flow",

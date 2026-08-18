@@ -488,6 +488,50 @@ not all reachable by the block charge are refused rather than floored, and the m
 refuses contractions beyond the 52-letter subscript pool instead of failing with an index
 error.
 
+## Amendment 9, 2026-08-18: the mutual-information capacity statistic (M-info)
+
+Reason. Every capacity statement so far rides on the sup norm of the anchored pairwise block,
+which is a functional of the parameterization: it depends on the anchor and it dilutes as the
+parent alphabet grows, which is the caveat attached to every M-capacity row. The
+alphabet-comparable statistic the roadmap calls for is declared here before it is run. It is
+an instrument, not a theory change: nothing in the kernel, the action, or the gauge structure
+moves.
+
+**Declared statistic.** For one blocking, the boundary mutual information between the first
+two coarse parents under the coarse law, against the same quantity between their child blocks
+under the fine law,
+$$R_{\mathrm{MI}} = \frac{I(P_1; P_2)}{I(X_{B_1}; X_{B_2})},$$
+both in nats, joints obtained by exact marginalization of the unnormalized weights (fine) and
+of the blocked contraction (coarse), zero-mass entries contributing zero. The pair $(P_1,
+P_2)$ is representative by homogeneity: on the declared instances every cross edge joins
+cycle-adjacent blocks and the instances are homogeneous, so all adjacent pairs carry the same
+information. Because the coarse law is exactly the pushforward of the fine law through the
+per-block kernels, and each parent label depends only on its own block's children, the data
+processing inequality gives $R_{\mathrm{MI}} \le 1$ as a theorem, not a measurement: the
+sup-norm question "does retention cross one" is closed for this statistic by construction,
+and what is measured is the fraction of the ceiling a parent alphabet carries — capacity in
+the literal channel sense. $R_{\mathrm{MI}}$ is invariant under any per-block relabeling of
+the parent alphabet and under per-site state permutations, so it is gauge-invariant by
+construction rather than by a frame convention; after amendment 8 that property is a declared
+requirement on capacity statistics, not a nicety.
+
+**Declared instances and panel.** The amendment-6 panel exactly: the homogeneous 6-cycle at
+ratio two with offsets $\{1\}$ and $\{1,2\}$, declared seed. Per instance, four numbers:
+$I(X_{B_1}; X_{B_2})$ (the ceiling, in nats), $R_{\mathrm{MI}}$ for the nine-state parents
+(`sector_count = 1`), $R_{\mathrm{MI}}$ for the 27-label root-framed sector parents
+(`sector_count = 3`), and the constant-sector control, which must equal the nine-state value
+exactly (the collapsed sector axis is a bijection on support and mutual information does not
+see relabelings).
+
+**Reading rule, fixed now, no threshold.** The capacity verdict is the comparison of
+$R_{\mathrm{MI}}^{27}$ against $R_{\mathrm{MI}}^{9}$ per instance: a rise says the sector
+alphabet carries a strictly larger fraction of the boundary information at this seed, which
+is the dilution-free restatement of "capacity was binding"; a fall or a tie says the sup-norm
+rise of amendment 8 was a coordinate effect that the law does not see. Either outcome is
+reported as measured. No universality, relevance, or cross-seed claim is licensed; iterating
+the statistic down a flow needs the extended downward kernels of the enlarged alphabet and
+stays out of scope exactly as amendment 6 declared.
+
 ## Risks
 
 The optimizer is the main one, and C4 exists to expose it rather than to hope. Second, the
