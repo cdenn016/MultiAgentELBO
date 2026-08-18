@@ -35,11 +35,13 @@ import numpy as np
 from ..cuda_backend import Backend
 from .categorical_falsification_model import FalsificationModel
 from .closure_residual import (
+    _CONTRACTION_LETTERS,
     _block_bayes_kernel,
     _block_prior_vector,
     _blocked_action,
     _divergence_table,
 )
+from .holonomy_retention import block_transport_elements
 from .contraction_backend import iterated_step_via_worker
 from .coupling_readback import (
     PairwiseCouplings,
@@ -289,7 +291,12 @@ def capacity_pair_retention(
     charge, and the blocking kernel is the audited Bayes kernel times the
     deterministic sector readout, $T((p,s) \mid x_B) = T(p \mid x_B)\,
     \mathbf 1[s = s(x_B)]$, normalized over the enlarged label set by
-    construction. With ``constant_sector`` the readout is replaced by the
+    construction. The charge is root-framed: each member's orbit coordinate is
+    carried into the block root frame by the spanning-tree transport before
+    summing, $s(x_B) = \sum_{a \in B} (k_a + t_a) \bmod n_s$, matching the
+    frame convention of the downward kernels; the family-referenced charge
+    without the transports shifts under a sample-shift gauge (2026-08-18
+    audit, F8). With ``constant_sector`` the readout is replaced by the
     constant label, which must reproduce the nine-state retention exactly and
     serves as the declared control.
     """
@@ -297,11 +304,16 @@ def capacity_pair_retention(
     blocks = consecutive_blocks(length, int(ratio))
     model = _kernel_model(instance.graph, "capacity-retention")
     size = model.state_count
+    order = model.graph.order
     action_array = couplings_action(instance.couplings)
     weights = np.exp(-(action_array - action_array.min()))
     coordinates = _belief_orbit_coordinates(model)
-    sectors = int(sector_count)
-    letters = "abcdefghijkl"
+    if type(sector_count) is not int or sector_count < 1:
+        raise ValueError("sector_count must be a positive integer")
+    sectors = sector_count
+    letters = _CONTRACTION_LETTERS
+    if length + len(blocks) > len(letters):
+        raise ValueError("the contraction exceeds the declared subscript pool")
     operands: list[np.ndarray] = [weights]
     subscripts: list[str] = [letters[: length]]
     output = ""
@@ -313,13 +325,20 @@ def capacity_pair_retention(
         )
         width = len(block)
         extended = np.zeros((size * sectors,) + (size,) * width)
+        transports = block_transport_elements(model, block, "belief")
         grids = np.meshgrid(
-            *[coordinates for _ in range(width)], indexing="ij"
+            *[(coordinates + transports[agent]) % order for agent in block],
+            indexing="ij",
         )
         charge = np.zeros((size,) * width, dtype=np.int64)
         for grid in grids:
             charge = charge + grid
         charge = np.zeros((size,) * width, dtype=np.int64) if constant_sector else charge % sectors
+        if not constant_sector and len(np.unique(charge)) < sectors:
+            raise ValueError(
+                "sector_count exceeds the reachable belief-channel charges of "
+                "this block; unreachable sectors would carry zero mass"
+            )
         for presentation in range(size):
             for sector in range(sectors):
                 extended[presentation * sectors + sector] = base_kernel[

@@ -69,7 +69,7 @@ from typing import Mapping, Sequence
 
 from .categorical_falsification_model import FalsificationModel
 from .closure_residual import _coarse_action, _declared_parent_prior
-from .holonomy_retention import block_holonomy_group
+from .holonomy_retention import block_components, block_holonomy_group
 from .mark_carrying_parent import mark_datum
 from .scale_cocycle import State
 from .two_channel_gauge import (
@@ -150,6 +150,11 @@ def coarse_connection(
                 "a block declares reciprocal arcs; the dressed-generator "
                 "composition reads its reverse tree leg reciprocally, so the "
                 "declared-reverse Wilson line is not implemented for such blocks"
+            )
+        if len(block_components(model, block)) != 1:
+            raise ValueError(
+                "a block's induced graph is disconnected; the coarse connection "
+                "needs one root frame per block to dress its boundary"
             )
     block_of = {
         agent: index for index, block in enumerate(declared) for agent in block

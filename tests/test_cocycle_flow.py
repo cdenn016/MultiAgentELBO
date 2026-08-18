@@ -250,3 +250,58 @@ def test_the_regenerated_coarse_action_is_gauge_covariant() -> None:
             abs(float(gauged_total[state]) - float(plain_total[pulled])),
         )
     assert deviation <= 1.0e-11
+
+
+def test_an_unreachable_sector_count_is_refused() -> None:
+    from multiagent_elbo.finite.cocycle_flow import (
+        capacity_pair_retention,
+        homogeneous_circulant_instance,
+    )
+
+    instance = homogeneous_circulant_instance(4, (1,), SITE, PAIR)
+    with pytest.raises(ValueError, match="reachable"):
+        capacity_pair_retention(instance, 2, sector_count=6)
+    with pytest.raises(ValueError, match="positive integer"):
+        capacity_pair_retention(instance, 2, sector_count=0)
+
+
+def test_the_capacity_sector_charge_is_gauge_covariant() -> None:
+    from multiagent_elbo.finite.cocycle_flow import (
+        capacity_pair_retention,
+        homogeneous_circulant_instance,
+    )
+    from multiagent_elbo.finite.coupling_readback import (
+        PairwiseInstance,
+        _kernel_model,
+        mobius_couplings,
+    )
+    from multiagent_elbo.finite.rescaling import (
+        gauge_transformed_model,
+        state_shift_permutation,
+    )
+
+    instance = homogeneous_circulant_instance(4, (1,), SITE, PAIR)
+    model = _kernel_model(instance.graph, "capacity-gauge")
+    shifts = {1: 0, 2: 1, 3: 0, 4: 2}
+    sigma = {
+        vertex: state_shift_permutation(model, shifts[vertex])
+        for vertex in instance.graph.vertices
+    }
+    action = couplings_action(instance.couplings)
+    size = model.state_count
+    permuted = {}
+    for state in product(range(size), repeat=4):
+        image = tuple(
+            sigma[position + 1][value] for position, value in enumerate(state)
+        )
+        permuted[image] = Fraction(float(action[state]))
+    admitted = tuple(pair for pair, _ in instance.couplings.pairs)
+    gauged_couplings, omitted = mobius_couplings(permuted, admitted)
+    assert float(omitted) <= 1.0e-12
+    gauged = PairwiseInstance(
+        graph=gauge_transformed_model(model, shifts).graph,
+        couplings=gauged_couplings,
+    )
+    plain = capacity_pair_retention(instance, 2)
+    moved = capacity_pair_retention(gauged, 2)
+    assert abs(plain.coarse_pair_sup - moved.coarse_pair_sup) <= 1.0e-9

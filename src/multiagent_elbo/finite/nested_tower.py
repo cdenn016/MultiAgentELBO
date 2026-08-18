@@ -105,8 +105,11 @@ def _check_sizes(outer: int, inner: int) -> None:
     """Reject tower sizes the two-level construction cannot carry."""
     if type(outer) is not int or outer < 2:
         raise ValueError("the outer cycle must carry at least two blocks")
-    if type(inner) is not int or inner < 2:
-        raise ValueError("an inner cycle must carry at least two agents")
+    if type(inner) is not int or inner < 3:
+        raise ValueError(
+            "an inner cycle must carry at least three agents; a 2-cycle's arcs "
+            "form a reciprocal pair, which the declared cycle type refuses"
+        )
 
 
 def build_tower_model(

@@ -260,6 +260,9 @@ def _validate_job_inputs(
     }
 
 
+_CONTRACTION_LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+
 def _validate_blocked_contraction_job(
     *,
     requested_dtype: str,
@@ -307,6 +310,8 @@ def _validate_blocked_contraction_job(
         raise WorkerBackendError("block_kernels must be normalized over parents")
     if batch_size.shape != () or batch_size.dtype != np.dtype(np.int64) or int(batch_size) <= 0:
         raise WorkerBackendError("batch_size must be one positive int64 scalar")
+    if sites + blocks > len(_CONTRACTION_LETTERS):
+        raise WorkerBackendError("the contraction exceeds the declared subscript pool")
     return {
         "batch_size": np.array(batch_size, dtype=np.int64, copy=True),
         "block_axes": np.ascontiguousarray(block_axes),

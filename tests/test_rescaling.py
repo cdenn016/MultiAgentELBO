@@ -27,7 +27,12 @@ from multiagent_elbo.finite.rescaling import (
     gauge_transformed_model,
     state_shift_permutation,
 )
-from multiagent_elbo.finite.two_channel_gauge import holonomy_group
+from multiagent_elbo.finite.coupling_readback import _kernel_model
+from multiagent_elbo.finite.two_channel_gauge import (
+    DirectedEdge,
+    TwoChannelGraph,
+    holonomy_group,
+)
 
 OBSERVATION = (1, 0, 1, 0, 1, 0)
 
@@ -68,6 +73,8 @@ def test_the_tower_rejects_undeclared_sizes_elements_and_occupancies() -> None:
         tower_edges(2, 3, "undeclared")
     with pytest.raises(ValueError):
         build_tower_model(2, 3, (0,) * 7, (0,) * 8)
+    with pytest.raises(ValueError):
+        build_tower_model(2, 2, (0,) * 6, (0,) * 6)
     with pytest.raises(ValueError):
         build_tower_model(
             2, 3, (0,) * 8, (0,) * 8, alpha_belief=(Fraction(1, 2),) * 6
@@ -110,9 +117,22 @@ def test_the_reference_coarse_links_carry_the_hand_computed_elements() -> None:
 
 
 def test_a_block_with_reciprocal_inner_arcs_is_refused() -> None:
-    tower = build_tower_model(2, 2, (0,) * 6, (0,) * 6)
+    graph = TwoChannelGraph(
+        order=3,
+        vertices=(1, 2, 3),
+        edges=(DirectedEdge(1, 2), DirectedEdge(2, 1), DirectedEdge(2, 3)),
+        belief_elements=(0, 0, 0),
+        model_elements=(0, 0, 0),
+    )
+    model = _kernel_model(graph, "reciprocal-block")
     with pytest.raises(ValueError, match="reciprocal"):
-        coarse_connection(tower, tower_blocks(2, 2))
+        coarse_connection(model, ((1, 2), (3,)))
+
+
+def test_a_disconnected_block_is_refused() -> None:
+    tower = reference_tower()
+    with pytest.raises(ValueError, match="disconnected"):
+        coarse_connection(tower, ((1, 4), (2, 5), (3, 6)))
 
 
 @pytest.mark.parametrize("boundary", ["last_observes_first", "first_observes_last"])

@@ -145,7 +145,7 @@ def mobius_couplings(
     family, which is the one-step truncation residual in the anchored gauge.
     """
     width = len(next(iter(action)))
-    admitted = tuple(sorted(tuple(sorted(pair)) for pair in set(admitted_pairs)))
+    admitted = tuple(sorted({tuple(sorted(pair)) for pair in admitted_pairs}))
     for pair in admitted:
         if len(set(pair)) != 2 or not all(0 <= i < width for i in pair):
             raise ValueError("admitted pairs must name two distinct declared sites")

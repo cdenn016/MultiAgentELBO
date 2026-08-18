@@ -92,6 +92,22 @@ def test_array_digest_and_environment_lock_fail_closed_edges(tmp_path: Path):
         cuda_backend_module._parse_environment_lock(incomplete)
 
 
+def test_the_controller_refuses_a_contraction_beyond_the_subscript_pool():
+    sites, states, blocks = 27, 2, 27
+    arrays = {
+        "site_factors": np.full((sites, states), 0.5),
+        "edge_factors": np.full((1, states, states), 0.5),
+        "edge_axes": np.array([[0, 1]], dtype=np.int64),
+        "block_kernels": np.full((blocks, states, states), 0.5),
+        "block_axes": np.arange(sites, dtype=np.int64).reshape(blocks, 1),
+        "batch_size": np.array(1, dtype=np.int64),
+    }
+    with pytest.raises(WorkerBackendError, match="subscript pool"):
+        cuda_backend_module._validate_blocked_contraction_job(
+            requested_dtype="float64", arrays=arrays
+        )
+
+
 def test_worker_cpu_roundtrip_validates_binding_remainder_batch_and_provenance(
     tmp_path: Path,
 ):

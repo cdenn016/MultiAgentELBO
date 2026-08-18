@@ -112,7 +112,7 @@ This layer moved decisively on 2026-08-17, and its results now constrain the oth
 | Diagnosis: single-boundary-agent towers are quasi-one-dimensional | **D** | passive triviality was architectural |
 | Wilson charge conserved: retained generators + coarse cycle span the fine cycle space | **C** | no loop's charge is dropped by blocking |
 | Boundary multiplicity saturates: retention 0.156/0.441/0.564 at k = 1/3/6 | **C** | thicker boundaries cannot rescue the passive channel |
-| Sector-capacity null: belief-charge parents do not raise retention | **C** | capacity along that sector map was not binding |
+| Sector capacity, corrected 2026-08-18: root-framed belief-charge parents raise retention (0.209/0.568 vs 0.156/0.441 at k = 1/3), still below one | **C** | the 2026-08-17 null was a frame artifact of a gauge-dependent charge (audit F8); capacity was binding at this seed |
 | Regenerated attention sustains interacting fixed structures (pair sup 0.58–0.62, sustained/injected 1.25) | **C** | horizontal glue is re-bound per level, not inherited |
 | Typing survives regeneration (RC6 0.17–0.27; R-cross 0.64) | **C** | the cocycle reading governs both channels |
 
@@ -128,8 +128,9 @@ until checked.
 
 Items 1 through 3 of the original ordered work closed on 2026-08-17/18 (the 07b cocycle
 rewrite, Wilson-charge conservation, and the boundary-multiplicity sweep, run at the coupling
-level on circulant instances), and amendments 4 through 6 added and answered the regeneration
-and capacity questions. Ordered work now:
+level on circulant instances), and amendments 4 through 8 added and answered the regeneration,
+capacity, and robustness questions, with the capacity answer corrected under amendment 8 after
+the 2026-08-18 audit retired the gauge-dependent sector charge. Ordered work now:
 
 1. Participatory blocking: let the partition posterior select the blocking at each step instead
    of declaring it, and measure whether free energy prefers staged aggregation over direct — the

@@ -11,6 +11,7 @@ import pytest
 
 from multiagent_elbo.finite.categorical_falsification_model import build_reference_model
 from multiagent_elbo.finite.closure_residual import (
+    _action_and_flow_from_marginal,
     _block_action,
     _coarse_child_weights,
     _declared_parent_prior,
@@ -273,3 +274,10 @@ def test_the_against_direction_is_much_larger_than_the_coarse_one() -> None:
         )
     assert min(against_ratios) > 0.10
     assert coarse.three_to_two_ratio < 0.02
+
+
+def test_an_exact_zero_marginal_is_refused_with_a_clear_error() -> None:
+    with pytest.raises(ValueError, match="exact-zero"):
+        _action_and_flow_from_marginal(np.array([[0.5, 0.0], [0.25, 0.25]]))
+    with pytest.raises(ValueError, match="finite"):
+        _action_and_flow_from_marginal(np.array([0.5, np.inf]))

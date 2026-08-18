@@ -20,6 +20,14 @@ float64 is the admissible precision; float32 is permitted only with the
 protocol's parity diagnostics, and bfloat16 is refused on both sides of the
 protocol, because the measured three-body components sit three decades below
 the pairwise ones and bfloat16 carries roughly three decimal digits.
+
+Reproducibility boundary (2026-08-18 audit, F9): the declared worker
+interpreter is the Anaconda CUDA build, whose numpy 2.0.0 is nondeterministic
+within a session at the 1e-8 level for the 8-cycle reduced step, while the
+in-process route on numpy 2.4.4 is deterministic. A bit-level reproducibility
+claim about a worker-routed step must therefore pin the worker's numpy
+version, not only the interpreter path; the 1e-8-scale disagreement between
+routes is an interpreter artifact, not a protocol defect.
 """
 
 from __future__ import annotations

@@ -71,6 +71,7 @@ from .scale_cocycle import (
 DECLARED_GROUND_STATE_INDEX = 0
 ISING_STAR_ANCHOR: State = (-1, -1, -1)
 ISING_STAR_LEAVES = 3
+_CONTRACTION_LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
 def _real(value: object, field: str) -> float:
@@ -519,7 +520,9 @@ def _blocked_action(
     size = model.state_count
     agents = model.agents
     index_of = {agent: position for position, agent in enumerate(agents)}
-    letters = "abcdefghijkl"
+    letters = _CONTRACTION_LETTERS
+    if len(agents) + len(partition) > len(letters):
+        raise ValueError("the contraction exceeds the declared subscript pool")
     operands: list[np.ndarray] = [weight_tensor]
     subscripts: list[str] = [letters[: len(agents)]]
     output = ""
@@ -590,6 +593,11 @@ def _action_and_flow_from_marginal(
     marginal: np.ndarray,
 ) -> tuple[Mapping[State, Fraction], Mapping[State, Fraction]]:
     """Return the coarse action and its Boltzmann flow weights of one marginal."""
+    if not np.all(np.isfinite(marginal)) or np.any(marginal <= 0.0):
+        raise ValueError(
+            "the coarse marginal must be strictly positive and finite; an "
+            "exact-zero entry carries no finite coarse action"
+        )
     energies = -np.log(marginal)
     size = marginal.shape[0] if marginal.ndim else 1
     action: dict[State, Fraction] = {}

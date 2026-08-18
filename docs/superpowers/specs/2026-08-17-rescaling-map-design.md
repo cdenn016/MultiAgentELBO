@@ -461,6 +461,33 @@ the rows toward uniform and smaller $\tau$ sharpens them, so the injected scale 
 monotonically with $\tau$ while the qualitative question is whether the fixed pairwise block
 remains nonzero at order the injection everywhere in the sweep.
 
+## Amendment 8, 2026-08-18: the sector charge is root-framed (gauge-covariance repair)
+
+Reason. The 2026-08-18 audit (finding F8) showed the amendment-6 charge $s(x_B) = \sum_a k_a
+\bmod 3$, with $k_a$ the orbit coordinate relative to the first family member, is not gauge
+covariant: under a sample-shift gauge $h_a$ the coordinate moves ($k_a \to k_a - h_a$) while
+the readout does not, so the measured retention depended on the frame the instance happened to
+be declared in. The repaired charge carries each member's coordinate into the block root frame
+by the spanning-tree transport before summing, $s(x_B) = \sum_{a \in B} (k_a + t_a) \bmod 3$,
+matching the frame convention the downward kernels already use. With root shifts zero the
+extended coarse marginal is then exactly invariant (measured deviation $2 \times 10^{-16}$ on
+the declared 4-cycle probe), and under a root shift the sector label permutes with the parent
+label, which is the covariance a charge is entitled to. The family-referenced variant is
+retired, not kept as an option.
+
+**Re-measured M-capacity.** On the declared 6-cycle instances of amendment 6 the root-framed
+charge reverses the recorded null: $R_{\mathrm{cap}} = 0.209$ against the nine-state $0.156$
+at one cut coupling, and $0.568$ against $0.441$ at three, with the constant-sector control
+still reproducing the nine-state values exactly and retention still below one. The 2026-08-17
+values ($0.144$, $0.406$) are retired as frame artifacts. The amendment-6 reading rule is
+unchanged: this licenses only the statement that capacity was binding at this seed under this
+sector map, per unit of injected capacity, and the sup statistic still dilutes across
+alphabets, so the cross-alphabet capacity question stays open pending a mutual-information
+statistic. Also declared here, from the same audit: `sector_count` values whose sectors are
+not all reachable by the block charge are refused rather than floored, and the measurement
+refuses contractions beyond the 52-letter subscript pool instead of failing with an index
+error.
+
 ## Risks
 
 The optimizer is the main one, and C4 exists to expose it rather than to hope. Second, the

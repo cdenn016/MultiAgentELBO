@@ -48,6 +48,17 @@ def test_the_moebius_route_recovers_a_planted_pairwise_action_exactly() -> None:
     assert dict(couplings.pairs)[(0, 2)][2][2] == Fraction(0)
 
 
+def test_reverse_pair_admittance_deduplicates_to_one_table() -> None:
+    action = planted_action(3, Fraction(0))
+    forward, forward_omitted = mobius_couplings(action, ((0, 1), (1, 2), (0, 2)))
+    doubled, doubled_omitted = mobius_couplings(
+        action, ((0, 1), (1, 0), (1, 2), (0, 2))
+    )
+    assert doubled == forward
+    assert doubled_omitted == forward_omitted
+    assert [pair for pair, _ in doubled.pairs] == [(0, 1), (0, 2), (1, 2)]
+
+
 def test_the_variational_route_agrees_with_the_seed_on_a_pairwise_action() -> None:
     action = planted_action(3, Fraction(0))
     seed, _ = mobius_couplings(action, TRIANGLE_PAIRS)
