@@ -669,6 +669,33 @@ reads "the landscape verdict survives the process", disagreement is reported as 
 gap with no reconciliation claim. No relaxation-time or exit-time claim is made at this
 budget.
 
+## Amendment 13, 2026-08-18: the shared-pairs condensation crossing (M-cross-env)
+
+Reason. M-anchor left one bracket open: shared-pair anchors pulled the anchor-aligned ratio-2
+blocking eightfold without making it modal at the declared strengths, so the crossing — the
+anchor strength at which pairwise-shared evidence condenses the aligned pairing — is either
+above $\kappa_{\mathrm{env}} = 8$ or absent. Both are meaningful: at infinite pinning the flow
+concentrates on the pinned configuration, where singletons and the aligned pairing align with
+their parents equally well and the residual decision falls to the graph group and the prior,
+so a plateau without a crossing is a legitimate outcome and is declared as such in advance.
+
+**Declared measurement.** The declared 6-cycle at offsets $\{1\}$, $\lambda = 1$, shared-pairs
+pinning $(0,0,4,4,8,8)$, strength grid $\kappa_{\mathrm{env}} \in \{8, 16, 32, 64, 128\}$.
+Per grid point, both declared partition objects, each computed exactly: the quenched posterior
+of amendment 10 on the dressed instance, and the annealed $R$-marginal $Q(R) \propto P(R)
+\sum_x e^{-A_{\mathrm{dressed}}(x) - U(R, x)}$ of amendment 12. Reported per point:
+class-aggregated masses, the aligned placement's own mass (the crossing question is about the
+placement the environment selects, not the ratio class), and the modal candidate. The distinct
+control $(0,1,2,3,4,5)$ is re-run at the same grid as the anti-binding reference.
+
+**Reading rule, fixed now, no thresholds.** "The aligned pairing condenses" is licensed
+exactly when the aligned placement becomes the modal candidate at some grid point in a given
+object (quenched and annealed read separately), with the crossing reported as the bracketing
+grid interval; a monotone rise that plateaus below modal reads "pinning saturates before
+condensing — the residual graph-group and prior preference decides", reported as measured. A
+crossing in the distinct control at the same strength voids the corresponding reading as a
+field-strength artifact. No claim beyond this seed, pattern, and grid.
+
 ## Risks
 
 The optimizer is the main one, and C4 exists to expose it rather than to hope. Second, the

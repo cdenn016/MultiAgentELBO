@@ -118,6 +118,7 @@ This layer moved decisively on 2026-08-17, and its results now constrain the oth
 | M-bind (amendment 11): coupling-scale sweep lambda 0–100; ceiling grows as lambda² (5e-6 → 5e-2 nats) yet the modal class is singletons at every lambda and R_MI is flat-to-declining | **C** | no formation transition on this ray — the singleton preference is structural, not a weak-coupling artifact; transmission is kernel-limited, not signal-limited; the binding candidate moves to the likelihood sector |
 | M-anchor (amendment 12): the environment restored as a blockable agent class; uniform anchors flip modal to direct (0.55/0.84), distinct control anti-binds (0.90 singletons), shared pairs pull the aligned blocking 8x | **C** | environmental binding licensed — condensation follows shared evidence, and the posterior selects the anchor-aligned placement, not just the ratio |
 | M-flow (amendment 12): annealed joint dynamics on (x, R), sampler validated against the exact marginal; bare-instance verdict reverses quenched (direct 0.44 modal vs singletons 0.586) | **C** | the theory's process is more aggregation-prone than its frozen landscape; the M-part/M-bind negatives were statements about the quenched update on environment-free levels |
+| M-cross-env (amendment 13): the aligned-pairing mass saturates at 0.201 by k_env = 32 (quenched = annealed in the frozen limit), no crossing; distinct control clean | **C** | point-mass environments align but cannot correlate — shared and duplicated evidence coincide at infinite inertia; correlation-binding needs finite-inertia environmental agents |
 | Regenerated attention sustains interacting fixed structures (pair sup 0.58–0.62, sustained/injected 1.25) | **C** | horizontal glue is re-bound per level, not inherited |
 | Typing survives regeneration (RC6 0.17–0.27; R-cross 0.64) | **C** | the cocycle reading governs both channels |
 
@@ -146,24 +147,30 @@ with the pair-free null control within 1% of the coupled posteriors — the same
 M-info from the other side: the tiled seed's coupling content is informationally negligible, so
 neither capacity nor formation questions have anything to bind on. Ordered work now:
 
-1. Amendment 12 follow-ups. The environmental-binding question is answered (M-anchor: uniform
-   anchors bind, distinct anchors anti-bind, shared pairs pull the aligned placement eightfold
-   without crossing at the declared strengths) and the process-landscape gap is measured
-   (M-flow: the annealed joint reverses the quenched verdict on the bare instance). Open in
-   order of leverage: the shared-pairs condensation crossing (the anchor strength at which the
-   aligned pairing becomes modal — bracketed above k_env = 8 or absent, one declared sweep);
-   the regenerated channel composed with the environmental dressing (deferred in amendment 12);
-   and the sight-limited participatory variant, whose staged-proposability prediction now has a
-   live target since the annealed process actually favors aggregation.
-2. Extended downward kernels for enlarged parent alphabets, which is what iterating
+1. Finite-inertia environmental agents. M-cross-env closed the crossing question with the
+   declared plateau: point-mass environments align but cannot correlate, so shared and
+   duplicated evidence coincide at infinite inertia and the aligned pairing saturates below
+   modal. The correlation channel of shared evidence requires environmental agents with finite
+   belief inertia — a fluctuating environmental state summed over with its own prior, whose
+   marginalization induces effective coupling between co-attached sites, and whose blocking
+   under the RG step is then a genuine (not point-mass) application of the audited kernel.
+   Declare the construction, verify the induced coupling against the direct calculation, and
+   re-ask the condensation question where sharing means sharing.
+2. The regenerated channel composed with the environmental dressing (deferred in amendment
+   12): regeneration reads the dressed flow's transported divergences, the injection is a pair
+   term so undressing (a site operation) composes cleanly; declare and measure.
+3. The sight-limited participatory variant: candidates restricted to blocks within a declared
+   sight radius, energies truncated to visible terms — staged proposability against the
+   full-sight landscape, now with a live target since the annealed process favors aggregation.
+4. Extended downward kernels for enlarged parent alphabets, which is what iterating
    sector-carrying parents requires (declared out of scope in amendment 6). M-bind prices this
    down: the sector gain stays small (+10% to +17% in R_MI) at every measured coupling, and
    transmission is kernel-limited, so a richer alphabet buys little until the kernel family
    itself changes.
-3. Regenerated-channel dynamics beyond the fixed structure: attention temperature and occupancy
+5. Regenerated-channel dynamics beyond the fixed structure: attention temperature and occupancy
    are declared, not derived — deriving them from the coarse level's own row free energy is the
    theory-faithful upgrade and connects the RG layer to the attention theorems of Layer A.
-4. Semigroup restoration as a separate design: a kernel family closed under composition, priced
+6. Semigroup restoration as a separate design: a kernel family closed under composition, priced
    against what it costs the Bayes-exactness of the coarse channel. Regeneration removed its
    urgency for interaction but not for composability: both channels remain order-one typed.
 
