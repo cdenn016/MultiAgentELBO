@@ -449,6 +449,18 @@ Iterating sector-carrying parents (a 27-state level-two theory) requires extendi
 downward kernels to the enlarged alphabet and is a separate construction, declared out of
 scope for this amendment.
 
+## Amendment 7, 2026-08-18: temperature robustness of the regeneration result
+
+Reason. M-regen was run at the declared $\tau = 1$, an unmotivated constant, and the standing
+of "regeneration restores interaction" should not rest on one knob setting. Declared
+measurement, report-only: the regenerated ratio-two fixed structure on the declared 6-cycle at
+$\tau \in \{0.5, 1, 2, 4\}$, reporting per value the convergence, the fixed pairwise sup, and
+the one-step injected sup. No threshold; whether the interacting character persists across the
+sweep is the result, and the expected direction is declared for honesty: larger $\tau$ flattens
+the rows toward uniform and smaller $\tau$ sharpens them, so the injected scale should vary
+monotonically with $\tau$ while the qualitative question is whether the fixed pairwise block
+remains nonzero at order the injection everywhere in the sweep.
+
 ## Risks
 
 The optimizer is the main one, and C4 exists to expose it rather than to hope. Second, the
