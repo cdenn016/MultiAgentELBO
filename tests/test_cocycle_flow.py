@@ -103,6 +103,38 @@ def test_the_reduced_step_map_returns_a_finite_reduced_vector() -> None:
     assert np.all(np.isfinite(image))
 
 
+def test_the_circulant_builder_reproduces_the_declared_action() -> None:
+    from multiagent_elbo.finite.cocycle_flow import homogeneous_circulant_instance
+
+    instance = homogeneous_circulant_instance(6, (1, 2), SITE, PAIR)
+    assert len(instance.graph.edges) == 12
+    assert sum(instance.graph.belief_elements) == 6
+    action = couplings_action(instance.couplings)
+    state = (2, 5, 1, 0, 7, 3)
+    expected = sum(float(SITE[value]) for value in state)
+    for offset in (1, 2):
+        for position in range(6):
+            expected += float(PAIR[state[position]][state[(position + offset) % 6]])
+    assert abs(float(action[state]) - expected) <= 1.0e-12
+    with pytest.raises(ValueError):
+        homogeneous_circulant_instance(6, (1, 3), SITE, PAIR)
+
+
+def test_the_pair_retention_measurement_is_deterministic_and_typed() -> None:
+    from multiagent_elbo.finite.cocycle_flow import (
+        homogeneous_circulant_instance,
+        one_step_pair_retention,
+    )
+
+    instance = homogeneous_circulant_instance(4, (1,), SITE, PAIR)
+    first = one_step_pair_retention(instance, 2)
+    second = one_step_pair_retention(instance, 2)
+    assert first == second
+    assert first.cut_per_boundary == 1
+    assert first.fine_pair_sup > 0.0
+    assert first.retention >= 0.0
+
+
 def test_the_fixed_point_iteration_is_deterministic_and_reports_honestly() -> None:
     from multiagent_elbo.finite.cocycle_flow import reduced_fixed_point
 

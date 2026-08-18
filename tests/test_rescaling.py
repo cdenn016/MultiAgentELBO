@@ -21,6 +21,7 @@ from multiagent_elbo.finite.rescaling import (
     GAUGE_COVARIANCE_TOLERANCE,
     check_gauge_covariance,
     check_holonomy_conservation,
+    check_wilson_charge_conservation,
     coarse_action,
     coarse_connection,
     gauge_transformed_model,
@@ -151,6 +152,29 @@ def test_the_tree_dressing_of_the_coarse_links_is_load_bearing() -> None:
         tower.graph.belief_elements[index] for index in connection.fine_edge_indices
     ) % tower.graph.order
     assert bare != dict(report.fine_elements)["belief"]
+
+
+def test_wilson_charge_is_conserved_and_the_marks_carry_it() -> None:
+    tower = reference_tower()
+    report = check_wilson_charge_conservation(tower, tower_blocks(2, 3))
+    assert report.passes
+    assert report.fine_rank == 3
+    assert report.coarse_rank == 3
+    assert report.retained_charges == (((2,), (0,)), ((0,), (0,)))
+    marks = sum(len(belief) for belief, _ in report.retained_charges)
+    assert report.coarse_rank - marks == 1
+    assert report.fine_rank != report.coarse_rank - marks
+
+
+@pytest.mark.parametrize("boundary", ["last_observes_first", "first_observes_last"])
+def test_wilson_charge_is_conserved_on_the_three_by_three_tower(
+    boundary: str,
+) -> None:
+    report = check_wilson_charge_conservation(
+        large_tower(boundary), tower_blocks(3, 3)
+    )
+    assert report.passes
+    assert report.fine_rank == 4
 
 
 def test_the_state_shift_permutation_preserves_the_likelihood_exactly() -> None:

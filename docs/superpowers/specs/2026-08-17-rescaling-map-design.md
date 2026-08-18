@@ -330,6 +330,36 @@ mismatch content on their own, so a fixed point is nontrivial by construction
 and finding one is not by itself evidence of anything beyond the map's
 continuity.
 
+## Amendment 3, 2026-08-17: boundary multiplicity and the one-step pair retention
+
+Reason. The measured fixed structures are factorized, and the diagnosis is architectural: the
+declared family joins blocks through one boundary edge, so instances are quasi-one-dimensional
+and triviality is the expected outcome. The network-native question is whether boundary
+multiplicity — several fine couplings cut per block boundary, the hierarchical-lattice
+mechanism — can sustain pairwise interaction under blocking. This amendment declares the
+smallest measurement that bears on it, before running it.
+
+**Declared instances.** Homogeneous circulant coupling instances: cycle length $L$ with declared
+chord offsets, every site carrying the seed site table and every edge of every declared offset
+carrying the seed pair table in cycle orientation, belief element $1$ on offset-one edges and
+$0$ on chords, model element $0$ everywhere. The panel is $L = 6$ with offsets $\{1\}$ and
+$\{1,2\}$, and $L = 8$ with offsets $\{1\}$, $\{1,2\}$, and $\{1,2,3\}$, all blocked
+consecutively at ratio two, giving $k = 1, 3$ and $k = 1, 3, 6$ cut couplings per block
+boundary respectively. Offsets never reach $L/2$, so no reciprocal pair arises.
+
+**Declared measurement, M-bundle.** The one-step pair retention factor
+$R(k) = \lVert\theta^{\mathrm{pair}}_{\mathrm{coarse}}\rVert_\infty /
+\lVert\theta^{\mathrm{pair}}_{\mathrm{fine}}\rVert_\infty$, with both sup norms over the full
+anchored pairwise block and the coarse couplings read back by the exact Moebius route with all
+coarse pairs admitted (chords can couple next-nearest parents, and truncating them silently
+would manufacture retention loss). Reported per $(L, \text{offsets})$ alongside the coarse
+three-body truncation residual, with **no pass threshold**: whether $R$ crosses one, and at
+what $k$, is the result, and any extrapolation beyond the measured $k$ is labeled as such.
+The known limitation is declared now: the phase-one coarse connection refuses parallel coarse
+links, so this measurement runs at the coupling level through the blocking contraction alone,
+and a bundle-aware coarse connection (one declared link plus retained inter-block plaquette
+marks) is a separate construction with its own checks if $R(k)$ makes it worth building.
+
 ## Risks
 
 The optimizer is the main one, and C4 exists to expose it rather than to hope. Second, the

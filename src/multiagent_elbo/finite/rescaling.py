@@ -79,6 +79,7 @@ from .two_channel_gauge import (
     _reverse_walk,
     _spanning_tree,
     _walk_to_root,
+    based_holonomy_generators,
     declared_reverse_arcs,
     walk_element,
 )
@@ -94,8 +95,14 @@ class CoarseConnection:
     The graph's vertices are the parents relabeled ``1..m`` in declared block
     order, its edge elements are the Wilson-line coarse links, and the retained
     holonomy records each block's interior holonomy group per channel, keyed in
-    block order as (belief group, model group) pairs. ``fine_edge_indices`` is
-    parallel to the coarse edges and names the fine cross edge each one dresses.
+    block order as (belief group, model group) pairs. ``retained_generators``
+    keeps, in the same keying, the based holonomy generators themselves — one
+    element per interior fundamental loop of the block at its root — because
+    the generated subgroup forgets the charge: in $Z_3$ the full group arises
+    from generator one and from generator two alike, and Wilson-charge
+    conservation is a statement about elements, not about the groups they
+    generate. ``fine_edge_indices`` is parallel to the coarse edges and names
+    the fine cross edge each one dresses.
     """
 
     blocks: tuple[tuple[int, ...], ...]
@@ -103,6 +110,7 @@ class CoarseConnection:
     graph: TwoChannelGraph
     fine_edge_indices: tuple[int, ...]
     retained_holonomy: tuple[tuple[tuple[int, ...], tuple[int, ...]], ...]
+    retained_generators: tuple[tuple[tuple[int, ...], tuple[int, ...]], ...]
 
 
 def _check_blocks(
@@ -197,6 +205,17 @@ def coarse_connection(
             (
                 block_holonomy_group(model, block, "belief"),
                 block_holonomy_group(model, block, "model"),
+            )
+            for block in declared
+        ),
+        retained_generators=tuple(
+            (
+                based_holonomy_generators(
+                    model.graph.induced(block), "belief", min(block)
+                ),
+                based_holonomy_generators(
+                    model.graph.induced(block), "model", min(block)
+                ),
             )
             for block in declared
         ),
@@ -510,14 +529,73 @@ def check_holonomy_conservation(
     )
 
 
+@dataclass(frozen=True)
+class WilsonChargeReport:
+    """Conservation of the Wilson charge basis under one blocking step.
+
+    The fine cycle space of a connected instance has rank $E - V + 1$, one
+    independent charge per fundamental loop. Blocking used to discard every
+    interior loop's charge; the fix is that the coarse side now carries the
+    full basis: one charge per retained interior generator of each parent,
+    plus one per coarse cycle. The report records both ranks, which must be
+    equal, and the cut-loop element comparison per channel, which must be
+    exact; per-parent retained charges are carried for inspection and are
+    pinned against independently computed cycle elements in the tests.
+    """
+
+    fine_rank: int
+    coarse_rank: int
+    cut_loop_elements: tuple[tuple[str, int, int], ...]
+    retained_charges: tuple[tuple[tuple[int, ...], tuple[int, ...]], ...]
+    passes: bool
+
+
+def check_wilson_charge_conservation(
+    model: FalsificationModel,
+    blocks: Sequence[Sequence[int]],
+) -> WilsonChargeReport:
+    """Check that no independent loop's Wilson charge is lost by blocking.
+
+    Two exact conditions. First, rank conservation: the number of retained
+    interior generators summed over parents, plus the cycle rank of the
+    identified coarse graph, must equal the fine graph's cycle rank, so the
+    coarse-side data spans the whole fine cycle space rather than the cut
+    loops alone. Second, cut-loop charge conservation: the coarse cycle's
+    element equals the fine element of the loop it encloses, per channel,
+    which is the holonomy-conservation identity reused as a charge statement.
+    """
+    connection = coarse_connection(model, blocks)
+    holonomy = check_holonomy_conservation(model, blocks)
+    fine_rank = len(
+        based_holonomy_generators(model.graph, "belief", min(model.agents))
+    )
+    coarse_rank = len(
+        based_holonomy_generators(connection.graph, "belief", 1)
+    ) + sum(len(belief) for belief, _ in connection.retained_generators)
+    cut = tuple(
+        (channel, coarse, dict(holonomy.fine_elements)[channel])
+        for channel, coarse in holonomy.coarse_elements
+    )
+    return WilsonChargeReport(
+        fine_rank=fine_rank,
+        coarse_rank=coarse_rank,
+        cut_loop_elements=cut,
+        retained_charges=connection.retained_generators,
+        passes=fine_rank == coarse_rank
+        and all(coarse == fine for _, coarse, fine in cut),
+    )
+
+
 __all__ = [
     "CHANNELS",
     "CoarseConnection",
     "GAUGE_COVARIANCE_TOLERANCE",
     "GaugeCovarianceReport",
     "HolonomyConservationReport",
+    "WilsonChargeReport",
     "check_gauge_covariance",
     "check_holonomy_conservation",
+    "check_wilson_charge_conservation",
     "coarse_action",
     "coarse_connection",
     "gauge_transformed_model",

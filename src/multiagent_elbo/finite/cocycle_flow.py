@@ -95,6 +95,144 @@ def homogeneous_cycle_instance(
     return PairwiseInstance(graph=graph, couplings=couplings)
 
 
+def homogeneous_circulant_instance(
+    length: int,
+    offsets: Sequence[int],
+    site_table: Sequence[Fraction],
+    pair_table: Sequence[Sequence[Fraction]],
+    belief_element: int = 1,
+    model_element: int = 0,
+) -> PairwiseInstance:
+    """Return the declared homogeneous circulant instance of amendment 3.
+
+    Every site carries the seed site table; every edge of every declared
+    offset carries the seed pair table in receiver-to-source orientation,
+    stored transposed wherever the ascending position key reverses that
+    orientation. The belief element sits on offset-one edges only, so chords
+    thicken the coupling boundary without touching the declared holonomy.
+    Offsets must stay strictly below half the length, which excludes both
+    reciprocal pairs and coincident unordered pairs.
+    """
+    if type(length) is not int or length < 3:
+        raise ValueError("a circulant instance needs at least three sites")
+    declared = tuple(sorted(set(int(offset) for offset in offsets)))
+    if not declared or declared[0] < 1 or 2 * declared[-1] >= length:
+        raise ValueError("offsets must lie strictly between zero and half the length")
+    size = len(site_table)
+    site = tuple(Fraction(value) for value in site_table)
+    pair = tuple(tuple(Fraction(value) for value in row) for row in pair_table)
+    if any(len(row) != size for row in pair) or len(pair) != size:
+        raise ValueError("the pair table must be square on the site state space")
+    transposed = tuple(
+        tuple(pair[right][left] for right in range(size)) for left in range(size)
+    )
+    edges: list[DirectedEdge] = []
+    belief_elements: list[int] = []
+    pairs: list[tuple[tuple[int, int], tuple[tuple[Fraction, ...], ...]]] = []
+    for offset in declared:
+        for position in range(length):
+            source_position = (position + offset) % length
+            edges.append(DirectedEdge(position + 1, source_position + 1))
+            belief_elements.append(
+                int(belief_element) % GROUP_ORDER if offset == 1 else 0
+            )
+            if position < source_position:
+                pairs.append(((position, source_position), pair))
+            else:
+                pairs.append(((source_position, position), transposed))
+    graph = TwoChannelGraph(
+        order=GROUP_ORDER,
+        vertices=tuple(range(1, length + 1)),
+        edges=tuple(edges),
+        belief_elements=tuple(belief_elements),
+        model_elements=(int(model_element) % GROUP_ORDER,) * len(edges),
+    )
+    couplings = PairwiseCouplings(
+        width=length,
+        constant=Fraction(0),
+        sites=(site,) * length,
+        pairs=tuple(sorted(pairs)),
+    )
+    return PairwiseInstance(graph=graph, couplings=couplings)
+
+
+@dataclass(frozen=True)
+class PairRetention:
+    """Measurement M-bundle: one-step pair retention at declared multiplicity."""
+
+    length: int
+    offsets: tuple[int, ...]
+    ratio: int
+    cut_per_boundary: int
+    fine_pair_sup: float
+    coarse_pair_sup: float
+    retention: float
+    omitted_sup: float
+
+
+def one_step_pair_retention(
+    instance: PairwiseInstance,
+    ratio: int,
+) -> PairRetention:
+    """Measure the one-step pair retention factor of amendment 3.
+
+    The instance is blocked consecutively at the declared ratio through the
+    audited contraction, the coarse couplings are read back by the exact
+    Moebius route with every coarse pair admitted, and the retention factor is
+    the ratio of coarse to fine pairwise sup norms. No threshold is attached:
+    the number is the result.
+    """
+    length = len(instance.graph.vertices)
+    blocks = consecutive_blocks(length, int(ratio))
+    model = _kernel_model(instance.graph, "pair-retention")
+    action_array = couplings_action(instance.couplings)
+    weights = np.exp(-(action_array - action_array.min()))
+    action, _ = _blocked_action(model, weights, blocks)
+    coarse_length = length // int(ratio)
+    admitted = tuple(
+        (left, right)
+        for left in range(coarse_length)
+        for right in range(left + 1, coarse_length)
+    )
+    coarse, omitted = mobius_couplings(action, admitted)
+    fine_sup = max(
+        abs(float(value))
+        for _, table in instance.couplings.pairs
+        for row in table
+        for value in row
+    )
+    coarse_sup = max(
+        (
+            abs(float(value))
+            for _, table in coarse.pairs
+            for row in table
+            for value in row
+        ),
+        default=0.0,
+    )
+    offsets = tuple(
+        sorted(
+            {
+                min(
+                    (edge.source - edge.receiver) % length,
+                    (edge.receiver - edge.source) % length,
+                )
+                for edge in instance.graph.edges
+            }
+        )
+    )
+    return PairRetention(
+        length=length,
+        offsets=offsets,
+        ratio=int(ratio),
+        cut_per_boundary=sum(offsets),
+        fine_pair_sup=fine_sup,
+        coarse_pair_sup=coarse_sup,
+        retention=coarse_sup / fine_sup if fine_sup else 0.0,
+        omitted_sup=float(omitted),
+    )
+
+
 def consecutive_blocks(length: int, ratio: int) -> tuple[tuple[int, ...], ...]:
     """Return the consecutive blocking of one cycle length at one ratio."""
     if type(ratio) is not int or ratio < 2:
@@ -480,12 +618,15 @@ __all__ = [
     "RayComparison",
     "ReducedFixedPoint",
     "ReducedLinearization",
+    "PairRetention",
     "cocycle_flow",
     "reduced_fixed_point",
     "composition_defect",
     "consecutive_blocks",
     "homogeneity_defect",
+    "homogeneous_circulant_instance",
     "homogeneous_cycle_instance",
+    "one_step_pair_retention",
     "ray_comparison",
     "reduced_couplings",
     "reduced_linearization",
