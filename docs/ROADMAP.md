@@ -107,9 +107,14 @@ This layer moved decisively on 2026-08-17, and its results now constrain the oth
 | C2 holonomy conservation, exact; cut-loop defect closed | **C** | connection survives blocking |
 | C3 compatibility $K_{b_1 b_2} = K_{b_1} K_{b_2}$ | **R** — defect 0.204 vs $10^{-10}$ | the flow is a typed cocycle |
 | C6 composition defect, all factorization pairs, homogeneous 6-cycle | **C** — order one | typing is generic, not a tower artifact |
-| Per-ratio reduced self-maps contract (radius 0.83) to factorized fixed structures | **C** | pairwise coupling irrelevant, level-locally |
-| Fixed structures depend on the ratio (relative sup 0.81) | **C** | even endpoints are typed |
-| Diagnosis: single-boundary-agent towers are quasi-one-dimensional | **D** | triviality was architectural |
+| Per-ratio passive composites contract (radius 0.83) to factorized fixed structures | **C** | pairwise coupling irrelevant in the passive channel |
+| Passive fixed structures depend on the ratio (relative sup 0.81) | **C** | even endpoints are typed |
+| Diagnosis: single-boundary-agent towers are quasi-one-dimensional | **D** | passive triviality was architectural |
+| Wilson charge conserved: retained generators + coarse cycle span the fine cycle space | **C** | no loop's charge is dropped by blocking |
+| Boundary multiplicity saturates: retention 0.156/0.441/0.564 at k = 1/3/6 | **C** | thicker boundaries cannot rescue the passive channel |
+| Sector-capacity null: belief-charge parents do not raise retention | **C** | capacity along that sector map was not binding |
+| Regenerated attention sustains interacting fixed structures (pair sup 0.58–0.62, sustained/injected 1.25) | **C** | horizontal glue is re-bound per level, not inherited |
+| Typing survives regeneration (RC6 0.17–0.27; R-cross 0.64) | **C** | the cocycle reading governs both channels |
 
 The last row reframes the oldest negative result. `Theory/07b`'s trivial fixed sectors and the
 measured trivial fixed structures share one cause: the declared self-similar family joins blocks
@@ -121,20 +126,25 @@ per-link attenuation, with hierarchical-graph RG (Berker--Ostlund, Migdal--Kadan
 network-native precedent for survival. Citations here are from memory and are not manuscript-ready
 until checked.
 
-Ordered work, each item cheap on the built machinery except the last:
+Items 1 through 3 of the original ordered work closed on 2026-08-17/18 (the 07b cocycle
+rewrite, Wilson-charge conservation, and the boundary-multiplicity sweep, run at the coupling
+level on circulant instances), and amendments 4 through 6 added and answered the regeneration
+and capacity questions. Ordered work now:
 
-1. Rewrite `Theory/07b` in cocycle language: delete the autonomous-semigroup claim, cite the C3
-   refutation, restate fixed-sector language as per-ratio fixed structures of declared composites.
-2. Conserve Wilson charge under blocking by composing retained boundary generators into coarse
-   plaquettes (defect already recorded, fix known, feature-scale).
-3. Bundled-tower amendment: adjacent blocks joined through $k$ parallel cross edges; measure the
-   pair-sector contraction rate against $k$; the rate crossing one, if it occurs, is the
-   architecture analog of a lower critical dimension.
-4. Participatory blocking: let the partition posterior select the blocking at each step instead of
-   declaring it, and measure whether free energy prefers staged aggregation over direct — the
+1. Participatory blocking: let the partition posterior select the blocking at each step instead
+   of declaring it, and measure whether free energy prefers staged aggregation over direct — the
    formation-kinetics question, asked inside the lab's own selection mechanism.
+2. A capacity statistic comparable across parent alphabets: mutual information across the block
+   boundary rather than the sup norm, so sector extensions can be judged without the dilution
+   caveat; then richer sector maps than the belief charge if the statistic warrants them.
+3. Extended downward kernels for enlarged parent alphabets, which is what iterating
+   sector-carrying parents requires (declared out of scope in amendment 6).
+4. Regenerated-channel dynamics beyond the fixed structure: attention temperature and occupancy
+   are declared, not derived — deriving them from the coarse level's own row free energy is the
+   theory-faithful upgrade and connects the RG layer to the attention theorems of Layer A.
 5. Semigroup restoration as a separate design: a kernel family closed under composition, priced
-   against what it costs the Bayes-exactness of the coarse channel.
+   against what it costs the Bayes-exactness of the coarse channel. Regeneration removed its
+   urgency for interaction but not for composability: both channels remain order-one typed.
 
 ## Layer S: from a point to sections
 
