@@ -29,6 +29,7 @@ METRIC_KEYS = {
     "cycle_conjugacy_invariant_residual",
     "trivialization_residual",
     "operational_observable_residual",
+    "staged_aggregation_path_dependence",
     "broken_link_negative_control",
 }
 
@@ -318,10 +319,17 @@ def test_frustrated_transport_has_a_normalized_path_dependent_observable(
     )
 
 
-def test_staged_aggregation_records_finite_stages_and_matches_direct_total(
+def test_staged_aggregation_sums_each_block_in_its_own_root_frame(
     tmp_path: Path,
 ):
-    """Mutation caught: publishing only the final aggregate and losing its stages."""
+    """Mutation caught: transporting every agent to the base vertex before grouping.
+
+    Regrouping already-based contributions tests ``(a + b) + (c + d) = a + b + c
+    + d`` and cannot fail. Staged honestly, block ``{2, 3}`` is summed at vertex
+    2 and only its total is carried to vertex 0, so the two routes traverse
+    different paths of a non-trivializable connection and the totals differ by
+    the holonomy defect.
+    """
     experiment = importlib.import_module(
         "multiagent_elbo.geometry.holonomy_experiment"
     )
@@ -341,8 +349,29 @@ def test_staged_aggregation_records_finite_stages_and_matches_direct_total(
         result.arrays["aggregation_stages.direct_total"], [[4.0, 2.0]]
     )
     assert_array_equal(
-        result.arrays["aggregation_stages.staged_total"], [[4.0, 2.0]]
+        result.arrays["aggregation_stages.staged_total"], [[3.0, 2.0]]
     )
+    assert result.metrics["staged_aggregation_path_dependence"].value == 1.0
+    assert result.metrics["staged_aggregation_path_dependence"].status == "pass"
+
+
+def test_staged_aggregation_agrees_with_the_direct_sum_when_the_cycle_is_flat(
+    tmp_path: Path,
+):
+    """Mutation caught: reporting a path-dependence gap the connection cannot carry."""
+    experiment = importlib.import_module(
+        "multiagent_elbo.geometry.holonomy_experiment"
+    )
+    result = experiment.run_holonomy_experiment(
+        holonomy_config(tmp_path, scenario="flat_cycle")
+    )
+
+    assert_array_equal(
+        result.arrays["aggregation_stages.direct_total"],
+        result.arrays["aggregation_stages.staged_total"],
+    )
+    assert result.metrics["staged_aggregation_path_dependence"].value == 0.0
+    assert result.metrics["staged_aggregation_path_dependence"].status == "pass"
 
 
 def test_runner_rejects_invalid_data_before_rng_provenance_or_run_store(
@@ -493,7 +522,7 @@ def test_launcher_runs_without_arguments_pythonpath_or_editable_install(
 
     assert completed.returncode == 0, completed.stderr
     assert "scenario=nonflat_plaquette" in completed.stdout
-    assert "status=pass; metrics=5; figures=not_exposed" in completed.stdout
+    assert "status=pass; metrics=6; figures=not_exposed" in completed.stdout
     manifests = list((tmp_path / "artifacts").rglob("manifest.json"))
     assert len(manifests) == 1
     manifest = json.loads(manifests[0].read_text("utf-8"))

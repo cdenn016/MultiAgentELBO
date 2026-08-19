@@ -211,8 +211,15 @@ docs/                                       design, plan, hypotheses, results, e
 Run the complete test suite with:
 
 ```powershell
+$env:CUDA_VISIBLE_DEVICES = "-1"; $env:PYTHONHASHSEED = "0"
 C:\Python314\python.exe -m pytest -q -p no:cacheprovider
 ```
+
+Both environment variables are required, not optional. `tools/remediation_evidence.py`
+validates them and raises on any other value, so eighteen tests fail without them
+even though every other suite passes. `CUDA_VISIBLE_DEVICES=-1` pins the CPU lane
+that the published artifact contract is defined on, and `PYTHONHASHSEED=0` pins the
+iteration order that content-addressed run identities are computed from.
 
 The post-reconciliation integration JUnit record contains 698 collected tests: 696
 passed, zero failed, zero errored, and two were skipped for the Windows symlink

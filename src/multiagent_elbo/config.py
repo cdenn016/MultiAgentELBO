@@ -22,6 +22,19 @@ class RunConfig:
 
 @dataclass(frozen=True)
 class TheoryConfig:
+    """Theory block of the two experiments that share an interaction decomposition.
+
+    ``retained_interaction_order`` is the Hoeffding order the read-back keeps,
+    with ``None`` meaning the full order. It gates the ``INT-01_retained_order_*``
+    metrics of ``finite_exact``; ``gaussian_realization`` decomposes no
+    interaction and reads it nowhere, so for that experiment it is declared,
+    validated, and folded into the run identity while changing no number. Both
+    facts are stated here rather than left to be discovered: until 2026-08-18
+    the key reached no metric in either experiment, so a sweep over it produced
+    thirteen distinct config hashes and one byte-identical ``metrics.json``
+    (2026-08-18 lab-versus-theory audit, finding 6).
+    """
+
     experiment: Literal["finite_exact", "gaussian_realization"]
     retained_interaction_order: int | None
 

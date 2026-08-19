@@ -28,7 +28,7 @@ from fractions import Fraction
 from itertools import product
 import math
 from pathlib import Path
-from typing import Sequence
+from typing import Mapping, Sequence
 
 import numpy as np
 
@@ -56,6 +56,8 @@ from .two_channel_gauge import DirectedEdge, TwoChannelGraph
 
 CHANNELS = ("belief", "model")
 GROUP_ORDER = 3
+SECTOR_READOUTS = ("charge", "first_member")
+MI_CEILING_FLOOR = 1.0e-12
 
 
 def homogeneous_cycle_instance(
@@ -184,6 +186,8 @@ class PairRetention:
 def one_step_pair_retention(
     instance: PairwiseInstance,
     ratio: int,
+    parent_priors: Mapping[int, Sequence[float]] | None = None,
+    anchor: Sequence[int] | None = None,
 ) -> PairRetention:
     """Measure the one-step pair retention factor of amendment 3.
 
@@ -192,20 +196,27 @@ def one_step_pair_retention(
     Moebius route with every coarse pair admitted, and the retention factor is
     the ratio of coarse to fine pairwise sup norms. No threshold is attached:
     the number is the result.
+
+    ``parent_priors`` declares one parent law per block root; the default
+    leaves the declared law fixed at every root, which is not what a regauging
+    does to it. ``anchor`` is the Moebius ground state, a gauge fixing that the
+    sup norm moves with; sweep it with
+    :func:`~multiagent_elbo.finite.coupling_readback.anchor_swept_sup` before
+    publishing a sup-norm number.
     """
     length = len(instance.graph.vertices)
     blocks = consecutive_blocks(length, int(ratio))
     model = _kernel_model(instance.graph, "pair-retention")
     action_array = couplings_action(instance.couplings)
     weights = np.exp(-(action_array - action_array.min()))
-    action, _ = _blocked_action(model, weights, blocks)
+    action, _ = _blocked_action(model, weights, blocks, parent_priors)
     coarse_length = length // int(ratio)
     admitted = tuple(
         (left, right)
         for left in range(coarse_length)
         for right in range(left + 1, coarse_length)
     )
-    coarse, omitted = mobius_couplings(action, admitted)
+    coarse, omitted = mobius_couplings(action, admitted, anchor)
     fine_sup = max(
         abs(float(value))
         for _, table in instance.couplings.pairs
@@ -284,17 +295,37 @@ def _capacity_marginal(
     ratio: int,
     sector_count: int,
     constant_sector: bool,
+    readout: str = "charge",
+    parent_priors: Mapping[int, Sequence[float]] | None = None,
 ) -> tuple[np.ndarray, int, tuple[tuple[int, ...], ...], np.ndarray]:
     r"""Contract one instance through the sector-carrying blocking kernel.
 
     Returns the unnormalized coarse marginal over the parent alphabet, the
     alphabet size, the blocking, and the fine child-weight tensor. The parent
-    label is $(p, s)$ with $s(x_B)$ the block's root-framed belief-channel
-    $Z_3$ charge, and the kernel is the audited Bayes kernel times the
-    deterministic sector readout, $T((p,s) \mid x_B) = T(p \mid x_B)\,
-    \mathbf 1[s = s(x_B)]$; with ``constant_sector`` the sector axis is
-    collapsed, reproducing the plain nine-state blocking exactly. This is the
-    single contraction both M-capacity and M-info read from.
+    label is $(p, s)$ with $s(x_B)$ a deterministic $n_s$-valued readout of the
+    block's children, and the kernel is the audited Bayes kernel times that
+    readout, $T((p,s) \mid x_B) = T(p \mid x_B)\, \mathbf 1[s = s(x_B)]$. This
+    is the single contraction both M-capacity and M-info read from.
+
+    Two things about the sector axis, both established by the 2026-08-18
+    lab-versus-theory audit and both load-bearing for how a gain is read.
+
+    ``constant_sector`` collapses the axis, reproducing the plain nine-state
+    blocking. That is an identity, not an independent check: the collapsed law
+    is the nine-state law by construction, so the control cannot fail and
+    cannot testify to anything about the charge.
+
+    ``readout`` selects which same-cardinality label the axis carries.
+    ``"charge"`` is the declared root-framed belief-channel $Z_3$ charge
+    $s(x_B) = \sum_{a \in B}(k_a + t_a) mod n_s$. ``"first_member"`` is the
+    declared control: the first member's own orbit coordinate, the same
+    ingredient read at one site instead of summed over the block, carrying the
+    same number of labels and no gauge charge. Because the enlarged label is a
+    deterministic refinement of the nine-state one on both blocks, any readout
+    at all satisfies $R_{\mathrm{MI}}(9 n_s) \ge R_{\mathrm{MI}}(9)$ by data
+    processing; the sign of a sector gain is therefore a theorem and carries no
+    information about the charge. Only the comparison against a same-cardinality
+    non-charge readout does.
     """
     length = len(instance.graph.vertices)
     blocks = consecutive_blocks(length, int(ratio))
@@ -306,6 +337,8 @@ def _capacity_marginal(
     coordinates = _belief_orbit_coordinates(model)
     if type(sector_count) is not int or sector_count < 1:
         raise ValueError("sector_count must be a positive integer")
+    if readout not in SECTOR_READOUTS:
+        raise ValueError(f"readout must be one of {SECTOR_READOUTS}")
     sectors = sector_count
     letters = _CONTRACTION_LETTERS
     if length + len(blocks) > len(letters):
@@ -317,7 +350,7 @@ def _capacity_marginal(
         label = letters[length + block_index]
         output += label
         base_kernel = _block_bayes_kernel(
-            model, block, _block_prior_vector(model, block, None)
+            model, block, _block_prior_vector(model, block, parent_priors)
         )
         width = len(block)
         extended = np.zeros((size * sectors,) + (size,) * width)
@@ -326,9 +359,12 @@ def _capacity_marginal(
             *[(coordinates + transports[agent]) % order for agent in block],
             indexing="ij",
         )
-        charge = np.zeros((size,) * width, dtype=np.int64)
-        for grid in grids:
-            charge = charge + grid
+        if readout == "charge":
+            charge = np.zeros((size,) * width, dtype=np.int64)
+            for grid in grids:
+                charge = charge + grid
+        else:
+            charge = np.array(grids[0], dtype=np.int64)
         charge = np.zeros((size,) * width, dtype=np.int64) if constant_sector else charge % sectors
         if not constant_sector and len(np.unique(charge)) < sectors:
             raise ValueError(
@@ -364,6 +400,8 @@ def capacity_pair_retention(
     ratio: int,
     sector_count: int = GROUP_ORDER,
     constant_sector: bool = False,
+    readout: str = "charge",
+    parent_priors: Mapping[int, Sequence[float]] | None = None,
 ) -> CapacityRetention:
     r"""Measure M-capacity: one-step pair retention with sector-carrying parents.
 
@@ -377,12 +415,15 @@ def capacity_pair_retention(
     frame convention of the downward kernels; the family-referenced charge
     without the transports shifts under a sample-shift gauge (2026-08-18
     audit, F8). With ``constant_sector`` the readout is replaced by the
-    constant label, which must reproduce the nine-state retention exactly and
-    serves as the declared control.
+    constant label, which reproduces the nine-state retention exactly — an
+    identity rather than an independent check, since the collapsed law *is*
+    the nine-state law. The operative control is ``readout="first_member"``,
+    a same-cardinality label carrying no gauge charge; the sector gain is only
+    informative about the charge when quoted against it.
     """
     length = len(instance.graph.vertices)
     marginal, alphabet, blocks, _ = _capacity_marginal(
-        instance, ratio, sector_count, constant_sector
+        instance, ratio, sector_count, constant_sector, readout, parent_priors
     )
     sectors = sector_count
     coarse_width = len(blocks)
@@ -462,6 +503,8 @@ def capacity_information_retention(
     ratio: int,
     sector_count: int = GROUP_ORDER,
     constant_sector: bool = False,
+    readout: str = "charge",
+    parent_priors: Mapping[int, Sequence[float]] | None = None,
 ) -> InformationRetention:
     r"""Measure M-info: the boundary information a parent alphabet carries.
 
@@ -475,15 +518,33 @@ def capacity_information_retention(
     is the fraction of that ceiling. Unlike the anchored sup norm, the
     statistic is a functional of the law alone: invariant under per-block
     parent relabelings and per-site state permutations, hence
-    alphabet-comparable and gauge-invariant by construction (amendment 9).
-    The first adjacent pair is representative by homogeneity on the declared
-    instances. With ``constant_sector`` the collapsed sector axis is a
-    bijection on support, so the control must reproduce the nine-state value
-    exactly.
+    alphabet-comparable (amendment 9). The first adjacent pair is
+    representative by homogeneity on the declared instances.
+
+    Two limits on what a sector gain in this statistic means, both established
+    by the 2026-08-18 lab-versus-theory audit.
+
+    *The sign is a theorem, not evidence.* The enlarged label is a
+    deterministic refinement of the nine-state one, applied identically on both
+    blocks with the denominator unchanged, so $R_{\mathrm{MI}}$ can only rise
+    by data processing — for every instance, ratio, coupling and readout. The
+    ``constant_sector`` control collapses the axis and reproduces the
+    nine-state value by construction, so it is an identity and not an
+    independent check. Only a comparison against a same-cardinality non-charge
+    readout (``readout="first_member"``) separates the gauge charge from the
+    label count, and on the declared instances arbitrary same-cardinality
+    readouts beat the charge by a wide margin.
+
+    *It is not gauge-invariant by construction.* The parent law is data
+    attached to the block root frame, and the production paths that do not
+    thread ``parent_priors`` leave it fixed while everything else regauges, so
+    the statistic drifts under the shift group (measured 3.5% at $k = 1$ and
+    1.3% at $k = 3$, below the sector gain but not zero). Threading the
+    re-expressed prior restores invariance to roundoff.
     """
     length = len(instance.graph.vertices)
     marginal, _, blocks, weights = _capacity_marginal(
-        instance, ratio, sector_count, constant_sector
+        instance, ratio, sector_count, constant_sector, readout, parent_priors
     )
     coarse_width = len(blocks)
     if coarse_width < 2:
@@ -496,6 +557,14 @@ def capacity_information_retention(
     coarse_pair = marginal.sum(axis=tuple(range(2, coarse_width)))
     fine_information = _mutual_information(fine_pair)
     coarse_information = _mutual_information(coarse_pair)
+    if 0.0 < fine_information < MI_CEILING_FLOOR:
+        raise ValueError(
+            "the boundary mutual-information ceiling "
+            f"{fine_information:.6e} nats is at roundoff scale; the retention "
+            "ratio would divide one roundoff residue by another and is not a "
+            "measurement. Declare a coupling that correlates the boundary, or "
+            "report the ceiling alone."
+        )
     offsets = tuple(
         sorted(
             {

@@ -41,6 +41,33 @@ from .scale_cocycle import (
 F = Fraction
 MetricStatus = Literal["pass", "fail", "inconclusive"]
 
+# The declared fine-to-macro channel of the three-level extension. It is written
+# down here rather than assembled from the two stages because the composition
+# residual is the check: until 2026-08-18 the direct channel *was* the composed
+# product, so the residual, and the three typed residuals that read it, compared
+# an expression with itself and were zero by construction (2026-08-18
+# lab-versus-theory audit, finding 5). Declaring it independently makes the
+# comparison bite: any drift in the fixture's fine-to-middle rows, in the
+# middle-to-macro rows below, or in these rows now shows up as a nonzero gap.
+DIRECT_FINE_TO_MACRO_ROWS: tuple[tuple[Fraction, ...], ...] = (
+    (F(59, 96), F(37, 96)),
+    (F(37, 96), F(59, 96)),
+    (F(37, 96), F(59, 96)),
+    (F(59, 96), F(37, 96)),
+    (F(19, 32), F(13, 32)),
+    (F(13, 32), F(19, 32)),
+    (F(13, 32), F(19, 32)),
+    (F(19, 32), F(13, 32)),
+    (F(19, 32), F(13, 32)),
+    (F(13, 32), F(19, 32)),
+    (F(13, 32), F(19, 32)),
+    (F(19, 32), F(13, 32)),
+    (F(59, 96), F(37, 96)),
+    (F(37, 96), F(59, 96)),
+    (F(37, 96), F(59, 96)),
+    (F(59, 96), F(37, 96)),
+)
+
 
 @dataclass(frozen=True)
 class ScaleCocycleExperimentResult:
@@ -116,8 +143,18 @@ def _typed_morphism_payload(morphism: ExactTypedMorphism) -> dict[str, object]:
     }
 
 
-def _generated_coarse_interaction() -> dict[str, object]:
-    """Coarse a pairwise binary action and expose its generated triple term."""
+def _generated_coarse_interaction(retained_order: int) -> dict[str, object]:
+    """Coarse a pairwise binary action and expose its generated triple term.
+
+    ``retained_order`` is the declared interaction order the read-back keeps. The
+    coarse action of a pairwise fine action on three sites carries exactly one
+    component above pair order, so retaining order two or less drops it and
+    retaining three or more keeps it, and ``pairwise_reconstruction`` is the
+    reconstruction at the declared order. Before 2026-08-18 the truncation was
+    hardcoded to pair order and the configured key reached no metric, which made
+    ``metrics.json`` byte-identical across every value the key could take
+    (2026-08-18 lab-versus-theory audit, finding 6).
+    """
     states = tuple(
         (a, b, c) for a in (0, 1) for b in (0, 1) for c in (0, 1)
     )
@@ -150,7 +187,8 @@ def _generated_coarse_interaction() -> dict[str, object]:
         - action_by_state[(0, 0, 0)]
     )
     pairwise_reconstruction = list(coarse.action)
-    pairwise_reconstruction[-1] -= triple
+    if retained_order < 3:
+        pairwise_reconstruction[-1] -= triple
     exact_log_ratio = F(141**3, 69 * 237**2)
     independent_triple = math.log(float(exact_log_ratio))
     if not math.isclose(triple, independent_triple, rel_tol=0.0, abs_tol=2.0e-15):
@@ -167,6 +205,7 @@ def _generated_coarse_interaction() -> dict[str, object]:
         "coarse_likelihood": coarse.likelihood,
         "triple_component": triple,
         "triple_log_ratio": exact_log_ratio,
+        "retained_interaction_order": retained_order,
         "pairwise_reconstruction": tuple(pairwise_reconstruction),
     }
 
@@ -199,7 +238,11 @@ def _build_extension(payload: Mapping[str, object]) -> tuple[dict[str, object], 
             (F(1, 3), F(2, 3)),
         ),
     )
-    fine_to_macro = fine_to_middle.compose(middle_to_macro)
+    fine_to_macro = ExactMarkovChannel(
+        fine_to_middle.source_labels,
+        middle_to_macro.target_labels,
+        DIRECT_FINE_TO_MACRO_ROWS,
+    )
     extension_without_id = {
         "schema_version": "three-level-composition-v1",
         "base_application_id": payload["application_id"],
@@ -321,7 +364,8 @@ def _exact_fixtures(
         horizontal_anomaly=(F(2), F(-1)),
     )
 
-    generated = _generated_coarse_interaction()
+    retained_order = config.theory.retained_interaction_order
+    generated = _generated_coarse_interaction(retained_order)
     states = generated["states"]
     assert isinstance(states, tuple)
     fine_pair_counts = {
@@ -487,8 +531,12 @@ def _exact_fixtures(
         "pairwise_truncation_control": target_metric(
             pairwise_residual,
             tolerance,
-            target=0.32394711573301693,
-            interpretation="Pairwise truncation omits the coarse three-body term generated after channel action.",
+            target=0.32394711573301693 if retained_order < 3 else 0.0,
+            interpretation=(
+                "Truncating at the configured retained interaction order omits "
+                "the coarse three-body term generated after channel action, and "
+                "omits nothing once the order reaches three."
+            ),
             theorem_status="NUMERICAL",
             verification_state="CANDIDATE",
             claim_origin="PROJECT_NOVEL",

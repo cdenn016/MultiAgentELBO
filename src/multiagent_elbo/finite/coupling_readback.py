@@ -84,6 +84,8 @@ from .two_channel_gauge import CyclicRepresentation, TwoChannelGraph, orbit
 
 CHANNELS = ("belief", "model")
 COMPATIBILITY_TOLERANCE = 1.0e-10
+DECLARED_CONCENTRATION = Fraction(1)
+DECLARED_ANCHOR_STATE = 0
 PROJECTION_AGREEMENT_TOLERANCE = 0.05
 IPF_MARGINAL_TOLERANCE = 1.0e-13
 IPF_MAX_SWEEPS = 500
@@ -136,6 +138,7 @@ def couplings_action(couplings: PairwiseCouplings) -> np.ndarray:
 def mobius_couplings(
     action: Mapping[State, Fraction],
     admitted_pairs: Sequence[tuple[int, int]],
+    anchor: Sequence[int] | None = None,
 ) -> tuple[PairwiseCouplings, Fraction]:
     """Return the exact Moebius truncation and the sup norm of what it omits.
 
@@ -143,13 +146,30 @@ def mobius_couplings(
     rationals so that alternating sums cannot cancel approximately. The second
     return value is the largest component magnitude outside the declared
     family, which is the one-step truncation residual in the anchored gauge.
+
+    The anchor is the ground state at which every anchored component vanishes,
+    and it is a gauge fixing: the anchored decomposition of one action is a
+    different parameter vector at a different anchor, so every sup-norm
+    statistic read off it moves with the anchor. It defaults to the declared
+    all-``DECLARED_ANCHOR_STATE`` ground state, which is what was pinned
+    silently before 2026-08-18; a caller reporting a sup-norm statistic should
+    sweep it and report the range beside the pinned value
+    (:func:`anchor_swept_pair_sup`). The law the couplings define, and every
+    functional of that law such as the mutual-information retention, is exactly
+    anchor-invariant, so the sweep is needed only for the sup-norm quantities.
     """
     width = len(next(iter(action)))
     admitted = tuple(sorted({tuple(sorted(pair)) for pair in admitted_pairs}))
     for pair in admitted:
         if len(set(pair)) != 2 or not all(0 <= i < width for i in pair):
             raise ValueError("admitted pairs must name two distinct declared sites")
-    decomposition = anchored_mobius_decompose(action, anchor=(0,) * width)
+    if anchor is None:
+        ground = (DECLARED_ANCHOR_STATE,) * width
+    else:
+        ground = tuple(int(value) for value in anchor)
+        if len(ground) != width:
+            raise ValueError("the anchor must name one ground state per declared site")
+    decomposition = anchored_mobius_decompose(action, anchor=ground)
     size = len({state[0] for state in action})
     sites = tuple(
         tuple(
@@ -324,13 +344,32 @@ class RescalingStep:
     instance: PairwiseInstance | None
 
 
-def _kernel_model(graph: TwoChannelGraph, name: str) -> FalsificationModel:
+def _kernel_model(
+    graph: TwoChannelGraph,
+    name: str,
+    concentration: Fraction = DECLARED_CONCENTRATION,
+) -> FalsificationModel:
     """Return the declared level-invariant structure attached to one graph.
 
     The state space, the representations and families, the kappas, and the
     declared parent law are carried unchanged to every level of the tower;
     only the graph and its connection change. Occupancies and attention rows
     are irrelevant to the downward kernels and are declared uniform.
+
+    What this model does **not** carry is the instance's couplings. The block
+    energy of :mod:`partition_dynamics` is assembled from the downward kernels,
+    which are level-invariant declared structure, so no coupling vector of any
+    magnitude moves it. A coupling scale reaches a partition posterior only
+    through the level's Boltzmann flow, which reweights which configurations
+    the energy is averaged over; the landscape itself is coupling-independent
+    by construction, and a sweep in the coupling scale is a flow reweighting
+    rather than a sweep of the formation landscape (2026-08-18 lab-versus-theory
+    audit, finding 2).
+
+    ``concentration`` is the Ewens concentration of the partition prior. It was
+    pinned at one from 2026-08-17 to 2026-08-18 with no override reachable from
+    the published route; it is a declared knob, and callers that report a
+    partition posterior should report the value they used.
     """
     belief_representation = CyclicRepresentation(GROUP_ORDER, 1, "belief")
     model_representation = CyclicRepresentation(GROUP_ORDER, 2, "model")
@@ -348,7 +387,7 @@ def _kernel_model(graph: TwoChannelGraph, name: str) -> FalsificationModel:
         candidate_partitions=(tuple((vertex,) for vertex in graph.vertices),),
         kappa_belief=2.0,
         kappa_model=2.0,
-        crp_concentration=Fraction(1),
+        crp_concentration=Fraction(concentration),
         identity_holonomy_weight=Fraction(1, 4),
         row_configurations=("uniform", "peaked"),
     )
@@ -370,10 +409,12 @@ def _readback(
     model: FalsificationModel,
     weight_tensor: np.ndarray,
     declared: tuple[tuple[int, ...], ...],
+    parent_priors: Mapping[int, Sequence[float]] | None = None,
+    anchor: Sequence[int] | None = None,
 ) -> RescalingStep:
     """Block one child-weight tensor and read the coarse couplings back."""
-    action, flow = _blocked_action(model, weight_tensor, declared)
-    return _readback_from_action(model, action, flow, declared)
+    action, flow = _blocked_action(model, weight_tensor, declared, parent_priors)
+    return _readback_from_action(model, action, flow, declared, anchor)
 
 
 def _readback_from_action(
@@ -381,6 +422,7 @@ def _readback_from_action(
     action: Mapping[State, Fraction],
     flow: Mapping[State, Fraction],
     declared: tuple[tuple[int, ...], ...],
+    anchor: Sequence[int] | None = None,
 ) -> RescalingStep:
     """Read one already-computed coarse action back into the declared family."""
     connection = (
@@ -397,7 +439,7 @@ def _readback_from_action(
                 }
             )
         )
-    mobius, omitted = mobius_couplings(action, admitted)
+    mobius, omitted = mobius_couplings(action, admitted, anchor)
     variational, ipf = variational_couplings(action, admitted, mobius)
     ratio = projection_agreement(variational, mobius)
     resolved = ipf.converged and ratio <= PROJECTION_AGREEMENT_TOLERANCE
@@ -425,6 +467,8 @@ def initial_step(
     model: FalsificationModel,
     observation: Sequence[int],
     blocks: Sequence[Sequence[int]],
+    parent_priors: Mapping[int, Sequence[float]] | None = None,
+    anchor: Sequence[int] | None = None,
 ) -> RescalingStep:
     """Run one closed renormalization step on the declared fine model.
 
@@ -432,6 +476,12 @@ def initial_step(
     the declared model at the declared observation, exactly as in the coarse
     closure measurement. The step's instance carries the primary-route
     couplings on the identified graph, ready to be blocked again.
+
+    ``parent_priors`` declares one parent law per block root. The default is
+    the declared law at every block, which is *not* gauge-covariant: regauging
+    a root re-expresses the law attached to it, so a caller comparing a
+    regauged run against a bare one must thread the re-expressed priors here.
+    ``anchor`` is the Moebius ground state of the read-back gauge.
     """
     if type(model) is not FalsificationModel:
         raise TypeError("model must be a FalsificationModel")
@@ -441,12 +491,16 @@ def initial_step(
     if any(type(value) is not int or value not in (0, 1) for value in record):
         raise ValueError("every observation record must be binary")
     declared = _checked_step_blocks(model, blocks)
-    return _readback(model, _coarse_child_weights(model, record), declared)
+    return _readback(
+        model, _coarse_child_weights(model, record), declared, parent_priors, anchor
+    )
 
 
 def iterated_step(
     instance: PairwiseInstance,
     blocks: Sequence[Sequence[int]],
+    parent_priors: Mapping[int, Sequence[float]] | None = None,
+    anchor: Sequence[int] | None = None,
 ) -> RescalingStep:
     """Run one closed renormalization step on a coarse instance.
 
@@ -462,7 +516,94 @@ def iterated_step(
     declared = _checked_step_blocks(model, blocks)
     action = couplings_action(instance.couplings)
     weights = np.exp(-(action - action.min()))
-    return _readback(model, weights, declared)
+    return _readback(model, weights, declared, parent_priors, anchor)
+
+
+@dataclass(frozen=True)
+class AnchorSweep:
+    """The pinned value of a sup-norm read-back statistic beside its anchor range.
+
+    The anchored Moebius decomposition is a gauge fixing, so a sup norm read off
+    it is an anchor-dependent number. This record carries the value at the
+    declared anchor, the extremes over the swept anchors, and the anchors that
+    attain them, so a published sup norm can be quoted with the range it moves
+    over instead of as if it were anchor-free.
+    """
+
+    pinned_anchor: tuple[int, ...]
+    pinned_value: float
+    minimum_value: float
+    minimum_anchor: tuple[int, ...]
+    maximum_value: float
+    maximum_anchor: tuple[int, ...]
+    swept_count: int
+
+    @property
+    def relative_range(self) -> float:
+        """Return the swept range as a fraction of the pinned value."""
+        if self.pinned_value == 0.0:
+            return 0.0
+        return (self.maximum_value - self.minimum_value) / abs(self.pinned_value)
+
+
+def _pair_sup(couplings: PairwiseCouplings) -> float:
+    """Return the sup norm of one coupling vector's pairwise block."""
+    return max(
+        (
+            abs(float(value))
+            for _, table in couplings.pairs
+            for row in table
+            for value in row
+        ),
+        default=0.0,
+    )
+
+
+def _site_sup(couplings: PairwiseCouplings) -> float:
+    """Return the sup norm of one coupling vector's site block."""
+    return max(
+        (abs(float(value)) for table in couplings.sites for value in table),
+        default=0.0,
+    )
+
+
+def anchor_swept_sup(
+    action: Mapping[State, Fraction],
+    admitted_pairs: Sequence[tuple[int, int]],
+    anchors: Sequence[Sequence[int]],
+    block: str = "pair",
+) -> AnchorSweep:
+    """Return the declared-anchor sup norm of one coarse action beside its range.
+
+    ``block`` selects the pairwise or the site block of the read-back parameter
+    vector. The declared anchor is always evaluated, whether or not the swept
+    set contains it, so the pinned value in the record is the published one.
+    """
+    if block not in ("pair", "site"):
+        raise ValueError("block must be 'pair' or 'site'")
+    measure = _pair_sup if block == "pair" else _site_sup
+    width = len(next(iter(action)))
+    pinned_anchor = (DECLARED_ANCHOR_STATE,) * width
+    pinned_value = measure(mobius_couplings(action, admitted_pairs, pinned_anchor)[0])
+    swept: list[tuple[float, tuple[int, ...]]] = [(pinned_value, pinned_anchor)]
+    for candidate in anchors:
+        ground = tuple(int(value) for value in candidate)
+        if ground == pinned_anchor:
+            continue
+        swept.append(
+            (measure(mobius_couplings(action, admitted_pairs, ground)[0]), ground)
+        )
+    lowest = min(swept)
+    highest = max(swept)
+    return AnchorSweep(
+        pinned_anchor=pinned_anchor,
+        pinned_value=pinned_value,
+        minimum_value=lowest[0],
+        minimum_anchor=lowest[1],
+        maximum_value=highest[0],
+        maximum_anchor=highest[1],
+        swept_count=len(swept),
+    )
 
 
 @dataclass(frozen=True)
@@ -605,9 +746,12 @@ def moment_matching_diagnostic(step: RescalingStep) -> MomentDiagnostic:
 
 
 __all__ = [
+    "AnchorSweep",
     "CHANNELS",
     "COMPATIBILITY_TOLERANCE",
     "CompatibilityReport",
+    "DECLARED_ANCHOR_STATE",
+    "DECLARED_CONCENTRATION",
     "IPF_MARGINAL_TOLERANCE",
     "IPF_MAX_SWEEPS",
     "IpfReport",
@@ -617,6 +761,7 @@ __all__ = [
     "PROJECTION_AGREEMENT_TOLERANCE",
     "RescalingStep",
     "ROUTE_C_STATUS",
+    "anchor_swept_sup",
     "check_compatibility",
     "couplings_action",
     "initial_step",
