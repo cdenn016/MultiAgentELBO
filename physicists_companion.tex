@@ -6,7 +6,7 @@
 \usepackage{lmodern}
 \usepackage{microtype}
 \usepackage{amsmath,amssymb,mathtools,bm,mathrsfs}
-\usepackage{booktabs,tabularx,array}
+\usepackage{booktabs,tabularx,array,longtable}
 \usepackage{xcolor}
 \usepackage[most]{tcolorbox}
 \usepackage{enumitem}
@@ -95,14 +95,14 @@
 \title{\textbf{Gauge-Covariant Variational Free Energy}\\[0.35em]
 \Large A Physicist's Companion to the Full Theory}
 \author{MultiAgentELBO theory program}
-\date{August 16, 2026}
+\date{August 20, 2026}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-This document is an orientation to the full gauge-covariant variational free energy manuscript, written for a reader who knows gauge theory, statistical mechanics, and the renormalization group, and who does not want to begin with measure-theoretic disintegration. The theory is a genuine gauge theory whose matter fields are probability laws rather than vectors: one principal bundle over a contextual base, two associated bundles carrying belief and model laws in possibly inequivalent representations, chosen connections with their transports and holonomies, and an exact variational identity with the dimensionless Helmholtz form of an expected energy minus an entropy. Multi-agent attention is a canonical Gibbs ensemble on each source simplex, with a row free energy that must retain its entropy term. A normalized attention weight is not a chemical potential; a genuine grand-canonical extension requires a separate fluctuating edge or membership count. Coarse graining is a normalized Markov channel, the information it discards is measured exactly, and a pointwise meta-agent exists only after the channel pushes the full generative, recognition, and posterior laws. Throughout, the emphasis falls on which statements are theorems in the main manuscript, which are modeling declarations, which are thermodynamic analogies, and which are proposed extensions.
+This document is an orientation to the full gauge-covariant variational free energy manuscript, written for a reader who knows gauge theory, statistical mechanics, and the renormalization group, and who does not want to begin with measure-theoretic disintegration. The architecture is local-first: agents carry belief and model-law sections, access interfaces, evaluated generative mechanisms, and normalized interaction-record kernels. A normalized population generative law is constructed from those local mechanisms, while a correlated population recognition law is selected from the coupling class of the local recognition laws. These population laws are compatibility and accounting objects, not agents or observers. The gauge layer has probability laws rather than vectors as its matter fields: one principal bundle over a contextual base, two associated bundles carrying belief and model laws in possibly inequivalent representations, chosen connections with their transports and holonomies, and an exact variational identity with the dimensionless Helmholtz form of an expected energy minus an entropy. Multi-agent attention is a canonical Gibbs ensemble on each source simplex, with a row free energy that must retain its entropy term. A normalized attention weight is not a chemical potential; a genuine grand-canonical extension requires a separate fluctuating edge or membership count. Coarse graining is a normalized Markov channel, the information it discards is measured exactly, and a pointwise meta-agent exists only after the channel pushes the full generative, recognition, and posterior laws. Throughout, the emphasis falls on which statements are theorems in the main manuscript, which are modeling declarations, which are thermodynamic analogies, and which are proposed extensions.
 \end{abstract}
 
 \tableofcontents
@@ -112,7 +112,7 @@ This document is an orientation to the full gauge-covariant variational free ene
 
 The technical manuscript is a long, deliberately austere development. Every nontrivial sentence in it carries a status tag, hypotheses are never suppressed for readability, and constructions that a physicist would ordinarily perform in one line are separated into a declaration, a theorem, and a boundary statement. That discipline is the point of the manuscript, but it makes for slow reading, and it can obscure the fact that the underlying picture is a familiar one.
 
-The picture is this. Take a gauge theory. Replace the matter fields, which ordinarily take values in a vector space carrying a representation of the structure group, by probability laws, on which the group acts by pushforward. Give the theory an action principle, not by postulating a Lagrangian, but by importing the exact variational identity that relates log evidence, a variational bound, and a relative entropy. Then ask the renormalization question: which of this structure survives when microscopic degrees of freedom are replaced by effective ones, and how much information is destroyed in the replacement.
+The picture is this. Begin with local probabilistic agents: each has beliefs, a law over model presentations, an evaluator that turns a sampled presentation into a normalized generative mechanism, and an access interface specifying which records can inform its recognition law. Couple those local objects through normalized interaction-record kernels and gauge-covariant comparisons. The resulting fixed joint supports an exact variational principle relating log evidence, a variational bound, and a relative entropy. This is not an identification of variational free energy with a physical action principle. The renormalization question is then which of this structure survives when microscopic degrees of freedom are replaced by effective ones, and how much information is destroyed in the replacement.
 
 What follows summarizes that program at the level of detail a graduate physicist would want from a colloquium and a careful conversation afterward. It states the main results, gives the physical analogies that make them recognizable, and is explicit about the places where the analogy is exact, the places where it is suggestive only, and the places where the manuscript itself declines to make a claim.
 
@@ -120,14 +120,14 @@ Two companion documents already exist. The technical source is the manuscript as
 
 \section{The theory in one paragraph}
 
-Fix a smooth manifold \(\mathcal C\) of contexts and a principal \(G\)-bundle \(\mathscr P_G\to\mathcal C\). Two associated bundles \(\mathcal E_b\) and \(\mathcal E_m\) carry, in their fibers, spaces of probability laws: beliefs about a latent state, and laws over model presentations. An agent is a local section of both, together with its choice of local frame. Because different agents may choose different frames, their laws cannot be compared until transported, and transport around a closed loop returns a possibly nontrivial group element, the holonomy. On a finite design the theory declares one normalized generative joint law over observations and latents and one correlated recognition law, and the exact identity
+Begin with a finite population \(V\). Each agent \(i\) carries local belief and model-law sections \(q_i^{b;o,X}\) and \(q_i^{m;o,X}\), an access map \(\operatorname{Acc}_i\), an agent recognition law \(\mathbb Q_{i,o,X}\), and the generative-model datum \((q_i^m,\operatorname{ev}_i)\). A sampled presentation \(m_i\) is evaluated incidence-wise as a normalized kernel \(K^{X,a}_{i,m_i}=\operatorname{ev}_{i,a}(m_i)\), and normalized record kernels \(K_a\) attach the declared interaction records. The contextual manifold \(\mathcal C\), principal \(G\)-bundle \(\mathscr P_G\to\mathcal C\), and associated belief and model bundles make these local descriptions comparable across frames; transport around a closed loop may have nontrivial holonomy. On a finite design, the normalized local mechanisms and record kernels construct \(\mathbb P_{\theta,V}\), while a measurable selector chooses \(\mathbb Q_{V,o,X}\in\operatorname{Cpl}(\mathbb Q_{\bullet,o,X})\). Neither population law is an agent, mind, or observer. With those joints fixed, the exact identity
 \begin{equation}
   \log p_\theta(o\mid X)
   =\mathcal L(\Rec_X;X)
   +\KL\bigl(\Rec_X\Vert\Prob_\theta(\cdot\mid o,X)\bigr)
   \label{eq:elbo-identity}
 \end{equation}
-splits the log evidence into a variational bound and a nonnegative gap. For many agents, one collective free energy governs everything, and each exact local update is a coordinate move on it. Entropy-regularized source selection is a canonical ensemble whose energies depend on transported disagreement, so beliefs and effective bonds can coevolve without yet producing a meta-agent. A pointwise parent is constructed only when one normalized recognition-independent channel pushes the complete fine generative, recognition, and posterior laws. That pushforward preserves the evidence and gives an exact conditional-information defect. Turning a sequence of such parent constructions into a renormalization group requires additional identifications between changing state spaces, while turning adaptive source weights into a grand-canonical topology requires separate count-bearing occupation variables. The multivariate Gaussian appears only at the end, as an optional computational realization in which the abstract objects become matrix formulas.
+splits the log evidence into a variational bound and a nonnegative gap. For many agents, one collective free energy governs the joint trial law, and each exact local update is a coordinate move on it. Entropy-regularized source selection is a canonical ensemble whose energies depend on transported disagreement, so beliefs and effective bonds can coevolve without yet producing a meta-agent. A pointwise parent is constructed only when one normalized recognition-independent channel pushes the complete fine generative, recognition, and posterior laws. That pushforward preserves the evidence and gives an exact conditional-information defect. Turning a sequence of such parent constructions into a renormalization group requires additional identifications between changing state spaces, while turning adaptive source weights into a grand-canonical topology requires separate count-bearing occupation variables. The multivariate Gaussian appears only at the end, as an optional computational realization in which the abstract objects become matrix formulas.
 
 \begin{physicalreading}
 The main manuscript supplies variational flows on spaces of probability laws at a fixed context, and it supplies typed arrows between scales. It does not identify either construction with physical time, derive an autonomous field theory on the base, or prove sustained nonequilibrium. A free-energy descent, a trajectory semiconjugacy, a scale diagram, and a physical dynamics are four different statements.
@@ -135,15 +135,27 @@ The main manuscript supplies variational flows on spaces of probability laws at 
 
 \section{A physicist's dictionary}
 
-\begin{table}[ht]
-\centering
-\small
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.235\textwidth}X}
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.72\textwidth}}
+\caption{A translation between the manuscript's objects and standard physics vocabulary. The right column is an orientation aid; each row is qualified in the section that treats it.}\label{tab:dictionary}\\
 \toprule
 \textbf{Object in the theory} & \textbf{Nearest familiar object} \\
 \midrule
+\endfirsthead
+\toprule
+\textbf{Object in the theory} & \textbf{Nearest familiar object} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 \(\mathscr P_G\to\mathcal C\) & A principal gauge bundle, exactly as in Yang--Mills. The base is not spacetime. \\
 \(\mathcal E_b,\mathcal E_m\) & Two matter sectors in possibly inequivalent representations of one group, as quarks and gluons carry the fundamental and adjoint. Here the fibers are spaces of probability laws. \\
+\(q_i^{b;o,X},q_i^{m;o,X},\operatorname{Acc}_i\) & An agent's belief and model-law response sections together with its declared information interface. These are local data, not marginals extracted from a pre-existing population observer. \\
+\(q_i^m,m_i,\operatorname{ev}_{i,a}(m_i)=K^{X,a}_{i,m_i}\) & Respectively a law over model presentations, one sampled presentation, and the normalized generative mechanism that the presentation denotes at an incidence. The three types must not be identified. \\
+\(\mathbb P_{\theta,V}\) & The normalized latent--record population law constructed from the local agent mechanisms and interaction-record kernels. It is not primitive population knowledge. \\
+\(\operatorname{Cpl}(\mathbb Q_{\bullet,o,X})\), \(\mathsf S_{o,X}\), \(\mathbb Q_{V,o,X}\) & The class of joints with the declared agent marginals, a hypothesized measurable selector, and its selected correlated joint. Existence of a coupling is established; a particular selector is additional structure. \\
 \(\rho_b,\rho_m\) & The two representations. \(\widehat\rho\) denotes the induced action on laws, by pushforward, not by multiplying a density. \\
 \(u_i^b,u_i^m\) & Two choices of local gauge, not two bundles. \\
 \(h_i\) with \(u_i^m=u_i^b h_i\) & The group-valued field comparing the two gauge choices. \\
@@ -167,11 +179,8 @@ The main manuscript supplies variational flows on spaces of probability laws at 
 \(g^F\) & The Fisher metric, equal to the Hessian of the exponential-family log partition function; a susceptibility. \\
 \(h_s^\omega\) & The Fisher metric pulled back to the base along a section, using a chosen connection. \\
 \((L,\Lambda)\) & Interaction and total precision. Only the generalized eigenvalues of the pencil are frame independent. \\
-\bottomrule
-\end{tabularx}
-\caption{A translation between the manuscript's objects and standard physics vocabulary. The right column is an orientation aid; each row is qualified in the section that treats it.}
-\label{tab:dictionary}
-\end{table}
+\end{longtable}
+}
 
 \section{The gauge structure}
 
@@ -317,9 +326,9 @@ which is the transformation law a physicist would expect for a covariant two-ten
 
 Replacing a vector fiber by a fiber of probability laws is the one structural novelty, and it has consequences that a reader trained on vector bundles should anticipate.
 
-A law fiber carries no linear structure, so there is no covariant derivative in the usual sense on a merely measurable law fiber, and no curvature two-form acting on it by matrix multiplication. Differential statements are made only on a declared smooth tier, where the law fibers are finite-dimensional smooth parametrized-measure models closed under the group action and the action is smooth. Even there, the Fisher tensor is a Riemannian metric only when it is nondegenerate, and it is called a semimetric until nondegeneracy is proved.
+A law fiber has no canonical vector-space structure. The ambient set of probability measures is convex, but arbitrary linear combinations need not remain positive or normalized, and a restricted model family need not be closed under mixtures. There is therefore no covariant derivative in the usual vector-bundle sense on a merely measurable law fiber, and no curvature two-form acting on it by matrix multiplication. Differential statements are made only on a declared smooth tier, where the law fibers are finite-dimensional smooth parametrized-measure models closed under the group action and the action is smooth. Even there, the Fisher tensor is a Riemannian metric only when it is nondegenerate, and it is called a semimetric until nondegeneracy is proved.
 
-A law fiber is also not a kernel fiber. A point of \(\mathcal B_m\) is a law over model presentations, a single presentation is a sample, and the generative mechanism that presentation denotes is a Markov kernel obtained by an evaluation map. These are three different types, and the manuscript is emphatic that conflating them is the commonest error in the model sector. The evaluation map is not assumed injective, so distinct presentations may denote the same mechanism, and no regularity is claimed for the quotient.
+A law fiber is also not a kernel fiber, and using law fibers does not remove an agent's generative model. The agent's model datum is \((q_i^m,\operatorname{ev}_i)\): \(q_i^m\) represents its law over model presentations, a presentation \(m_i\) is a sample from the appropriate incidence space, and \(\operatorname{ev}_{i,a}(m_i)=K^{X,a}_{i,m_i}\) is the normalized Markov kernel that presentation denotes. These are three different types. The evaluator is not assumed injective, so distinct presentations may denote the same mechanism, and no regularity is claimed for the quotient.
 
 Finally, the cross maps \(\Phi:\mathcal E_b\to\mathcal E_m\) and \(\widetilde\Phi:\mathcal E_m\to\mathcal E_b\) are declared data. Sharing a structure group does not produce a map between the two associated fibers, and the relative frame field \(h_i\) does not either: \(h_i\) produces two different represented operators, one on each fiber, and no operator between them. If \(\Phi\) is required to commute with transport, that is an additional hypothesis, and its failure is measured by the covariant defect
 \begin{equation}
@@ -433,12 +442,12 @@ On a lattice you have plaquette variables, in the continuum you have \(\mathcal 
 
 \subsection{Evidence, the bound, and the gap}
 
-On a finite design the theory declares one normalized generative joint over observations and latents, conditioned on structural data \(X\),
+On a finite design, the normalized local agent mechanisms \(G_{\theta,i,D}\) compose along a topological order and the normalized interaction-record kernels \(K_a\) attach each record once. This constructs the population joint
 \begin{equation}
-  \Prob_\theta:(X,\mathscr X)\longrightarrow\Law(\mathsf O_D\times\mathsf Y_D),
+  \mathbb P_{\theta,V}:(\mathsf X,\mathscr X)\longrightarrow\Law(\mathsf Y_D\times\mathsf O_D),
   \label{eq:generative-signature}
 \end{equation}
-built as an ordered composition of normalized Markov kernels along a topological order of the agent graph. Because each factor is separately normalized, the composition normalizes exactly and there is no partition function to compute. Separately it declares one correlated recognition law \(\Rec_X(dY\mid o)\), which is permitted to correlate agents with each other and the belief channel with the model channel; no factorization is imposed.
+from local data rather than postulating it as a primitive population object. Because each factor is separately normalized, the composition normalizes exactly and there is no partition function to compute. Each access interface supplies an agent law \(\mathbb Q_{i,o,X}\). Their product proves that the coupling class \(\operatorname{Cpl}(\mathbb Q_{\bullet,o,X})\) is nonempty, but the marginals generally do not determine a joint. The correlated recognition law \(\mathbb Q_{V,o,X}\) is therefore chosen by a declared measurable selector from that class; it may correlate agents, belief and model coordinates, and design points, and no factorization is imposed. The two population laws are complete compatibility objects used for evidence and collective accounting, not a super-agent that possesses them.
 
 The exact identity is Equation~\eqref{eq:elbo-identity}. It says that the log evidence splits into a variational bound and a nonnegative gap, with equality exactly when the recognition law equals the posterior as a measure. Matching coordinate marginals is not enough.
 
@@ -480,9 +489,9 @@ This is the exact mechanism that forbids degenerate recognition families, for ex
 
 For a finite agent hypergraph with normalized interaction-record kernels, the complete record density factorizes over records,
 \begin{equation}
-  \ell(o\mid y)=\prod_{a\in\mathcal A}\ell_a(o_a\mid y_{\partial a}),
+  \ell(o\mid y)=\prod_{a\in\mathfrak A}\ell_a(o_a\mid y_{\partial a}),
   \qquad
-  H_o(y)=\sum_{a\in\mathcal A}-\log\ell_a(o_a\mid y_{\partial a}),
+  H_o(y)=\sum_{a\in\mathfrak A}-\log\ell_a(o_a\mid y_{\partial a}),
   \label{eq:record-factorization}
 \end{equation}
 where \(\partial a\) is the scope of record \(a\). There is one term per actual record, so an undirected record shared by two agents occurs once; writing both \(E_{ij}\) and \(E_{ji}\) asserts two directed records rather than two descriptions of one.
@@ -492,7 +501,7 @@ For every trial law \(Q\) the collective free energy is
   \mathcal F_o(Q)=-\log Z(o)+\KL(Q\Vert\Pi_o),
   \label{eq:collective-vfe}
 \end{equation}
-and for a nonempty block \(B\), conditioning on the outside state \(b=y_{B^c}\) gives a block free energy \(\mathcal F_{B,o}(r_B;b)\) of exactly the same form, built from the records incident to \(B\). The singleton \(B=\{i\}\) is one agent and a larger \(B\) is a meta-agent; the construction does not change.
+and for a nonempty block \(B\), conditioning on the outside state \(b=y_{B^c}\) gives a block free energy \(\mathcal F_{B,o}(r_B;b)\) of exactly the same form, built from the records incident to \(B\). The singleton \(B=\{i\}\) is one agent, while an arbitrary larger \(B\) is only a block-coordinate aggregate. Choosing a block does not construct a meta-agent. That term is reserved for a separately constructed coarse state, observation interface, evaluated generative mechanism, recognition law, and update rule.
 
 The result that organizes the multi-agent theory is an exact potential identity. If two trial laws share the same outside marginal and both have finite divergence against the posterior, then
 \begin{equation}
@@ -628,7 +637,7 @@ Before coarse graining, the population contains only fine agents and their possi
 \end{align}
 Here \(\alpha_i\) weights the self-prior sector, while \(\beta_{ij}\) is a normalized source row; it is unrelated to the thermodynamic convention in which a bare \(\beta\) denotes inverse temperature. The detailed manuscript obtains the attention term from a fixed normalized joint by adjoining a latent source label. Equation~\eqref{eq:reduced-network-free-energy} should therefore be read as a reduced network sector whose exact fixed-joint status depends on the hypotheses already stated above, not as a license to let a generative kernel read a live peer belief.
 
-When \(q_i\), \(\Omega_{ij}\), and \(\beta_{ij}\) all evolve, the network is annealed: both the configurations and the effective bonds respond. Low transported mismatch can attract attention, and increased attention can strengthen the forces reducing mismatch. This feedback may form a coherent subgraph. It has not yet created a parent latent, a parent generative law, or a parent posterior, so coherence alone is not meta-agent construction.
+When \(q_i\), \(\Omega_{ij}\), and \(\beta_{ij}\) all evolve, the network is annealed: both the configurations and the effective bonds respond. Low transported mismatch can attract attention, and increased attention can strengthen the forces reducing mismatch. This feedback may form a coherent subgraph. It has not yet created a parent latent, a parent generative law, or a parent posterior, so coherence alone is not meta-agent construction. The complete population laws used to evaluate this network remain joint compatibility objects; their existence does not add a population-level agent.
 
 \subsection{Why the attention--mismatch product is not yet a chemical-potential law}
 
@@ -868,6 +877,11 @@ Once several parents carry full probabilistic data and retained boundary interfa
 
 A grand-canonical membership sector can make expected parent size fluctuate under a membership chemical potential, and the construction can be repeated at higher levels. This is a proposed organization principle rather than a theorem selecting one hierarchy. The current main manuscript leaves canonical channel selection, partition selection, local-section gluing, overlapping memberships, and the construction of a geometric meta-agent open.
 
+The bounded Neo-Kantian reading begins before any hierarchy. Local frames, model evaluators, and access interfaces are constitutive conditions under which a record becomes inferentially meaningful for an agent, while remaining revisable across learning or theory change. The fixed base, bundle, finite design, and measurable spaces are analyst-declared coordination scaffolds that let these local interfaces be compared; the architecture is local-first, not background-free. The constructed \(\mathbb P_{\theta,V}\) and selected \(\mathbb Q_{V,o,X}\) encode population compatibility across the local interfaces, but neither is a population mind, universal observer, or additional agent.
+
+Participation means reciprocal inferential dependence mediated by relational records inside one fixed normalized model. It does not entail consciousness, physical creation by observation, ontological closure, or an identification of variational free energy with a physical action principle. Those are separate philosophical or physical claims, not consequences of the probability construction.
+
+
 The Wheelerian possibility enters only when the parent changes the fine dynamics that sustain it. For a deterministic fine vector field \(V_t\), moving coarse map \(c_t\), and candidate parent field \(\overline V_t\), the semiconjugacy defect is
 \begin{equation}
   \delta_t=\partial_t c_t+Dc_t V_t-\overline V_t\circ c_t.
@@ -1015,7 +1029,7 @@ Both the contraction and its triviality are the one-dimensional story a physicis
 
 Two calibrations keep this result in proportion. Exact composability off a fixed point is not something standard real-space RG possesses either; it holds for pure decimation, asymptotically at fixed points, and on self-similar substrates built for it, and away from those cases renormalized interactions need not even exist. The claim the measurement refuted was stronger than standard lore warrants, and the laboratory caught that. And the measured fixed structures are consistent with the manuscript's own algebraic finding that its exhibited fixed sectors are trivial, now with a mechanism, a contraction rate, and a named architectural cause attached.
 
-Everything above describes the \emph{passive} channel, in which the coarse coupling is inherited through blocking with attention frozen, and the follow-up measurements of 2026-08-17/18 changed the headline. Neither structural rescue lifts the passive channel above one: thickening the block boundary raises the one-step pair retention only sublinearly ($0.156$, $0.441$, $0.564$ at one, three, and six cut couplings per boundary) and saturates below one, and enlarging the parent alphabet with the smallest sector label, the block's belief-channel $Z_3$ charge in the singlet/triplet sense of Section~\ref{sec:trees-loops}, root-framed through the spanning-tree transport, raises retention ($0.209$ against $0.156$ at one cut coupling, $0.568$ against $0.441$ at three, with the constant-sector control exact) while remaining below one; an earlier null ($0.144$) came from a family-referenced charge that fails gauge covariance and was retired by the 2026-08-18 audit. What restores interaction is the theory's own re-binding rule: regenerating each level's attention from the flow-averaged transported divergence over the conserved connection and folding the alignment energy into the coarse action. Under that declared rule, itself gauge covariant to $10^{-11}$, the per-ratio composites converge to \emph{interacting} fixed structures — pairwise sup $0.579$ at ratio two and $0.625$ at ratio three, each about a quarter above its own one-step injection, with the maps still contracting. The physical moral is sharp: in this theory a tall hierarchy keeps its horizontal glue not by inheriting it but by actively re-establishing it at every level, using exactly the two ingredients blocking conserves, the connection and the coarse beliefs. The typed-cocycle verdict is unchanged by regeneration: composition defects stay order one ($0.17$--$0.27$) and the interacting fixed structures remain ratio-typed ($0.64$ relative sup), so which aggregation grain a hierarchy uses remains physically meaningful all the way to its endpoints.
+Everything above describes the \emph{passive} channel, in which the coarse coupling is inherited through blocking with attention frozen, and the follow-up measurements of 2026-08-17/18 changed the headline. Neither structural rescue lifts the passive channel above one: thickening the block boundary raises the one-step pair retention only sublinearly ($0.156$, $0.441$, $0.564$ at one, three, and six cut couplings per boundary) and saturates below one, and enlarging the parent alphabet with the smallest sector label, the block's belief-channel $Z_3$ charge in the singlet/triplet sense of Section~\ref{sec:trees-loops}, root-framed through the spanning-tree transport, raises retention ($0.209$ against $0.156$ at one cut coupling, $0.568$ against $0.441$ at three, with the constant-sector control exact) while remaining below one; an earlier null ($0.144$) came from a family-referenced charge that fails gauge covariance and was retired by the 2026-08-18 audit. What restores interaction is the theory's own re-binding rule: regenerating each level's attention from the flow-averaged transported divergence over the conserved connection and folding the alignment energy into the coarse action. Under that declared rule, itself gauge covariant to $10^{-11}$, the per-ratio composites converge to \emph{interacting} fixed structures: pairwise sup $0.579$ at ratio two and $0.625$ at ratio three, each about a quarter above its own one-step injection, with the maps still contracting. The physical moral is sharp: in this theory a tall hierarchy keeps its horizontal glue not by inheriting it but by actively re-establishing it at every level, using exactly the two ingredients blocking conserves, the connection and the coarse beliefs. The typed-cocycle verdict is unchanged by regeneration: composition defects stay order one ($0.17$--$0.27$) and the interacting fixed structures remain ratio-typed ($0.64$ relative sup), so which aggregation grain a hierarchy uses remains physically meaningful all the way to its endpoints.
 
 \section{The Gaussian realization}
 
@@ -1081,7 +1095,7 @@ The boundary of this no-go is drawn carefully, and a reader should not take away
 
 There is also a structural reason the ambition could not have succeeded. In any finite directed acyclic generative model there is at least one latent with no parents, whose marginal law is therefore part of the declared parameters. No finite acyclic construction can have every prior constituted by other latents, so the failure is not for want of ingenuity. Replacing a declared prior by a declared edge link relocates the declaration rather than removing it.
 
-What survives is the anchored star of Equation~\eqref{eq:precision-addition}, and with it the participatory content that motivated the fold in the first place. At a variational fixed point the apex belief is a transported pooling of every constituent's current belief, and each constituent's effective prior in its own update is that apex belief transported back down. Each agent's input is constituted by the apex update and the apex input is constituted by the agents' updates. This is a loop in an inference algorithm, not a cycle in the factorization of the model: every step is a coordinate update of a trial law against a joint that remains fixed, acyclic, and normalized, so nothing reads a posterior into a generative kernel.
+What survives is the anchored star of Equation~\eqref{eq:precision-addition}, and with it the participatory content that motivated the fold in the first place. At a variational fixed point the apex belief is a transported pooling of every constituent's current belief, and each constituent's effective prior in its own update is that apex belief transported back down. Each agent's input is constituted by the apex update and the apex input is constituted by the agents' updates. The local evaluators and record kernels still define a fixed constructed joint. This is a loop in an inference algorithm, not a cycle in the factorization of the model: every step is a coordinate update of a trial law against a joint that remains fixed, acyclic, and normalized, so nothing reads a posterior into a generative kernel.
 
 \begin{translationbox}
 The bidirectional dependence that a participatory reading wants is available, and it lives in the solver rather than in the model. That is a weaker claim than the one the fold was reaching for, and the manuscript says so rather than blurring the two.
@@ -1091,35 +1105,40 @@ The bidirectional dependence that a participatory reading wants is available, an
 
 The manuscript tags every nontrivial statement with one of seven statuses, and the taxonomy is worth reproducing because it is the most transferable thing in the document. \textsc{established} means proved here or cited to a checked source. \textsc{definition} means a declared type or convention, with nothing being proved. \textsc{hypothesis} means a restriction adopted by choice, with its exclusions stated. \textsc{conjecture} means believed, precisely stated, and unproved. \textsc{numerical} means supported by computation only. \textsc{open} means unsettled, with what would settle it named. \textsc{not-claimed} means a statement the development deliberately declines to make, which is not the same as refuting it.
 
-\begin{table}[ht]
-\centering
-\small
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.16\textwidth}X}
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.14\textwidth}>{\raggedright\arraybackslash}p{0.80\textwidth}}
+\caption{The boundary of the theory, compressed. Each row is a summary of many individually tagged statements; the manuscript's own ledger appendix is authoritative.}\label{tab:status}\\
 \toprule
 \textbf{Status} & \textbf{Content} \\
 \midrule
+\endfirsthead
+\toprule
+\textbf{Status} & \textbf{Content} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 Established &
-The typed bundle and kernel contract; the exact evidence identity and its extended-real form, with the equality criterion and the insufficiency of marginal matching; the total-correlation chain identity; the exact local--global potential identity for arbitrary blocks; the attention-label posterior, canonical row free energy, and replicator flow under declared hypotheses; passive gauge covariance of the Fisher and Amari pullbacks with exact connection-change formulas; extended data processing with its equality condition; the evidence-preserving coarse channel and the exact coarse free-energy identity with its nonnegative defect; the full pointwise parent datum; exact finite-network interaction coordinates and the Hoeffding action isomorphism; congruence-diagonal Kron closure with qualified maximality; frame invariance of the generalized spectrum; the reciprocal-pair kernel and determinant identities; the anchored-star definiteness, precision-addition, and geometric contraction theorems; and typed-intervention nonidentifiability in its declared categories. \\
+The typed local agent, access, evaluator, and kernel contract; existence and convexity of the local-marginal coupling class; normalized construction of \(\mathbb P_{\theta,V}\) from local mechanisms and record kernels; the exact evidence identity and its extended-real form, with the equality criterion and the insufficiency of marginal matching; the total-correlation chain identity; the exact local--global potential identity for arbitrary blocks; the attention-label posterior, canonical row free energy, and replicator flow under declared hypotheses; passive gauge covariance of the Fisher and Amari pullbacks with exact connection-change formulas; extended data processing with its equality condition; the evidence-preserving coarse channel and the exact coarse free-energy identity with its nonnegative defect; the full pointwise parent datum; exact finite-network interaction coordinates and the Hoeffding action isomorphism; congruence-diagonal Kron closure with qualified maximality; frame invariance of the generalized spectrum; the reciprocal-pair kernel and determinant identities; the anchored-star definiteness, precision-addition, and geometric contraction theorems; and typed-intervention nonidentifiability in its declared categories. \\
 \addlinespace
 Hypothesis &
-The selected smooth tier for differential statements; regular observations selecting a posterior version; absolute continuity of the recognition law; label exclusivity and row factorization for the attention softmax; the Laplacian-plus-self-term interaction cone; identification of graph links with base transports; the Fisher metric as the declared fiber geometry; and observational closure as the sole interpretive restriction. \\
+The selected smooth tier for differential statements; regular observations selecting a posterior version; absolute continuity of the recognition law; measurable selection of \(\mathbb Q_{V,o,X}\) from the local-marginal coupling class; compatibility of continuum-section samples with finite-law marginals where the two layers are compared; label exclusivity and row factorization for the attention softmax; the Laplacian-plus-self-term interaction cone; identification of graph links with base transports; the Fisher metric as the declared fiber geometry; and operational observational closure as an interpretive restriction. \\
 \addlinespace
 Numerical &
-Deterministic replacement checks for the generalized spectrum, the star and flat-pair contrast, and the holonomy determinant and kernel dimensions; the 2026-08-17 rescaling-map measurements on the nested-cycle family: exact gauge covariance and holonomy conservation of the declared step, the refuted compatibility law (composition defect $0.204$ against a pre-registered $10^{-10}$), and contracting per-ratio composites whose passive fixed structures are factorized and ratio-typed; and the 2026-08-17/18 follow-ups: sublinear boundary-multiplicity retention, the null sector-capacity result, and the regenerated-attention composites converging to interacting, still ratio-typed fixed structures. These establish usability under their declared protocols and are not proofs. \\
+Deterministic replacement checks for the generalized spectrum, the star and flat-pair contrast, and the holonomy determinant and kernel dimensions; the 2026-08-17 rescaling-map measurements on the nested-cycle family: exact gauge covariance and holonomy conservation of the declared step, the refuted compatibility law (composition defect $0.204$ against a pre-registered $10^{-10}$), and contracting per-ratio composites whose passive fixed structures are factorized and ratio-typed; and the 2026-08-17/18 follow-ups: sublinear boundary-multiplicity retention, positive but subunit retention uplift from the root-framed covariant sector label, and regenerated-attention composites converging to interacting, still ratio-typed fixed structures. The earlier family-referenced null sector result was non-gauge-covariant and is retired. These measurements establish behavior under their declared protocols and are not proofs. \\
 \addlinespace
 Open &
 The continuum law theory and the thermodynamic limit; joint limits in system size and RG depth, with universality, basin independence, and blocking-scheme robustness; a canonical channel, membership, and partition selector; grand-canonical edge or membership occupation; recursive networks of parent probabilistic data; participatory cross-scale feedback and sustained nonequilibrium; the comparison-category theorem and category-independent intervention semantics; a smooth scale tier and a canonical continuous beta function; multiplicative ergodic structure of the interaction cocycle; nonflat-link compression; convergence of the alternating scheme and robustness to delayed or asynchronous updates; a global relational information clock; an operational observable sensitive to base holonomy; a canonical connection and a nondegenerate pullback geometry; which boundary-multiplicity architectures of the coupling graph sustain interacting fixed structures; whether the measured composition defect contracts on deeper flows or persists; and identification of any limiting object with a physical law. \\
 \addlinespace
 Not claimed &
-That \(\mathcal C\) is physical spacetime, or carries a Lorentzian signature, causal cones, a measure, or a field equation; that Fisher duration is physical time, proper time, thermal time, or a quantum clock; that RG depth is inference time; that graph-link holonomy evidences base curvature or bundle topology; that autonomous agency emerges; and that any structural-realist reading follows from the invariance results. \\
-\bottomrule
-\end{tabularx}
-\caption{The boundary of the theory, compressed. Each row is a summary of many individually tagged statements; the manuscript's own ledger appendix is authoritative.}
-\label{tab:status}
-\end{table}
+That \(\mathcal C\) is physical spacetime, or carries a Lorentzian signature, causal cones, a measure, or a field equation; that Fisher duration is physical time, proper time, thermal time, or a quantum clock; that RG depth is inference time; that graph-link holonomy evidences base curvature or bundle topology; that \(\mathbb P_{\theta,V}\) or \(\mathbb Q_{V,o,X}\) is a mind, super-agent, or universal observer; that participation entails consciousness, physical creation by observation, background independence, or a physical action principle; that autonomous agency emerges; and that any structural-realist reading follows from the invariance results. \\
+\end{longtable}
+}
 
 \begin{provedbox}
-The load-bearing achievements are a consistent typed gauge-covariant kinematics for probabilistic agents, one exact variational identity that survives it, an exact potential identity making local multi-agent updates coordinate descent on one collective free energy, a canonical source-selection ensemble with a correctly normalized row free energy, an exact accounting of the information destroyed by any normalized coarse channel, a full static pointwise parent probabilistic datum, and a set of sharp finite counterexamples that fence off invalid shortcuts.
+The load-bearing achievements are a local-first typed gauge-covariant kinematics for probabilistic agents, a normalized population joint constructed from local mechanisms and records, a nonempty coupling class together with an explicit selector obligation for correlated recognition, one exact variational identity, an exact potential identity making local multi-agent updates coordinate descent on one collective free energy, a canonical source-selection ensemble with a correctly normalized row free energy, an exact accounting of the information destroyed by any normalized coarse channel, a full static pointwise parent probabilistic datum, and a set of sharp finite counterexamples that fence off invalid shortcuts.
 \end{provedbox}
 
 \begin{boundarybox}
@@ -1130,7 +1149,7 @@ What is not achieved is equally definite. There is no continuum limit, no thermo
 
 Four things in this program are worth a physicist's attention, and one temptation is worth resisting.
 
-The first is that the gauge structure is not decorative. Agents holding probabilistic beliefs in local frames genuinely have a comparison problem, transport genuinely resolves it, and loop transport genuinely fails to be trivial. The lattice analogy is exact at the level of the link variables and their Wilson loops, and the trivializing criterion is literally the pure-gauge criterion. Where the analogy stops is that the matter fields are probability laws, so the group acts by pushforward and the fibers carry no linear structure; a good deal of the manuscript's length is the price of that one substitution.
+The first is that the architecture is local-first and the gauge structure is not decorative. Agents holding probabilistic beliefs and model laws in local frames genuinely have a comparison problem, transport genuinely resolves it, and loop transport genuinely fails to be trivial. A model-law fiber does not erase an agent's generative model: the law describes its uncertainty over presentations, and the evaluator turns a presentation into a normalized mechanism. The lattice analogy is exact at the level of the link variables and their Wilson loops, and the trivializing criterion is literally the pure-gauge criterion. Where the analogy stops is that probability-law fibers are convex rather than canonically linear, so the group acts by pushforward. The constructed and selected population joints appear downstream to encode compatibility and dependence; they are not a population subject.
 
 The second is the exact information accounting. Equation~\eqref{eq:coarse-vfe} is a clean statement about what blocking costs, valid without Gaussian assumptions, without a mean-field restriction, and in the extended reals so that it survives singular trial laws. A physicist used to controlling truncation error heuristically may find it worth having a quantity that is exactly the discarded information rather than a bound on it.
 
@@ -1142,7 +1161,7 @@ The temptation to resist is reading the base as spacetime. The word ``holonomy''
 
 \section{Where to read further}
 
-The manuscript's own fast path for a physicist is worth following. Take the object and frame-covariance contract from the introduction and the geometry chapter, then read only the normalized-joint and evidence identities in the probability, generative, and ELBO chapters. On a second pass read the local--collective potential theorem and the attention construction, then the covariant pullback and relational-history chapters. On a third pass take the three-operation distinction, the Markov coarse theorem, the exact network closure, and the typed scale diagram. The Gaussian spine is then the interaction cone, the recognition costs and Fisher geometry, and finally Gaussian aggregation, Kron closure, holonomy, fixed rays, and the numerical gates. The obstruction and interpretation chapters separate the exact negative results from the empirical and interpretive commitments, and the claim ledger collects every open obligation in one place.
+The manuscript's own fast path for a physicist is worth following. Begin with the local agent sections, access maps, presentation evaluators, agent mechanisms, and interaction-record kernels in the introduction, geometry, and probability chapters. Then follow the normalized construction of \(\mathbb P_{\theta,V}\), the coupling class and selector for \(\mathbb Q_{V,o,X}\), and the evidence identities in the generative and ELBO chapters. On a second pass read the local--collective potential theorem and the attention construction, then the covariant pullback and relational-history chapters. On a third pass take the three-operation distinction, the Markov coarse theorem, the exact network closure, and the typed scale diagram. The Gaussian spine is then the interaction cone, the recognition costs and Fisher geometry, and finally Gaussian aggregation, Kron closure, holonomy, fixed rays, and the numerical gates. The obstruction and interpretation chapters separate the exact negative results from the empirical and interpretive commitments, and the claim ledger collects every open obligation in one place.
 
 For the static coarse-graining theorem specifically, the companion guide \path{solid_RG_theory.tex} treats the same material at a level between this document and the manuscript, with the measure-theoretic steps written out. The proposed thermodynamic extension is developed in \path{Theory/grand_canonical_meta_agent_formation.tex}; it should be read as a research program built on the established attention and parent-construction theorems, not as another chapter of proved results.
 

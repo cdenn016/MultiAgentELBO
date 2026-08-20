@@ -45,3 +45,31 @@ The archived `current-results.json` remains stale and is not evidence for Resear
 `451af943493d5ee1621f30410a9698a4e02251c2`. Codebase tests were skipped by user direction; no
 test result is claimed. The original dirty checkouts and the authoritative source worktree were
 left untouched. The existing `docs/change-logs/2026-08-20.md` was not overwritten.
+
+## Physicist's companion consistency update
+
+The repository-root `physicists_companion.tex` was aligned with the approved local-first Theory
+snapshot. Its opening and variational summary now begin with agent-indexed belief and model-law
+sections, access interfaces, evaluated generative mechanisms, local recognition laws, and
+interaction-record kernels. They distinguish the normalized population generative law constructed
+from those local mechanisms from the correlated population recognition law selected from the
+local-marginal coupling class. Neither population law is interpreted as an agent or observer.
+
+The companion now explains that a probability-law fiber is convex but not canonically linear and
+that this typing retains, rather than removes, an agent's generative-model datum: a law over model
+presentations together with the incidence-wise evaluator that turns a presentation into a
+normalized mechanism. It also reserves `meta-agent` for a separately constructed coarse state,
+observation interface, evaluated mechanism, recognition law, and update rule; an arbitrary
+block-coordinate aggregate is not relabeled as a meta-agent.
+
+The participatory section now records the bounded Neo-Kantian reading of local frames, evaluators,
+and access interfaces as constitutive but revisable conditions of inferential meaning. It states
+that the interpretation supplies neither consciousness, a population mind, physical creation by
+observation, background independence, nor a physical action principle. The status table was
+updated to retire the earlier non-gauge-covariant null sector-capacity result and to report the
+positive but subunit root-framed covariant uplift under its declared numerical protocol.
+
+Both expanded mapping summaries use page-breaking long tables so neither is deferred or clipped.
+A fresh standalone Tectonic build exited zero with 32 pages and 259,215 bytes; its SHA-256 is
+`8A9F3C8CEB1A3D4FB533A19303C039841CF5C0EEDD27167F1C9961F73FA5A12F`. Visual inspection of
+the dictionary, participatory, status, and continuation pages found no clipping or overlap.
