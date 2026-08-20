@@ -1,6 +1,6 @@
 r"""Render the rescaling laboratory's figure suite (amendments 3-14).
 
-Usage:  PYTHONPATH=src python run_rescaling_figures.py
+Usage:  python run_rescaling_figures.py
 
 Every panel except figure 1 and the story map is recomputed live from the
 validated declared seed (the C(3,3) working-case step, checked against the
@@ -10,6 +10,14 @@ regenerating the fixed points is an overnight computation; their provenance
 is the 2026-08-18 audit (docs/audits/2026-08-18-rescaling-lab-audit.md),
 which reproduced every one of them. Output: figures/rescaling-lab/ as PNG
 (300 dpi) and PDF, with captions in the README alongside.
+
+Figures 3C through 7 carry the republished amendments 10-14. The
+lab-versus-theory audit of the same day found that the Proposition-4 block energy
+charged nothing for a block's parent, which made the all-singleton partition the
+exact minimizer of the cross-scale group at every configuration by construction.
+With the declared top prior booked, every partition-posterior verdict in those
+amendments changes, and the panels here are the re-taken ones
+(docs/results/2026-08-18-amendments-10-14-republication.json).
 """
 
 from __future__ import annotations
@@ -17,6 +25,12 @@ from __future__ import annotations
 import math
 import time
 from pathlib import Path
+import sys
+
+
+_SRC_DIR = Path(__file__).resolve().parent / "src"
+if str(_SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(_SRC_DIR))
 
 import matplotlib
 
@@ -164,12 +178,17 @@ def figure_1_passive_and_regenerated() -> None:
 
 def figure_2_capacity(instance_k1, instance_k3) -> None:
     fig, (ax_a, ax_b) = plt.subplots(1, 2, figsize=(7.0, 2.9))
-    sup9, sup27, mi9, mi27 = [], [], [], []
+    sup9, sup27, mi9, mi27, mi27_control = [], [], [], [], []
     for instance in (instance_k1, instance_k3):
         sup9.append(one_step_pair_retention(instance, 2).retention)
         sup27.append(capacity_pair_retention(instance, 2).retention)
         mi9.append(capacity_information_retention(instance, 2, sector_count=1).retention)
         mi27.append(capacity_information_retention(instance, 2, sector_count=3).retention)
+        mi27_control.append(
+            capacity_information_retention(
+                instance, 2, sector_count=3, readout="first_member"
+            ).retention
+        )
     x = np.arange(2)
     width = 0.35
     ax_a.bar(x - width / 2, sup9, width, label="9-state parents", color=OKABE_ITO[0])
@@ -183,15 +202,19 @@ def figure_2_capacity(instance_k1, instance_k3) -> None:
     ax_a.set_title("Coupling units: the sup norm\n(sector gain +34% / +29%)")
     ax_a.legend(frameon=False, loc="upper left")
     panel_label(ax_a, "A")
-    ax_b.bar(x - width / 2, mi9, width, label="9-state parents", color=OKABE_ITO[0])
-    ax_b.bar(x + width / 2, mi27, width, label="27 labels (root-framed)", color=OKABE_ITO[1])
+    third = 0.27
+    ax_b.bar(x - third, mi9, third, label="9-state parents", color=OKABE_ITO[0])
+    ax_b.bar(x, mi27, third, label="27 labels: gauge charge", color=OKABE_ITO[1])
+    ax_b.bar(x + third, mi27_control, third,
+             label="27 labels: first-member control", color=OKABE_ITO[3])
     for position, (s9,) in zip((0, 1), zip(sup9)):
         ax_b.hlines(s9**2, position - width, position + width, color="gray",
                     linestyle="--", linewidth=1)
     ax_b.plot([], [], "--", color="gray", label="$R_{\\mathrm{sup}}^2$ (square-law check)")
     ax_b.set_xticks(x, ["$k=1$", "$k=3$"])
     ax_b.set_ylabel("$R_{\\mathrm{MI}}$")
-    ax_b.set_title("Law units: mutual information\n($R_{\\mathrm{MI}} \\leq 1$ by data processing)")
+    ax_b.set_title("Law units: any refinement raises $R_{\\mathrm{MI}}$;\n"
+                   "a non-charge readout raises it more")
     ax_b.legend(frameon=False, loc="upper left")
     panel_label(ax_b, "B")
     fig.tight_layout()
@@ -233,8 +256,9 @@ def figure_3_coupling_sweep(site, pair) -> None:
                       color=CLASS_COLORS[ratio], label=CLASS_NAMES[ratio])
     ax_c.set_xlabel("coupling scale $\\lambda$")
     ax_c.set_ylabel("partition class mass")
-    ax_c.set_title("No formation transition on the ray\n(M-bind)")
-    ax_c.set_ylim(0, 0.75)
+    ax_c.set_title("Direct aggregation modal at every $\\lambda$\n"
+                   "(M-bind; couplings act only through the flow)")
+    ax_c.set_ylim(0, 1.02)
     ax_c.legend(frameon=False, ncols=2)
     panel_label(ax_c, "C")
     fig.tight_layout()
@@ -266,7 +290,8 @@ def figure_4_anchors(instance) -> None:
         panel_label(ax, letter)
     axes[0].set_ylabel("partition class mass")
     axes[0].legend(frameon=False)
-    fig.suptitle("M-anchor: condensation follows shared evidence", y=1.04, fontsize=10)
+    fig.suptitle("M-anchor: shared evidence moves mass toward the aligned blocking,\n"
+                 "but direct aggregation stays modal throughout", y=1.08, fontsize=10)
     fig.tight_layout()
     save(fig, "fig4_environmental_anchors")
 
@@ -297,7 +322,8 @@ def figure_5_process_vs_landscape(instance) -> None:
         panel_label(ax, letter)
     axes[0].set_ylabel("partition class mass")
     axes[0].legend(frameon=False)
-    fig.suptitle("M-flow: the process reorders the landscape", y=1.04, fontsize=10)
+    fig.suptitle("M-flow: the process agrees with the landscape once the parent is priced",
+                 y=1.04, fontsize=10)
     fig.tight_layout()
     save(fig, "fig5_process_vs_landscape")
 
@@ -313,12 +339,12 @@ def figure_6_saturation_and_inertia(instance) -> None:
         aligned_q.append(dict(zip(posterior.candidates, posterior.masses)).get(
             ((1, 2), (3, 4), (5, 6)), 0.0))
     ax_a.semilogx(strengths, aligned_q, "o-", color=OKABE_ITO[0])
-    ax_a.axhline(0.2009, linestyle="--", color="gray", linewidth=1)
-    ax_a.text(120, 0.207, "frozen limit", ha="right", fontsize=7, color="gray")
+    ax_a.axhline(0.038816, linestyle="--", color="gray", linewidth=1)
+    ax_a.text(120, 0.0392, "frozen limit", ha="right", fontsize=7, color="gray")
     ax_a.set_xlabel("anchor strength $\\kappa_{\\mathrm{env}}$")
     ax_a.set_ylabel("aligned-placement mass")
     ax_a.set_title("Pinning saturates before condensing\n(M-cross-env)")
-    ax_a.set_ylim(0.18, 0.215)
+    ax_a.set_ylim(0.0384, 0.0396)
     panel_label(ax_a, "A")
     inertias = [0.0, 1.0, 4.0, 16.0, 64.0]
     shared_masses, control_masses, pair_sups = [], [], []
@@ -344,8 +370,8 @@ def figure_6_saturation_and_inertia(instance) -> None:
                   label="shared agents")
     ax_b.semilogx(positions, control_masses, "s--", color=OKABE_ITO[0],
                   label="private duplicates")
-    ax_b.axhline(0.1941, linestyle=":", color="gray", linewidth=1)
-    ax_b.text(60, 0.199, "pinned limit", ha="right", fontsize=7, color="gray")
+    ax_b.axhline(0.039236, linestyle=":", color="gray", linewidth=1)
+    ax_b.text(60, 0.0400, "pinned limit", ha="right", fontsize=7, color="gray")
     ax_b.set_xticks(positions, ["0", "1", "4", "16", "64"])
     ax_b.set_xlabel("environmental inertia $m$")
     ax_b.set_ylabel("aligned-placement mass")
@@ -367,13 +393,14 @@ def figure_7_story() -> None:
         ("M-bundle / fixed points", "passive channel trivial;\nboundary thickness cannot rescue", "#0072B2"),
         ("M-regen (amendment 4)", "regenerated attention sustains\ninteracting fixed structures", "#009E73"),
         ("Audit F8 + amendment 8", "gauge-variant sector charge retired;\ncapacity null reverses (0.144 to 0.209)", "#D55E00"),
-        ("M-info (amendment 9)", "R_MI <= 1 is a theorem; blocking\ntransmits 2-7% of boundary information", "#0072B2"),
-        ("M-part (amendment 10)", "offered the choice, the quenched\nposterior declines to aggregate", "#0072B2"),
-        ("M-bind (amendment 11)", "no transition on the coupling ray;\nthe width penalty is structural", "#0072B2"),
-        ("M-anchor (amendment 12)", "the environment restored: uniform\nanchors bind, distinct anti-bind", "#009E73"),
-        ("M-flow (amendment 12)", "the annealed process reverses the\nquenched landscape (direct modal)", "#009E73"),
-        ("M-cross-env (amendment 13)", "point-mass environments align\nbut cannot correlate", "#D55E00"),
-        ("M-share (amendment 14)", "alignment and correlation compete;\nalignment wins at this seed", "#D55E00"),
+        ("M-info (amendment 9)", "R_MI <= 1 is a theorem; the gain's sign\nis too, so a non-charge control decides", "#D55E00"),
+        ("Audit finding 1 (2026-08-18)", "the parent was free; priced by the\ndeclared top prior, 10-14 re-taken", "#CC79A7"),
+        ("M-part (amendment 10)", "offered the choice, the posterior\naggregates: direct modal (0.958)", "#D55E00"),
+        ("M-bind (amendment 11)", "direct modal at every lambda; couplings\nreach the flow, never the landscape", "#D55E00"),
+        ("M-anchor (amendment 12)", "shared evidence moves mass 32x toward\nthe aligned pairing, no modal flip", "#009E73"),
+        ("M-flow (amendment 12)", "quenched and annealed now agree;\nthe reversal was a free-parent artifact", "#D55E00"),
+        ("M-cross-env (amendment 13)", "point-mass environments align\nbut cannot correlate (plateau 0.0388)", "#0072B2"),
+        ("M-share (amendment 14)", "alignment and correlation compete;\nalignment wins at this seed (5.6x)", "#0072B2"),
     ]
     fig, ax = plt.subplots(figsize=(7.5, 6.2))
     ax.axis("off")
@@ -389,6 +416,9 @@ def figure_7_story() -> None:
                         arrowprops=dict(arrowstyle="-|>", color="gray"))
     ax.text(0.5, 1.06, "The rescaling laboratory, 2026-08-17/18: measurement chain and verdicts",
             ha="center", fontsize=10, fontweight="bold", transform=ax.transAxes)
+    ax.text(0.5, 1.025,
+            "amendments 10-14 republished 2026-08-18 after the lab-versus-theory audit",
+            ha="center", fontsize=7.5, color="#555555", transform=ax.transAxes)
     ax.set_xlim(0, 1)
     ax.set_ylim(-0.02, 1.02)
     save(fig, "fig7_story_map")

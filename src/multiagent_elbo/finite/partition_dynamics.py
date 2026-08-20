@@ -31,9 +31,20 @@ kernel. Q_H is frozen at the declared generative weights, so the holonomy group
 contributes exactly zero and the holonomy atoms enter only through the mixture
 inside the cross-scale group. Q_G is frozen at the uniform law on the two declared
 row configurations, which is the maximum-entropy choice and is independent of R,
-so no partition preference is smuggled in through the recognition side. The parent
-coordinate is a point mass at its own exact conditional optimum, which is the
-minimization over the parent state named in the cross-scale term.
+so no partition preference is smuggled in through the recognition side.
+
+The parent coordinate is a point mass, and the state it sits at minimizes the two
+terms of U(R) that name it: the block's own cross-scale sum and the top prior's
+code length for that state. Booking the top prior here is what makes the number of
+parents cost something. Until 2026-08-18 it was omitted, and the omission was not
+neutral: with a free parent the per-block minimum decomposes agent by agent, the
+all-singleton partition minimizes the cross-scale group at every configuration
+exactly, and the only block-count term left in the model was the Ewens prior
+outside U pushing the other way. The declared top prior is the tower's own
+PARENT_STATE_WEIGHTS, on the same nine-element parent space the partition route
+uses. The graph group also names the parent states, through the dressed-transport
+divergences it reads, but it is not minimized over them; the selected parent is the
+conditional optimum of the cross-scale group and the prior, not of all of U.
 
 Every dynamical quantity here is measured, not bounded. The relaxation time is the
 observed decay of the state-change rate, the residence time is an observed mean
@@ -60,6 +71,7 @@ from .categorical_falsification_model import (
     kl_laws,
     transported,
 )
+from .tower_vfe import PARENT_STATE_WEIGHTS
 from .two_channel_gauge import Law, tree_transport_elements
 
 CALIBRATION_INITIALIZATIONS = 24
@@ -176,12 +188,42 @@ class _PartitionTables:
     blocks: tuple[tuple[int, ...], ...]
     positions: tuple[np.ndarray, ...]
     mixed_cost: np.ndarray
+    parent_energy: np.ndarray
     pairs: tuple[_PairTable, ...]
     belief_kl: np.ndarray
     model_kl: np.ndarray
     kappa_belief: float
     kappa_model: float
     model_family_size: int
+
+
+@lru_cache(maxsize=None)
+def _parent_state_energy(model: FalsificationModel) -> np.ndarray:
+    r"""Return the per-parent-state code length $-\log P_S(p)$ of the declared top law.
+
+    Proposition 4 books the parent coordinate as a variable of the tower, so the
+    conditional divergence it contributes is $\mathbb E_{Q_S}[-\log P_S(p)]$ less the
+    recognition entropy; at the point mass this module freezes the parent to, the
+    entropy vanishes and the contribution is exactly $-\log P_S(p)$ at the selected
+    state. Charging nothing for a parent is the omission the 2026-08-18
+    lab-versus-theory audit records as finding 1: it makes the all-singleton
+    partition the exact minimizer of the cross-scale group at every configuration,
+    because a block that costs nothing to open can always be opened.
+
+    The declared law is the tower's own top prior, ``tower_vfe.PARENT_STATE_WEIGHTS``,
+    which lives on the same nine-element parent space as the partition route. An
+    instance whose parent space has a different cardinality carries no declared top
+    prior, and the maximum-entropy law on its parents is used instead; that law is
+    not inert either, since it charges $\log |S|$ nats per opened block.
+    """
+    size = model.state_count
+    if size == len(PARENT_STATE_WEIGHTS):
+        weights = np.array([float(value) for value in PARENT_STATE_WEIGHTS], dtype=np.float64)
+    else:
+        weights = np.full(size, 1.0 / size, dtype=np.float64)
+    energy = -np.log(weights)
+    energy.setflags(write=False)
+    return energy
 
 
 def _log_sum_exp(values: np.ndarray) -> np.ndarray:
@@ -384,6 +426,7 @@ def _partition_tables(model: FalsificationModel, partition: Partition) -> _Parti
             for block in partition
         ),
         mixed_cost=mixed_cost,
+        parent_energy=_parent_state_energy(model),
         pairs=tuple(pairs),
         belief_kl=_transport_kl_table(model, "belief"),
         model_kl=_transport_kl_table(model, "model"),
@@ -413,7 +456,7 @@ def _evaluate_batch(
     cross = np.zeros(batch, dtype=np.float64)
     for index, positions in enumerate(tables.positions):
         selected = tables.mixed_cost[positions[None, :], states[:, positions], :]
-        costs = selected.sum(axis=1)
+        costs = selected.sum(axis=1) + tables.parent_energy[None, :]
         parents[:, index] = np.argmin(costs, axis=1)
         cross += costs.min(axis=1)
     belief_parent = parents // tables.model_family_size
@@ -451,7 +494,9 @@ def energy_terms(
     atoms from the declared generative weights, which is exactly zero because the
     two are frozen equal. The cross-scale group is the divergence of the point-mass
     child recognition law from the downward kernel, averaged over the holonomy
-    atoms and minimized over the parent state of each block.
+    atoms, plus the declared top prior's code length for the block's parent, jointly
+    minimized over the parent state of each block. The returned
+    ``cross_scale_divergence`` carries that minimized sum, top-prior charge included.
     """
     tables = _partition_tables(model, partition)
     batch = _as_state_batch(model, states)
@@ -476,12 +521,15 @@ def block_energy(
     The collected divergences are exactly the three conditional groups that the
     choice of R controls at depth one: the graph group KL(Q_G || P_G(. | Z_1, R)),
     the holonomy group KL(Q_H || P_H) averaged under Q_G, and the cross-scale group
-    E_{Q_H} KL(Q_0 || K_down) averaged under both. The cross-scale group dominates
+    E_{Q_H} KL(Q_0 || K_down) averaged under both, together with the top prior's
+    code length for the parent each block selects. The cross-scale group dominates
     and is, for the point-mass child recognition law of this measurement, the sum
     over blocks and members of the negative log downward kernel, whose leading part
     is the divergence of each child law from the transported parent law, minimized
-    over the parent state of the block. No hand-written mismatch or retention term
-    appears, because such a term would be a proposal for U rather than U.
+    over the parent state of the block against the top prior's charge for that
+    state. No hand-written mismatch or retention term appears, because such a term
+    would be a proposal for U rather than U; the parent charge is not such a term
+    but the tower's own declared factor, which an unpriced parent had dropped.
     """
     return energy_terms(model, partition, states).total
 

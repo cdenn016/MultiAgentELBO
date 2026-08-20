@@ -79,7 +79,9 @@ from .two_channel_gauge import (
     _reverse_walk,
     _spanning_tree,
     _walk_to_root,
+    based_holonomy_cycles,
     based_holonomy_generators,
+    fundamental_edge_indices,
     declared_reverse_arcs,
     walk_element,
 )
@@ -460,10 +462,16 @@ def _tree_path_steps(
 
 @dataclass(frozen=True)
 class HolonomyConservationReport:
-    """Check C2: the coarse cycle holonomy equals the enclosed fine holonomy."""
+    """Check C2: the coarse cycle holonomy equals the enclosed fine holonomy.
+
+    ``fine_steps`` is the signed fine-edge walk the coarse cycle lifts to, kept
+    so that the Wilson-charge span check can express the coarse cycle as a
+    vector of the fine cycle space instead of counting it.
+    """
 
     coarse_elements: tuple[tuple[str, int], ...]
     fine_elements: tuple[tuple[str, int], ...]
+    fine_steps: tuple[tuple[int, int], ...]
     retained_holonomy: tuple[tuple[tuple[int, ...], tuple[int, ...]], ...]
     passes: bool
 
@@ -529,27 +537,91 @@ def check_holonomy_conservation(
     return HolonomyConservationReport(
         coarse_elements=coarse_elements,
         fine_elements=fine_elements,
+        fine_steps=tuple(fine_steps),
         retained_holonomy=connection.retained_holonomy,
         passes=coarse_elements == fine_elements,
     )
 
 
+def _cycle_vector(edge_count: int, steps: Sequence[tuple[int, int]]) -> list[int]:
+    """Return the integer edge-incidence vector of one signed edge walk."""
+    vector = [0] * edge_count
+    for index, sign in steps:
+        vector[index] += sign
+    return vector
+
+
+def _generates_full_lattice(rows: Sequence[Sequence[int]], columns: int) -> bool:
+    """Return whether integer rows generate the whole lattice ``Z ** columns``.
+
+    Column-by-column Euclidean elimination over the integers, which is Hermite
+    reduction without the back substitution that only tidies the result. The rows
+    generate everything exactly when every pivot reduces to a unit and every
+    column is consumed, so this is an exact spanning statement over the integers
+    rather than a floating-point rank: a family spanning a finite-index
+    sublattice would pass a rank test and fails here.
+    """
+    work = [list(row) for row in rows]
+    pivot = 0
+    for column in range(columns):
+        while True:
+            live = [index for index in range(pivot, len(work)) if work[index][column]]
+            if not live:
+                return False
+            best = min(live, key=lambda index: abs(work[index][column]))
+            work[pivot], work[best] = work[best], work[pivot]
+            head = work[pivot][column]
+            remaining = False
+            for index in range(pivot + 1, len(work)):
+                entry = work[index][column]
+                if not entry:
+                    continue
+                factor = entry // head
+                work[index] = [
+                    left - factor * right
+                    for left, right in zip(work[index], work[pivot])
+                ]
+                if work[index][column]:
+                    remaining = True
+            if not remaining:
+                break
+        if abs(work[pivot][column]) != 1:
+            return False
+        pivot += 1
+    return pivot == columns
+
+
 @dataclass(frozen=True)
 class WilsonChargeReport:
-    """Conservation of the Wilson charge basis under one blocking step.
+    r"""Conservation of the Wilson charge basis under one blocking step.
 
     The fine cycle space of a connected instance has rank $E - V + 1$, one
     independent charge per fundamental loop. Blocking used to discard every
-    interior loop's charge; the fix is that the coarse side now carries the
-    full basis: one charge per retained interior generator of each parent,
-    plus one per coarse cycle. The report records both ranks, which must be
-    equal, and the cut-loop element comparison per channel, which must be
-    exact; per-parent retained charges are carried for inspection and are
-    pinned against independently computed cycle elements in the tests.
+    interior loop's charge; the fix is that the coarse side now carries the full
+    basis: one charge per retained interior generator of each parent, plus one
+    per coarse cycle.
+
+    Until 2026-08-18 the report checked that claim by comparing two integers,
+    both of which count non-tree edges. That comparison is the Euler identity
+    $E - V + 1 = \sum_b (E_b - V_b + 1) + (E_{\mathrm{cross}} - m + 1)$, and it
+    holds on the whole reachable domain whatever the connection is, so it could
+    not fail (2026-08-18 lab-versus-theory audit, finding 5). Both counts are
+    kept in the report because they remain the right bookkeeping, but ``passes``
+    no longer rests on them.
+
+    The executed check is ``spans``. Each retained interior loop of each parent
+    and the fine lift of the coarse cycle are written as integer vectors of the
+    fine graph's edge space, expressed in the fundamental basis of that space,
+    and required to generate the fine cycle lattice exactly: full rank *and*
+    unit elementary divisors, so no independent loop's charge is dropped and
+    none survives only up to a finite index. ``lattice_columns`` is the rank of
+    the fine cycle space the span is taken against.
     """
 
     fine_rank: int
     coarse_rank: int
+    lattice_columns: int
+    spans: bool
     cut_loop_elements: tuple[tuple[str, int, int], ...]
     retained_charges: tuple[tuple[tuple[int, ...], tuple[int, ...]], ...]
     passes: bool
@@ -561,22 +633,45 @@ def check_wilson_charge_conservation(
 ) -> WilsonChargeReport:
     """Check that no independent loop's Wilson charge is lost by blocking.
 
-    Two exact conditions. First, rank conservation: the number of retained
-    interior generators summed over parents, plus the cycle rank of the
-    identified coarse graph, must equal the fine graph's cycle rank, so the
-    coarse-side data spans the whole fine cycle space rather than the cut
-    loops alone. Second, cut-loop charge conservation: the coarse cycle's
-    element equals the fine element of the loop it encloses, per channel,
-    which is the holonomy-conservation identity reused as a charge statement.
+    Two exact conditions. First, span conservation: the retained interior loops
+    of every parent, together with the fine lift of the coarse cycle, must
+    generate the fine graph's cycle lattice. That is executed as an integer span
+    over the fine cycle space; the rank comparison it replaces is an Euler
+    identity and is reported rather than believed. Second, cut-loop charge
+    conservation: the coarse cycle's element equals the fine element of the loop
+    it encloses, per channel, which is the holonomy-conservation identity reused
+    as a charge statement.
     """
     connection = coarse_connection(model, blocks)
     holonomy = check_holonomy_conservation(model, blocks)
-    fine_rank = len(
-        based_holonomy_generators(model.graph, "belief", min(model.agents))
-    )
+    root = min(model.agents)
+    marks = fundamental_edge_indices(model.graph, root)
+    fine_rank = len(marks)
     coarse_rank = len(
         based_holonomy_generators(connection.graph, "belief", 1)
     ) + sum(len(belief) for belief, _ in connection.retained_generators)
+    edge_count = len(model.graph.edges)
+    fine_position = {
+        (edge.receiver, edge.source): index
+        for index, edge in enumerate(model.graph.edges)
+    }
+    carried: list[list[int]] = []
+    for block in connection.blocks:
+        induced = model.graph.induced(block)
+        for cycle in based_holonomy_cycles(induced, min(block)):
+            lifted = tuple(
+                (
+                    fine_position[
+                        (induced.edges[index].receiver, induced.edges[index].source)
+                    ],
+                    sign,
+                )
+                for index, sign in cycle
+            )
+            carried.append(_cycle_vector(edge_count, lifted))
+    carried.append(_cycle_vector(edge_count, holonomy.fine_steps))
+    coordinates = [[vector[index] for index in marks] for vector in carried]
+    spans = _generates_full_lattice(coordinates, fine_rank)
     cut = tuple(
         (channel, coarse, dict(holonomy.fine_elements)[channel])
         for channel, coarse in holonomy.coarse_elements
@@ -584,10 +679,11 @@ def check_wilson_charge_conservation(
     return WilsonChargeReport(
         fine_rank=fine_rank,
         coarse_rank=coarse_rank,
+        lattice_columns=fine_rank,
+        spans=spans,
         cut_loop_elements=cut,
         retained_charges=connection.retained_generators,
-        passes=fine_rank == coarse_rank
-        and all(coarse == fine for _, coarse, fine in cut),
+        passes=spans and all(coarse == fine for _, coarse, fine in cut),
     )
 
 

@@ -39,6 +39,7 @@ from .categorical_falsification_model import (
 )
 from .cocycle_flow import consecutive_blocks
 from .coupling_readback import (
+    DECLARED_CONCENTRATION,
     PairwiseCouplings,
     PairwiseInstance,
     RescalingStep,
@@ -210,9 +211,10 @@ def environmental_step(
 def anchored_posterior(
     instance: PairwiseInstance,
     dressing: EnvironmentalDressing,
+    concentration: Fraction = DECLARED_CONCENTRATION,
 ) -> BlockingPosterior:
     """Return the amendment-10 partition posterior of the dressed level."""
-    return blocking_posterior(dressed_instance(instance, dressing))
+    return blocking_posterior(dressed_instance(instance, dressing), concentration)
 
 
 @dataclass(frozen=True)

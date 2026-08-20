@@ -360,22 +360,26 @@ def tree_transport_elements(
     return transports
 
 
-def based_holonomy_generators(
-    graph: TwoChannelGraph,
-    channel: str,
-    root: int,
-) -> tuple[int, ...]:
-    """Return the based holonomy generators of the graph at one root.
+def fundamental_edge_indices(graph: TwoChannelGraph, root: int) -> tuple[int, ...]:
+    """Return the non-tree edge indices, parallel to :func:`based_holonomy_cycles`.
 
-    One generator is emitted per non-tree edge, and each generator is a genuine
-    loop based at the root: the tree walk from the root to the edge's source, the
-    edge itself, and the tree walk from the edge's receiver back to the root. The
-    two tree legs are what make these elements of a single based fundamental group
-    rather than loops based at unrelated vertices.
+    The i-th based fundamental loop is the only one containing the i-th non-tree
+    edge, so these indices are the coordinate positions in which any cycle of the
+    graph reads off its expansion in the fundamental basis.
     """
+    return tuple(
+        index for index, _ in _fundamental_pairs(graph, root)
+    )
+
+
+def _fundamental_pairs(
+    graph: TwoChannelGraph,
+    root: int,
+) -> tuple[tuple[int, tuple[tuple[int, int], ...]], ...]:
+    """Return each non-tree edge index beside the based loop it generates."""
     parent_step = _spanning_tree(graph, root)
     tree_indices = {index for index, _ in parent_step.values()}
-    generators: list[int] = []
+    pairs: list[tuple[int, tuple[tuple[int, int], ...]]] = []
     for index, edge in enumerate(graph.edges):
         if index in tree_indices:
             continue
@@ -385,9 +389,42 @@ def based_holonomy_generators(
             continue
         to_source = _reverse_walk(_walk_to_root(graph, parent_step, edge.source, root))
         from_receiver = _walk_to_root(graph, parent_step, edge.receiver, root)
-        steps = (*to_source, (index, +1), *from_receiver)
-        generators.append(walk_element(graph, channel, steps))
-    return tuple(generators)
+        pairs.append((index, (*to_source, (index, +1), *from_receiver)))
+    return tuple(pairs)
+
+
+def based_holonomy_cycles(
+    graph: TwoChannelGraph,
+    root: int,
+) -> tuple[tuple[tuple[int, int], ...], ...]:
+    """Return the based fundamental loops of one graph at one root, as signed walks.
+
+    One loop is emitted per non-tree edge, and each is a genuine loop based at the
+    root: the tree walk from the root to the edge's source, the edge itself, and
+    the tree walk from the edge's receiver back to the root. The two tree legs are
+    what make these loops of a single based fundamental group rather than loops
+    based at unrelated vertices. These walks are the data the holonomy generators
+    are read off, and they are also a basis of the graph's cycle space, which is
+    what lets a conservation claim be checked as a span over that space rather
+    than as a comparison of two rank counts.
+    """
+    return tuple(steps for _, steps in _fundamental_pairs(graph, root))
+
+
+def based_holonomy_generators(
+    graph: TwoChannelGraph,
+    channel: str,
+    root: int,
+) -> tuple[int, ...]:
+    """Return the based holonomy generators of the graph at one root.
+
+    One generator is the group element of one based fundamental loop, read in one
+    channel; the loops themselves are :func:`based_holonomy_cycles`.
+    """
+    return tuple(
+        walk_element(graph, channel, steps)
+        for steps in based_holonomy_cycles(graph, root)
+    )
 
 
 def _reverse_walk(steps: Sequence[tuple[int, int]]) -> tuple[tuple[int, int], ...]:
@@ -424,7 +461,9 @@ __all__ = [
     "DirectedEdge",
     "Law",
     "TwoChannelGraph",
+    "based_holonomy_cycles",
     "based_holonomy_generators",
+    "fundamental_edge_indices",
     "declared_reverse_arcs",
     "fixed_laws",
     "fixed_simplex_laws",

@@ -383,7 +383,18 @@ def _scenario_arrays(
             "staged_total": np.empty((0, 2)),
         }
     )
-    if scenario == "staged_aggregation":
+    staged_aggregation_gap = 0.0
+    staged_observable_gap = 0.0
+    aggregation_applicable = bool(complex_.two_cells)
+    if aggregation_applicable:
+        # Staging means each block is summed in its own root frame first, and only
+        # the block totals are carried to the global root. Transporting every agent
+        # to the global root and *then* regrouping is not a staged aggregation: it
+        # tests (a + b) + (c + d) = a + b + c + d, which holds in any vector space
+        # and cannot fail (2026-08-18 lab-versus-theory audit, finding 5). Summed
+        # honestly, the two routes reach the global root along different paths, so
+        # under a non-flat connection they disagree, and the disagreement is the
+        # measurement.
         stage_states = {
             "0": np.array([1.0, 0.0]),
             "1": np.array([1.0, 1.0]),
@@ -391,22 +402,36 @@ def _scenario_arrays(
             "3": np.array([1.0, 0.0]),
         }
         stage_paths = {**paths, "3": ("e30",)}
-        contributions = []
-        for vertex in complex_.vertices:
-            path = stage_paths[vertex]
-            contribution = stage_states[vertex]
-            if path:
-                contribution = (
-                    hol.open_path_transport(complex_, links, path).matrix
-                    @ contribution
-                )
-            contributions.append(contribution)
-        agent_contributions = np.stack(contributions)
-        block_contributions = np.stack(
-            [agent_contributions[:2].sum(axis=0), agent_contributions[2:].sum(axis=0)]
+        stage_blocks = (("0", "1"), ("2", "3"))
+        block_roots = ("0", "2")
+        within_block_paths = {"0": (), "1": ("e10",), "2": (), "3": ("e32",)}
+        root_paths = {"0": (), "2": ("e21", "e10")}
+
+        def _carried(path: tuple[str, ...], vector: np.ndarray) -> np.ndarray:
+            if not path:
+                return vector
+            return hol.open_path_transport(complex_, links, path).matrix @ vector
+
+        agent_contributions = np.stack(
+            [
+                _carried(stage_paths[vertex], stage_states[vertex])
+                for vertex in complex_.vertices
+            ]
         )
         direct_total = agent_contributions.sum(axis=0)
-        staged_total = block_contributions.sum(axis=0)
+        block_contributions = np.stack(
+            [
+                sum(
+                    _carried(within_block_paths[member], stage_states[member])
+                    for member in block
+                )
+                for block in stage_blocks
+            ]
+        )
+        staged_total = sum(
+            _carried(root_paths[root], contribution)
+            for root, contribution in zip(block_roots, block_contributions)
+        )
         direct_law = hol.operational_record_law(
             complex_, links, stage_states, "0", stage_paths, marks, covectors
         )
@@ -419,13 +444,10 @@ def _scenario_arrays(
             marks,
             covectors,
         )
-        operational_residual = max(
-            operational_residual,
-            abs(
-                hol.operational_observable(direct_law, mark_values)
-                - hol.operational_observable(staged_law, mark_values)
-            ),
-            float(np.max(np.abs(direct_total - staged_total))),
+        staged_aggregation_gap = float(np.max(np.abs(direct_total - staged_total)))
+        staged_observable_gap = abs(
+            hol.operational_observable(direct_law, mark_values)
+            - hol.operational_observable(staged_law, mark_values)
         )
         aggregation_arrays = _frozen_arrays(
             {
@@ -436,6 +458,54 @@ def _scenario_arrays(
                 "staged_probabilities": staged_law.probabilities,
                 "staged_total": staged_total[None, :],
             }
+        )
+
+    if not aggregation_applicable:
+        aggregation_metric = MetricRecord(
+            value=0.0,
+            tolerance=tolerance,
+            status="inconclusive",
+            interpretation=(
+                "Staged aggregation is not compared because the scenario "
+                "declares no closing edge, so the two routes to the base "
+                "vertex coincide and there is nothing to stage."
+            ),
+            assessment_scope="implementation_check",
+            theorem_status="NUMERICAL",
+            verification_state="CANDIDATE",
+            claim_origin="PROJECT_NOVEL",
+        )
+    elif trivialization.is_trivializable:
+        aggregation_metric = target_metric(
+            staged_aggregation_gap,
+            tolerance,
+            target=0.0,
+            interpretation=(
+                "On a trivializable connection the two routes to the base "
+                "vertex agree, so summing each block in its own root frame "
+                "and carrying the block totals up reproduces the direct sum "
+                "exactly."
+            ),
+            theorem_status="ESTABLISHED",
+            verification_state="CANDIDATE",
+            claim_origin="STANDARD",
+        )
+    else:
+        aggregation_metric = lower_bounded_metric(
+            staged_aggregation_gap,
+            tolerance,
+            lower_bound=1.0e-3,
+            interpretation=(
+                "On a non-trivializable connection, summing each block in its "
+                "own root frame and carrying only the block totals to the base "
+                "vertex disagrees with summing every agent at the base vertex, "
+                "because the two routes arrive along different paths. The gap "
+                "is the measurement; a zero would mean the staging was not "
+                "staged."
+            ),
+            theorem_status="NUMERICAL",
+            verification_state="CANDIDATE",
+            claim_origin="PROJECT_NOVEL",
         )
 
     cycle_comparison_applicable = bool(complex_.two_cells)
@@ -505,6 +575,7 @@ def _scenario_arrays(
             verification_state="CANDIDATE",
             claim_origin="PROJECT_NOVEL",
         ),
+        "staged_aggregation_path_dependence": aggregation_metric,
         "broken_link_negative_control": lower_bounded_metric(
             abs(broken_observable - baseline_observable),
             tolerance,
@@ -619,6 +690,29 @@ def _scenario_arrays(
                 "tolerance": tolerance,
                 "baseline_observable": baseline_observable,
                 "broken_observable": broken_observable,
+            },
+            "staged_aggregation_path_dependence": {
+                "rule": (
+                    "not_applicable"
+                    if not aggregation_applicable
+                    else "target"
+                    if trivialization.is_trivializable
+                    else "lower_bound"
+                ),
+                "observed_value": staged_aggregation_gap,
+                "reference_value": (
+                    None
+                    if not aggregation_applicable
+                    else 0.0
+                    if trivialization.is_trivializable
+                    else 1.0e-3
+                ),
+                "tolerance": tolerance,
+                "comparison_applicable": aggregation_applicable,
+                "connection_trivializable": bool(
+                    trivialization.is_trivializable
+                ),
+                "observable_gap": staged_observable_gap,
             },
         },
     }

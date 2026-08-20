@@ -12,19 +12,37 @@ audited read-back route and iterates until the modal class is the singleton
 partition or one site remains. Nothing here proposes an energy: $U$ is the
 M5 module's derived sum of conditional divergences, evaluated on the
 level-invariant kernel model of the instance's graph, and the prior is the
-declared Ewens law at concentration one, temperature one, untempered.
+declared Ewens law, temperature one, untempered.
+
+Two scopes the 2026-08-18 lab-versus-theory audit fixed on this route, both
+of which change what a sweep here can be read as measuring. First, the block
+energy charges the declared top prior for each block's parent, so opening a
+block costs something; before 2026-08-18 it did not, and the all-singleton
+partition was the exact minimizer of the cross-scale group at every
+configuration by construction rather than by measurement. Second, the
+instance's couplings never enter $U$ — the kernel model is level-invariant
+declared structure — so they act only through the flow $w$. A coupling-scale
+sweep is a reweighting of the configurations the energy is averaged over, and
+it cannot move the landscape; no coupling magnitude can, and that is a
+structural fact about the construction rather than a measured absence of a
+transition. The Ewens concentration is likewise a declared knob and is now a
+parameter of this route rather than a hardwired one.
 """
 
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import Sequence
 
 import numpy as np
+
+from fractions import Fraction
 
 from .categorical_falsification_model import Partition, crp_partition_prior
 from .cocycle_flow import consecutive_blocks, regenerated_instance
 from .coupling_readback import (
+    DECLARED_CONCENTRATION,
     PairwiseInstance,
     _kernel_model,
     couplings_action,
@@ -69,7 +87,14 @@ def cycle_blocking_candidates(length: int) -> tuple[tuple[int, Partition], ...]:
 
 @dataclass(frozen=True)
 class BlockingPosterior:
-    """The Proposition-4 posterior over one level's blocking candidates."""
+    """The Proposition-4 posterior over one level's blocking candidates.
+
+    concentration records the Ewens concentration the posterior was taken
+    at, because the verdict is not concentration-free: the modal class of the
+    declared 6-cycle instances crosses inside the unit interval, so a posterior
+    reported without its concentration reports a point on a surface as if it
+    were the surface.
+    """
 
     length: int
     candidates: tuple[Partition, ...]
@@ -80,6 +105,7 @@ class BlockingPosterior:
     class_masses: tuple[tuple[int, float], ...]
     modal_ratio: int
     placement_gap: float
+    concentration: Fraction = DECLARED_CONCENTRATION
 
 
 @dataclass(frozen=True)
@@ -100,7 +126,10 @@ class ParticipatoryPath:
     site_counts: tuple[int, ...]
 
 
-def blocking_posterior(instance: PairwiseInstance) -> BlockingPosterior:
+def blocking_posterior(
+    instance: PairwiseInstance,
+    concentration: Fraction = DECLARED_CONCENTRATION,
+) -> BlockingPosterior:
     r"""Return the partition posterior of one level under its own flow.
 
     The block energy of each candidate is $\bar U(R) = \sum_x w(x) U(R, x)$
@@ -109,9 +138,19 @@ def blocking_posterior(instance: PairwiseInstance) -> BlockingPosterior:
     model; the posterior weight is $\log P_{\mathrm{Ewens}}(R) - \bar U(R)$,
     normalized over the declared candidates. The placement gap is the largest
     within-class mass spread, which homogeneity requires to vanish.
+
+    ``concentration`` is the Ewens concentration of the block-count prior.
+    It is the one genuinely free parameter of the selection, it was pinned at
+    one and unreachable from this route until 2026-08-18, and the declared
+    instances sit close enough to a crossing that a single-point report is not
+    a result; :func:`concentration_surface` reports it as a surface.
+
+    The instance's couplings do not enter the block energy. They enter only
+    through the flow, so a coupling-scale sweep reweights the configurations
+    the energy is averaged over and never moves the landscape itself.
     """
     length = len(instance.graph.vertices)
-    model = _kernel_model(instance.graph, "participatory-blocking")
+    model = _kernel_model(instance.graph, "participatory-blocking", concentration)
     size = model.state_count
     action = couplings_action(instance.couplings)
     weights = np.exp(-(action - action.min())).reshape(-1)
@@ -157,6 +196,55 @@ def blocking_posterior(instance: PairwiseInstance) -> BlockingPosterior:
         class_masses=tuple(sorted(classes.items())),
         modal_ratio=modal_ratio,
         placement_gap=placement_gap,
+        concentration=Fraction(concentration),
+    )
+
+
+@dataclass(frozen=True)
+class ConcentrationSurface:
+    """The modal class of one level's partition posterior across concentrations.
+
+    The Ewens prior's concentration is the free parameter of the selection, and
+    the declared instances do not sit far from a crossing in it, so the honest
+    published object is this surface rather than the single point at the
+    declared concentration. ``crossings`` names each adjacent pair of swept
+    concentrations whose modal classes differ, which brackets every crossing on
+    the swept grid.
+    """
+
+    concentrations: tuple[Fraction, ...]
+    modal_ratios: tuple[int, ...]
+    class_masses: tuple[tuple[tuple[int, float], ...], ...]
+    crossings: tuple[tuple[Fraction, Fraction, int, int], ...]
+
+
+def concentration_surface(
+    instance: PairwiseInstance,
+    concentrations: Sequence[Fraction],
+) -> ConcentrationSurface:
+    """Return the partition posterior of one level across a concentration grid.
+
+    Every point is an exact posterior, computed by the same route as the
+    single-point report; only the block-count prior's concentration moves. The
+    block energies are concentration-independent, so this is a re-weighting of
+    one computed energy vector rather than a re-measurement, but it is computed
+    honestly per point rather than assumed.
+    """
+    swept = tuple(Fraction(value) for value in concentrations)
+    if not swept:
+        raise ValueError("a concentration surface needs at least one point")
+    posteriors = tuple(blocking_posterior(instance, value) for value in swept)
+    modal = tuple(posterior.modal_ratio for posterior in posteriors)
+    crossings = tuple(
+        (swept[index], swept[index + 1], modal[index], modal[index + 1])
+        for index in range(len(swept) - 1)
+        if modal[index] != modal[index + 1]
+    )
+    return ConcentrationSurface(
+        concentrations=swept,
+        modal_ratios=modal,
+        class_masses=tuple(posterior.class_masses for posterior in posteriors),
+        crossings=crossings,
     )
 
 
@@ -210,9 +298,11 @@ def participatory_flow(
 
 __all__ = [
     "BlockingPosterior",
+    "ConcentrationSurface",
     "ParticipatoryLevel",
     "ParticipatoryPath",
     "blocking_posterior",
+    "concentration_surface",
     "cycle_blocking_candidates",
     "participatory_flow",
 ]

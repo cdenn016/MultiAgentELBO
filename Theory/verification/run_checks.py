@@ -2725,6 +2725,108 @@ def check_graph_holonomy() -> dict[str, Any]:
         scale_relative_nullity(stressed_loop - np.eye(k))
     )
 
+    # Root evaluation and membership. Comparing dim ker L_I with dim Fix(Hol_r)
+    # cannot separate the roots: Fix(Hol_r) and Fix(Hol_r') are conjugate and so
+    # are always equidimensional, and the shipped triangles above carry identity
+    # tree links, which makes Hol_r literally root independent. The 2026-08-18
+    # lab-versus-theory audit records that as finding 5. What is executed here is
+    # the isomorphism itself, on a triangle whose tree links are not the
+    # identity: every kernel vector, evaluated at a root, must lie in that root's
+    # fixed space; every fixed vector must extend by transport to a kernel
+    # vector; and evaluating at one root while testing membership at another must
+    # fail, which is what makes the correct-root pass informative.
+    twisted_links = [
+        (0, 1, random_gl_plus(rng, k)),
+        (1, 2, random_gl_plus(rng, k)),
+    ]
+    closing_axis = rng.normal(size=3)
+    closing_axis = closing_axis / float(np.linalg.norm(closing_axis))
+    closing_angle = 0.9
+    cross = np.array(
+        [
+            [0.0, -closing_axis[2], closing_axis[1]],
+            [closing_axis[2], 0.0, -closing_axis[0]],
+            [-closing_axis[1], closing_axis[0], 0.0],
+        ]
+    )
+    closing_rotation = (
+        np.eye(k)
+        + math.sin(closing_angle) * cross
+        + (1.0 - math.cos(closing_angle)) * (cross @ cross)
+    )
+    # Theta_01 Theta_12 Theta_20 is the based holonomy at root 0; solve for the
+    # closing link that realizes a declared rotation there.
+    theta_20 = np.linalg.inv(twisted_links[1][2]) @ np.linalg.inv(
+        twisted_links[0][2]
+    ) @ closing_rotation
+    membership_edges = [
+        twisted_links[0],
+        twisted_links[1],
+        (2, 0, theta_20),
+    ]
+    membership_weights = [random_spd(rng, k, 1.0) for _ in membership_edges]
+    membership_laplacian = twisted_laplacian(membership_edges, membership_weights)
+    membership_nullity, _, _ = scale_relative_nullity(membership_laplacian)
+
+    def based_holonomy(root: int) -> np.ndarray:
+        """Return Theta around the triangle, based at one root."""
+        order = [membership_edges[(root + offset) % 3][2] for offset in range(3)]
+        return order[0] @ order[1] @ order[2]
+
+    def fixed_basis(matrix: np.ndarray) -> np.ndarray:
+        """Return an orthonormal basis of the fixed space of one linear map."""
+        left, singular, right = np.linalg.svd(matrix - np.eye(k))
+        tolerance = rank_rtol * max(float(singular[0]), 1.0)
+        return right[singular <= tolerance].T
+
+    left_singular, kernel_singular, right_singular = np.linalg.svd(
+        membership_laplacian
+    )
+    kernel_tolerance = rank_rtol * max(float(kernel_singular[0]), 1.0)
+    kernel_basis = right_singular[kernel_singular <= kernel_tolerance].T
+    holonomies = {root: based_holonomy(root) for root in range(3)}
+    membership_correct = 0.0
+    membership_wrong = float("inf")
+    for column in range(kernel_basis.shape[1]):
+        vector = kernel_basis[:, column]
+        for root in range(3):
+            block = vector[root * k : (root + 1) * k]
+            scale = max(float(np.linalg.norm(block)), 1.0e-12)
+            for test_root in range(3):
+                residual = float(
+                    np.linalg.norm((holonomies[test_root] - np.eye(k)) @ block)
+                ) / scale
+                if test_root == root:
+                    membership_correct = max(membership_correct, residual)
+                else:
+                    membership_wrong = min(membership_wrong, residual)
+    if kernel_basis.shape[1] == 0:
+        membership_wrong = float("inf")
+
+    # The converse: every fixed vector at a root extends by transport along the
+    # triangle to a kernel vector of the twisted Laplacian.
+    extension_residual = 0.0
+    fixed_at_root = fixed_basis(holonomies[0])
+    for column in range(fixed_at_root.shape[1]):
+        seed_vector = fixed_at_root[:, column]
+        extended = np.zeros(3 * k)
+        extended[0:k] = seed_vector
+        extended[k : 2 * k] = np.linalg.inv(membership_edges[0][2]) @ seed_vector
+        extended[2 * k : 3 * k] = (
+            np.linalg.inv(membership_edges[1][2]) @ extended[k : 2 * k]
+        )
+        norm = max(float(np.linalg.norm(extended)), 1.0e-12)
+        extension_residual = max(
+            extension_residual,
+            float(np.linalg.norm(membership_laplacian @ extended)) / norm,
+        )
+    membership_dimension = int(fixed_at_root.shape[1])
+    holonomy_root_spread = max(
+        float(np.linalg.norm(holonomies[left] - holonomies[right], ord="fro"))
+        for left in range(3)
+        for right in range(3)
+    )
+
     gauges = [random_gl_plus(rng, k) for _ in range(3)]
     transformed = {
         (i, j): gauges[i] @ theta_ij @ np.linalg.inv(gauges[j])
@@ -2756,6 +2858,11 @@ def check_graph_holonomy() -> dict[str, Any]:
         and conjugacy_residual <= 1.0e-10
         and cut_equal <= 1.0e-10
         and cut_distinct > 1.0e-3
+        and membership_nullity == membership_dimension
+        and membership_correct <= 1.0e-8
+        and extension_residual <= 1.0e-8
+        and membership_wrong > 1.0e-3
+        and holonomy_root_spread > 1.0e-3
     )
     return result(
         "CHK-GRAPH-HOLONOMY",
@@ -2770,11 +2877,16 @@ def check_graph_holonomy() -> dict[str, Any]:
             "retwisted_laplacian_nullity": "dim ker(H-I)",
             "conditioned_similarity_nullity": "dim ker(S H S^-1-I)",
             "two_cut_edge_walk_identity_iff_equal": True,
+            "root_evaluation_lands_in_fixed_space": True,
+            "fixed_vector_extends_to_kernel": True,
+            "wrong_root_membership_fails": True,
         },
         tolerances={
             "identity_and_conjugacy_absolute": 1.0e-10,
             "rank_relative_singular_value": rank_rtol,
             "nontrivial_cut_defect": 1.0e-3,
+            "membership_residual_absolute": 1.0e-8,
+            "wrong_root_membership_lower_bound": 1.0e-3,
         },
         observed={
             "flat_loop_defect": flat_defect,
@@ -2804,8 +2916,16 @@ def check_graph_holonomy() -> dict[str, Any]:
             "conjugacy_residual": conjugacy_residual,
             "equal_cut_walk_defect": cut_equal,
             "distinct_cut_walk_defect": cut_distinct,
+            "root_membership": {
+                "laplacian_nullity": membership_nullity,
+                "fixed_space_dimension": membership_dimension,
+                "correct_root_residual": membership_correct,
+                "wrong_root_residual": membership_wrong,
+                "fixed_vector_extension_residual": extension_residual,
+                "holonomy_root_spread": holonomy_root_spread,
+            },
         },
-        interpretation="The weighted graph-Laplacian nullity is compared directly with the loop fixed space. The conditioned-similarity case is a numerical stress test, not a substitute for the exact kernel proof.",
+        interpretation="Nullity is compared with the fixed-space dimension, and, on a triangle with non-identity tree links, the isomorphism itself is executed: kernel vectors evaluated at a root lie in that root's fixed space, fixed vectors extend by transport back into the kernel, and the wrong-root evaluation fails by a detectable margin. Dimensions alone cannot separate the roots, because the based holonomies are conjugate and therefore equidimensional at every root. The conditioned-similarity case is a numerical stress test, not a substitute for the exact kernel proof.",
     )
 
 

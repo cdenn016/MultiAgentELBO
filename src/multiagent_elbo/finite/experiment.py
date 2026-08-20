@@ -160,6 +160,19 @@ def _finite_fixtures(config: ExperimentConfig):
         retained_order = interaction_values.ndim
     interaction_projection = retain_interaction_order(interaction, retained_order)
     pairwise_control = retain_interaction_order(interaction, 2)
+    # The declared interaction 0.3 x1 x2 x3 + 0.4 x1 x2 x4 has, against the uniform
+    # product reference, exactly two nonzero Hoeffding components, both of order
+    # three, with magnitudes 0.3 and 0.4. Retaining order d therefore omits both
+    # when d < 3 and neither when d >= 3, and the three omission norms have the
+    # exact closed forms below. Pinning them here is what makes the configured
+    # order gate a metric: before 2026-08-18 the key was validated, folded into
+    # the run identity, and read by nothing, so metrics.json was byte-identical
+    # across every value it could take (2026-08-18 lab-versus-theory audit,
+    # finding 6).
+    _omits_the_third_order = retained_order < 3
+    retained_g_norm_target = 0.7 if _omits_the_third_order else 0.0
+    retained_quotient_target = 0.7 if _omits_the_third_order else 0.0
+    retained_weighted_l2_target = 0.5 if _omits_the_third_order else 0.0
 
     first_flip = FinitePermutation(
         ((0, 0, 1, 0), (0, 0, 0, 1), (1, 0, 0, 0), (0, 1, 0, 0))
@@ -256,6 +269,37 @@ def _finite_fixtures(config: ExperimentConfig):
             target=0.5,
             interpretation="Product-reference weighted L2 diagnostic; not a theorem-coordinate norm.",
             theorem_status="negative_control",
+        ),
+        "INT-01_retained_order_theorem_coordinate_g_norm": _metric(
+            interaction_projection.theorem_coordinate_g_norm,
+            tolerance,
+            target=retained_g_norm_target,
+            interpretation=(
+                "Omission of the configured retained interaction order in the "
+                "theorem-coordinate G norm; zero once the order reaches the "
+                "declared interaction's own order."
+            ),
+            theorem_status="established_conditional_identity",
+        ),
+        "INT-01_retained_order_quotient_sup_norm": _metric(
+            interaction_projection.quotient_sup_norm,
+            tolerance,
+            target=retained_quotient_target,
+            interpretation=(
+                "Omission of the configured retained interaction order in "
+                "quotient sup norm modulo constants; not the G norm."
+            ),
+            theorem_status="established_conditional_identity",
+        ),
+        "INT-01_retained_order_weighted_l2_diagnostic": _metric(
+            interaction_projection.weighted_l2_diagnostic,
+            tolerance,
+            target=retained_weighted_l2_target,
+            interpretation=(
+                "Omission of the configured retained interaction order in the "
+                "product-reference weighted L2 diagnostic."
+            ),
+            theorem_status="established_conditional_identity",
         ),
         "GAUGE_finite_relabeling_residual": _metric(
             gauge_residual,

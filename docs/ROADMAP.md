@@ -4,8 +4,11 @@
 nothing. `docs/STATUS.md` is the sole claim authority. `solid_RG_theory.md` §12 supplies the
 meta-agent phase ordering and is used here as a working document, not an authority: STATUS §14
 records that its release's certification apparatus carries stale domain approvals, an unauditable
-provenance snapshot, and two open obligations, and the adjacent multiscale package is WITHHELD
-under four high-severity findings (`docs/reviews/2026-08-16-claude-multiscale-vfe-rg-review.md`).
+provenance snapshot, and two open obligations. The adjacent multiscale package's WITHHELD label
+was lifted on 2026-08-18: its four high-severity and six medium findings were repaired in
+`cec901e`/`23b1e19`/`b16e37d` and accepted
+(`docs/reviews/2026-08-16-claude-multiscale-vfe-rg-review.md`), so its claims may be cited, subject
+to the scope stated below.
 The rescaling design with its two amendments
 (`docs/superpowers/specs/2026-08-17-rescaling-map-design.md`) is the authority for the RG
 laboratory. Status markers follow STATUS: **P** proven, **D** derived under hypotheses, **C**
@@ -41,9 +44,14 @@ that no later layer's language is used before its gate closes.
 | $\Omega_{ij}$ as free edge data (Regime II) | **D** | Tier-0 D1, settled |
 | Notation standard (Phase 0) | **complete** | `solid_RG_theory.md` §12 |
 
-What remains. The fiber class for $E_q$ and $E_m$ must be declared from the honest list: which
-statistical families are homogeneous is answered by Koecher--Vinberg through Euclidean Jordan
-algebras, a finite classification, and that reading task (STATUS §4) gates the declaration. The
+What remains. The fiber class for $E_q$ and $E_m$ must be declared from the honest list, and the
+citation for it must be the right one. Koecher--Vinberg classifies the *symmetric* cones, those
+that are homogeneous **and** self-dual, and its answer is the finite list of Euclidean Jordan
+algebras. Homogeneity alone is Vinberg's T-algebra classification, which is open-ended, so citing
+Koecher--Vinberg for homogeneity overstates what is settled (corrected 2026-08-18 per the
+lab-versus-theory audit). If the declaration is to land on a finite list, self-duality has to be
+declared alongside homogeneity rather than assumed to follow from it, and that reading task
+(STATUS §4) gates the declaration. The
 compact subgroup and the representation channel (Tier-0 D3) must be declared together. Exit gate:
 one declared triple (group, fiber, representations) with compactness and homogeneity hypotheses
 attached to every downstream theorem that needs them.
@@ -110,16 +118,18 @@ This layer moved decisively on 2026-08-17, and its results now constrain the oth
 | Per-ratio passive composites contract (radius 0.83) to factorized fixed structures | **C** | pairwise coupling irrelevant in the passive channel |
 | Passive fixed structures depend on the ratio (relative sup 0.81) | **C** | even endpoints are typed |
 | Diagnosis: single-boundary-agent towers are quasi-one-dimensional | **D** | passive triviality was architectural |
-| Wilson charge conserved: retained generators + coarse cycle span the fine cycle space | **C** | no loop's charge is dropped by blocking |
+| Wilson charge conserved: retained generators + coarse cycle span the fine cycle space | **C**, executed as a span since 2026-08-18 | no loop's charge is dropped by blocking |
 | Boundary multiplicity saturates: retention 0.156/0.441/0.564 at k = 1/3/6 | **C** | thicker boundaries cannot rescue the passive channel |
 | Sector capacity, corrected 2026-08-18: root-framed belief-charge parents raise retention (0.209/0.568 vs 0.156/0.441 at k = 1/3), still below one | **C** | the 2026-08-17 null was a frame artifact of a gauge-dependent charge (audit F8); capacity was binding at this seed |
-| M-info (amendment 9): MI retention R_MI ≤ 1 by data processing; 0.023→0.025 at k = 1 and 0.067→0.070 at k = 3 going from 9 to 27 labels | **C** | the blocking transmits 2–7% of boundary information; sup-norm retention overstates it by an order of magnitude; the sector gain survives in the law but small |
-| M-part (amendment 10): the partition posterior, given the choice, selects the singleton partition (0.586) over direct (0.306) over staged (0.08/0.025); null control within 1% | **C** | no aggregation is free-energy-favored at this seed; staged is not preferred; the selection is prior-and-kernel dominated because the seed carries nothing to bind |
-| M-bind (amendment 11): coupling-scale sweep lambda 0–100; ceiling grows as lambda² (5e-6 → 5e-2 nats) yet the modal class is singletons at every lambda and R_MI is flat-to-declining | **C** | no formation transition on this ray — the singleton preference is structural, not a weak-coupling artifact; transmission is kernel-limited, not signal-limited; the binding candidate moves to the likelihood sector |
-| M-anchor (amendment 12): the environment restored as a blockable agent class; uniform anchors flip modal to direct (0.55/0.84), distinct control anti-binds (0.90 singletons), shared pairs pull the aligned blocking 8x | **C** | environmental binding licensed — condensation follows shared evidence, and the posterior selects the anchor-aligned placement, not just the ratio |
-| M-flow (amendment 12): annealed joint dynamics on (x, R), sampler validated against the exact marginal; bare-instance verdict reverses quenched (direct 0.44 modal vs singletons 0.586) | **C** | the theory's process is more aggregation-prone than its frozen landscape; the M-part/M-bind negatives were statements about the quenched update on environment-free levels |
-| M-cross-env (amendment 13): the aligned-pairing mass saturates at 0.201 by k_env = 32 (quenched = annealed in the frozen limit), no crossing; distinct control clean | **C** | point-mass environments align but cannot correlate — shared and duplicated evidence coincide at infinite inertia; correlation-binding needs finite-inertia environmental agents |
-| M-share (amendment 14): finite-inertia shared environments by exact marginalization; aligned mass rises monotonically to the pinned plateau, never above it; shared beats duplicated 9x at m = 0; free strong sharing tips direct modal | **C** | alignment and correlation are competing channels, not composing ones — pure alignment wins for the aligned-placement statistic; the surviving formation barrier is the derived energy's width penalty |
+| M-info (amendment 9): MI retention R_MI ≤ 1 by data processing; 0.023→0.025 at k = 1 and 0.067→0.070 at k = 3 going from 9 to 27 labels | **C** | the blocking transmits 2–7% of boundary information; sup-norm retention overstates it by an order of magnitude. **Corrected 2026-08-18:** the *sign* of the sector gain is a data-processing theorem for any refinement, and the constant-sector control is an identity, so neither testifies to the charge; against a same-cardinality non-charge readout (first-member belief coordinate, +67.4%/+38.6%) the charge's +10.2%/+5.3% is the smaller gain, and the "confirms the amendment-8 direction" reading is withdrawn |
+| M-part (amendment 10), republished 2026-08-18: the partition posterior selects the direct single block (0.958/0.955) over staged (0.039/0.042 and 0.0023/0.0021) over singletons (1.1e-4) | **C** | aggregation *is* free-energy-favored at this seed, and the whole-system block is what the posterior selects. The retired singleton verdict (0.586/0.576) was an unpriced parent: with no charge for opening a block the all-singleton partition minimizes the cross-scale group at every configuration by construction |
+| M-bind (amendment 11), republished 2026-08-18: coupling-scale sweep lambda 1–100; ceiling grows as lambda² (5e-6 → 5e-2 nats), the modal class is direct at every lambda, R_MI flat-to-declining | **C** | transmission is kernel-limited, not signal-limited. The formation reading is withdrawn: `U(R, x)` is bit-identical across coupling scales because the kernel model carries no couplings, so this sweep cannot move the landscape and its flatness is structural rather than measured. lambda = 0 is now excluded by code — its ceiling is 1.1e-16 nats |
+| M-anchor (amendment 12), republished 2026-08-18: shared-pair anchors lift the aligned ratio-2 placement 32x (1.2e-3 → 3.9e-2) and pull direct to 0.815; uniform anchors deepen direct to 0.983; the distinct control leaves the aligned pairing flat | **C** | shared evidence pulls toward the blocking that shares it and uniform evidence toward the whole, but no pattern flips a modal class now that direct is already modal bare; the posterior still selects the anchor-aligned placement, not just the ratio |
+| M-flow (amendment 12), republished 2026-08-18: quenched and annealed agree (0.958 vs 0.962 bare, both direct-modal) | **C** | the quenched/annealed reversal is withdrawn — it was the free parent, not the process. The instrument stands; it has nothing to separate at this seed |
+| M-cross-env (amendment 13), republished 2026-08-18: the aligned-pairing mass saturates at 0.0388 by k_env = 64, no crossing; distinct control clean | **C** | point-mass environments align but cannot correlate — shared and duplicated evidence coincide at infinite inertia; correlation-binding needs finite-inertia environmental agents. The mechanism is structural and survives the correction; only the magnitudes moved |
+| M-share (amendment 14), republished 2026-08-18: aligned mass rises monotonically to the pinned plateau (0.0064 → 0.0392), never above it; shared beats duplicated 5.6x at m = 0 on an induced pair sup of 12.6 | **C** | alignment and correlation are competing channels, not composing ones — pure alignment wins for the aligned-placement statistic |
+| Concentration surface (2026-08-18): the modal class crosses direct → singletons at theta = 6.117 (k = 1) / 6.173 (k = 3) | **C** | the Ewens concentration is now threaded through `blocking_posterior`; the declared theta = 1 verdict is a point on a reported surface, not a hardwired one |
+| Wilson charge conservation, re-executed 2026-08-18 as an integer span over the fine cycle lattice | **C** | the earlier rank comparison was the Euler identity and could not fail; the coarse-side loops are now required to generate the fine cycle lattice with unit elementary divisors |
 | Regenerated attention sustains interacting fixed structures (pair sup 0.58–0.62, sustained/injected 1.25) | **C** | horizontal glue is re-bound per level, not inherited |
 | Typing survives regeneration (RC6 0.17–0.27; R-cross 0.64) | **C** | the cocycle reading governs both channels |
 
@@ -204,11 +214,20 @@ and a provenance snapshot in which zero of fifteen entries verify. Closing those
 narrowing the ESTABLISHED label to what a refreshed certification actually covers, comes before any
 Layer S work that cites the pointwise theorems.
 
-Second, the multiscale two-channel graph-VFE package is WITHHELD with four high-severity findings
-(random occupied sets ill-type the tower joint; the parent-coordinate Gibbs update omits live
-descendant terms; the dressed-transport law omits the soft endpoint kernel; the convolution
-converse is false) and six medium ones. Its repair order is declared in the review. Until repaired,
-no layer may cite that package's promoted claims; its surviving structures — the edge-event law
+Second, the multiscale two-channel graph-VFE package. **Status reconciled 2026-08-18.** The
+WITHHELD label above was already stale when it was written: all four high-severity findings (random
+occupied sets ill-type the tower joint; the parent-coordinate Gibbs update omits live descendant
+terms; the dressed-transport law omits the soft endpoint kernel; the convolution converse is false)
+and all six medium ones were repaired in `cec901e`, `23b1e19` and `b16e37d` and accepted in full.
+The citation ban is lifted for the repaired claims, which matters concretely: five of the eight §16
+rows are produced by the Proposition-4 partition posterior, which lives in this package, so a
+standing ban would have forbidden citing the very construction those rows report. Proposition 4 and
+Corollary 6 (which explains the null control) are both in scope and both citable. Two things the
+lift does **not** cover. The repairs closed review findings; they did not put the package through
+the verification ledger, so its claims carry review acceptance rather than a closure state. And
+Proposition 4's own accounting was wrong until 2026-08-18 in a way no reviewer caught — the block
+energy charged nothing for a block's parent — so the proposition as implemented before that date is
+retired along with amendments 10-14 (see STATUS §16). Its surviving structures — the edge-event law
 $\eta$ as the graph-level coarse primitive with linear Markov pushforward, the retention of full
 dressed-transport laws for non-flat connections, and the Reading A/B distinction — may be used
 where the review says they survive. The review's external anchors (Garuccio--Lalli--Garlaschelli
@@ -222,8 +241,9 @@ Immediate (weeks, on built machinery): R1 cocycle rewrite of 07b; R2 Wilson-char
 R3 bundled towers and the rate-versus-multiplicity sweep; R4 posterior-selected blocking; and, in
 parallel, the standing verification debt — repair or narrow the two under-certified releases
 before anything cites them. Declarations that gate everything upstream (Tier-0 in character): the
-compact subgroup with its representation channel; the fiber class from the Koecher--Vinberg
-reading; fixed-link-plus-declared-Wilson versus the Gibbs--Haar random-link model. Theorems next
+compact subgroup with its representation channel; the fiber class from the
+Vinberg/Koecher--Vinberg reading, with self-duality declared explicitly if the finite Jordan list
+is to be the answer; fixed-link-plus-declared-Wilson versus the Gibbs--Haar random-link model. Theorems next
 in line: Phase 3 comparison category; Layer B equivariance at theory level; then Phase 4 sections
 and gluing, which unlocks the RG-over-$\mathcal C$ object; then $\Gamma$-convergence; then
 Phase 5. Every item carries the
