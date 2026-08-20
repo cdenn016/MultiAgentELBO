@@ -6,13 +6,28 @@ prevent.
 
 ## 0. What this document is, and what it is not
 
-A self-contained development of the **general gauge-theoretic variational free energy theory**:
-one principal `G`-bundle inducing distinct belief and model associated bundles, one fixed normalized
-generative law, one correlated recognition law, **one exact ELBO**, and the renormalization of that
-structure under coarse-graining. Belief and model may use different representations, local frame
-sections, connections, and coarse maps on that common principal bundle. A common frame or equal
-connection is a stronger specialization. Independent principal bundles with product gauge group
-`G_b x G_m` are an optional extension, never the ambient theory.
+A self-contained development of the **general gauge-theoretic variational free energy theory**
+starts from local descriptive data:
+\[
+\left\{
+\mathcal A_i,G_{\theta,i,D},\mathbb Q_{i,o,X},K_a
+\right\}_{i\in V,a\in\mathfrak A}
+\longrightarrow
+\begin{cases}
+\mathbb P_{\theta,V} & \text{normalized construction},\\
+\mathbb Q_{V,o,X}\in\operatorname{Cpl}(\mathbb Q_{\bullet,o,X})
+& \text{declared measurable selection},
+\end{cases}
+\longrightarrow
+\mathcal L_V.
+\]
+The constructed normalized joint \(\mathbb P_{\theta,V}\), selected coupling
+\(\mathbb Q_{V,o,X}\), and posterior slice
+\(\boldsymbol\Pi_{\theta,V,o,X}\) are complete population probability objects, not
+additional agents. Belief and model may use different representations, local frame sections,
+connections, and coarse maps on the common principal bundle. A common frame or equal connection
+is a stronger specialization. Independent principal bundles with product gauge group `G_b x G_m`
+are an optional extension, never the ambient theory.
 
 **PIFB2 does not appear.** Not as a source, not as a crosswalk, not as motivation, not in a remark.
 The author's earlier five-term consensus functional, the `T1..T6` term labels, the Ouroboros tower,
@@ -167,10 +182,10 @@ associated-bundle projection, `V\mathcal E_x=\ker T\varpi_x`, and
 `\operatorname{ver}^{\omega_x}` for the vertical projection selected by the induced Ehresmann
 connection in channel `x\in\{b,m\}`. For a smooth agent section use
 `D^{\omega_b}q_i=\operatorname{ver}^{\omega_b}\circ Tq_i` and
-`D^{\omega_m}s_i=\operatorname{ver}^{\omega_m}\circ Ts_i`. The vertical Fisher tensors are
+`D^{\omega_m}q_i^m=\operatorname{ver}^{\omega_m}\circ Tq_i^m`. The vertical Fisher tensors are
 `g_b^F,g_m^F`; their section pullbacks are
 `h_{i,b}^{\omega_b}=(D^{\omega_b}q_i)^*g_b^F` and
-`h_{i,m}^{\omega_m}=(D^{\omega_m}s_i)^*g_m^F`. Call these connection-relative vertical Fisher
+`h_{i,m}^{\omega_m}=(D^{\omega_m}q_i^m)^*g_m^F`. Call these connection-relative vertical Fisher
 semimetrics unless injectivity has been proved. Gauge invariance under passive re-trivialization
 does not mean independence from the chosen connection. A combined belief--model tensor requires
 declared positive channel weights or a declared joint statistical metric; the common principal
@@ -198,13 +213,18 @@ calculate a path integral is auxiliary and must disappear from the final arc len
 remains \(\varpi_x\); it is never receiver occupancy.
 
 At fixed admitted \((o,X)\), use \(q_i^{b;o,X}\) for a belief-law section and
-\(q_i^{m;o,X}\) for a model-law section. Established \(q_i^{o,X},s_i^{o,X}\) retain those
-dependencies and are not globally renamed. A model sample or presentation is
-\(m_i\in\mathsf M_i\), not a law, and its measurable evaluation is
-\(\operatorname{ev}_i:m_i\mapsto K^X_{i,m_i}\).
-General normalized law and kernel spaces on
-standard-Borel domains are primary; smooth statistical manifolds require separate regularity, and
-Gaussian families are optional computational realizations only.
+\(q_i^{m;o,X}\) for a model-law section. The channel and admitted dependencies are part of
+these canonical symbols. The response \((o,X)\mapsto(q_i^{b;o,X},q_i^{m;o,X})\) is measurable
+into declared belief- and model-section spaces, and evaluation at every admitted context is
+measurable. These sections occupy the generic slots \(q_i,q_i^m\) at fixed \((o,X)\), but are
+not bare aliases for them. At each \((i,a)\in\mathfrak I_D\), a model sample or presentation is
+\(m_i\in\mathsf M_{i,a}\), not a law, and its measurable evaluation is
+\(\operatorname{ev}_{i,a}:m_i\mapsto K^{X,a}_{i,m_i}\).
+The agent-level notation
+\(\operatorname{ev}_i=(\operatorname{ev}_{i,a})_{a\in D_i}\) denotes this finite jointly
+measurable typed family, not one map into a common kernel space. General normalized law and kernel
+spaces on standard-Borel domains are primary; smooth statistical manifolds require separate
+regularity, and Gaussian families are optional computational realizations only.
 
 Structural \(X\) is fixed outside the random channel, with \(X_A=\chi_A(X)\). The retained random
 interface is \(\xi_A\in\boldsymbol\Xi_A\), and
@@ -229,9 +249,16 @@ Stacked latents `Y`, observations `o`. Structural data `X`.
 **Gaussian dimensions.** The belief Gaussian fiber has dimension `K`; the model Gaussian fiber has
 dimension `d_m`. Equal dimensions are not assumed. Do not write `d_k` for the belief dimension.
 
-**Probability.** Generative kernel `P_\theta(do,dY\mid X)`, density `p_\theta`. Recognition kernel
-`Q_X(dY\mid o)`, density `q_X`. Evidence `\log p_\theta(o\mid X)`. ELBO `\mathcal L(Q_X;X)`.
-Free energy `\mathcal F=-\mathcal L`. Relative entropy `\KL(\cdot\Vert\cdot)`.
+**Probability.** The constructed normalized joint is \(\mathbb P_{\theta,V}(dy,do\mid X)\), with
+density \(p_{\theta,V}\). The measurable access map
+\(\operatorname{Acc}_i:\mathsf O_D\times\mathsf X\to\mathsf I_i\) and normalized local kernel
+\(\mathbb Q_i:\mathsf I_i\rightsquigarrow\mathsf Y_{i,D}\) give
+\(\mathbb Q_{i,o,X}=\mathbb Q_i(\operatorname{Acc}_i(o,X),\cdot)\). A declared measurable
+selection supplies the correlated population recognition coupling \(\mathbb Q_{V,o,X}\). Its
+posterior slice is \(\boldsymbol\Pi_{\theta,V,o,X}\). Evidence is
+\(\log p_{\theta,V}(o\mid X)\). ELBO is
+\(\mathcal L_V(\mathbb Q_{V,o,X};X,o)\). Free energy is
+\(\mathcal F_V=-\mathcal L_V\). Relative entropy is \(\KL(\cdot\Vert\cdot)\).
 
 **Interaction records and attention.** A factor `a` owns one normalized record kernel
 `K_a(y_{\partial a},do_a)`. At a regular record its fixed negative log density is `E_{a,o}`.
@@ -297,12 +324,16 @@ These are established. Reproduce them faithfully; do not weaken or overstate.
 
 **The typing prohibition.** A generative kernel is fixed once `(\theta,X)` is fixed and may not take
 a recognition law, a recognition parameter, or **a posterior** as an input. This is a definitional
-requirement of the fixed-joint construction and is load-bearing for several later results.
+requirement of the constructed fixed-joint construction and is load-bearing for several later
+results.
 
-**The exact ELBO.** Under absolute continuity `Q_X\ll P_\theta(\cdot\mid o,X)` and log-integrability,
-`\log p_\theta(o\mid X)=\mathcal L(Q_X;X)+\KL(Q_X\Vert P_\theta(\cdot\mid o,X))`, with equality iff
-the recognition law equals the posterior as measures. Absolute continuity is a **hypothesis**, and it
-is what later forbids degenerate (subspace-supported) recognition laws.
+**The exact ELBO.** Under absolute continuity
+`\mathbb Q_{V,o,X}\ll\boldsymbol\Pi_{\theta,V,o,X}` and log-integrability,
+`\log p_{\theta,V}(o\mid X)=\mathcal L_V(\mathbb Q_{V,o,X};X,o)+\KL(\mathbb Q_{V,o,X}\Vert\boldsymbol\Pi_{\theta,V,o,X})`,
+with equality iff the selected recognition coupling equals the posterior slice as measures.
+Absolute continuity is a **hypothesis**, and it is what later forbids degenerate
+(subspace-supported) recognition laws. Reciprocal participation occurs in inference under a fixed
+normalized joint; population laws are not agents.
 
 **Interaction family is a declared subfamily.** The Laplacian-plus-self-terms form does NOT follow
 from a general linear-Gaussian directed model: an unrestricted state transition contributes an
@@ -517,6 +548,10 @@ Distinct from both is a generative-kernel fiber: a declared collection of Markov
 specified source and target measurable spaces. Do not identify either law fiber with a kernel
 fiber, and do not infer a manifold, common dominating measure, affine chart, natural parameter,
 convex cone, boundary, or Fisher metric merely because the elements are beliefs or models.
+
+A model-law fiber contains laws over model presentations and acquires a generative meaning only
+through a declared evaluator mapping a presentation to a normalized conditional mechanism. No
+vector-space structure is implied for either law fiber.
 
 The two law fibers are carried by the separate associated bundles
 `\mathcal E_b=\mathscr P_G\times_{\widehat\rho_b}\mathcal B_b` and

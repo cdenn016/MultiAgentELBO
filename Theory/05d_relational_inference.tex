@@ -142,7 +142,7 @@ connection-relative perceived geometries on the same fixed base:
 \mathbf h_i(\lambda)
 =\left(
 h_{q_i(\lambda)}^{\omega_b},
-h_{s_i(\lambda)}^{\omega_m}
+h_{q_i^m(\lambda)}^{\omega_m}
 \right).
 \label{eq:hist-perceived-geometry-family}
 \end{equation}
@@ -185,7 +185,7 @@ diagonal evaluation.  Let $\gamma:I\to\mathcal C_i$ and set
 $\Gamma(\lambda)=Q_i(\lambda)(\gamma(\lambda))$.  Write
 \begin{equation}
 D^{\boldsymbol\omega_i}Q_i(\lambda)
-=\left(D^{\omega_b}q_i(\lambda),D^{\omega_m}s_i(\lambda)\right).
+=\left(D^{\omega_b}q_i(\lambda),D^{\omega_m}q_i^m(\lambda)\right).
 \label{eq:hist-product-covariant-section-jet}
 \end{equation}
 The chain rule and the connection splitting give
@@ -1907,7 +1907,7 @@ $w_b(c)$ and $w_m(c)$.  The pointwise squared speed of a section history is
 \begin{equation}
 \nu_{i,c}^2
 =w_b(c)g_b^F(\partial_\lambda q_i(c),\partial_\lambda q_i(c))
-+w_m(c)g_m^F(\partial_\lambda s_i(c),\partial_\lambda s_i(c)).
++w_m(c)g_m^F(\partial_\lambda q_i^m(c),\partial_\lambda q_i^m(c)).
 \label{eq:hist-pointwise-clock-speed}
 \end{equation}
 Integration of $\nu_{i,c}$ defines a pointwise clock.  This uses only
@@ -1921,7 +1921,7 @@ $\rho_a$ and define
 \nu_{i,D}^2
 =\sum_{a=1}^M\rho_a\left[
 w_b(c_a)g_b^F(\partial_\lambda q_i(c_a),\partial_\lambda q_i(c_a))
-+w_m(c_a)g_m^F(\partial_\lambda s_i(c_a),\partial_\lambda s_i(c_a))
++w_m(c_a)g_m^F(\partial_\lambda q_i^m(c_a),\partial_\lambda q_i^m(c_a))
 \right].
 \label{eq:hist-finite-design-clock-speed}
 \end{equation}
@@ -1940,7 +1940,7 @@ squared speed is
 \nu_{i,\mu}^2
 =\int_{\mathcal C_i}\left[
 w_b(c)g_b^F(\partial_\lambda q_i(c),\partial_\lambda q_i(c))
-+w_m(c)g_m^F(\partial_\lambda s_i(c),\partial_\lambda s_i(c))
++w_m(c)g_m^F(\partial_\lambda q_i^m(c),\partial_\lambda q_i^m(c))
 \right]d\mu_i(c).
 \label{eq:hist-continuum-clock-speed}
 \end{equation}

@@ -72,10 +72,19 @@ local coordinates, and declare normalized-law fibers
 \mathcal B_m\subseteq\mathcal P(\mathsf M).
 \label{eq:geo-law-fibers}
 \end{equation}
-A law fiber is not a kernel fiber.  A generative transition belongs to a separately declared
-collection of normalized Markov kernels between specified measurable spaces.  No density chart,
-common dominating measure, affine structure, or Fisher metric follows from
-\eqref{eq:geo-law-fibers}.
+The two fibers contain normalized probability laws and are not kernel fibers.  A generative
+transition belongs to a separately declared collection of normalized Markov kernels between
+specified measurable spaces.  No density chart, common dominating measure, affine structure, or
+Fisher metric follows from \eqref{eq:geo-law-fibers}.
+
+The model-law value records uncertainty over a declared space of model presentations.
+It becomes generative only when paired with the measurable evaluator introduced in
+\Cref{def:prob-model-evaluation}; the evaluator maps a presentation to a
+normalized conditional mechanism.  Thus an agent may have both beliefs and generative
+models without identifying a probability law over models with the model kernel itself.
+No vector addition or unrestricted scalar multiplication is part of either law fiber;
+the smooth, Fisher, and Gaussian structures used later belong to explicitly restricted
+regular tiers.  \status{DEFINITION}
 
 Suppose the same group acts measurably on the two sample fibers through representations
 \begin{equation}
@@ -403,14 +412,14 @@ transport is inferred from the agent frames. \status{NOT-CLAIMED}
 \definitionheading{Agent}{def:geo-agent}
 Agent $i$ is the section-bearing object
 \begin{equation}
-\mathcal A^i=\bigl(\mathcal C_i;q_i,s_i,u_i^b,u_i^m\bigr),
+\mathcal A^i=\bigl(\mathcal C_i;q_i,q_i^m,u_i^b,u_i^m\bigr),
 \label{eq:geo-agent-object}
 \end{equation}
 where
 \begin{equation}
 q_i\in\Gamma(\mathcal C_i,\mathcal E_b|_{\mathcal C_i}),
 \qquad
-s_i\in\Gamma(\mathcal C_i,\mathcal E_m|_{\mathcal C_i}).
+q_i^m\in\Gamma(\mathcal C_i,\mathcal E_m|_{\mathcal C_i}).
 \label{eq:geo-agent-sections}
 \end{equation}
 \status{DEFINITION}
@@ -423,6 +432,10 @@ Y(c)=\bigl((k_1(c),m_1(c)),\ldots,(k_N(c),m_N(c))\bigr)
 is a random element of a product of sample fibers, not a tuple of agents.  The continuum sections
 above and the finite recognition law introduced later are separately declared objects; their
 compatibility is a hypothesis in the probability chapter.
+
+A population sample and a population law are compatibility and evaluation objects, not agents.
+The compatibility hypothesis between continuum section values and finite recognition blocks remains
+separate from the definitions of both objects. \status{DEFINITION}
 
 \propositionheading{Finite-second-moment congruence}{prop:geo-moment-pushforward}
 Let a belief law $q$ on $\R^K$ have finite mean $\mu$ and covariance $\Sigma$, and let

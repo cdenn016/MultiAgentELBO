@@ -25,14 +25,50 @@ A finite child block \(I\) has parent label \(A\), and the pointwise program fix
 \(r_*\in\mathcal U_A\). Ordinary \(R\) is not an
 overlap region. \\
 \(q_i^{b;o,X},q_i^{m;o,X}\) &
-belief-law and model-law local sections &
-The admitted observation and structural dependencies remain visible.
-Established \(q_i^{o,X},s_i^{o,X}\) are typed source notation, not bare aliases. \\
-\(\mathsf M_i;\ m_i\in\mathsf M_i;\
-\operatorname{ev}_i(m_i)=K^X_{i,m_i}\) &
-model-presentation space, sample, and normalized evaluated kernel &
-The sample \(m_i\) is never a law. The evaluation is measurable, keeps its
-declared \(X\) and parent dependencies, and reads no recognition or posterior. \\
+measurable belief-law and model-law response sections &
+The map \((o,X)\mapsto(q_i^{b;o,X},q_i^{m;o,X})\) is measurable into declared
+section spaces, with measurable evaluation at every admitted context. These are
+context-indexed occupants of the generic section slots, not bare aliases. \\
+\(\mathbb Q_{i,o,X}\) &
+agent-indexed normalized recognition law on \(\mathsf Y_{i,D}\) &
+The finite recognition law is evaluated from the declared access map
+\(\operatorname{Acc}_i\); it is not a population coupling or a continuum section value. \\
+\(\operatorname{Acc}_i:\mathsf O_D\times\mathsf X\to\mathsf I_i\) &
+measurable agent access map &
+It specifies the information interface admitted to agent \(i\). An identity access map is
+the minimal interface; decentralized claims require a stricter declared map. \\
+\(\mathsf M_{i,a};\ m_i\in\mathsf M_{i,a};\
+\operatorname{ev}_{i,a}(m_i)=K^{X,a}_{i,m_i}\) &
+incidence model-presentation space, sample, and normalized evaluated kernel &
+The sample \(m_i\) is never a law. Each incidence evaluation is measurable, keeps
+its declared \(X\) and parent dependencies, and reads no recognition or posterior.
+The bundle \(\operatorname{ev}_i=(\operatorname{ev}_{i,a})_{a\in D_i}\) is a
+typed finite family, not one common-codomain map. \\
+\(G_{\theta,i,a}; G_{\theta,i,D}=\bigotimes_{a\in D_i}G_{\theta,i,a}\) &
+agent component kernel and finite-design mechanism &
+\(G_{\theta,i,a}:(\mathsf X\times\mathsf Y_{\operatorname{pa}(i),a})
+\rightsquigarrow\mathsf Y_{i,a}\) is normalized in its target coordinate. The bundled
+mechanism is distinct from an evaluated model kernel and from a recognition law. \\
+\(K_a:(\mathsf X\times\mathsf Y_{\partial a,D})\rightsquigarrow\mathsf O_a\) &
+normalized interaction-record kernel &
+It is normalized in the record coordinate and owns one record once. It is neither the
+evaluated model mechanism \(K^{X,a}_{i,m_i}\), directed transition \(T_{i\leftarrow j}\), nor
+unnormalized potential \(\psi_{ij}\). \\
+\(\operatorname{Cpl}(\mathbb Q_{\bullet,o,X})\) &
+class of population couplings with marginals \(\mathbb Q_{i,o,X}\) &
+It contains all normalized joint laws on \(\prod_{i\in V}\mathsf Y_{i,D}\) with the declared
+agent-indexed marginals; local marginals do not determine a member. \\
+\(\mathsf S_{o,X}\) &
+declared measurable population-coupling selector &
+It maps \((\mathbb Q_{i,o,X})_{i\in V}\) into
+\(\operatorname{Cpl}(\mathbb Q_{\bullet,o,X})\). It is additional probabilistic
+data. Gauge re-expression transports its already selected output; equivariance
+of a rerun selector is a separate, unclaimed hypothesis. \\
+\(\mathbb P_{\theta,V}; \mathbb Q_{V,o,X};\
+\boldsymbol\Pi_{\theta,V,o,X}\) &
+constructed normalized population joint, selected recognition coupling, and posterior slice &
+The joint is constructed from local mechanisms and record kernels, the coupling is selected from
+the declared coupling class, and the posterior is derived from the joint. None is an agent. \\
 \(X;\ X_A=\chi_A(X);\ \xi_A\in\boldsymbol\Xi_A\) &
 fixed fine/parent structure and retained random interface &
 \(X,X_A\) remain outside the random channel. The random interface \(\xi_A\)

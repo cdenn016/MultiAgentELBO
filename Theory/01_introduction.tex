@@ -32,15 +32,38 @@ when the copy is unique), and are identified with base parallel transport
 only after a curve assignment and an equality hypothesis. These
 distinctions are the type contract of \Cref{ch:geometry}. \status{DEFINITION}
 
-On a finite design the theory fixes one normalized generative joint
-\(P_\theta(do,dY\mid X)\) and one correlated recognition law
-\(Q_X(dY\mid o)\).  Under the stated absolute-continuity and integrability
-hypotheses, there is one exact identity,
+The primitive descriptive data are finitely many section-bearing agents, their
+agent-indexed recognition laws and evaluated generative mechanisms, and normalized
+kernels for the records produced at declared interactions.  Complete population laws
+enter only after an explicit construction or selection.  They encode the dependence
+required by evidence and collective variational free energy, but they are not additional
+agents and need not be represented by any participant.  \status{DEFINITION}
+
+The local-first architecture is
 \begin{equation}
-\log p_\theta(o\mid X)
-=\mathcal L(Q_X;X)
-+\KL\left(Q_X\middle\Vert
-P_\theta(\cdot\mid o,X)\right).
+\left\{
+\mathcal A^i,G_{\theta,i,D},\mathbb Q_{i,o,X},K_a
+\right\}_{i\in V,a\in\mathfrak A}
+\longrightarrow
+\begin{cases}
+\mathbb P_{\theta,V} & \text{normalized construction},\\
+\mathbb Q_{V,o,X}\in\operatorname{Cpl}(\mathbb Q_{\bullet,o,X})
+& \text{declared measurable selection},
+\end{cases}
+\longrightarrow
+\mathcal L_V.
+\label{eq:intro-local-to-global-architecture}
+\end{equation}
+The constructed joint \(\mathbb P_{\theta,V}\) and selected coupling
+\(\mathbb Q_{V,o,X}\) therefore precede the local conditional and collective objectives.
+\status{DEFINITION}
+
+Under the stated absolute-continuity and integrability hypotheses, there is one exact identity,
+\begin{equation}
+\log p_{\theta,V}(o\mid X)
+=\mathcal L_V(\mathbb Q_{V,o,X};X,o)
++\KL\left(\mathbb Q_{V,o,X}\middle\Vert
+\boldsymbol\Pi_{\theta,V,o,X}\right).
 \label{eq:elbo-intro-identity}
 \end{equation}
 It is invariant under independent belief- and model-coordinate pushforwards.

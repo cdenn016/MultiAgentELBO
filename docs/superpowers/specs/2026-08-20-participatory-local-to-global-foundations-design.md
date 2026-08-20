@@ -1,11 +1,19 @@
 # Participatory Local-to-Global Foundations Design
 
 **Date:** 2026-08-20  
-**Status:** Proposed architecture; awaiting user approval before manuscript implementation  
+**Status:** Approved/implemented
+
 **Repository baseline:** `9171363921d63047e61ccada2f9233c165087d43`  
 **Frozen target:** `contract-sha256-368c9400e04e0700491b5a05ce03b074b8d146fa7243ce2327638237ab24a718`  
 **Authoritative manuscript:** `C:\Users\chris and christine\Desktop\Research\manuscripts\gauge_vfe_rg`  
 **Repository rule:** `Theory/` is a read-only synchronized snapshot, not the first edit target
+
+**Implementation note (2026-08-20):** The approved architecture was implemented in the
+authoritative Research manuscript and then synchronized mechanically. The final integrated
+review refined access, evaluator, and sparse-incidence notation to
+\(\operatorname{Acc}_i\), \(\operatorname{ev}_{i,a}\), and \(D_i\), respectively. The
+historical repository baseline and frozen-target metadata above remain the proposal's original
+record.
 
 ## Purpose and decision
 

@@ -16,44 +16,50 @@ records.
 \label{sec:local-interaction-record-model}
 
 \hypothesisheading{Agent state and interaction kernels}{hyp:local-interaction-kernels}
-Let $(\mathsf X,\mathscr X)$ be a standard Borel context space, let $V$ be an
-arbitrary finite set of agents, and let $\mathcal A$ be a finite set of
-interaction factors.  Agent $i$ has a standard Borel state space
-$(\mathsf Y_i,\mathscr Y_i)$.  Its state may contain a belief-law point in
+Use the standard-Borel context, agent, and finite-design spaces of
+\Cref{def:prob-structural-kernel-signatures}, let \(V\) be the finite agent
+set, and let \(\mathfrak A\) be the finite interaction-record index set.
+Agent \(i\) has the standard-Borel block space
+\((\mathsf Y_{i,D},\mathscr Y_{i,D})\). Its state may contain a belief-law point in
 $(\mathcal E_b)_{c_i}$, a model-law point in $(\mathcal E_m)_{c_i}$, and
 declared auxiliary latent variables.  Write
-$(\mathsf Y,\mathscr Y)=\prod_{i\in V}(\mathsf Y_i,\mathscr Y_i)$ and let
+$(\mathsf Y_D,\mathscr Y_D)=
+\prod_{i\in V}(\mathsf Y_{i,D},\mathscr Y_{i,D})$. The normalized baseline is
+the latent population kernel constructed in \Cref{cons:gen-finite-directed-law,hyp:gen-design-product},
 \begin{equation}
-P_0:(\mathsf X,\mathscr X)\rightsquigarrow(\mathsf Y,\mathscr Y)
+\mathbb P_{\theta,V}^{Y}:
+(\mathsf X,\mathscr X)\rightsquigarrow
+(\mathsf Y_D,\mathscr Y_D).
 \label{eq:obs-context-baseline-kernel}
 \end{equation}
-be a normalized probability kernel.  Each factor $a$ has a finite scope
+Each record \(a\) has a finite scope
 $\partial a\subseteq V$, a standard Borel record space
 $(\mathsf O_a,\mathscr O_a)$, and a normalized Markov kernel
 \begin{equation}
-K_a:(\mathsf X\times\mathsf Y_{\partial a},
-\mathscr X\otimes\mathscr Y_{\partial a})
+K_a:(\mathsf X\times\mathsf Y_{\partial a,D},
+\mathscr X\otimes\mathscr Y_{\partial a,D})
 \rightsquigarrow(\mathsf O_a,\mathscr O_a).
 \label{eq:obs-interaction-kernel}
 \end{equation}
+of the abstract type \eqref{eq:prob-record-kernel-signature}.
 For the density presentation used in this chapter, one fixed probability or
 sigma-finite measure $\nu_a$ dominates the whole family
-$\{K_a(X,y_{\partial a},\cdot):(X,y_{\partial a})
-\in\mathsf X\times\mathsf Y_{\partial a}\}$, and a finite jointly measurable
+$\{K_a(X,y_{\partial a,D},\cdot):(X,y_{\partial a,D})
+\in\mathsf X\times\mathsf Y_{\partial a,D}\}$, and a finite jointly measurable
 version
 \begin{equation}
-\ell_a:\mathsf X\times\mathsf Y_{\partial a}\times\mathsf O_a
+\ell_a:\mathsf X\times\mathsf Y_{\partial a,D}\times\mathsf O_a
 \longrightarrow[0,+\infty),
 \qquad
-K_a(X,y_{\partial a},do_a)
-=\ell_a(o_a\given X,y_{\partial a})\nu_a(do_a)
+K_a(X,y_{\partial a,D},do_a)
+=\ell_a(o_a\given X,y_{\partial a,D})\nu_a(do_a)
 \label{eq:obs-interaction-density}
 \end{equation}
 is fixed once and for all.  Thus
-$\int\ell_a(o_a\given X,y_{\partial a})\nu_a(do_a)=1$ for every
-$(X,y_{\partial a})$.  The common $\nu_a$ and the displayed joint
+$\int\ell_a(o_a\given X,y_{\partial a,D})\nu_a(do_a)=1$ for every
+$(X,y_{\partial a,D})$.  The common $\nu_a$ and the displayed joint
 measurability are family-level hypotheses, not recordwise choices.
-The kernels and $P_0$ are fixed by the generative parameters and structural
+The kernels and \(\mathbb P_{\theta,V}^{Y}\) are fixed by the generative parameters and structural
 data; none reads a recognition law, a variational parameter, or a live
 posterior.  Their local coordinate presentations are required to transform by
 the common passive pushforward induced by a change of bundle frames, so the
@@ -62,7 +68,7 @@ underlying measures and record probabilities are frame independent.
 
 This hypothesis permits correlated baseline states.  A graph-local Markov
 blanket requires the additional condition that the regular conditionals of
-$P_0$ have the corresponding locality.  Bundle covariance is imposed by
+\(\mathbb P_{\theta,V}^{Y}\) have the corresponding locality. Bundle covariance is imposed by
 requiring each $K_a$ to be invariant under simultaneous changes of the
 incident agent frames and the factor frame.  One concrete realization gives
 factor $a$ its own principal frame and incidence-leg transports
@@ -73,11 +79,13 @@ and a belief--model comparison still requires the declared cross morphisms of
 \Cref{sec:geo-cross-morphisms}.  \status{DEFINITION}
 
 Conditional independence of the records given the agent configuration defines
-the joint law
+the same joint law constructed by the normalized extension
+\Cref{prop:gen-exact-normalization},
 \begin{equation}
-P_\theta(dy,do\given X)
-=P_0(dy\given X)\prod_{a\in\mathcal A}
-K_a(X,y_{\partial a},do_a).
+\mathbb P_{\theta,V}(dy,do\given X)
+=\mathbb P_{\theta,V}^{Y}(dy\given X)
+\prod_{a\in\mathfrak A}
+K_a(X,y_{\partial a,D},do_a).
 \label{eq:obs-interaction-joint}
 \end{equation}
 
@@ -87,7 +95,8 @@ hypergraph, including cyclic ones.  \status{ESTABLISHED}
 
 \paragraph{Proof.}
 Integrate the record coordinates in any order.  Each normalized kernel
-integrates to one, leaving the normalized baseline law $P_0(\cdot\given X)$.
+integrates to one, leaving the normalized latent law
+\(\mathbb P_{\theta,V}^{Y}(\cdot\given X)\).
 The factor scopes
 are permitted to overlap because the record variables are conditionally independent
 children of one latent configuration.  This argument would not validate an
@@ -96,33 +105,36 @@ compatible with any joint law.  $\square$
 
 For the remainder of this chapter fix one $X\in\mathsf X$.  We suppress that
 fixed argument consistently:
-$P_0(dy):=P_0(dy\given X)$,
+\(\mathbb P_{\theta,V}^{Y}(dy):=
+\mathbb P_{\theta,V}^{Y}(dy\given X)\),
 $K_a(y_{\partial a},do_a):=K_a(X,y_{\partial a},do_a)$, and
 $\ell_a(o_a\given y_{\partial a}):=
 \ell_a(o_a\given X,y_{\partial a})$.  Every descendant symbol
-$L_o,H_o,Z,\Pi_o$ and its block analogue is relative to this same fixed
+$L_o,H_o,p_{\theta,V}(o\given X),
+\boldsymbol\Pi_{\theta,V,o,X}$ and its block analogue is relative to this same fixed
 context unless an $X$ argument is restored explicitly.
 
-With $\nu=\bigotimes_{a\in\mathcal A}\nu_a$, the complete record density is
+With $\nu=\bigotimes_{a\in\mathfrak A}\nu_a$, the complete record density is
 the finite jointly measurable function
 \begin{equation}
-\ell(o\given y)=\prod_{a\in\mathcal A}
+\ell(o\given y)=\prod_{a\in\mathfrak A}
 \ell_a(o_a\given y_{\partial a}),
 \qquad
-P_{\theta,X}(dy,do)=P_0(dy)\ell(o\given y)\nu(do).
+\mathbb P_{\theta,V}(dy,do\given X)
+=\mathbb P_{\theta,V}^{Y}(dy)\ell(o\given y)\nu(do).
 \label{eq:obs-complete-record-kernel-density}
 \end{equation}
 For a fixed record $o$, define its likelihood before taking logarithms:
 \begin{equation}
 L_o(y):=\ell(o\given y)
-=\prod_{a\in\mathcal A}\ell_a(o_a\given y_{\partial a})
+=\prod_{a\in\mathfrak A}\ell_a(o_a\given y_{\partial a})
 \in[0,+\infty).
 \label{eq:obs-complete-record-likelihood}
 \end{equation}
 Its extended interaction energy is
 \begin{equation}
 H_o(y):=-\log L_o(y)
-=\sum_{a\in\mathcal A}-\log\ell_a(o_a\given y_{\partial a}),
+=\sum_{a\in\mathfrak A}-\log\ell_a(o_a\given y_{\partial a}),
 \qquad -\log0:=+\infty.
 \label{eq:obs-interaction-energy}
 \end{equation}
@@ -139,43 +151,50 @@ kernels, not by treating an arbitrary exponential as a probability.
 
 Fix a regular record $o$ for which
 \begin{equation}
-0<Z(o):=\int_{\mathsf Y}L_o(y)P_0(dy)<+\infty,
+0<p_{\theta,V}(o\given X)
+=\int_{\mathsf Y_D}L_o(y)\mathbb P_{\theta,V}^{Y}(dy)
+<+\infty,
 \label{eq:obs-global-evidence}
 \end{equation}
 and let
 \begin{equation}
-\Pi_o(dy)=Z(o)^{-1}L_o(y)P_0(dy)
+\boldsymbol\Pi_{\theta,V,o,X}(dy)
+=p_{\theta,V}(o\given X)^{-1}
+L_o(y)\mathbb P_{\theta,V}^{Y}(dy)
 \label{eq:obs-global-posterior}
 \end{equation}
 be the conditional posterior.  The regular-observation qualifications of
 \Cref{ch:elbo} apply.
 
 \theoremheading{Collective interaction VFE}{thm:obs-collective-vfe}
-For every probability measure $Q$ on $\mathsf Y$, define the collective
+For every probability measure \(Q\) on \(\mathsf Y_D\), define the collective
 extended ELBO and VFE by
 \begin{equation}
 \boxed{
 \mathcal F_o^{\rm ext}(Q):=-\mathcal L_o^{\rm ext}(Q)
-:=-\log Z(o)+\KL(Q\Vert\Pi_o).}
+:=-\log p_{\theta,V}(o\given X)
++\KL(Q\Vert\boldsymbol\Pi_{\theta,V,o,X}).}
 \label{eq:obs-collective-vfe}
 \end{equation}
-This takes values in $\mathbb R\cup\{+\infty\}$ and is the specialization of
+This takes values in \(\mathbb R\cup\{+\infty\}\) and is the specialization of
 \Cref{def:elbo-extended,thm:elbo-extended-gap}.  Equivalently,
-$\mathcal L_o^{\rm ext}(Q)\leq\log Z(o)$ for every $Q$, with equality exactly
-when $Q=\Pi_o$ as measures.  No domination or mean-field assumption on $Q$ is
-needed.  \status{ESTABLISHED}
+\(\mathcal L_o^{\rm ext}(Q)\leq\log p_{\theta,V}(o\given X)\) for every \(Q\),
+with equality exactly when \(Q=\boldsymbol\Pi_{\theta,V,o,X}\) as full
+measures. In particular, \(Q=\mathbb Q_{V,o,X}\) is the selected population
+recognition instance. No domination or mean-field assumption on \(Q\) is
+needed. \status{ESTABLISHED}
 
 \paragraph{Proof.}
 Apply the extended gap theorem \Cref{thm:elbo-extended-gap} with reference
-$P_0$ and likelihood $L_o$.  Nonnegativity and the equality condition are the
+\(\mathbb P_{\theta,V}^{Y}\) and likelihood \(L_o\). Nonnegativity and the equality condition are the
 corresponding properties of relative entropy.  $\square$
 
-If $Q\ll P_0$ and the separate complexity and energy terms are defined without
+If \(Q\ll\mathbb P_{\theta,V}^{Y}\) and the separate complexity and energy terms are defined without
 an indeterminate $+\infty-\infty$, the same quantity has the familiar energy
 presentation
 \begin{equation}
 \mathcal F_o^{\rm ext}(Q)
-=\KL(Q\Vert P_0)+\E_QH_o.
+=\KL(Q\Vert\mathbb P_{\theta,V}^{Y})+\E_QH_o.
 \label{eq:obs-collective-energy-form}
 \end{equation}
 This is a derived representation, not the definition at singular $Q$.
@@ -186,16 +205,19 @@ record shared by agents $i$ and $j$ occurs once.  Writing both $E_{ij}$ and
 $E_{ji}$ in the global law asserts two directed records, not two descriptions
 of one record.  \status{ESTABLISHED}
 
-\section{The conditional VFE of an agent or meta-agent}
+\section{The conditional VFE on an agent block}
 \label{sec:local-conditional-vfe}
 
 Let $B\subseteq V$ be nonempty and write $b=y_{B^c}$.  The same construction
-therefore treats a singleton agent $B=\{i\}$ and a declared meta-agent block
-$B$ without changing probability models.  Define
+therefore treats both the coordinates of a singleton agent $B=\{i\}$ and an
+arbitrary nonempty aggregate block $B$ without changing probability models.
+Choosing a block does not construct a meta-agent. That term is reserved for a
+separately constructed coarse state, observation interface, evaluator,
+recognition law, and update rule. Define
 \begin{equation}
-\mathcal A_B=\{a\in\mathcal A:\partial a\cap B\ne\varnothing\},
+\mathfrak A_B=\{a\in\mathfrak A:\partial a\cap B\ne\varnothing\},
 \qquad
-g_{B,o}(y_B;b)=\prod_{a\in\mathcal A_B}
+g_{B,o}(y_B;b)=\prod_{a\in\mathfrak A_B}
 \ell_a(o_a\given y_{\partial a}),
 \label{eq:obs-block-incident-likelihood}
 \end{equation}
@@ -211,7 +233,7 @@ L_o(y_B,b)=g_{B,o}(y_B;b)L_{\bar B,o}(b).
 The corresponding extended energies retain the useful additive notation
 \begin{equation}
 H_{B,o}(y_B;b)=-\log g_{B,o}(y_B;b)
-=\sum_{a\in\mathcal A_B}-\log\ell_a(o_a\given y_{\partial a})
+=\sum_{a\in\mathfrak A_B}-\log\ell_a(o_a\given y_{\partial a})
 \label{eq:obs-block-incident-energy}
 \end{equation}
 and
@@ -223,34 +245,43 @@ H_{\bar B,o}(b)=-\log L_{\bar B,o}(b),
 as an identity in $\mathbb R\cup\{+\infty\}$.
 
 Fix once and for all a measurable regular-conditional version
-$b\mapsto P_{0,B}(\cdot\given b)$ in the disintegration
+\(b\mapsto\mathbb P_{\theta,V,B}^{Y}(\cdot\given b)\) in the disintegration
 \begin{equation}
-P_0(dy_B,db)=P_{0,B^c}(db)P_{0,B}(dy_B\given b).
+\mathbb P_{\theta,V}^{Y}(dy_B,db)
+=\mathbb P_{\theta,V,B^c}^{Y}(db)
+\mathbb P_{\theta,V,B}^{Y}(dy_B\given b).
 \label{eq:obs-baseline-block-disintegration}
 \end{equation}
 Every pointwise formula in $b$ below is relative to this declared version.
-Two baseline-conditional versions agree $P_{0,B^c}$-almost everywhere and
-hence, by \eqref{eq:obs-posterior-outside}, $\Pi_{o,B^c}$-almost everywhere.
+Two baseline-conditional versions agree
+\(\mathbb P_{\theta,V,B^c}^{Y}\)-almost everywhere and
+hence, by \eqref{eq:obs-posterior-outside},
+\(\boldsymbol\Pi_{\theta,V,o,X,B^c}\)-almost everywhere.
 No pointwise version invariance is claimed beyond these almost-sure statements:
 their values and all descendant formulas at exceptional $b$ are not determined
 by the joint law.  Two different conditional likelihoods are needed.
 The incident-factor evidence is
 \begin{equation}
-Z_B(b)=\int g_{B,o}(y_B;b)P_{0,B}(dy_B\given b),
+Z_B(b)=\int g_{B,o}(y_B;b)
+\mathbb P_{\theta,V,B}^{Y}(dy_B\given b),
 \label{eq:obs-local-evidence}
 \end{equation}
 whereas the full likelihood of the outside state is defined directly by
 \begin{equation}
-w_B(b)=\int L_o(y_B,b)P_{0,B}(dy_B\given b).
+w_B(b)=\int L_o(y_B,b)
+\mathbb P_{\theta,V,B}^{Y}(dy_B\given b).
 \label{eq:obs-full-complement-likelihood}
 \end{equation}
 The direct definition is valid even where the formal product
 $L_{\bar B,o}(b)Z_B(b)$ would have the indeterminate form $0\cdot\infty$.
 Tonelli's theorem gives
 \begin{equation}
-Z(o)=\int w_B(b)P_{0,B^c}(db),
+p_{\theta,V}(o\given X)
+=\int w_B(b)\mathbb P_{\theta,V,B^c}^{Y}(db),
 \qquad
-\Pi_{o,B^c}(db)=Z(o)^{-1}w_B(b)P_{0,B^c}(db).
+\boldsymbol\Pi_{\theta,V,o,X,B^c}(db)
+=p_{\theta,V}(o\given X)^{-1}
+w_B(b)\mathbb P_{\theta,V,B^c}^{Y}(db).
 \label{eq:obs-posterior-outside}
 \end{equation}
 Let $\mathsf R_{B,o}$ be the measurable set on which
@@ -261,34 +292,36 @@ Let $\mathsf R_{B,o}$ be the measurable set on which
 \quad w_B(b)=L_{\bar B,o}(b)Z_B(b).
 \label{eq:obs-block-regular-set}
 \end{equation}
-Then $\Pi_{o,B^c}(\mathsf R_{B,o})=1$.  Indeed, finite collective evidence
-makes $w_B<+\infty$ outside a $P_{0,B^c}$-null set, and the posterior outside
+Then \(\boldsymbol\Pi_{\theta,V,o,X,B^c}(\mathsf R_{B,o})=1\). Indeed, finite collective evidence
+makes \(w_B<+\infty\) outside a \(\mathbb P_{\theta,V,B^c}^{Y}\)-null set, and the posterior outside
 is supported on $w_B>0$.  On that support the finite-factor hypothesis makes
 $L_{\bar B,o}$ finite; positivity of $w_B$ forces
 $L_{\bar B,o}>0$, after which ordinary factorization under the conditional
 integral gives $Z_B=w_B/L_{\bar B,o}\in(0,+\infty)$.  The regular set need not
-be $P_{0,B^c}$-full.  \status{ESTABLISHED}
+be \(\mathbb P_{\theta,V,B^c}^{Y}\)-full. \status{ESTABLISHED}
 
 For $b\in\mathsf R_{B,o}$ relative to the fixed baseline-conditional version,
 the posterior conditional is
 \begin{equation}
-\Pi_{o,B}(dy_B\given b)
-=Z_B(b)^{-1}g_{B,o}(y_B;b)P_{0,B}(dy_B\given b),
+\boldsymbol\Pi_{\theta,V,o,X,B}(dy_B\given b)
+=Z_B(b)^{-1}g_{B,o}(y_B;b)
+\mathbb P_{\theta,V,B}^{Y}(dy_B\given b),
 \label{eq:obs-local-posterior}
 \end{equation}
 and, after choosing any measurable probability-kernel extension off
 $\mathsf R_{B,o}$ (for example the fixed baseline conditional there), it is a
 version for which
 \begin{equation}
-\Pi_o(dy_B,db)=
-\Pi_{o,B^c}(db)\Pi_{o,B}(dy_B\given b).
+\boldsymbol\Pi_{\theta,V,o,X}(dy_B,db)
+=\boldsymbol\Pi_{\theta,V,o,X,B^c}(db)
+\boldsymbol\Pi_{\theta,V,o,X,B}(dy_B\given b).
 \label{eq:obs-posterior-block-disintegration}
 \end{equation}
 The posterior joint determines this kernel only
-$\Pi_{o,B^c}$-almost everywhere.  In particular, neither the conditional nor
+\(\boldsymbol\Pi_{\theta,V,o,X,B^c}\)-almost everywhere. In particular, neither the conditional nor
 the associated pointwise local VFE at an outside-null $b$ is an invariant of
 the joint law.  All almost-sure local/global statements below use
-$Q_{B^c}\ll\Pi_{o,B^c}$ and are therefore independent of these choices.
+\(Q_{B^c}\ll\boldsymbol\Pi_{\theta,V,o,X,B^c}\) and are therefore independent of these choices.
 \status{ESTABLISHED}
 
 \theoremheading{Local multi-agent ELBO}{thm:obs-local-multiagent-elbo}
@@ -299,56 +332,64 @@ define
 \mathcal F_{B,o}^{\rm ext}(r_B;b)
 :=-\mathcal L_{B,o}^{\rm ext}(r_B;b)
 :=-\log Z_B(b)
-+\KL\bigl(r_B(\cdot\given b)\Vert\Pi_{o,B}(\cdot\given b)\bigr).}
++\KL\bigl(
+r_B(\cdot\given b)
+\Vert\boldsymbol\Pi_{\theta,V,o,X,B}(\cdot\given b)
+\bigr).}
 \label{eq:obs-local-vfe}
 \end{equation}
 Thus $\mathcal L_{B,o}^{\rm ext}(r_B;b)\leq\log Z_B(b)$, with equality
-exactly at $r_B=\Pi_{o,B}$.  The singleton $B=\{i\}$ is one agent's local VFE;
-an arbitrary nonempty $B$ is the same construction for a meta-agent.
+exactly at \(r_B=\boldsymbol\Pi_{\theta,V,o,X,B}\). The singleton $B=\{i\}$ is one agent's local VFE;
+an arbitrary nonempty $B$ is the corresponding block-coordinate aggregate VFE.
 No domination or mean-field condition on $r_B$ is needed.
 \status{ESTABLISHED}
 
 \paragraph{Proof.}
 Apply \Cref{thm:elbo-extended-gap} conditionally with reference
-$P_{0,B}(\cdot\given b)$ and likelihood $g_{B,o}(\cdot;b)$.  The equality
+\(\mathbb P_{\theta,V,B}^{Y}(\cdot\given b)\) and likelihood \(g_{B,o}(\cdot;b)\). The equality
 condition follows from vanishing relative entropy.  $\square$
 
 On the dominated energy tier, when its two terms are separately defined
 without an indeterminate infinity, the local functional is also
 \begin{equation}
 \mathcal F_{B,o}^{\rm ext}(r_B;b)
-=\KL\bigl(r_B(\cdot\given b)\Vert P_{0,B}(\cdot\given b)\bigr)
+=\KL\bigl(
+r_B(\cdot\given b)
+\Vert\mathbb P_{\theta,V,B}^{Y}(\cdot\given b)
+\bigr)
 +\E_{r_B(\cdot\given b)}H_{B,o}(Y_B;b).
 \label{eq:obs-local-energy-form}
 \end{equation}
 
 The exact relative-entropy chain rule is most safely written against the
 posterior.  If $Q(dy_B,db)=Q_{B^c}(db)r_B(dy_B\given b)$ and
-$Q_{B^c}\ll\Pi_{o,B^c}$, then, in $[0,+\infty]$,
+\(Q_{B^c}\ll\boldsymbol\Pi_{\theta,V,o,X,B^c}\), then, in \([0,+\infty]\),
 \begin{equation}
-\KL(Q\Vert\Pi_o)
-=\KL(Q_{B^c}\Vert\Pi_{o,B^c})
+\KL(Q\Vert\boldsymbol\Pi_{\theta,V,o,X})
+=\KL(Q_{B^c}\Vert\boldsymbol\Pi_{\theta,V,o,X,B^c})
 +\E_{Q_{B^c}}
 \KL\bigl(r_B(\cdot\given Y_{B^c})
-\Vert\Pi_{o,B}(\cdot\given Y_{B^c})\bigr).
+\Vert\boldsymbol\Pi_{\theta,V,o,X,B}
+(\cdot\given Y_{B^c})\bigr).
 \label{eq:obs-posterior-block-kl-chain}
 \end{equation}
 The baseline chain rule, whenever its regular conditional versions are used,
 likewise reads
 \begin{equation}
-\KL(Q\Vert P_0)
-=\KL(Q_{B^c}\Vert P_{0,B^c})
+\KL(Q\Vert\mathbb P_{\theta,V}^{Y})
+=\KL(Q_{B^c}\Vert\mathbb P_{\theta,V,B^c}^{Y})
 +\E_{Q_{B^c}}
 \KL\bigl(r_B(\cdot\given Y_{B^c})
-\Vert P_{0,B}(\cdot\given Y_{B^c})\bigr).
+\Vert\mathbb P_{\theta,V,B}^{Y}
+(\cdot\given Y_{B^c})\bigr).
 \label{eq:obs-block-kl-chain}
 \end{equation}
 
 \theoremheading{Exact local--global potential identity}{thm:obs-local-global-potential}
 Let $Q=Q_{B^c}r_B$ and $Q'=Q_{B^c}r'_B$ have the same outside marginal with
-$Q_{B^c}\ll\Pi_{o,B^c}$.  Suppose
-$\KL(Q\Vert\Pi_o)<+\infty$ and
-$\KL(Q'\Vert\Pi_o)<+\infty$; the chain rule then makes both conditional-KL
+\(Q_{B^c}\ll\boldsymbol\Pi_{\theta,V,o,X,B^c}\). This fixed outside marginal condition is load bearing. Suppose
+\(\KL(Q\Vert\boldsymbol\Pi_{\theta,V,o,X})<+\infty\) and
+\(\KL(Q'\Vert\boldsymbol\Pi_{\theta,V,o,X})<+\infty\); the chain rule then makes both conditional-KL
 fields integrable, so the following subtraction is finite.  Then
 \begin{equation}
 \mathcal F_o^{\rm ext}(Q')-\mathcal F_o^{\rm ext}(Q)
@@ -363,7 +404,8 @@ collective VFE.  \status{ESTABLISHED}
 
 \paragraph{Proof.}
 Apply \eqref{eq:obs-posterior-block-kl-chain} to both laws.  Their outside KL
-terms agree.  The common finite constant $-\log Z(o)$ cancels, as does the
+terms agree. The common finite constant
+\(-\log p_{\theta,V}(o\given X)\) cancels, as does the
 pointwise term $-\log Z_B(Y_{B^c})$ inside the two local functionals.  The
 finite-difference hypotheses permit the remaining subtraction under the
 integral.  $\square$
@@ -373,7 +415,7 @@ integrable, the same result admits the familiar finite decomposition
 \begin{equation}
 \begin{split}
 \mathcal F_o^{\rm ext}(Q)
-&=\KL(Q_{B^c}\Vert P_{0,B^c})\\
+&=\KL(Q_{B^c}\Vert\mathbb P_{\theta,V,B^c}^{Y})\\
 &\quad+\E_{Q_{B^c}}\left[
 H_{\bar B,o}(Y_{B^c})
 +\mathcal F_{B,o}^{\rm ext}(r_B;Y_{B^c})
@@ -422,15 +464,15 @@ not a sum of overlapping local objectives.}
 \section{Additive accounting is a different construction}
 \label{sec:local-additive-accounting}
 
-When $P_0=\bigotimes_i\rho_i$, define the total correlation of an arbitrary
-joint recognition law $Q$ by
+When \(\mathbb P_{\theta,V}^{Y}=\bigotimes_i\rho_i\), define the total
+correlation of a theorem-local joint recognition law \(Q\) by
 \begin{equation}
 \operatorname{TC}(Q)=\KL\left(Q\middle\Vert\bigotimes_iQ_i\right).
 \label{eq:obs-total-correlation}
 \end{equation}
 Without assuming mean-field factorization, the extended chain rule gives
 \begin{equation}
-\KL(Q\Vert P_0)
+\KL(Q\Vert\mathbb P_{\theta,V}^{Y})
 =\operatorname{TC}(Q)+\sum_i\KL(Q_i\Vert\rho_i)
 \quad\text{in }[0,+\infty].
 \label{eq:obs-correlated-complexity-ledger}
@@ -442,7 +484,7 @@ infinity,
 \mathcal F_o^{\rm ext}(Q)
 =\operatorname{TC}(Q)
 +\sum_i\KL(Q_i\Vert\rho_i)
-+\E_Q\left[\sum_{a\in\mathcal A}E_{a,o}\right],
++\E_Q\left[\sum_{a\in\mathfrak A}E_{a,o}\right],
 \qquad E_{a,o}=-\log\ell_a(o_a\given Y_{\partial a}).
 \label{eq:obs-global-ledger}
 \end{equation}
@@ -463,7 +505,7 @@ H_{\{i\},o}(y_i;y_{-i})
 =\sum_{a:i\in\partial a}E_{a,o}(y_{\partial a}),
 \qquad
 \sum_{i\in V}H_{\{i\},o}(y_i;y_{-i})
-=\sum_{a\in\mathcal A}|\partial a|E_{a,o}(y_{\partial a}).
+=\sum_{a\in\mathfrak A}|\partial a|E_{a,o}(y_{\partial a}).
 \label{eq:obs-singleton-incident-counting}
 \end{equation}
 An empty-scope record, if separately permitted, is instead a label-independent
@@ -493,12 +535,13 @@ $\mathcal I_{\rm att}\subseteq V$ be the finite set of receiving agents.  For
 each $i\in\mathcal I_{\rm att}$, let $J_i$ augment the baseline independently
 as
 \begin{equation}
-P_0^{\rm aug}(dy,dj)=P_0^Y(dy)
+\mathbb P_{\theta,V}^{Y,\mathrm{aug}}(dy,dj)
+=\mathbb P_{\theta,V}^{Y}(dy)
 \prod_{i\in\mathcal I_{\rm att}}\pi_i(dj_i).
 \label{eq:obs-attention-augmented-baseline}
 \end{equation}
 Suppose $\pi_{ij}>0$ on the finite declared source set and that every
-$D_{ij}:\mathsf Y\to\mathbb R$ is finite and measurable.  At the selected
+\(D_{ij}:\mathsf Y_D\to\mathbb R\) is finite and measurable. At the selected
 regular interaction record, suppose its density has source-dependent energy
 \begin{equation}
 \ell_i(o_i\given y,J_i=j)
@@ -520,7 +563,7 @@ L_o^{\rm aug}(y,j)
 c_i(o_i,y)\exp[-D_{ij_i}(y)/\tau_i],
 \label{eq:obs-attention-augmented-likelihood}
 \end{equation}
-where $L_o^Y:\mathsf Y\to[0,+\infty)$ is a finite measurable function
+where \(L_o^Y:\mathsf Y_D\to[0,+\infty)\) is a finite measurable function
 independent of every source label and no other record or factor in the
 generative law reads any $J_i$.  Equation
 \eqref{eq:obs-attention-augmented-likelihood} is a label-exclusivity

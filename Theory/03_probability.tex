@@ -15,31 +15,84 @@ A \emph{design} is a finite set of distinct contexts
 D=\{c_a\}_{a=1}^{M}\subseteq\mathcal C,
 \label{eq:prob-design}
 \end{equation}
-indexed by $a\in\{1,\dots,M\}$. The \emph{incidence set} is $\mathfrak A=\{(i,a):c_a\in\mathcal C_i\}$, where $\mathcal C_i$ is the support of agent $i$ from \Cref{def:geo-principal-systems}. For the reference presentation $D\subseteq\bigcap_{i\in V}\mathcal C_i$, so $\mathfrak A=V\times\{1,\dots,M\}$ is rectangular and every listed agent is defined at every design point. \status{DEFINITION}
+indexed by $a\in\{1,\dots,M\}$. The \emph{agent--design incidence set} is $\mathfrak I_D=\{(i,a):c_a\in\mathcal C_i\}$, where $\mathcal C_i$ is the support of agent $i$ from \Cref{def:geo-principal-systems}. Define
+\[
+D_i:=\{a:(i,a)\in\mathfrak I_D\},
+\qquad
+V_a:=\{i:(i,a)\in\mathfrak I_D\}.
+\]
+Design points with no participating agent are omitted, so $V_a\neq\varnothing$ for every $a$. For the reference presentation $D\subseteq\bigcap_{i\in V}\mathcal C_i$, so $\mathfrak I_D=V\times\{1,\dots,M\}$ is rectangular, $D_i=\{1,\dots,M\}$, and $V_a=V$. The symbol $\mathfrak A$ is reserved for the finite interaction-record index set introduced below. \status{DEFINITION}
 \medskip
 
-Nothing is proved by this. The sparse-support case replaces the rectangular index set by $\mathfrak A$ throughout, and it is stated this way to make one point explicit: a sparse design is handled by indexing over declared incidences, never by writing a product over all $(i,a)$ and then deleting the coordinates that happen to be undefined. Deleting coordinates from a product silently changes the sample space, and a bound computed on one sample space is not a bound on another.
+Nothing is proved by this. The definitions below use $\mathfrak I_D$ throughout to make one point explicit: a sparse design is handled by indexing over declared incidences, never by writing a product over all $(i,a)$ and then deleting the coordinates that happen to be undefined. Deleting coordinates from a product silently changes the sample space, and a bound computed on one sample space is not a bound on another.
 
 \medskip
 \definitionheading{Sample spaces and product sigma-algebras}{def:prob-product-sample-spaces}
-At each admissible $(i,a)$ declare measurable state, model, and observation fibers $(\mathsf K_{i,a},\mathscr K_{i,a})$, $(\mathsf M_{i,a},\mathscr M_{i,a})$, and $(\mathsf O_{i,a},\mathscr O_{i,a})$. The finite latent and observation spaces are
+At each admissible $(i,a)$ declare measurable state, model, and observation fibers $(\mathsf K_{i,a},\mathscr K_{i,a})$, $(\mathsf M_{i,a},\mathscr M_{i,a})$, and $(\mathsf O_{i,a},\mathscr O_{i,a})$, and write $\mathsf Y_{i,a}:=\mathsf K_{i,a}\times\mathsf M_{i,a}$. Define the agent block
+\[
+\mathsf Y_{i,D}:=\prod_{a\in D_i}(\mathsf K_{i,a}\times\mathsf M_{i,a}),
+\qquad
+\mathscr Y_{i,D}:=\bigotimes_{a\in D_i}(\mathscr K_{i,a}\otimes\mathscr M_{i,a}).
+\]
+The finite latent and observation spaces are
 \begin{align}
-\mathsf Y_D&=\prod_{a=1}^{M}\prod_{i\in V}\bigl(\mathsf K_{i,a}\times\mathsf M_{i,a}\bigr),
-&\mathscr Y_D&=\bigotimes_{a=1}^{M}\bigotimes_{i\in V}\bigl(\mathscr K_{i,a}\otimes\mathscr M_{i,a}\bigr),
+\mathsf Y_D&=\prod_{i\in V}\mathsf Y_{i,D}
+\cong\prod_{a=1}^{M}\prod_{i\in V_a}\bigl(\mathsf K_{i,a}\times\mathsf M_{i,a}\bigr),
+&\mathscr Y_D&=\bigotimes_{i\in V}\mathscr Y_{i,D},
 \label{eq:prob-latent-space}\\
-\mathsf O_D&=\prod_{a=1}^{M}\prod_{i\in V}\mathsf O_{i,a},
-&\mathscr O_D&=\bigotimes_{a=1}^{M}\bigotimes_{i\in V}\mathscr O_{i,a}.
+\mathsf O_D&=\prod_{a=1}^{M}\prod_{i\in V_a}\mathsf O_{i,a},
+&\mathscr O_D&=\bigotimes_{a=1}^{M}\bigotimes_{i\in V_a}\mathscr O_{i,a}.
 \label{eq:prob-observation-space}
 \end{align}
 The stacked latent is written $Y\in\mathsf Y_D$ and the realized observation $o\in\mathsf O_D$. In the Gaussian realization $\mathsf K_{i,a}=\R^{K}$ and $\mathsf M_{i,a}=\R^{d_m}$ with their Borel sigma-algebras. \status{DEFINITION}
 \medskip
 
-Evaluation and section evaluation have different codomains, and the difference is the one Chapter~\ref{ch:geometry} insisted on. For a sample-field realization $y=((k_i,m_i))_{i\in V}$ defined on $D$, the evaluation map
+\hypothesisheading{Measurable context-indexed section response}{hyp:prob-context-section-response}
+For every agent \(i\), and for the measurable configuration space fixed in
+\Cref{def:prob-structural-kernel-signatures}, declare measurable spaces
+\((\mathfrak S_i^b,\mathscr S_i^b)\) and
+\((\mathfrak S_i^m,\mathscr S_i^m)\) whose underlying sets satisfy
+\[
+\mathfrak S_i^b
+\subseteq\Gamma(\mathcal C_i,\mathcal E_b|_{\mathcal C_i}),
+\qquad
+\mathfrak S_i^m
+\subseteq\Gamma(\mathcal C_i,\mathcal E_m|_{\mathcal C_i}).
+\]
+Each law fiber carries its declared sigma-algebra. For
+\(x\in\{b,m\}\) and \(c\in\mathcal C_i\), the evaluation map
+\[
+\operatorname{eval}_{i,c}^{x}:\mathfrak S_i^x\longrightarrow(\mathcal E_x)_c,
+\qquad
+s\longmapsto s(c),
+\]
+is measurable. The admitted response family is the measurable map
 \begin{equation}
-\operatorname{Ev}_D(y)=\bigl((k_i(c_a),m_i(c_a))_{i\in V}\bigr)_{a=1}^{M}\in\mathsf Y_D
+\operatorname{Resp}_i:
+(\mathsf O_D\times\mathsf X,\mathscr O_D\otimes\mathscr X)
+\longrightarrow
+(\mathfrak S_i^b\times\mathfrak S_i^m,
+ \mathscr S_i^b\otimes\mathscr S_i^m),
+\qquad
+(o,X)\longmapsto(q_i^{b;o,X},q_i^{m;o,X}).
+\label{eq:prob-context-section-response}
+\end{equation}
+At every \((i,a)\in\mathfrak I_D\), the fixed measurable fiber identifications send
+these evaluated values into
+\(\mathcal P(\mathsf K_{i,a},\mathscr K_{i,a})\) and
+\(\mathcal P(\mathsf M_{i,a},\mathscr M_{i,a})\), respectively. Thus their
+design-point evaluations are measurable functions of \((o,X)\). For fixed
+\((o,X)\), these sections occupy the generic section slots \(q_i\) and \(q_i^m\)
+of \eqref{eq:geo-agent-sections}; the superscripted response family is not a
+bare alias for those variables, because its admitted dependencies and
+measurability are additional declared data. \status{HYPOTHESIS}
+\medskip
+Evaluation and section evaluation have different codomains, and the difference is the one Chapter~\ref{ch:geometry} insisted on. For a sample-field realization $y=((k_i,m_i))_{i\in V}$ defined on the admitted incidences, the evaluation map
+\begin{equation}
+\operatorname{Ev}_D(y)=\bigl((k_i(c_a),m_i(c_a))_{i\in V_a}\bigr)_{a=1}^{M}\in\mathsf Y_D
 \label{eq:prob-evaluation-map}
 \end{equation}
-returns a point of the latent space. Evaluating a distribution-valued section returns something else entirely: $q_i^{o,X}(c_a)$ is a probability measure on $\mathsf K_{i,a}$ and $s_i^{o,X}(c_a)$ is a probability measure on $\mathsf M_{i,a}$, and neither is an element of $\mathsf Y_D$. The finite random element $Y$ takes values in $\mathsf Y_D$; the section values are laws. Section~\ref{sec:prob-compatibility} is where the two are related, and it relates them by hypothesis.
+returns a point of the latent space. Evaluating a distribution-valued section returns something else entirely: $q_i^{b;o,X}(c_a)$ is a probability measure on $\mathsf K_{i,a}$ and $q_i^{m;o,X}(c_a)$ is a probability measure on $\mathsf M_{i,a}$, and neither is an element of $\mathsf Y_D$. The finite random element $Y$ takes values in $\mathsf Y_D$; the section values are laws. Section~\ref{sec:prob-compatibility} is where the two are related, and it relates them by hypothesis.
 
 Missing or aggregated observations are not represented by removing latent coordinates from \eqref{eq:prob-latent-space}. They require a separately declared observation map or kernel into a coarser observation space, and the declaration changes $\mathsf O_D$ rather than $\mathsf Y_D$.
 
@@ -48,55 +101,96 @@ Missing or aggregated observations are not represented by removing latent coordi
 
 \medskip
 \definitionheading{Structural configuration and kernel signatures}{def:prob-structural-kernel-signatures}
-Fix a measurable configuration space $(\mathsf X,\mathscr X)$. Every $X\in\mathsf X$ uses the same design $D$, the same agent index set $V$, the same incidence set $\mathfrak A$, and the same measurable identifications of the fibers in \eqref{eq:prob-latent-space} and \eqref{eq:prob-observation-space}; therefore $(\mathsf Y_D,\mathscr Y_D)$ and $(\mathsf O_D,\mathscr O_D)$ do not vary with $X$. A configuration may carry the finite interaction complex $\mathfrak I$ of \Cref{def:geo-graph-links} with its edge set, the frames $U_i$ or the links $L_{ij}$, and the parameters of the observation and transition mechanisms. The generative and recognition objects have the signatures
+Fix a measurable configuration space $(\mathsf X,\mathscr X)$. Every $X\in\mathsf X$ uses the same design $D$, the same agent index set $V$, the same incidence set $\mathfrak I_D$, and the same measurable identifications of the fibers in \eqref{eq:prob-latent-space} and \eqref{eq:prob-observation-space}; therefore $(\mathsf Y_D,\mathscr Y_D)$ and $(\mathsf O_D,\mathscr O_D)$ do not vary with $X$. A configuration may carry the finite interaction complex $\mathfrak I$ of \Cref{def:geo-graph-links} with its edge set, the frames $U_i$ or the links $L_{ij}$, and the parameters of the observation and transition mechanisms.
+
+For every $i\in V$, let $(\mathsf I_i,\mathscr I_i)$ and $(\mathsf Y_{i,D},\mathscr Y_{i,D})$ be standard Borel, and declare a measurable access map and a normalized local recognition kernel
+\begin{equation}
+\operatorname{Acc}_i:\mathsf O_D\times\mathsf X\longrightarrow\mathsf I_i,
+\qquad
+\mathbb Q_i:\mathsf I_i\rightsquigarrow\mathsf Y_{i,D},
+\qquad
+\mathbb Q_{i,o,X}:=\mathbb Q_i(\operatorname{Acc}_i(o,X),\cdot).
+\label{eq:prob-local-recognition-kernel}
+\end{equation}
+The identity access map on $\mathsf O_D\times\mathsf X$ is the unrestricted interface. Any decentralized information claim requires a stricter declared $\operatorname{Acc}_i$.
+
+Let $\mathfrak A$ be a finite set of interaction records. Each $a\in\mathfrak A$ has a scope $\partial a\subseteq V$, a standard-Borel record space $(\mathsf O_a,\mathscr O_a)$, and a normalized kernel
+\begin{equation}
+K_a:(\mathsf X\times\mathsf Y_{\partial a,D})\rightsquigarrow\mathsf O_a,
+\qquad
+K_a(X,y_{\partial a},\mathsf O_a)=1.
+\label{eq:prob-record-kernel-signature}
+\end{equation}
+The observation space is identified measurably with $\prod_{a\in\mathfrak A}\mathsf O_a$. A singleton-scope agent observation kernel is one admissible $K_a$ after its record ownership is fixed. Each record coordinate occurs once.
+
+The complete laws have the signatures
 \begin{align}
-P_\theta&:(\mathsf X,\mathscr X)\longrightarrow\mathcal P\bigl(\mathsf O_D\times\mathsf Y_D,\mathscr O_D\otimes\mathscr Y_D\bigr),
-&X&\longmapsto P_\theta(\cdot\given X),
+\mathbb P_{\theta,V}&:(\mathsf X,\mathscr X)\longrightarrow\mathcal P\bigl(\mathsf Y_D\times\mathsf O_D,\mathscr Y_D\otimes\mathscr O_D\bigr),
+&X&\longmapsto\mathbb P_{\theta,V}(\cdot\given X),
 \label{eq:prob-generative-signature}\\
-Q&:(\mathsf O_D\times\mathsf X,\mathscr O_D\otimes\mathscr X)\longrightarrow\mathcal P\bigl(\mathsf Y_D,\mathscr Y_D\bigr),
-&(o,X)&\longmapsto Q_X(\cdot\given o),
+\mathbb Q_V&:(\mathsf O_D\times\mathsf X,\mathscr O_D\otimes\mathscr X)\longrightarrow\mathcal P\bigl(\mathsf Y_D,\mathscr Y_D\bigr),
+&(o,X)&\longmapsto\mathbb Q_{V,o,X}.
 \label{eq:prob-recognition-signature}
 \end{align}
-each measurable in its argument: for every $A\in\mathscr O_D\otimes\mathscr Y_D$ the map $X\mapsto P_\theta(A\given X)$ is $\mathscr X$-measurable, and for every $B\in\mathscr Y_D$ the map $(o,X)\mapsto Q_X(B\given o)$ is $\mathscr O_D\otimes\mathscr X$-measurable. \status{DEFINITION}
+Equation~\eqref{eq:prob-generative-signature} denotes the normalized population law constructed in Chapter~\ref{ch:generative}; it is not primitive data. Equation~\eqref{eq:prob-recognition-signature} denotes the selected coupling constructed in \Cref{sec:prob-marginals}. Both displayed maps are measurable in the kernel sense. The agent's generative-model structure is the pair $(q_i^m,\operatorname{ev}_i)$, where $q_i^m$ is a law-valued section over model presentations and
+\(\operatorname{ev}_i:=(\operatorname{ev}_{i,a})_{a\in D_i}\) is the typed finite family of normalized evaluated mechanisms defined below. The model law, presentation, evaluated mechanism, record kernel, and population law are different types. \status{DEFINITION}
 \medskip
 
 Signature \eqref{eq:prob-generative-signature} is the typing on which several later results depend, and it is worth reading for what it omits. The arguments of the generative kernel are $\theta$ and $X$ and nothing else. A recognition law, a recognition parameter, and a posterior are not among them, so no factor of the generative model may read one. This is a definitional requirement of the fixed-joint construction rather than a modeling preference: the joint must be a single measure fixed before an observation is seen, and a factor that reads a posterior makes the joint a function of the object it is supposed to be conditioned into. Nothing is proved here beyond the type; the consequences are drawn in Chapter~\ref{ch:generative}, where the joint is built, and again in Chapter~\ref{ch:obstructions}, where a construction that violates the typing is examined and found inadmissible.
 
-Later chapters may make $X$ random, but only within this fixed measurable space, and at a different probability level. Doing so introduces a configuration prior in $\mathcal P(\mathsf X,\mathscr X)$ and a configuration recognition kernel from $(\mathsf O_D,\mathscr O_D)$ into $\mathcal P(\mathsf X,\mathscr X)$; neither changes $D$, $\mathfrak A$, or the identified fibers, and neither is denoted by any symbol reserved above for a state-level object.
+Later chapters may make $X$ random, but only within this fixed measurable space, and at a different probability level. Doing so introduces a configuration prior in $\mathcal P(\mathsf X,\mathscr X)$ and a configuration recognition kernel from $(\mathsf O_D,\mathscr O_D)$ into $\mathcal P(\mathsf X,\mathscr X)$; neither changes $D$, $\mathfrak I_D$, or the identified fibers, and neither is denoted by any symbol reserved above for a state-level object.
 
 \medskip
 \definitionheading{Model presentations and evaluated kernels}{def:prob-model-evaluation}
-Fix an agent $i$, structural data $X$, and standard-Borel source and target spaces
-$(\mathsf S_i^X,\mathscr S_i^X)$ and $(\mathsf T_i^X,\mathscr T_i^X)$ containing all
-source and output coordinates required by the declared generative factorization. A model-presentation
-space $(\mathsf M_i,\mathscr M_i)$ is standard Borel. A model sample, or presentation coordinate, is
-$m_i\in\mathsf M_i$.
-A model-law section has value
-$q_i^{m;o,X}(r_*)\in\mathcal P(\mathsf M_i)$. A model evaluation is a map
+For every admissible incidence \((i,a)\in\mathfrak I_D\), fix structural data \(X\),
+standard-Borel source and target spaces
+\((\mathsf S_{i,a}^X,\mathscr S_{i,a}^X)\) and
+\((\mathsf T_{i,a}^X,\mathscr T_{i,a}^X)\) containing all source and output
+coordinates required by the declared generative factorization, and the standard-Borel
+model-presentation space \((\mathsf M_{i,a},\mathscr M_{i,a})\). A model sample,
+or presentation coordinate, is \(m_i\in\mathsf M_{i,a}\), while the model-law
+section has incidence value
+\(q_i^m(c_a)\in\mathcal P(\mathsf M_{i,a},\mathscr M_{i,a})\). Declare
 \begin{equation}
-\operatorname{ev}_i:\mathsf M_i\longrightarrow
-\operatorname{Kern}(\mathsf S_i^X,\mathsf T_i^X),
+\operatorname{ev}_{i,a}:\mathsf M_{i,a}\longrightarrow
+\operatorname{Kern}(\mathsf S_{i,a}^X,\mathsf T_{i,a}^X),
 \qquad
-m_i\longmapsto K^X_{i,m_i},
+m_i\longmapsto K^{X,a}_{i,m_i},
 \label{eq:prob-model-evaluation}
 \end{equation}
-such that $(m_i,u,B)\mapsto K^X_{i,m_i}(u,B)$ is jointly measurable and
-$K^X_{i,m_i}(u,\mathsf T_i^X)=1$ for every $(m_i,u)$. The source space retains
-every observation, structural-parent, or other parent coordinate required by the declared factor;
-\eqref{eq:prob-model-evaluation} does not silently reduce the factor to a state-to-observation
-kernel. The element $m_i$ is the sampled presentation coordinate.
-The model-law section $q_i^{m;o,X}(r_*)$, that coordinate, and its evaluated kernel
-$K^X_{i,m_i}$ are three different
-types. In the definite-presentation case the law is
-$q_i^{m;o,X}(r_*)=\delta_{m_i}$. Neither that law, a recognition parameter, nor a posterior is an
-argument of the evaluated generative kernel. \status{DEFINITION}
+such that \((m_i,u)\mapsto K^{X,a}_{i,m_i}(u,B)\) is measurable for every
+\(B\in\mathscr T_{i,a}^X\) and
+\(K^{X,a}_{i,m_i}(u,\mathsf T_{i,a}^X)=1\) for every \((m_i,u)\).
+The finite family is jointly measurable in the tagged sense: for every collection
+\((B_{i,a})_{(i,a)\in\mathfrak I_D}\) with
+\(B_{i,a}\in\mathscr T_{i,a}^X\), the map
+\[
+((i,a),m_i,u)\longmapsto K^{X,a}_{i,m_i}(u,B_{i,a})
+\]
+is measurable on the finite measurable disjoint union of the spaces
+\(\mathsf M_{i,a}\times\mathsf S_{i,a}^X\). The bundled notation
+\[
+\operatorname{ev}_i:=(\operatorname{ev}_{i,a})_{a\in D_i}
+\]
+therefore denotes a typed finite family, not one map into an undeclared common
+kernel space. Each source space retains every observation, structural-parent,
+or other parent coordinate required by its declared factor;
+\eqref{eq:prob-model-evaluation} does not silently reduce any factor to a
+state-to-observation kernel. The law \(q_i^m(c_a)\), the sampled coordinate
+\(m_i\), and its evaluated kernel \(K^{X,a}_{i,m_i}\) are three different
+types. In the definite-presentation case
+\(q_i^m(c_a)=\delta_{m_i}\). Neither that law, a recognition parameter, nor a
+posterior is an argument of the evaluated generative kernel. \status{DEFINITION}
 \medskip
 
-Injectivity of $\operatorname{ev}_i$ is not assumed: distinct presentations may evaluate to the
-same normalized kernel. One may declare $m\sim m'$ when their evaluated kernels agree, but the
-standard-Borel, Hausdorff, or smooth regularity of the presentation quotient is not supplied by
-measurability of \eqref{eq:prob-model-evaluation}. A quotient-level model fiber requires a separate
-regularity theorem; the default probability construction retains presentations. \status{NOT-CLAIMED}
+Injectivity of any \(\operatorname{ev}_{i,a}\) is not assumed: distinct
+presentations in one incidence fiber may evaluate to the same normalized
+kernel. One may declare \(m\sim m'\) within that fiber when their evaluated
+kernels agree, but the standard-Borel, Hausdorff, or smooth regularity of the
+presentation quotient is not supplied by measurability of
+\eqref{eq:prob-model-evaluation}. A quotient-level model fiber requires a
+separate regularity theorem; the default probability construction retains
+presentations. \status{NOT-CLAIMED}
 
 \section{Reference measures}
 \label{sec:prob-reference}
@@ -105,9 +199,9 @@ regularity theorem; the default probability construction retains presentations. 
 \definitionheading{Declared reference measures}{def:prob-reference-measures}
 Each continuous Euclidean coordinate carries its Borel sigma-algebra and Lebesgue base measure. Each discrete coordinate carries its power-set sigma-algebra and counting base measure. Each mixed real coordinate carries the measure declared in \Cref{prop:prob-mixed-coordinate-dominating-measure}. Any other fiber carries an explicitly declared sigma-finite base measure. Writing $\nu^{k}_{i,a}$, $\nu^{m}_{i,a}$, and $\nu^{o}_{i,a}$ for the component measures, the finite product reference measures are
 \begin{equation}
-\nu^{Y}_{D}=\bigotimes_{a=1}^{M}\bigotimes_{i\in V}\bigl(\nu^{k}_{i,a}\otimes\nu^{m}_{i,a}\bigr),
+\nu^{Y}_{D}=\bigotimes_{a=1}^{M}\bigotimes_{i\in V_a}\bigl(\nu^{k}_{i,a}\otimes\nu^{m}_{i,a}\bigr),
 \qquad
-\nu^{O}_{D}=\bigotimes_{a=1}^{M}\bigotimes_{i\in V}\nu^{o}_{i,a}.
+\nu^{O}_{D}=\bigotimes_{a=1}^{M}\bigotimes_{i\in V_a}\nu^{o}_{i,a}.
 \label{eq:prob-reference-measures}
 \end{equation}
 \status{DEFINITION}
@@ -155,17 +249,17 @@ The hypothesis excluding a singular-continuous part is a restriction on this par
 
 \medskip
 \definitionheading{Normalized kernels; densities as derivatives}{def:prob-normalized-kernels}
-The objects \eqref{eq:prob-generative-signature} and \eqref{eq:prob-recognition-signature} are probability kernels, hence normalized by type. When $P_\theta(\cdot\given X)\ll\nu^{O}_{D}\otimes\nu^{Y}_{D}$, its density is the Radon-Nikodym derivative $p_\theta(o,y\given X)$ determined by
+The objects \eqref{eq:prob-generative-signature} and \eqref{eq:prob-recognition-signature} are probability kernels, hence normalized by type. When $\mathbb P_{\theta,V}(\cdot\given X)\ll\nu^{Y}_{D}\otimes\nu^{O}_{D}$, its density is the Radon-Nikodym derivative $p_{\theta,V}(o,y\given X)$ determined by
 \begin{equation}
-P_\theta(do,dY\given X)=p_\theta(o,y\given X)\nu^{O}_{D}(do)\nu^{Y}_{D}(dy),
+\mathbb P_{\theta,V}(dy,do\given X)=p_{\theta,V}(o,y\given X)\nu^{Y}_{D}(dy)\nu^{O}_{D}(do),
 \label{eq:prob-generative-density}
 \end{equation}
 and the evidence is the normalized marginal
 \begin{equation}
-p_\theta(o\given X)=\int_{\mathsf Y_D}p_\theta(o,y\given X)\nu^{Y}_{D}(dy).
+p_{\theta,V}(o\given X)=\int_{\mathsf Y_D}p_{\theta,V}(o,y\given X)\nu^{Y}_{D}(dy).
 \label{eq:prob-evidence}
 \end{equation}
-When $Q_X(\cdot\given o)\ll\nu^{Y}_{D}$, its density is written $q_X(y\given o)$. Densities are determined only up to a null set of the declared reference measure, and any two versions agreeing outside such a set denote the same density. \status{DEFINITION}
+When $\mathbb Q_{V,o,X}\ll\nu^{Y}_{D}$, its density is written $q_{V,o,X}(y)$. Densities are determined only up to a null set of the declared reference measure, and any two versions agreeing outside such a set denote the same density. \status{DEFINITION}
 \medskip
 
 The order in \Cref{def:prob-normalized-kernels} is the content. A normalized kernel is declared, and only then is a density extracted; the reverse order, in which a nonnegative function is written down and a normalizer is invoked afterward, is a different construction whose normalizer must be shown finite before anything it appears in denotes a probability. This document uses the first order everywhere, and where a later chapter writes an unnormalized energy it says so and exhibits the normalizer.
@@ -173,35 +267,35 @@ The order in \Cref{def:prob-normalized-kernels} is the content. A normalized ker
 \medskip
 \noindent\textbf{Regular-conditional convention.} Whenever a later result conditions on a realized observation, assume in addition that $(\mathsf O_D,\mathscr O_D)$ and $(\mathsf Y_D,\mathscr Y_D)$ are standard Borel spaces. This holds for the finite products of Euclidean and countable discrete fibers used in the worked construction; it is an additional hypothesis for a general measurable fiber. For fixed $(\theta,X)$, write
 \begin{equation}
-P_{\theta,X}^{O}(A)
-:=P_\theta(A\times\mathsf Y_D\given X),
+\mathbb P_{\theta,V,X}^{O}(A)
+:=\mathbb P_{\theta,V}(\mathsf Y_D\times A\given X),
 \qquad A\in\mathscr O_D,
 \label{eq:prob-observation-marginal}
 \end{equation}
 for the observation marginal. The standard-Borel hypothesis supplies a regular conditional probability
 \begin{equation}
-\Pi_{\theta,X}(o,B)
-=P_\theta(B\given o,X),
+\boldsymbol\Pi_{\theta,V,o,X}(B)
+=\mathbb P_{\theta,V}(B\given o,X),
 \qquad B\in\mathscr Y_D,
 \label{eq:prob-rcp}
 \end{equation}
-unique only for $P_{\theta,X}^{O}$-almost every $o$.
+unique only for $\mathbb P_{\theta,V,X}^{O}$-almost every $o$.
 
-When the domination in \eqref{eq:prob-generative-density} holds, Tonelli's theorem makes the function in \eqref{eq:prob-evidence} a density of $P_{\theta,X}^{O}$ relative to $\nu_D^O$. After altering it on a $\nu_D^O$-null set if necessary, there is a measurable set $\mathsf O_{\theta,X}^{\mathrm{reg}}$ with
+When the domination in \eqref{eq:prob-generative-density} holds, Tonelli's theorem makes the function in \eqref{eq:prob-evidence} a density of $\mathbb P_{\theta,V,X}^{O}$ relative to $\nu_D^O$. After altering it on a $\nu_D^O$-null set if necessary, there is a measurable set $\mathsf O_{\theta,V,X}^{\mathrm{reg}}$ with
 \begin{equation}
-P_{\theta,X}^{O}\bigl(\mathsf O_{\theta,X}^{\mathrm{reg}}\bigr)=1,
+\mathbb P_{\theta,V,X}^{O}\bigl(\mathsf O_{\theta,V,X}^{\mathrm{reg}}\bigr)=1,
 \qquad
-0<p_\theta(o\given X)<\infty,
+0<p_{\theta,V}(o\given X)<\infty,
 \label{eq:prob-regular-observations}
 \end{equation}
-such that, for every $o\in\mathsf O_{\theta,X}^{\mathrm{reg}}$ and $B\in\mathscr Y_D$,
+such that, for every $o\in\mathsf O_{\theta,V,X}^{\mathrm{reg}}$ and $B\in\mathscr Y_D$,
 \begin{equation}
-\Pi_{\theta,X}(o,B)
-=\frac{\displaystyle\int_B p_\theta(o,y\given X)\nu_D^Y(dy)}
-{\displaystyle p_\theta(o\given X)}.
+\boldsymbol\Pi_{\theta,V,o,X}(B)
+=\frac{\displaystyle\int_B p_{\theta,V}(o,y\given X)\nu_D^Y(dy)}
+{\displaystyle p_{\theta,V}(o\given X)}.
 \label{eq:prob-rcp-density}
 \end{equation}
-The displayed version is obtained directly from the density on the positive-finite evidence set and completed arbitrarily off that set. Fubini's theorem shows why the qualification is unavoidable: changing a joint density on a $(\nu_D^O\otimes\nu_D^Y)$-null set can change an entire slice at an exceptional observation, while it changes \eqref{eq:prob-rcp-density} only on an observation-marginal-null set. An exact witness is available on $\R^2$. Let $\phi$ be the standard normal density and let $\psi$ be any different probability density. The functions
+The displayed version is obtained directly from the density on the positive-finite evidence set and completed arbitrarily off that set. Fubini's theorem shows why the qualification is unavoidable: changing a joint density on a $(\nu_D^Y\otimes\nu_D^O)$-null set can change an entire slice at an exceptional observation, while it changes \eqref{eq:prob-rcp-density} only on an observation-marginal-null set. An exact witness is available on $\R^2$. Let $\phi$ be the standard normal density and let $\psi$ be any different probability density. The functions
 \[
 p(o,y)=\phi(o)\phi(y),
 \qquad
@@ -211,7 +305,7 @@ p(o,y)=\phi(o)\phi(y),
 \phi(0)\psi(y),&o=0
 \end{cases}
 \]
-are versions of the same joint density because they differ only on the Lebesgue-null slice $\{0\}\times\R$. Both displayed evidence representatives equal $\phi(0)$ at $o=0$, but their density-ratio conditionals there are $\phi(y)dy$ and $\psi(y)dy$. The joint measure therefore determines neither pointwise posterior at that exceptional observation. Accordingly, every later fixed-observation posterior, ELBO, or free-energy statement is asserted for $P_{\theta,X}^{O}$-almost every $o$, represented by $o\in\mathsf O_{\theta,X}^{\mathrm{reg}}$. An everywhere pointwise statement instead requires a particular jointly measurable density, evidence representative, and regular-conditional version to be declared as part of the model data; its exceptional-point values then belong to that declaration and are not determined by the joint measure alone. \status{HYPOTHESIS}
+are versions of the same joint density because they differ only on the Lebesgue-null slice $\R\times\{0\}$. Both displayed evidence representatives equal $\phi(0)$ at $o=0$, but their density-ratio conditionals there are $\phi(y)dy$ and $\psi(y)dy$. The joint measure therefore determines neither pointwise posterior at that exceptional observation. Accordingly, every later fixed-observation posterior, ELBO, or free-energy statement is asserted for $\mathbb P_{\theta,V,X}^{O}$-almost every $o$, represented by $o\in\mathsf O_{\theta,V,X}^{\mathrm{reg}}$. An everywhere pointwise statement instead requires a particular jointly measurable density, evidence representative, and regular-conditional version to be declared as part of the model data; its exceptional-point values then belong to that declaration and are not determined by the joint measure alone. \status{HYPOTHESIS}
 
 The same order is what makes the group action of Chapter~\ref{ch:geometry} well typed. The action \eqref{eq:geo-pushforward-actions} is defined on measures. A frame change that does not preserve the reference measure changes the density and the base-measure Jacobian together, and only their combination is invariant, so a rule that multiplies a matrix into a density and stops is not the represented action unless the Jacobian is identically one. \status{ESTABLISHED}
 
@@ -333,7 +427,7 @@ Let $\kappa$ be a probability kernel from $(\mathsf E,\mathscr E)$ to $(\mathsf 
 x\longmapsto\int_{\mathsf F}f(x,y)\kappa(x,dy)
 \label{eq:prob-kernel-integration}
 \end{equation}
-is $\mathscr E$-measurable. Consequently $X\mapsto p_\theta(o\given X)$ and the $Q_X$-expectations appearing in the bound of Chapter~\ref{ch:elbo} are measurable in $(o,X)$ whenever their integrands are jointly measurable. \status{ESTABLISHED}
+is $\mathscr E$-measurable. Consequently $X\mapsto p_{\theta,V}(o\given X)$ and the $\mathbb Q_{V,o,X}$-expectations appearing in the bound of Chapter~\ref{ch:elbo} are measurable in $(o,X)$ whenever their integrands are jointly measurable. \status{ESTABLISHED}
 \medskip
 
 \noindent\emph{Proof.} Let $\mathcal D$ be the collection of $C\in\mathscr E\otimes\mathscr F$ for which $x\mapsto\kappa(x,C_x)$ is $\mathscr E$-measurable, where $C_x=\{y:(x,y)\in C\}$. Measurable rectangles $A\times B$ lie in $\mathcal D$, since $\kappa(x,(A\times B)_x)=\mathbf 1_A(x)\kappa(x,B)$ and $x\mapsto\kappa(x,B)$ is measurable by the definition of a kernel; the rectangles form a $\pi$-system generating $\mathscr E\otimes\mathscr F$. The collection $\mathcal D$ contains $\mathsf E\times\mathsf F$, is closed under proper differences because $\kappa(x,\cdot)$ is a finite measure, and is closed under increasing limits by continuity from below, hence is a $\lambda$-system; Dynkin's lemma gives $\mathcal D=\mathscr E\otimes\mathscr F$. The claim therefore holds for indicators, hence for nonnegative simple functions by linearity, hence for all nonnegative measurable $f$ by monotone approximation and monotone convergence. The full development of kernels and their integrals is standard \citep{Kallenberg2021}. \hfill$\square$
@@ -386,9 +480,9 @@ then $Q\not\ll P$ by the definition of absolute continuity, and \eqref{eq:prob-k
 
 \medskip
 \hypothesisheading{Regular positive-finite observation}{hyp:prob-regular-observation}
-For fixed $(\theta,X)$, the selected observation satisfies $o\in\mathsf O_{\theta,X}^{\mathrm{reg}}$ under the regular-conditional convention above, and
+For fixed $(\theta,X)$, the selected observation satisfies $o\in\mathsf O_{\theta,V,X}^{\mathrm{reg}}$ under the regular-conditional convention above, and
 \begin{equation}
-0<p_\theta(o\given X)<\infty.
+0<p_{\theta,V}(o\given X)<\infty.
 \label{eq:prob-support-condition}
 \end{equation}
 \status{HYPOTHESIS}
@@ -400,68 +494,157 @@ This hypothesis selects a pointwise posterior version and a finite real log evid
 \hypothesisheading{Classical split-ELBO domain}{hyp:prob-classical-split-elbo}
 In addition to \Cref{hyp:prob-regular-observation}, the recognition law satisfies
 \[
-Q_X(\cdot\given o)\ll \Pi_{\theta,X}(o,\cdot)
+\mathbb Q_{V,o,X}\ll \boldsymbol\Pi_{\theta,V,o,X}
 \]
 and
 \begin{equation}
-\E_{Q_X}\Bigl[\bigl|\log p_\theta(o,Y\given X)\bigr|+\bigl|\log q_X(Y\given o)\bigr|\Bigr]<\infty .
+\E_{\mathbb Q_{V,o,X}}\Bigl[\bigl|\log p_{\theta,V}(o,Y\given X)\bigr|+\bigl|\log q_{V,o,X}(Y)\bigr|\Bigr]<\infty .
 \label{eq:prob-integrability}
 \end{equation}
 \status{HYPOTHESIS}
 \medskip
 
-These are choices, and each excludes something identifiable. Membership in $\mathsf O_{\theta,X}^{\mathrm{reg}}$ makes the posterior the selected regular-conditional version and makes the statement invariant under changes of density version outside a marginal-full set. The lower bound in \eqref{eq:prob-support-condition} excludes observations the selected representative deems impossible, for which the log evidence is $-\infty$. The separate absolute-continuity requirement in \Cref{hyp:prob-classical-split-elbo} excludes exactly the degenerate laws just described. Condition \eqref{eq:prob-integrability} excludes recognition laws whose tails make the two classical expectations individually infinite even when their formal difference suggests cancellation.  Chapter~\ref{ch:elbo} first defines an extended functional for every probability law and invokes \Cref{hyp:prob-classical-split-elbo} only when splitting it into separate expected-log-joint and entropy terms.
+These are choices, and each excludes something identifiable. Membership in $\mathsf O_{\theta,V,X}^{\mathrm{reg}}$ makes the posterior the selected regular-conditional version and makes the statement invariant under changes of density version outside a marginal-full set. The lower bound in \eqref{eq:prob-support-condition} excludes observations the selected representative deems impossible, for which the log evidence is $-\infty$. The separate absolute-continuity requirement in \Cref{hyp:prob-classical-split-elbo} excludes exactly the degenerate laws just described. Condition \eqref{eq:prob-integrability} excludes recognition laws whose tails make the two classical expectations individually infinite even when their formal difference suggests cancellation.  Chapter~\ref{ch:elbo} first defines an extended functional for every probability law and invokes \Cref{hyp:prob-classical-split-elbo} only when splitting it into separate expected-log-joint and entropy terms.
 
-\section{Recognition marginals and what they fail to determine}
+\section{Recognition marginals, couplings, and selection}
 \label{sec:prob-marginals}
 
 \medskip
-\definitionheading{Coordinate marginals of the recognition law}{def:prob-recognition-marginals}
-With $\operatorname{pr}^{k}_{i,a}$ and $\operatorname{pr}^{m}_{i,a}$ the coordinate projections out of $\mathsf Y_D$, define the marginalization maps $\operatorname{Marg}^{k}_{i,a}(R)=(\operatorname{pr}^{k}_{i,a})_{\#}R$ and $\operatorname{Marg}^{m}_{i,a}(R)=(\operatorname{pr}^{m}_{i,a})_{\#}R$ on $\mathcal P(\mathsf Y_D,\mathscr Y_D)$, and set
+\definitionheading{Local recognition laws and their coupling class}{def:prob-recognition-marginals}
+Let $\operatorname{pr}_i:\mathsf Y_D\to\mathsf Y_{i,D}$ be the agent-block projection. For each admitted $(o,X)$ define
 \begin{equation}
-q^{o,X}_{i,a}=\operatorname{Marg}^{k}_{i,a}\bigl(Q_X(\cdot\given o)\bigr),
+\operatorname{Cpl}(\mathbb Q_{\bullet,o,X})
+:=
+\left\{
+R\in\mathcal P\left(\prod_{i\in V}\mathsf Y_{i,D}\right):
+(\operatorname{pr}_i)_\#R=\mathbb Q_{i,o,X} \text{for every }i
+\right\}.
+\label{eq:prob-recognition-coupling-class}
+\end{equation}
+With $\operatorname{pr}^{k}_{i,a}$ and $\operatorname{pr}^{m}_{i,a}$ the within-block coordinate projections, define
+\begin{equation}
+q^{b;o,X}_{i,a}=(\operatorname{pr}^{k}_{i,a})_\#\mathbb Q_{i,o,X},
 \qquad
-s^{o,X}_{i,a}=\operatorname{Marg}^{m}_{i,a}\bigl(Q_X(\cdot\given o)\bigr).
+q_{i,a}^{m;o,X}=(\operatorname{pr}^{m}_{i,a})_\#\mathbb Q_{i,o,X}.
 \label{eq:prob-recognition-marginals}
 \end{equation}
-\status{DEFINITION}
+These coordinate laws and the agent-block laws are local data. A member of \eqref{eq:prob-recognition-coupling-class} is additional population-level dependence data. \status{DEFINITION}
 \medskip
 
-The recognition law is not required to factor across agents, design points, or channels. In the Gaussian realization with at least two nondegenerate real coordinates, the marginals \eqref{eq:prob-recognition-marginals} are therefore a lossy summary, and the next statement exhibits the loss. No such nonidentifiability is asserted for an arbitrary collection of fibers: if the finite latent space is a singleton, its unique law is determined by every marginal.
+\propositionheading{Existence and convexity of the coupling class}{prop:prob-coupling-existence-convexity}
+For every admitted $(o,X)$, the class $\operatorname{Cpl}(\mathbb Q_{\bullet,o,X})$ is nonempty and convex. Moreover,
+\begin{equation}
+(o,X)\longmapsto\bigotimes_{i\in V}\mathbb Q_{i,o,X}
+\label{eq:prob-product-coupling-kernel}
+\end{equation}
+is a measurable product-coupling kernel. \status{ESTABLISHED}
+\medskip
+
+\noindent\emph{Proof.} Finite kernel induction constructs the product in \eqref{eq:prob-product-coupling-kernel}. On measurable rectangles its value is the product of the measurable functions $\mathbb Q_{i,o,X}(B_i)$; a monotone-class argument extends measurability to the product sigma-algebra. Its $i$th pushforward is $\mathbb Q_{i,o,X}$ because all other factors have unit mass, so it belongs to the coupling class. If $R_0,R_1$ are couplings and $t\in[0,1]$, then marginalization is affine:
+\[
+(\operatorname{pr}_i)_\#\bigl((1-t)R_0+tR_1\bigr)
+=(1-t)\mathbb Q_{i,o,X}+t\mathbb Q_{i,o,X}
+=\mathbb Q_{i,o,X}.
+\]
+Thus every convex combination is also a coupling. \hfill$\square$
+
+\medskip
+\hypothesisheading{Measurable population-coupling selection}{hyp:prob-measurable-coupling-selector}
+Equip probability-law spaces with their evaluation sigma-algebras. A selection rule $\mathsf S$ is declared such that
+\begin{equation}
+\mathbb Q_{V,o,X}
+=
+\mathsf S_{o,X}\bigl((\mathbb Q_{i,o,X})_{i\in V}\bigr)
+\in\operatorname{Cpl}(\mathbb Q_{\bullet,o,X}),
+\label{eq:prob-selected-recognition-coupling}
+\end{equation}
+and $(o,X)\mapsto\mathbb Q_{V,o,X}(B)$ is measurable for every $B\in\mathscr Y_D$. \status{HYPOTHESIS}
+\medskip
+
+A copula, a common latent variable, ordered recognition conditionals, a graphical family, or the product restriction may supply the selector. None is supplied by the marginal laws alone.
+
+The selector in \eqref{eq:prob-selected-recognition-coupling} is applied once.
+For any later declared blockwise bimeasurable frame re-expression \(R\), with
+\(R_i\) its restriction to \(\mathsf Y_{i,D}\), the valid transformed
+recognition joint is the whole-law pushforward \(R_\#\mathbb Q_{V,o,X}\).
+The identity
+\[
+\mathsf S_{o,X'}\bigl(((R_i)_\#\mathbb Q_{i,o,X})_{i\in V}\bigr)
+=
+R_\#\mathsf S_{o,X}\bigl((\mathbb Q_{i,o,X})_{i\in V}\bigr)
+\]
+would be a separate selector-equivariance hypothesis. It is neither assumed
+here nor claimed by the later gauge-invariance corollary.
+
+\medskip
+\hypothesisheading{Constrained coupling feasibility}{hyp:prob-constrained-coupling-feasibility}
+For every admitted $(o,X)$, any imposed restricted family
+$\operatorname{Cpl}_{\mathcal R}(\mathbb Q_{\bullet,o,X})$ is nonempty. \status{HYPOTHESIS}
+\medskip
+
+\hypothesisheading{Constrained measurable selection}{hyp:prob-constrained-coupling-selection}
+There is a selector from the feasible restricted fibers for which
+$(o,X)\mapsto\mathsf S_{o,X}((\mathbb Q_{i,o,X})_{i\in V})(B)$ is measurable for every
+$B\in\mathscr Y_D$. \status{HYPOTHESIS}
+\medskip
+
+These hypotheses are independent obligations. The unconstrained product coupling proves neither
+feasibility of the restricted intersection nor measurability of a selector from it.
 
 \medskip
 \propositionheading{Coordinate marginals do not determine a sufficiently rich joint}{prop:prob-marginals-do-not-determine-joint}
-Suppose \(\mathsf Y_D\) contains at least two nondegenerate real coordinates, as it does in the nondegenerate Gaussian realization. Then there exist distinct probability measures on $\mathsf Y_D$ with identical coordinate marginals. Consequently the family $\{q^{o,X}_{i,a},s^{o,X}_{i,a}\}$ does not determine $Q_X(\cdot\given o)$ under this richness hypothesis. Without it the conclusion can fail: for one agent and one design point with \(\mathsf K_{i,a}=\mathsf M_{i,a}=\{0\}\), the space \(\mathsf Y_D\) is a singleton and its unique law is determined by its marginals. \status{ESTABLISHED}
+For a finite family of standard-Borel block spaces, the unconstrained class $\operatorname{Cpl}((\mu_i)_{i\in V})$ is a singleton if and only if at most one marginal $\mu_i$ is non-Dirac. Hence two non-Dirac local recognition laws imply that the local marginals do not determine $\mathbb Q_{V,o,X}$. \status{ESTABLISHED}
 \medskip
 
-\noindent\emph{Proof.} Take $Q^{(0)}=\mathcal N(0,I_2)$ and $Q^{(r)}=\mathcal N(0,\Sigma_r)$ with $\Sigma_r=\begin{psmallmatrix}1&r\\r&1\end{psmallmatrix}$ for any $r\in(-1,1)$ with $r\neq0$; both are probability measures, since $\Sigma_r$ has eigenvalues $1\pm r>0$. The coordinate marginals of a centered Gaussian $\mathcal N(0,\Sigma)$ on $\R^2$ are $\mathcal N(0,\Sigma_{11})$ and $\mathcal N(0,\Sigma_{22})$, so both measures have standard normal marginals in both coordinates. They are distinct because a Gaussian law is determined by its mean and covariance and the covariances differ. Embedding this pair in any two coordinates of $\mathsf Y_D$ and keeping the remaining coordinates fixed produces two distinct elements of $\mathcal P(\mathsf Y_D,\mathscr Y_D)$ with the same family \eqref{eq:prob-recognition-marginals}. \hfill$\square$
+\noindent\emph{Proof.} Suppose first that two marginals, denoted $\mu$ and $\nu$, are non-Dirac. On a standard-Borel space a non-Dirac probability measure admits a measurable set of probability strictly between zero and one. Indeed, if every member of a countable separating generator had probability zero or one, the intersection of the generator members or complements having probability one would itself have probability one and contain at most one point, forcing a Dirac law. Choose such sets $A,B$ and, for $0<|\varepsilon|<1$, define
+\begin{equation}
+dR_\varepsilon(x,y)
+=
+\left[1+\varepsilon(1_A(x)-\mu(A))(1_B(y)-\nu(B))\right]
+d\mu(x)d\nu(y).
+\label{eq:prob-coupling-perturbation}
+\end{equation}
+Each centered indicator lies in $[-1,1]$, so the bracket is at least $1-|\varepsilon|>0$. Its integral is one because both centered indicators have mean zero. Integrating in $y$ removes the perturbation and leaves $\mu$; integrating in $x$ leaves $\nu$. Finally,
+\[
+R_\varepsilon(A\times B)
+=\mu(A)\nu(B)
++\varepsilon\mu(A)(1-\mu(A))\nu(B)(1-\nu(B)),
+\]
+so the coupling varies with $\varepsilon$. Tensoring $R_\varepsilon$ with all remaining marginals gives distinct couplings of the full finite family.
+
+Conversely, suppose at most one marginal is non-Dirac. Every coupling assigns mass one to each fixed Dirac coordinate. Because there are finitely many such coordinates, it assigns mass one to their intersection, on which only the possible non-Dirac coordinate can vary. Its law there is fixed by that remaining marginal. Thus the product of the fixed Dirac masses and the one possible non-Dirac marginal is the unique coupling. \hfill$\square$
+
+As an optional Gaussian illustration, $\mathcal N(0,I_2)$ and $\mathcal N(0,\Sigma_r)$ with $\Sigma_r=\begin{psmallmatrix}1&r\\r&1\end{psmallmatrix}$ and $0<|r|<1$ are distinct couplings of two standard normal marginals. The perturbation proof above is the general argument and does not depend on Gaussian structure.
 
 \section{Continuum sections versus finite evaluation}
 \label{sec:prob-compatibility}
 
-Chapter~\ref{ch:geometry} gave each agent continuum sections $q^{o,X}_i$ and $s^{o,X}_i$ over its support. This chapter has given the finite recognition law $Q_X$ and its marginals. There are now two ways to obtain a probability measure on $\mathsf K_{i,a}$: sample the continuum section at $c_a$, or marginalize the finite law at $(i,a)$. Write the first as
+Chapter~\ref{ch:geometry} gave each agent continuum sections $q_i^{b;o,X}$ and $q_i^{m;o,X}$ over its support. This chapter has given the finite recognition law $\mathbb Q_{V,o,X}$ and its marginals. There are now two ways to obtain each state or model-coordinate law at $(i,a)$: sample the corresponding continuum section at $c_a$, or marginalize the finite law. Write the first as
 \begin{equation}
-\operatorname{Samp}_{D,i}\bigl(q^{o,X}_i\bigr)=\bigl(q^{o,X}_i(c_a)\bigr)_{a=1}^{M},
+\operatorname{Samp}_{D,i}\bigl(q_i^{b;o,X}\bigr)=\bigl(q_i^{b;o,X}(c_a)\bigr)_{a\in D_i},
 \qquad
-\operatorname{Samp}_{D,i}\bigl(s^{o,X}_i\bigr)=\bigl(s^{o,X}_i(c_a)\bigr)_{a=1}^{M}.
+\operatorname{Samp}_{D,i}\bigl(q_i^{m;o,X}\bigr)=\bigl(q_i^{m;o,X}(c_a)\bigr)_{a\in D_i}.
 \label{eq:prob-sampling-map}
 \end{equation}
-The two constructions have different domains. The map \eqref{eq:prob-sampling-map} acts on sections in $\Gamma(\mathcal C_i,\mathcal E\vert_{\mathcal C_i})$; the maps of \Cref{def:prob-recognition-marginals} act on $\mathcal P(\mathsf Y_D,\mathscr Y_D)$. Neither is defined in terms of the other, so their outputs coincide only if that is declared. The following statement shows that the declaration is substantive in one direction and empty in the other, so that calling it a consequence would be wrong in both.
+The two constructions have different domains. The sampling map acts on the declared response spaces
+\(\mathfrak S_i^b\) and \(\mathfrak S_i^m\), which are typed subspaces of the two section spaces in
+\eqref{eq:prob-context-section-response}; the maps of \Cref{def:prob-recognition-marginals} act on
+\(\mathcal P(\mathsf Y_D,\mathscr Y_D)\). Neither is defined in terms of the other, so their outputs coincide only if that is declared. The following statement shows that the declaration is substantive in one direction and empty in the other, so that calling it a consequence would be wrong in both.
 
 \medskip
 \propositionheading{Compatibility determines neither side}{prop:prob-compatibility-nonidentifiability}
 Suppose the compatibility relation
 \begin{equation}
-q^{o,X}_i(c_a)=q^{o,X}_{i,a},
+q_i^{b;o,X}(c_a)=q_{i,a}^{b;o,X},
 \qquad
-s^{o,X}_i(c_a)=s^{o,X}_{i,a}
-\qquad\text{for every }(i,a)\in\mathfrak A
+q_i^{m;o,X}(c_a)=q_{i,a}^{m;o,X}
+\qquad\text{for every }(i,a)\in\mathfrak I_D
 \label{eq:prob-compatibility}
 \end{equation}
-holds. Then (i), under the two-nondegenerate-coordinate richness hypothesis of \Cref{prop:prob-marginals-do-not-determine-joint}, \eqref{eq:prob-compatibility} does not determine $Q_X(\cdot\given o)$; and (ii), if some support \(\mathcal C_i\) contains a point outside the finite design \(D\) and the selected section class admits a nonzero smooth deformation supported away from \(D\), the relation does not determine the sections $q^{o,X}_i$ and $s^{o,X}_i$. The positive-dimensional Gaussian tier supplies such deformations. If every support is zero-dimensional and exhausted by its design points, the finite values can instead determine a section pointwise. \status{ESTABLISHED}
+holds. Then (i), when at least two local agent-block laws are non-Dirac, \eqref{eq:prob-compatibility} does not determine $\mathbb Q_{V,o,X}$; and (ii), if some support \(\mathcal C_i\) contains a point outside the finite design \(D\) and the selected section class admits a nonzero smooth deformation supported away from \(D\), the relation does not determine the sections $q_i^{b;o,X}$ and $q_i^{m;o,X}$. The positive-dimensional Gaussian tier supplies such deformations. If every support is zero-dimensional and exhausted by its design points, the finite values can instead determine a section pointwise. \status{ESTABLISHED}
 \medskip
 
-\noindent\emph{Proof.} (i) By \Cref{prop:prob-marginals-do-not-determine-joint} there are distinct laws in $\mathcal P(\mathsf Y_D,\mathscr Y_D)$ with the same coordinate marginals, and \eqref{eq:prob-compatibility} constrains $Q_X$ only through those marginals; both such laws satisfy it against the same sections. (ii) Fix \(c^{\star}\in\mathcal C_i\setminus D\). In the positive-dimensional Gaussian realization, choose a neighborhood of \(c^\star\) disjoint from the finite set \(D\) and a smooth bump function $\chi:\mathcal C_i\to[0,1]$ supported there with $\chi(c^{\star})=1$. The section obtained from $q^{o,X}_i$ by replacing $\mu_i(c)$ with $\mu_i(c)+\chi(c)v$ for any fixed $v\neq0$ is a smooth section of the same bundle, differs from $q^{o,X}_i$ at $c^{\star}$, and agrees with it on all of $D$; it therefore satisfies \eqref{eq:prob-compatibility} against the same marginals. By contrast, if \(\mathcal C_i=D\cap\mathcal C_i\) as a zero-dimensional support, equality at those points is pointwise equality of the section, so the nonuniqueness conclusion has no such witness and can fail. \hfill$\square$
+\noindent\emph{Proof.} (i) By \Cref{prop:prob-marginals-do-not-determine-joint} there are distinct laws in $\mathcal P(\mathsf Y_D,\mathscr Y_D)$ with the same coordinate marginals, and \eqref{eq:prob-compatibility} constrains $\mathbb Q_{V,o,X}$ only through those marginals; both such laws satisfy it against the same sections. (ii) Fix \(c^{\star}\in\mathcal C_i\setminus D\). In the positive-dimensional Gaussian realization, choose a neighborhood of \(c^\star\) disjoint from the finite set \(D\) and a smooth bump function $\chi:\mathcal C_i\to[0,1]$ supported there with $\chi(c^{\star})=1$. The section obtained from $q_i^{b;o,X}$ by replacing $\mu_i(c)$ with $\mu_i(c)+\chi(c)v$ for any fixed $v\neq0$ is a smooth section of the same bundle, differs from $q_i^{b;o,X}$ at $c^{\star}$, and agrees with it on all of $D$; it therefore satisfies \eqref{eq:prob-compatibility} against the same marginals. By contrast, if \(\mathcal C_i=D\cap\mathcal C_i\) as a zero-dimensional support, equality at those points is pointwise equality of the section, so the nonuniqueness conclusion has no such witness and can fail. \hfill$\square$
 
 \medskip
 \hypothesisheading{Sampling and marginalization are compatible}{hyp:prob-sampling-compatibility}

@@ -14,12 +14,14 @@ realization is deferred to \Cref{ch:generative-gaussian}.
 Fix the design $D=\{c_a\}_{a=1}^{M}$, the agent set $V=\{1,\dots,N\}$, and the measurable spaces
 and sigma-finite reference measures of \Cref{ch:probability}.  Structural data
 $X\in\mathsf X$ contain a finite directed acyclic graph $\Gamma=(V,E)$, design incidence, and the
-geometric data.  Numerical parameters that a learning coordinate may move are denoted $\theta$.
-This split is declared rather than derived; all typing requirements below apply to both symbols.
+geometric data. Writing $\operatorname{pa}(i)$ for the parents of $i$, the incidence is parent
+closed: if $(i,a)\in\mathfrak I_D$ and $j\in\operatorname{pa}(i)$, then $(j,a)\in\mathfrak I_D$. Thus the induced graph
+$\Gamma_a$ on $V_a$ contains every parent of each participating vertex and is acyclic. Numerical
+parameters that a learning coordinate may move are denoted $\theta$. This split is declared rather
+than derived; all typing requirements below apply to both symbols.
 \status{DEFINITION}\label{def:gen-parameter-split}
 
-Write $\operatorname{pa}(i)$ for the parents of $i$ and
-$\mathcal R=\{r:\operatorname{pa}(r)=\varnothing\}$.  At one design point, declare normalized
+Write $\mathcal R=\{r:\operatorname{pa}(r)=\varnothing\}$. At design point $c_a$, for each $i\in V_a$, declare normalized
 Markov kernels
 \begin{equation}
 P_{\theta,i}^{m}(dm_i\given m_{\operatorname{pa}(i)},X),
@@ -30,17 +32,86 @@ P_{\theta,i}^{o}(do_i\given k_i,m_i,X).
 \label{eq:gen-kernels}
 \end{equation}
 At a root, the first factor is a proper model law and the second is a normalized bridge from the
-same-agent model coordinate to the belief coordinate. \status{DEFINITION}
+same-agent model coordinate to the belief coordinate. The observation component is retained as a
+normalized singleton-scope record mechanism; in the population construction below it is used only
+through the owned record kernel $K_r$ to which it is assigned. \status{DEFINITION}
 
-The channels are asymmetric by declaration.  At a root, write
-$K_i(m,A)=P_{\theta,i}^{k}(A\given m,X)$.  This kernel induces a map on laws,
+For each admissible incidence $(i,a)$, specialize the source and target
+spaces of \Cref{def:prob-model-evaluation} by
+\[
+(\mathsf S_{i,a}^X,\mathscr S_{i,a}^X)
+:=\left(
+\prod_{j\in\operatorname{pa}(i)}\mathsf K_{j,a},
+\bigotimes_{j\in\operatorname{pa}(i)}\mathscr K_{j,a}
+\right),
+\qquad
+(\mathsf T_{i,a}^X,\mathscr T_{i,a}^X)
+:=(\mathsf K_{i,a},\mathscr K_{i,a}),
+\]
+while retaining the already declared presentation space
+\((\mathsf M_{i,a},\mathscr M_{i,a})\). The empty parent product is a
+singleton with its trivial sigma-algebra. For fixed $(\theta,X)$, the
+incidence evaluator used by the state factor is
 \begin{equation}
-\widetilde\phi_i(s)(A)=\int_{\mathsf M}K_i(m,A)s(dm).
+\operatorname{ev}_{i,a}(m_i)=K^{X,a}_{i,m_i},
+\qquad
+K^{X,a}_{i,m_i}(k_{\operatorname{pa}(i)},B)
+:=P_{\theta,i}^{k}(B\given k_{\operatorname{pa}(i)},m_i,X),
+\label{eq:gen-evaluated-state-kernel}
+\end{equation}
+for every $m_i\in\mathsf M_{i,a}$, every complete parent-state tuple in the
+displayed source, and $B\in\mathscr K_{i,a}$. Thus $m_i$ is the sampled
+presentation supplied to the evaluator, while every parent-state coordinate
+remains in the source of its normalized kernel. Together with the separate
+model factor, which retains every parent-model coordinate, this specialization
+reads the complete source block \(y_{\operatorname{pa}(i),a}\).
+\status{DEFINITION}
+
+For $i\in V_a$, write
+$\mathsf Y_{\operatorname{pa}(i),a}=\prod_{j\in\operatorname{pa}(i)}\mathsf Y_{j,a}$.
+The ordered composite of the model and state kernels is the normalized agent mechanism
+\begin{equation}
+\begin{split}
+G_{\theta,i,a}&:
+(\mathsf X\times\mathsf Y_{\operatorname{pa}(i),a})
+\rightsquigarrow\mathsf Y_{i,a},\\
+G_{\theta,i,a}\bigl(d(k_i,m_i)\given y_{\operatorname{pa}(i),a},X\bigr)
+&:=P_{\theta,i}^{m}(dm_i\given m_{\operatorname{pa}(i)},X)
+K^{X,a}_{i,m_i}(k_{\operatorname{pa}(i)},dk_i).
+\end{split}
+\label{eq:gen-agent-mechanism}
+\end{equation}
+Its conditioning coordinates precede its target block, and integration in $k_i$ followed by $m_i$
+gives unit mass. The model factor retains the complete parent-model tuple and the evaluated state
+factor retains the complete parent-state tuple, so their composition reads the full
+$y_{\operatorname{pa}(i),a}$ source. Under the design-point conditional-independence hypothesis,
+the finite-design
+agent mechanism is
+\begin{equation}
+G_{\theta,i,D}:=\bigotimes_{a\in D_i}G_{\theta,i,a}.
+\label{eq:gen-agent-design-mechanism}
+\end{equation}
+The two factors inside each $G_{\theta,i,a}$ are composed in their displayed dependency order.
+The tensor product in $G_{\theta,i,D}$ is the product kernel across independent design points. \status{DEFINITION}
+
+The channels are asymmetric by declaration. At a root incidence \((i,a)\), the
+parent-state source in \eqref{eq:gen-evaluated-state-kernel} is the singleton
+with element $\ast$. For
+\(s\in\mathcal P(\mathsf M_{i,a},\mathscr M_{i,a})\), the evaluated kernel
+induces the incidence-level map on laws
+\begin{equation}
+\widetilde\phi_{i,a}(s)(A)
+=\int_{\mathsf M_{i,a}}K^{X,a}_{i,m}(\ast,A)s(dm)
+=\int_{\mathsf M_{i,a}}P_{\theta,i}^{k}(A\given m,X)s(dm),
+\qquad A\in\mathscr K_{i,a}.
 \label{eq:gen-root-law-bridge}
 \end{equation}
-Only this pushforward-on-laws map can represent the local associated-bundle morphism
-$\widetilde\Phi:(\mathcal E_m)_c\to(\mathcal E_b)_c$, and only if its contextual and gauge
-compatibility is declared.  At a nonroot, the kernel is indexed by the parent belief coordinate; it
+Only this pushforward-on-laws map can represent the design-point value of the
+local associated-bundle morphism
+$\widetilde\Phi:(\mathcal E_m)_{c_a}\to(\mathcal E_b)_{c_a}$, and only if its
+contextual and gauge compatibility is declared. At a nonroot, the evaluated
+kernel is indexed by the complete parent
+belief tuple; it
 does not define a map $\mathcal E_m\to\mathcal E_b$ unless that parent is fixed or the domain is
 enlarged.  Otherwise it is a separately declared kernel-valued bridge.  In every case the
 generative dependence runs from model samples to belief samples.  The geometric existence of
@@ -49,70 +120,73 @@ $\Phi:\mathcal E_b\to\mathcal E_m$ neither inserts a reverse factor into
 would need a separately normalized joint and cannot infer its factorization from the two
 associated-bundle morphisms.
 
-\section{Iterated composition and densities}
+\section{Iterated composition and latent densities}
 \label{sec:gen-composition}
 
-Choose a topological ordering $v_1,\dots,v_N$ of $\Gamma$.  The one-design-point law is the
+For each $a$, let $N_a:=|V_a|$ and choose a topological ordering
+$v_{a,1},\dots,v_{a,N_a}$ of $\Gamma_a$. The one-design-point latent law is the
 successive kernel composition
 \begin{equation}
-P_{\theta,a}(do_a,dY_a\given X)
-=\prod_{\ell=1}^{N}
-P_{\theta,v_\ell}^{m}(dm_{v_\ell}\given m_{\operatorname{pa}(v_\ell)},X)
-P_{\theta,v_\ell}^{k}(dk_{v_\ell}\given k_{\operatorname{pa}(v_\ell)},m_{v_\ell},X)
-P_{\theta,v_\ell}^{o}(do_{v_\ell}\given k_{v_\ell},m_{v_\ell},X).
+\mathbb P_{\theta,V,a}^{Y}(dy_a\given X)
+:=\overrightarrow{\prod_{\ell=1}^{N_a}}
+G_{\theta,v_{a,\ell},a}
+\bigl(dy_{v_{a,\ell},a}\given y_{\operatorname{pa}(v_{a,\ell}),a},X\bigr).
 \label{eq:gen-composition}
 \end{equation}
-The product denotes ordered application of kernels, not multiplication of measures.  For bounded
+The arrow denotes ordered application of kernels, not multiplication of measures. For bounded
 measurable $f$, its meaning is
 \begin{equation}
-\int f dP_{\theta,a}
-=\int P_{\theta,v_1}^{m}(dm_{v_1}\given X)
-\int P_{\theta,v_1}^{k}(dk_{v_1}\given m_{v_1},X)
-\int P_{\theta,v_1}^{o}(do_{v_1}\given k_{v_1},m_{v_1},X)
-\cdots f(o_a,y_a).
+\int f(y_a)\mathbb P_{\theta,V,a}^{Y}(dy_a\given X)
+=\int G_{\theta,v_{a,1},a}(dy_{v_{a,1},a}\given X)\cdots
+\int G_{\theta,v_{a,N_a},a}
+\bigl(dy_{v_{a,N_a},a}\given y_{\operatorname{pa}(v_{a,N_a}),a},X\bigr)f(y_a).
 \label{eq:gen-iterated-integral}
 \end{equation}
 Every conditioning coordinate has been introduced before its kernel is applied.
 
 \medskip
-\constructionheading{Finite directed law}{cons:gen-finite-directed-law}
-Equation~\eqref{eq:gen-iterated-integral} defines a probability kernel
-$X\mapsto P_{\theta,a}(\cdot\given X)$. \status{ESTABLISHED}
+\constructionheading{Finite directed latent law}{cons:gen-finite-directed-law}
+Equation~\eqref{eq:gen-iterated-integral} defines a normalized measurable probability kernel
+$X\mapsto\mathbb P_{\theta,V,a}^{Y}(\cdot\given X)$. \status{ESTABLISHED}
 \medskip
 
 \noindent\emph{Proof.}
 Integrating a bounded measurable function against a probability kernel preserves boundedness and
-measurability in the remaining variables.  Finite iteration therefore defines a measure, and
-$f\equiv1$ gives total mass one.  This is the finite kernel construction underlying directed
-graphical models \citep{Klenke2020,Lauritzen1996,Wainwright2008}. \hfill$\square$
+measurability in the remaining variables. Finite induction along the topological order therefore
+defines a measure and a measurable kernel in $X$; applying the induction to $f\equiv1$ gives total
+mass one. This is the finite kernel construction underlying directed graphical models
+\citep{Klenke2020,Lauritzen1996,Wainwright2008}. \hfill$\square$
 
 Distinct design points are conditionally independent given $X$:
 \begin{equation}
-P_\theta(do,dY\given X)
-=\bigotimes_{a=1}^{M}P_{\theta,a}(do_a,dY_a\given X).
+\mathbb P_{\theta,V}^{Y}(dy\given X)
+=\bigotimes_{a=1}^{M}\mathbb P_{\theta,V,a}^{Y}(dy_a\given X).
 \label{eq:gen-design-product}
 \end{equation}
-This modeling hypothesis excludes residual cross-design dependence and is used in the finite-design
-normalization and factor count. \status{HYPOTHESIS}\label{hyp:gen-design-product}
+Equivalently, each agent contributes the bundled mechanism $G_{\theta,i,D}$ of
+\eqref{eq:gen-agent-design-mechanism}. This modeling hypothesis excludes residual cross-design
+dependence and is used in the finite-design normalization and factor count.
+\status{HYPOTHESIS}\label{hyp:gen-design-product}
 
-When component kernels have densities relative to the declared component reference measures,
+When the component kernels have densities relative to the declared component reference measures,
 \begin{equation}
-p_{\theta,a}(o_a,y_a\given X)
-=\prod_{i\in V}
-p_{\theta,i}^{m}(m_i\given m_{\operatorname{pa}(i)},X)
-p_{\theta,i}^{k}(k_i\given k_{\operatorname{pa}(i)},m_i,X)
-p_{\theta,i}^{o}(o_i\given k_i,m_i,X),
+g_{\theta,i,a}(k_i,m_i\given y_{\operatorname{pa}(i),a},X)
+=p_{\theta,i}^{m}(m_i\given m_{\operatorname{pa}(i)},X)
+p_{\theta,i}^{k}(k_i\given k_{\operatorname{pa}(i)},m_i,X),
+\qquad
+p_{\theta,V,a}^{Y}(y_a\given X)=\prod_{i\in V_a}g_{\theta,i,a}.
 \label{eq:gen-density}
 \end{equation}
-and
+Consequently
 \begin{equation}
-p_\theta(o,y\given X)=\prod_{a=1}^{M}p_{\theta,a}(o_a,y_a\given X),
+p_{\theta,V}^{Y}(y\given X)=\prod_{a=1}^{M}p_{\theta,V,a}^{Y}(y_a\given X),
 \qquad
-P_\theta(do,dY\given X)
-=p_\theta(o,y\given X)\nu_D^O(do)\nu_D^Y(dy).
+\mathbb P_{\theta,V}^{Y}(dy\given X)
+=p_{\theta,V}^{Y}(y\given X)\nu_D^Y(dy).
 \label{eq:gen-design-density}
 \end{equation}
-The measure $P_\theta$ is authoritative; $p_\theta$ denotes only its Radon--Nikodym density.
+The measure $\mathbb P_{\theta,V}^{Y}$ is authoritative; $p_{\theta,V}^{Y}$ denotes only its
+Radon--Nikodym density.
 
 \section{The typing prohibition}
 \label{sec:gen-typing}
@@ -120,7 +194,7 @@ The measure $P_\theta$ is authoritative; $p_\theta$ denotes only its Radon--Niko
 \requirementheading{Typing prohibition}{req:gen-typing-prohibition}
 \emph{Each factor in \eqref{eq:gen-kernels} is a function only of $\theta$, $X$, and its displayed
 parent and same-agent latent coordinates.  No generative kernel may take as an argument the
-recognition kernel $Q_X$, one of its marginals or parameters, or a posterior of the model.}
+recognition law $\mathbb Q_{V,o,X}$, one of its local marginals or parameters, or the posterior $\boldsymbol\Pi_{\theta,V,o,X}$.}
 \status{DEFINITION}
 
 This requirement defines the fixed-joint construction and proves nothing.  A transition built from
@@ -199,27 +273,46 @@ The typing prohibition does not ban population coupling through latents inside
 a fixed joint; it bans a generative factor from reading the posterior that the
 joint is supposed to determine. \status{DEFINITION}
 
-\section{Exact normalization}
+\section{Normalized record extension}
 \label{sec:gen-normalization}
 
-\propositionheading{Normalization without a partition function}{prop:gen-exact-normalization}
-Under the domination assumptions of \Cref{ch:probability} and
-\Cref{hyp:gen-design-product},
+\propositionheading{Normalization by latent composition and record attachment}{prop:gen-exact-normalization}
+Under the declared conditional independence of record coordinates given $(X,y)$, the full population law is the kernel
 \begin{equation}
-P_\theta(\mathsf O_D\times\mathsf Y_D\given X)=1,
-\qquad
-\int p_\theta(o,y\given X)\nu_D^O(do)\nu_D^Y(dy)=1
+\mathbb P_{\theta,V}(dy,do\given X)
+=
+\mathbb P_{\theta,V}^{Y}(dy\given X)
+\prod_{a\in\mathfrak A}K_a(X,y_{\partial a,D},do_a).
+\label{eq:gen-record-extension}
+\end{equation}
+It is normalized for every admissible $(\theta,X)$:
+\begin{equation}
+\mathbb P_{\theta,V}(\mathsf Y_D\times\mathsf O_D\given X)=1.
 \label{eq:gen-normalization}
 \end{equation}
-for every admissible $(\theta,X)$, without a global normalizing constant. \status{ESTABLISHED}
+If the record kernels have jointly measurable densities
+$K_a(X,y_{\partial a,D},do_a)=\ell_a(o_a\given X,y_{\partial a,D})\nu_a(do_a)$
+and $\nu_D^O=\bigotimes_{a\in\mathfrak A}\nu_a$, then
+\begin{equation}
+p_{\theta,V}(o,y\given X)
+=p_{\theta,V}^{Y}(y\given X)
+\prod_{a\in\mathfrak A}\ell_a(o_a\given X,y_{\partial a,D})
+\label{eq:gen-record-density}
+\end{equation}
+is its normalized density. \status{ESTABLISHED}
 
 \noindent\emph{Proof.}
-At one design point, Tonelli's theorem permits reverse-topological integration.  Integrate each
-observation factor first.  Then remove each nonroot in reverse topological order by integrating its
-normalized belief kernel and then its normalized model kernel; all descendant factors containing
-those coordinates have already disappeared.  Finally integrate each root bridge and proper root
-law.  Every integral contributes one.  The same induction proves the measure statement without
-domination, and \eqref{eq:gen-design-product} multiplies $M$ unit masses. \hfill$\square$
+Measurability follows by finite kernel composition. For normalization, apply Tonelli's theorem and
+integrate each record coordinate first. Every $K_a$ has unit mass in $o_a$, so their finite product
+disappears and leaves $\mathbb P_{\theta,V}^{Y}(dy\given X)$. The latter has unit mass by the
+finite topological-order construction and the finite design product. The same calculation with the
+displayed Radon--Nikodym derivatives proves the density statement. \hfill$\square$
+
+Cycles in the finite record hypergraph do not obstruct \eqref{eq:gen-record-extension}: record
+coordinates are conditionally attached outputs of one already constructed latent law. By contrast,
+reciprocal latent-state conditionals require a declared order or schedule, a common-cause
+construction, or a globally normalized undirected model. Local normalization of those reciprocal
+conditionals alone does not supply a joint.
 
 \section{The normalized undirected alternative}
 \label{sec:gen-undirected}
@@ -235,7 +328,7 @@ Z_X
 &=\int\Psi_X(o,y)\nu_D^O(do)\nu_D^Y(dy),
 \qquad 0<Z_X<\infty,
 \label{eq:gen-gibbs-partition}\\
-p_\theta^{\mathrm{Gibbs}}(o,y\given X)
+p_{\theta,V}^{\mathrm{Gibbs}}(o,y\given X)
 &=Z_X^{-1}\Psi_X(o,y).
 \label{eq:gen-gibbs-density}
 \end{align}
@@ -270,7 +363,7 @@ parameters, not because normalized cyclic Gaussian Markov random fields are inva
 \section{Covariance under independent channel-frame re-expression}
 \label{sec:gen-gauge}
 
-At each design point $c_a$ and vertex, independently re-express the belief and
+At each admissible incidence $(i,a)\in\mathfrak I_D$, independently re-express the belief and
 model frame coordinates by
 $g_{a,i}^b=g_i^b(c_a)\in G$ and $g_{a,i}^m=g_i^m(c_a)\in G$.  Define the
 old-to-new represented sample-coordinate maps
@@ -288,14 +381,15 @@ $(g_{a,i}^x)^{-1}$.  Thus $R_{a,i}^x$ acts within the
 channel's sample fiber, while the group element $(g_i^x)^{-1}\in G$, not the
 represented operator $(R_{a,i}^x)^{-1}$, multiplies the principal frame on the right.  This
 distinction remains necessary when the representation is not faithful.
-Within a formula for one design point, suppress the index $a$ and write $g_i^x,R_i^x$.
+Within a formula for one design point, suppress the index $a$ on the participating vertices and write $g_i^x,R_i^x$.
 They act on latent coordinates as $k_i'=R_i^bk_i$ and $m_i'=R_i^mm_i$, while observations are
 gauge inert. \status{DEFINITION}
 
-To permit all such independent coordinate changes, the finite-design structural
-data carry graph-link copies \(\Theta_{a,ij}^x\), one for each design
-incidence. At fixed \(a\) write \(\Theta_{ij}^x\); their discrete vertex
-frame changes are
+To permit all such independent coordinate changes, set
+\(D_{ij}:=D_i\cap D_j\) for each edge \((i,j)\). The finite-design structural
+data carry graph-link copies \(\Theta_{a,ij}^x\) exactly for \(a\in D_{ij}\).
+At fixed \(a\in D_{ij}\) write \(\Theta_{ij}^x\); their discrete vertex frame
+changes are
 \begin{equation}
 h_{a,i}^x:=g_{a,i}^x=g_i^x(c_a),
 \qquad
@@ -323,9 +417,9 @@ and the inverse-orientation rule is preserved.  Equations
 \eqref{eq:geo-regime-two-gauge-law} and \eqref{eq:gen-gauge-links} are therefore the same passive
 law written with mutually inverse rechoice conventions. \status{ESTABLISHED}
 
-If instead one structural link is constrained to be identical at every
-design point, an admissible frame rechoice must preserve that constraint:
-for every two design indices \(a,a'\) and every constrained edge,
+If instead one structural link is constrained to be identical at every point of
+\(D_{ij}\), an admissible frame rechoice must preserve that constraint:
+for every \(a,a'\in D_{ij}\) and every constrained edge \((i,j)\),
 \begin{equation}
 h_{a,i}^x\Theta_{ij}^x(h_{a,j}^x)^{-1}
 =h_{a',i}^x\Theta_{ij}^x(h_{a',j}^x)^{-1}.
@@ -340,8 +434,8 @@ transformation law requires an explicitly declared parameter compensation.
 \status{DEFINITION}
 
 \propositionheading{Shared-link admissibility need not be closed under composition}{prop:gen-shared-link-nonclosure}
-For $G=\GL(2,\R)$, two design points, one constrained edge, and
-$\Theta_{ij}=I$, the solution set of \eqref{eq:gen-shared-link-admissibility} is not closed under
+For $G=\GL(2,\R)$, two design points at which both endpoints participate, one constrained edge,
+and $\Theta_{ij}=I$, the solution set of \eqref{eq:gen-shared-link-admissibility} is not closed under
 pointwise multiplication. \status{ESTABLISHED}
 
 \noindent\emph{Proof.}
@@ -357,11 +451,12 @@ Context-independent rechoices form a sufficient subgroup, but the first
 rechoice in the proof shows that they are not necessary. \status{ESTABLISHED}
 
 At the unconstrained finite-design level, declaring the coordinate re-expressions independently
-gives the passive product $\prod_{a,i}(G\times G)$.  If they must arise as values of smooth maps
-$g_i^x:\mathcal C_i\to G$, the realized group is the image of the corresponding evaluation map;
-it equals the displayed product whenever that evaluation map is surjective.  For example, this
-holds for a smooth positive-dimensional base at finitely many distinct design points when $G$ is
-connected, by smooth interpolation in disjoint coordinate neighborhoods.  This product records two independently chosen
+gives the passive product $\prod_{(i,a)\in\mathfrak I_D}(G\times G)$. If they must arise as values of smooth maps
+$g_i^x:\mathcal C_i\to G$, the realized group is the image of the corresponding
+incidence-restricted evaluation map; it equals the displayed product whenever that evaluation map
+is surjective. For example, this holds when each relevant $\mathcal C_i$ is smooth and
+positive-dimensional, the points $\{c_a:a\in D_i\}$ are distinct, and $G$ is connected, by smooth
+interpolation in disjoint coordinate neighborhoods. This product records two independently chosen
 trivializations of associated bundles induced from the same $\mathscr P_G$; it is not a second principal
 structure group. The active principal gauge group is $\operatorname{Aut}_G(\mathscr P_G)$ over
 $\operatorname{id}_{\mathcal C}$; one automorphism acts on both associated bundles, with local
@@ -371,8 +466,8 @@ common-frame specialization $h_i=e_G$.  Equality with the corresponding pointwis
 only when the relevant active-gauge evaluation map is surjective; disconnected structure groups
 or global bundle constraints can obstruct that surjectivity.  It is not the principal right
 $G$-action itself. A
-context-independent frame re-expression is the subgroup for which
-$g_{a,i}^x$ does not depend on $a$.
+context-independent frame re-expression is the subgroup for which $g_{a,i}^x$ is constant as
+$a$ ranges over $D_i$.
 \status{DEFINITION}\label{def:gen-product-action}
 
 \medskip
@@ -397,28 +492,37 @@ P_{\theta',i}^{o}
 \left(\cdot\given k_i,m_i,X\right),
 \label{eq:gen-gauge-pushforward-obs}
 \end{align}
-with the analogous root identities. \status{HYPOTHESIS}
+with the analogous root identities. Every interaction-record kernel also obeys
+\begin{equation}
+K_a\left(X',R_{\partial a,D}y_{\partial a,D},\cdot\right)
+=K_a\left(X,y_{\partial a,D},\cdot\right),
+\qquad a\in\mathfrak A,
+\label{eq:gen-gauge-record-kernel}
+\end{equation}
+where $R_{\partial a,D}$ is the product restriction of $R$ to the incident agent blocks. Record coordinates are gauge inert. \status{HYPOTHESIS}
 \medskip
 
-The second identity is the covariance requirement for the model-to-belief sample kernel. At a
-root it implies that the induced law map \eqref{eq:gen-root-law-bridge} obeys
-\eqref{eq:geo-tildephi-gauge-law}; at a nonroot it remains a parent-indexed kernel law unless an
-enlarged cross-bundle domain is declared. Neither route uses $\Phi$.
+The second identity is the covariance requirement for the model-to-belief sample
+kernel. At each root incidence it implies that the induced law map
+\eqref{eq:gen-root-law-bridge} obeys the design-point form of
+\eqref{eq:geo-tildephi-gauge-law}; at a nonroot it remains a parent-indexed
+kernel law unless an enlarged cross-bundle domain is declared. Neither route
+uses $\Phi$.
 
 \propositionheading{Joint measure covariance and evidence invariance}{prop:gen-product-evidence-invariance}
 Let
-$T(o,y)=(o,Ry)$, where
-$R=\bigoplus_{a,i}(R_{a,i}^b\oplus R_{a,i}^m)$.  Under
+$T(y,o)=(Ry,o)$, where
+$R=\bigoplus_{(i,a)\in\mathfrak I_D}(R_{a,i}^b\oplus R_{a,i}^m)$. Under
 \Cref{hyp:gen-kernel-covariance},
 \begin{equation}
-P_{\theta'}(\cdot\given X')=T_{\#}P_\theta(\cdot\given X),
+\mathbb P_{\theta',V}(\cdot\given X')=T_{\#}\mathbb P_{\theta,V}(\cdot\given X),
 \label{eq:gen-gauge-joint-pushforward}
 \end{equation}
 as probability measures, without a density or reference-measure hypothesis.  Because $T$ is the
 identity on observations, the observation marginals agree.  Relative to the common observation
 reference measure this gives
 \begin{equation}
-p_{\theta'}(o\given X')=p_\theta(o\given X)
+p_{\theta',V}(o\given X')=p_{\theta,V}(o\given X)
 \quad\text{for }\nu_D^O\text{-almost every }o.
 \label{eq:gen-gauge-evidence-invariance}
 \end{equation}
@@ -429,17 +533,17 @@ j_R(y'):=\frac{d(R_\#\nu_D^Y)}{d\nu_D^Y}(y').
 \end{equation}
 Then the density statement is
 \begin{equation}
-p_{\theta'}(o,y'\given X')
-=p_\theta(o,R^{-1}y'\given X)j_R(y')
-\quad\text{for }(\nu_D^O\otimes\nu_D^Y)\text{-almost every }(o,y').
+p_{\theta',V}(o,y'\given X')
+=p_{\theta,V}(o,R^{-1}y'\given X)j_R(y')
+\quad\text{for }(\nu_D^Y\otimes\nu_D^O)\text{-almost every }(y',o).
 \label{eq:gen-gauge-rn-density}
 \end{equation}
 On the further differentiable equal-dimensional Euclidean tier, when every represented block is
 an invertible linear map and $\nu_D^Y$ is product Lebesgue measure,
 $j_R=|\det R|^{-1}$ and hence
 \begin{equation}
-p_{\theta'}(o,y'\given X')
-=|\det R|^{-1}p_\theta(o,R^{-1}y'\given X).
+p_{\theta',V}(o,y'\given X')
+=|\det R|^{-1}p_{\theta,V}(o,R^{-1}y'\given X).
 \label{eq:gen-gauge-lebesgue-density}
 \end{equation}
 Equal dimensionality here is between the source and target coordinates within each channel; it
@@ -448,18 +552,41 @@ measures.
 \status{ESTABLISHED}
 
 \noindent\emph{Proof.}
-Apply \eqref{eq:gen-gauge-pushforward-model}--\eqref{eq:gen-gauge-pushforward-obs} along the
-topological ordering.  Each factor is the receiving-coordinate pushforward of the original factor,
-so the composed law is $T_{\#}P_\theta$.  Projection to the observation coordinate commutes with
-this pushforward, so the observation measures agree and their densities satisfy
-\eqref{eq:gen-gauge-evidence-invariance}.  For a bounded measurable test function $F$ on the joint
-observation--latent space,
+Apply \eqref{eq:gen-gauge-pushforward-model} and
+\eqref{eq:gen-gauge-pushforward-state} along the topological ordering of each $\Gamma_a$.
+Finite kernel induction gives
 \[
-\int F(o,y')p_{\theta'}(o,y'\given X')\nu_D^O(do)\nu_D^Y(dy')
-=\int F(o,Ry)p_\theta(o,y\given X)\nu_D^O(do)\nu_D^Y(dy),
+\mathbb P_{\theta',V,a}^{Y}(\cdot\given X')
+=R_{a\#}\mathbb P_{\theta,V,a}^{Y}(\cdot\given X),
 \]
-by the measure identity.  Rewriting the right side against $R_\#\nu_D^Y$ and applying
-\eqref{eq:gen-gauge-reference-rn} gives \eqref{eq:gen-gauge-rn-density}.  On the stated Lebesgue
+where $R_a$ is the product restriction of $R$ to the block at design point $c_a$,
+and the product over design points in \eqref{eq:gen-design-product} therefore gives
+$\mathbb P_{\theta',V}^{Y}(\cdot\given X')=R_\#\mathbb P_{\theta,V}^{Y}(\cdot\given X)$.
+Now let $F$ be a bounded measurable function on the joint latent--observation space. Applying
+\eqref{eq:gen-record-extension}, then the latent pushforward, gives
+\[
+\begin{split}
+\int F d\mathbb P_{\theta',V}
+&=\int\mathbb P_{\theta,V}^{Y}(dy\given X)
+\int F(Ry,o)\prod_{r\in\mathfrak A}
+K_r\left(X',R_{\partial r,D}y_{\partial r,D},do_r\right)\\
+&=\int\mathbb P_{\theta,V}^{Y}(dy\given X)
+\int F(Ry,o)\prod_{r\in\mathfrak A}
+K_r\left(X,y_{\partial r,D},do_r\right)\\
+&=\int F\circ T d\mathbb P_{\theta,V},
+\end{split}
+\]
+where the second equality applies \eqref{eq:gen-gauge-record-kernel} to every record factor. This
+proves \eqref{eq:gen-gauge-joint-pushforward} without using the legacy singleton observation
+kernel $P_{\theta,i}^{o}$. Projection to the observation coordinate now shows that the observation
+measures agree, and their densities satisfy \eqref{eq:gen-gauge-evidence-invariance}. The joint
+measure identity and the Radon--Nikodym representations give
+\[
+\int F(y',o)p_{\theta',V}(o,y'\given X')\nu_D^Y(dy')\nu_D^O(do)
+=\int F(Ry,o)p_{\theta,V}(o,y\given X)\nu_D^Y(dy)\nu_D^O(do).
+\]
+Rewriting the right side against $R_\#\nu_D^Y$ and applying
+\eqref{eq:gen-gauge-reference-rn} gives \eqref{eq:gen-gauge-rn-density}. On the stated Lebesgue
 tier, linear change of variables gives
 $d(R_\#\nu_D^Y)/d\nu_D^Y=|\det R|^{-1}$, proving
 \eqref{eq:gen-gauge-lebesgue-density}. \hfill$\square$
