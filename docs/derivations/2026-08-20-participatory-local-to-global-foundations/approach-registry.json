@@ -1,0 +1,78 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-368c9400e04e0700491b5a05ce03b074b8d146fa7243ce2327638237ab24a718",
+  "target_digest": "368c9400e04e0700491b5a05ce03b074b8d146fa7243ce2327638237ab24a718",
+  "mechanism_families": [
+    {
+      "family_id": "family-directed-kernel-construction",
+      "core_mechanism": "Construct the population generative law by finite topological composition of normalized agent mechanisms, then attach normalized interaction-record kernels.",
+      "target_obligation_ids": [
+        "target"
+      ],
+      "representation": "Standard-Borel agent blocks, finite DAG kernels, finite-design product, and normalized record kernels on a finite interaction hypergraph.",
+      "invariant_or_obstruction": "Unit mass is preserved by iterated kernel integration; arbitrary reciprocal conditionals and unnormalized cyclic potentials obstruct automatic existence.",
+      "obligations": [
+        "Prove measurability and normalization of the ordered composition.",
+        "Separate record kernels, directed transitions, evaluated model kernels, and unnormalized potentials.",
+        "Preserve the fixed-joint prohibition."
+      ],
+      "bridge": "The current finite directed construction and local/collective record theorem provide specialized source lemmas, but the abstract local-to-global seam remains to be written in the authoritative manuscript.",
+      "failure_test": "Exhibit an admitted family whose ordered composition or normalized record attachment fails unit mass, or a dependency cycle presented without an existence condition.",
+      "verified_results": [],
+      "open_gaps": [
+        "Authoritative manuscript proof and cross-reference migration are not implemented.",
+        "No adversarial reconstruction or release verification has run."
+      ],
+      "novelty_fingerprint": "Standard kernel construction reorganized for this manuscript; no novelty claim.",
+      "disposition": "open"
+    },
+    {
+      "family_id": "family-coupling-class-selection",
+      "core_mechanism": "Define the population recognition law as a measurable selection from the coupling class of agent-block recognition laws.",
+      "target_obligation_ids": [
+        "target"
+      ],
+      "representation": "Finite products of standard-Borel agent blocks, product coupling, constrained coupling intersections, and selected joint recognition kernels.",
+      "invariant_or_obstruction": "Marginals are preserved under centered bounded-density perturbations; two non-Dirac marginals obstruct uniqueness.",
+      "obligations": [
+        "Prove nonemptiness and convexity of the unconstrained coupling class.",
+        "Prove the singleton criterion or provide an explicit counterexample to uniqueness.",
+        "Fence constrained feasibility and measurable selection as separate obligations.",
+        "Apply the exact ELBO only after one joint coupling is selected."
+      ],
+      "bridge": "The current Gaussian witness and total-correlation theorem supply partial source results; the agent-block coupling layer is new manuscript architecture.",
+      "failure_test": "Produce two distinct admitted population laws with identical local marginals against any uniqueness claim, or an empty constrained class against an unproved existence claim.",
+      "verified_results": [],
+      "open_gaps": [
+        "The general perturbation proof and measurable-kernel statement are not yet integrated.",
+        "No correlated selector is canonical without additional data."
+      ],
+      "novelty_fingerprint": "Standard coupling theory used to expose a manuscript-level missing dependence layer; no novelty claim.",
+      "disposition": "open"
+    },
+    {
+      "family_id": "family-type-preserving-manuscript-reconstruction",
+      "core_mechanism": "Reorder the explanatory dependencies inside the existing chapter graph while preserving full-law types, stable labels, and established downstream hypotheses.",
+      "target_obligation_ids": [
+        "target"
+      ],
+      "representation": "Source dependency DAG, canonical notation registry, status taxonomy, provenance boundary, and agent-relative interpretive postulates.",
+      "invariant_or_obstruction": "Every downstream theorem must receive the same typed joint law and hypotheses; symbol collision, circular definition, or interpretive theorem inflation obstructs the rewrite.",
+      "obligations": [
+        "Amend the governing specification before foundational prose.",
+        "Keep the authoritative Research manuscript distinct from the repository snapshot.",
+        "Preserve stable chapter and theorem labels.",
+        "Confine participatory and Neo-Kantian statements to declared interpretation or hypothesis."
+      ],
+      "bridge": "The written design spec maps the local-first construction onto the current chapter and label graph without changing include order.",
+      "failure_test": "Find a downstream definition that becomes circular, a theorem whose hypotheses change silently, a global law presented as an agent, or a manuscript edit applied only to the read-only snapshot.",
+      "verified_results": [],
+      "open_gaps": [
+        "User approval is required before authoritative manuscript implementation.",
+        "LaTeX, notation, and adversarial verification remain pending."
+      ],
+      "novelty_fingerprint": "Project-specific type and dependency reconstruction; no philosophical or mathematical novelty claim.",
+      "disposition": "open"
+    }
+  ]
+}

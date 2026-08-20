@@ -1,0 +1,21 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-368c9400e04e0700491b5a05ce03b074b8d146fa7243ce2327638237ab24a718",
+  "target_digest": "368c9400e04e0700491b5a05ce03b074b8d146fa7243ce2327638237ab24a718",
+  "assumptions": [],
+  "evidence": [],
+  "claims": [
+    {
+      "id": "target",
+      "statement": "Construct a local-first participatory probability architecture for a finite multi-agent system in which agent-indexed law sections, evaluated generative mechanisms, agent-local recognition laws, and normalized interaction-record mechanisms are primitive; population-level generative and recognition laws arise only as explicitly constructed or selected compatible joint extensions. Establish the sufficient conditions for normalized local composition, characterize existence and nonuniqueness of recognition couplings, derive the exact global ELBO and every claimed local-to-global decomposition under explicit assumptions, and give a dependency-preserving manuscript architecture in which no population law is itself an agent and no participatory interpretation is promoted to a theorem.",
+      "quantifiers": "For every finite agent index set V and every admitted family of standard-Borel local spaces and normalized local mechanisms satisfying the declared ordering, ownership, measurability, and support hypotheses, construct a normalized population generative law P_V. For every admitted family of local recognition laws (Q_i)_{i in V}, prove that its unconstrained coupling set is nonempty, state the additional compatibility constraints when present, and refute uniqueness in general by an explicit finite counterexample whenever at least two marginals are nondegenerate. For every selected compatible joint Q_V for which the relevant Radon-Nikodym derivatives exist, derive the exact ELBO/KL identity and state necessary and sufficient assumptions for any further local or interaction decomposition. Then exhibit a minimal chapter dependency order that makes the local objects logically prior while preserving valid downstream results.",
+      "kind": "MATHEMATICAL",
+      "target_digest": "368c9400e04e0700491b5a05ce03b074b8d146fa7243ce2327638237ab24a718",
+      "state": "CANDIDATE",
+      "assumption_ids": [],
+      "evidence_ids": [],
+      "bridge_premise_ids": [],
+      "falsifier": "The target fails if normalized local mechanisms satisfying the declared premises do not yield the claimed P_V; if a stated coupling-existence claim has an admitted empty feasible set; if uniqueness is asserted despite two distinct admitted couplings with identical local marginals; if an ELBO or local decomposition omits a required support, normalization, or dependence term; or if the proposed reorder makes a downstream definition circular or changes a proved claim without an explicit new premise."
+    }
+  ]
+}

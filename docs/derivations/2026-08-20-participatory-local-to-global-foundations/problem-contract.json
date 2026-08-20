@@ -1,0 +1,71 @@
+{
+  "schema_version": "rigorous-theory-search/v1",
+  "contract_id": "contract-sha256-368c9400e04e0700491b5a05ce03b074b8d146fa7243ce2327638237ab24a718",
+  "target_digest": "368c9400e04e0700491b5a05ce03b074b8d146fa7243ce2327638237ab24a718",
+  "target": {
+    "statement": "Construct a local-first participatory probability architecture for a finite multi-agent system in which agent-indexed law sections, evaluated generative mechanisms, agent-local recognition laws, and normalized interaction-record mechanisms are primitive; population-level generative and recognition laws arise only as explicitly constructed or selected compatible joint extensions. Establish the sufficient conditions for normalized local composition, characterize existence and nonuniqueness of recognition couplings, derive the exact global ELBO and every claimed local-to-global decomposition under explicit assumptions, and give a dependency-preserving manuscript architecture in which no population law is itself an agent and no participatory interpretation is promoted to a theorem.",
+    "kind": "MATHEMATICAL",
+    "quantifier_class": "MIXED",
+    "quantifiers": "For every finite agent index set V and every admitted family of standard-Borel local spaces and normalized local mechanisms satisfying the declared ordering, ownership, measurability, and support hypotheses, construct a normalized population generative law P_V. For every admitted family of local recognition laws (Q_i)_{i in V}, prove that its unconstrained coupling set is nonempty, state the additional compatibility constraints when present, and refute uniqueness in general by an explicit finite counterexample whenever at least two marginals are nondegenerate. For every selected compatible joint Q_V for which the relevant Radon-Nikodym derivatives exist, derive the exact ELBO/KL identity and state necessary and sufficient assumptions for any further local or interaction decomposition. Then exhibit a minimal chapter dependency order that makes the local objects logically prior while preserving valid downstream results.",
+    "domains": [
+      "Finite agent index sets V and finite interaction-record index sets A.",
+      "Standard-Borel local latent, observable, action, model-index, and law spaces attached to each agent.",
+      "Measurable normalized agent-local generative kernels and normalized interaction-record kernels, with pairwise K_ij as a special case of record kernels K_a.",
+      "Agent-local recognition probability laws Q_i and constrained or unconstrained coupling sets over the product latent space.",
+      "The current gauge-VFE manuscript dependency graph, including local model fibers, probability laws, generative composition, recognition laws, the exact ELBO, and later gauge/coarse-graining results."
+    ],
+    "codomains": [
+      "Normalized population generative laws P_V on the declared joint measurable space.",
+      "Sets of compatible population recognition laws Q_V with prescribed agent-local marginals and any declared record constraints.",
+      "Extended-real exact ELBO, KL, and free-energy functionals with finite-valued formulas only under their stated support and integrability assumptions.",
+      "A dependency-preserving manuscript design specification separating established mathematics, modeling postulates, interpretation, conjecture, numerical evidence, and open problems."
+    ],
+    "regularity": "All spaces and kernels are measurable. Disintegration or regular conditional probabilities are invoked only on standard-Borel spaces. Log-density formulas require a declared common dominating measure and the stated absolute-continuity and integrability conditions. Finite examples may use counting measure.",
+    "measures": [
+      "Each local probability law is normalized with respect to its declared local reference measure.",
+      "Directed composition uses iterated probability kernels; undirected positive potentials require an explicit finite, nonzero global normalizer.",
+      "A recognition coupling Q_V has the declared Q_i as marginals and must satisfy any additional compatibility constraints before it is admitted.",
+      "The ELBO identity is stated in measure-theoretic form, with density notation only after domination is declared."
+    ],
+    "boundary_conditions": [
+      "The empty-agent case is excluded unless treated explicitly as the unit probability space.",
+      "Interaction mechanisms are counted exactly once by an ownership or factor-index convention.",
+      "Cyclic interaction potentials are not treated as automatically normalized kernels.",
+      "Zero-probability and support-mismatch cases yield extended-real KL/free energy unless stronger assumptions are stated.",
+      "Deterministic or singleton marginals are separated from the generic nonuniqueness claim."
+    ],
+    "symmetries": [
+      "Local frame or gauge changes must act on agent-indexed law data and interaction mechanisms so that constructed scalar probabilities and the exact ELBO remain invariant wherever the existing theory proves invariance.",
+      "Relabeling agents and interaction records must commute with construction when the dependency graph and ownership map are relabeled consistently."
+    ],
+    "equivalence": "Two proposed architectures are equivalent only if they define the same admitted measurable objects, the same set of compatible joint laws, and the same exact scalar probability and ELBO values up to explicitly declared almost-everywhere equality and notation changes. Interpretive similarity alone is not equivalence.",
+    "premises": [
+      "Agent-local generative mechanisms are not inferred merely from local marginals; their causal or factorization role is declared separately.",
+      "A normalized directed acyclic family of kernels composes to a normalized joint law by iterated kernel construction; an undirected or cyclic factor family requires a global normalization condition.",
+      "Local recognition marginals do not determine a correlated joint recognition law.",
+      "The independent product coupling is available for an unconstrained finite family of probability marginals, but it is a modeling choice and need not satisfy extra interaction constraints.",
+      "Every local-to-global free-energy decomposition must follow from an explicit factorization or conditional-independence statement rather than from notation alone.",
+      "Existing downstream theorems may be retained only after their hypotheses and symbol dependencies are traced under the reordered foundations."
+    ],
+    "modeling_postulates": [
+      "Participatory priority: agent-level state-bearing systems and their relations are the primitive modeled units; this is a modeling stance, not a theorem of probability theory.",
+      "Relational records: observations entering the multi-agent theory are modeled as records produced at declared agent-environment or agent-agent couplings, without requiring a consciousness predicate.",
+      "Global-as-compatibility: P_V and Q_V summarize joint compatibility across agents and records; neither is interpreted as a universal agent or additional state-bearing subject.",
+      "Epistemic modesty: Neo-Kantian or participatory language is confined to motivation and interpretation unless a mathematical proposition with operational content is separately stated and proved."
+    ],
+    "search_priors": [
+      "SEARCH_PRIOR_AFFIRMATIVE"
+    ],
+    "permitted_theorems": [
+      "Finite-product measure and coupling existence results.",
+      "Ionescu-Tulcea construction for ordered probability kernels.",
+      "Standard-Borel disintegration and regular conditional probability results.",
+      "Radon-Nikodym, KL divergence, chain rule, conditional mutual information, and exact ELBO identities under their standard hypotheses.",
+      "Explicit finite Bernoulli or Gaussian couplings as counterexamples to uniqueness.",
+      "The manuscript's already established gauge covariance/invariance and coarse-graining results, only after their original hypotheses are verified to survive the dependency reorder."
+    ],
+    "negative_certificate_kind": "COUNTEREXAMPLE",
+    "falsification_criterion": "The target fails if normalized local mechanisms satisfying the declared premises do not yield the claimed P_V; if a stated coupling-existence claim has an admitted empty feasible set; if uniqueness is asserted despite two distinct admitted couplings with identical local marginals; if an ELBO or local decomposition omits a required support, normalization, or dependence term; or if the proposed reorder makes a downstream definition circular or changes a proved claim without an explicit new premise.",
+    "literature_policy": "Use the current manuscript, governing specification, and research wiki for project intent and status. Use primary mathematical sources for measure-theoretic construction, coupling, disintegration, and variational identities. Record exact source scope and do not claim philosophical or scientific novelty from this architecture search."
+  }
+}
