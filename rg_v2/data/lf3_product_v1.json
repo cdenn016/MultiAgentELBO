@@ -1,0 +1,78 @@
+{
+  "schema_version": "lf3-primitive-v1",
+  "fixture_id": "lf3_product_v1",
+  "context_id": "lf3-context-v1",
+  "agents": [
+    {
+      "agent_id": "a",
+      "parent_ids": [],
+      "belief_labels": ["b0", "b1"],
+      "model_labels": ["m0", "m1"],
+      "generative_rows": [[{"numerator": 3, "denominator": 8}, {"numerator": 1, "denominator": 8}, {"numerator": 1, "denominator": 8}, {"numerator": 3, "denominator": 8}]],
+      "evaluator": [
+        {"model_label": "m0", "rows": [[{"numerator": 3, "denominator": 4}, {"numerator": 1, "denominator": 4}]]},
+        {"model_label": "m1", "rows": [[{"numerator": 1, "denominator": 4}, {"numerator": 3, "denominator": 4}]]}
+      ]
+    },
+    {
+      "agent_id": "b",
+      "parent_ids": ["a"],
+      "belief_labels": ["b0", "b1"],
+      "model_labels": ["m0", "m1"],
+      "generative_rows": [
+        [{"numerator": 3, "denominator": 5}, {"numerator": 3, "denominator": 20}, {"numerator": 3, "denominator": 20}, {"numerator": 1, "denominator": 10}],
+        [{"numerator": 1, "denominator": 5}, {"numerator": 9, "denominator": 20}, {"numerator": 1, "denominator": 20}, {"numerator": 3, "denominator": 10}],
+        [{"numerator": 3, "denominator": 10}, {"numerator": 1, "denominator": 20}, {"numerator": 9, "denominator": 20}, {"numerator": 1, "denominator": 5}],
+        [{"numerator": 1, "denominator": 10}, {"numerator": 3, "denominator": 20}, {"numerator": 3, "denominator": 20}, {"numerator": 3, "denominator": 5}]
+      ],
+      "evaluator": [
+        {"model_label": "m0", "rows": [[{"numerator": 4, "denominator": 5}, {"numerator": 1, "denominator": 5}], [{"numerator": 4, "denominator": 5}, {"numerator": 1, "denominator": 5}], [{"numerator": 2, "denominator": 5}, {"numerator": 3, "denominator": 5}], [{"numerator": 2, "denominator": 5}, {"numerator": 3, "denominator": 5}]]},
+        {"model_label": "m1", "rows": [[{"numerator": 3, "denominator": 5}, {"numerator": 2, "denominator": 5}], [{"numerator": 3, "denominator": 5}, {"numerator": 2, "denominator": 5}], [{"numerator": 1, "denominator": 5}, {"numerator": 4, "denominator": 5}], [{"numerator": 1, "denominator": 5}, {"numerator": 4, "denominator": 5}]]}
+      ]
+    },
+    {
+      "agent_id": "c",
+      "parent_ids": ["b"],
+      "belief_labels": ["b0", "b1"],
+      "model_labels": ["m0", "m1"],
+      "generative_rows": [
+        [{"numerator": 3, "denominator": 5}, {"numerator": 3, "denominator": 20}, {"numerator": 3, "denominator": 20}, {"numerator": 1, "denominator": 10}],
+        [{"numerator": 1, "denominator": 5}, {"numerator": 9, "denominator": 20}, {"numerator": 1, "denominator": 20}, {"numerator": 3, "denominator": 10}],
+        [{"numerator": 3, "denominator": 10}, {"numerator": 1, "denominator": 20}, {"numerator": 9, "denominator": 20}, {"numerator": 1, "denominator": 5}],
+        [{"numerator": 1, "denominator": 10}, {"numerator": 3, "denominator": 20}, {"numerator": 3, "denominator": 20}, {"numerator": 3, "denominator": 5}]
+      ],
+      "evaluator": [
+        {"model_label": "m0", "rows": [[{"numerator": 4, "denominator": 5}, {"numerator": 1, "denominator": 5}], [{"numerator": 4, "denominator": 5}, {"numerator": 1, "denominator": 5}], [{"numerator": 2, "denominator": 5}, {"numerator": 3, "denominator": 5}], [{"numerator": 2, "denominator": 5}, {"numerator": 3, "denominator": 5}]]},
+        {"model_label": "m1", "rows": [[{"numerator": 3, "denominator": 5}, {"numerator": 2, "denominator": 5}], [{"numerator": 3, "denominator": 5}, {"numerator": 2, "denominator": 5}], [{"numerator": 1, "denominator": 5}, {"numerator": 4, "denominator": 5}], [{"numerator": 1, "denominator": 5}, {"numerator": 4, "denominator": 5}]]}
+      ]
+    }
+  ],
+  "recognitions": [
+    {"agent_id": "a", "masses": [{"numerator": 1, "denominator": 4}, {"numerator": 1, "denominator": 4}, {"numerator": 1, "denominator": 4}, {"numerator": 1, "denominator": 4}]},
+    {"agent_id": "b", "masses": [{"numerator": 1, "denominator": 4}, {"numerator": 1, "denominator": 4}, {"numerator": 1, "denominator": 4}, {"numerator": 1, "denominator": 4}]},
+    {"agent_id": "c", "masses": [{"numerator": 1, "denominator": 4}, {"numerator": 1, "denominator": 4}, {"numerator": 1, "denominator": 4}, {"numerator": 1, "denominator": 4}]}
+  ],
+  "records": [
+    {"record_id": "r_a", "owner_id": "a", "scope_ids": ["a"], "outcome_labels": ["0", "1"], "rows": [[{"numerator": 4, "denominator": 5}, {"numerator": 1, "denominator": 5}], [{"numerator": 4, "denominator": 5}, {"numerator": 1, "denominator": 5}], [{"numerator": 1, "denominator": 5}, {"numerator": 4, "denominator": 5}], [{"numerator": 1, "denominator": 5}, {"numerator": 4, "denominator": 5}]]},
+    {"record_id": "r_b", "owner_id": "b", "scope_ids": ["b"], "outcome_labels": ["0", "1"], "rows": [[{"numerator": 4, "denominator": 5}, {"numerator": 1, "denominator": 5}], [{"numerator": 4, "denominator": 5}, {"numerator": 1, "denominator": 5}], [{"numerator": 1, "denominator": 5}, {"numerator": 4, "denominator": 5}], [{"numerator": 1, "denominator": 5}, {"numerator": 4, "denominator": 5}]]},
+    {"record_id": "r_c", "owner_id": "c", "scope_ids": ["c"], "outcome_labels": ["0", "1"], "rows": [[{"numerator": 4, "denominator": 5}, {"numerator": 1, "denominator": 5}], [{"numerator": 4, "denominator": 5}, {"numerator": 1, "denominator": 5}], [{"numerator": 1, "denominator": 5}, {"numerator": 4, "denominator": 5}], [{"numerator": 1, "denominator": 5}, {"numerator": 4, "denominator": 5}]]}
+  ],
+  "observation": [["r_a", "1"], ["r_b", "1"], ["r_c", "1"]],
+  "selector": {"selector_id": "lf3-product-selector-v1", "selector_kind": "product", "coupling": null},
+  "coarse_channel": {
+    "channel_id": "lf3-belief-parity-channel-v1",
+    "source_agent_ids": ["a", "b", "c"],
+    "structural_input_ids": ["lf3-belief-parity-structural-input-v1"],
+    "target_labels": ["even", "odd"],
+    "rows": [
+      [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}],
+      [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}],
+      [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}],
+      [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}],
+      [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}],
+      [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}],
+      [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}],
+      [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":1,"denominator":1},{"numerator":0,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}], [{"numerator":0,"denominator":1},{"numerator":1,"denominator":1}]
+    ]
+  }
+}

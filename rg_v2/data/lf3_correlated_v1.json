@@ -1,0 +1,20 @@
+{
+  "schema_version": "lf3-primitive-v1",
+  "fixture_id": "lf3_correlated_v1",
+  "context_id": "lf3-context-v1",
+  "shared_local_data": "lf3_product_v1",
+  "selector": {
+    "selector_id": "lf3-correlated-selector-v1",
+    "selector_kind": "declared_correlated",
+    "coupling": {"masses": [
+      {"numerator":1,"denominator":32},{"numerator":1,"denominator":32},{"numerator":0,"denominator":1},{"numerator":0,"denominator":1},{"numerator":1,"denominator":32},{"numerator":1,"denominator":32},{"numerator":0,"denominator":1},{"numerator":0,"denominator":1},
+      {"numerator":0,"denominator":1},{"numerator":0,"denominator":1},{"numerator":1,"denominator":32},{"numerator":1,"denominator":32},{"numerator":0,"denominator":1},{"numerator":0,"denominator":1},{"numerator":1,"denominator":32},{"numerator":1,"denominator":32},
+      {"numerator":1,"denominator":32},{"numerator":1,"denominator":32},{"numerator":0,"denominator":1},{"numerator":0,"denominator":1},{"numerator":1,"denominator":32},{"numerator":1,"denominator":32},{"numerator":0,"denominator":1},{"numerator":0,"denominator":1},
+      {"numerator":0,"denominator":1},{"numerator":0,"denominator":1},{"numerator":1,"denominator":32},{"numerator":1,"denominator":32},{"numerator":0,"denominator":1},{"numerator":0,"denominator":1},{"numerator":1,"denominator":32},{"numerator":1,"denominator":32},
+      {"numerator":0,"denominator":1},{"numerator":0,"denominator":1},{"numerator":1,"denominator":32},{"numerator":1,"denominator":32},{"numerator":0,"denominator":1},{"numerator":0,"denominator":1},{"numerator":1,"denominator":32},{"numerator":1,"denominator":32},
+      {"numerator":1,"denominator":32},{"numerator":1,"denominator":32},{"numerator":0,"denominator":1},{"numerator":0,"denominator":1},{"numerator":1,"denominator":32},{"numerator":1,"denominator":32},{"numerator":0,"denominator":1},{"numerator":0,"denominator":1},
+      {"numerator":0,"denominator":1},{"numerator":0,"denominator":1},{"numerator":1,"denominator":32},{"numerator":1,"denominator":32},{"numerator":0,"denominator":1},{"numerator":0,"denominator":1},{"numerator":1,"denominator":32},{"numerator":1,"denominator":32},
+      {"numerator":1,"denominator":32},{"numerator":1,"denominator":32},{"numerator":0,"denominator":1},{"numerator":0,"denominator":1},{"numerator":1,"denominator":32},{"numerator":1,"denominator":32},{"numerator":0,"denominator":1},{"numerator":0,"denominator":1}
+    ]}
+  }
+}
