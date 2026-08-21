@@ -102,18 +102,33 @@ def test_correlated_direct_input_provenance_retains_resolved_product_raw_hash() 
     assert correlated.direct_input_sha256 == (("fixture_json", correlated.fixture_sha256), ("shared_local_data:lf3_product_v1", product.fixture_sha256))
 
 
-def test_correlated_direct_input_provenance_changes_only_for_changed_resolved_product_bytes() -> None:
-    product = load_fixture("lf3_product_v1")
-    correlated_payload = _payload("lf3_correlated_v1")
-    resolved_same_decoded_product = _build_fixture("lf3_product_v1", product.fixture_path, "0" * 64, _payload("lf3_product_v1"))
-    changed = _rebuilt("lf3_correlated_v1", correlated_payload, resolved_same_decoded_product)
-    original = _rebuilt("lf3_correlated_v1", correlated_payload, product)
-    assert resolved_same_decoded_product.agents == product.agents
-    assert resolved_same_decoded_product.recognitions == product.recognitions
-    assert changed.fixture_sha256 == original.fixture_sha256
-    assert changed.direct_input_sha256[0] == original.direct_input_sha256[0]
-    assert changed.direct_input_sha256[1][0] == original.direct_input_sha256[1][0]
-    assert changed.direct_input_sha256[1][1] != original.direct_input_sha256[1][1]
+def test_correlated_direct_input_provenance_uses_mutated_product_bytes_through_public_loader(monkeypatch: pytest.MonkeyPatch) -> None:
+    original_product = load_fixture("lf3_product_v1")
+    product_path = (DATA / "lf3_product_v1.json").resolve()
+    correlated_path = (DATA / "lf3_correlated_v1.json").resolve()
+    read_bytes = fixtures.Path.read_bytes
+    product_raw = read_bytes(product_path)
+    correlated_raw = read_bytes(correlated_path)
+    mutated_product_raw = product_raw + b"\n "
+
+    def read_mutated_product_bytes(path: Path) -> bytes:
+        if path.resolve() == product_path:
+            return mutated_product_raw
+        return read_bytes(path)
+
+    monkeypatch.setattr(fixtures.Path, "read_bytes", read_mutated_product_bytes)
+    correlated = load_fixture("lf3_correlated_v1")
+
+    assert json.loads(mutated_product_raw.decode("utf-8")) == json.loads(product_raw.decode("utf-8"))
+    assert correlated.agents == original_product.agents
+    assert correlated.recognitions == original_product.recognitions
+    assert correlated.records == original_product.records
+    assert correlated.observation == original_product.observation
+    assert correlated.direct_input_sha256 == (
+        ("fixture_json", hashlib.sha256(correlated_raw).hexdigest()),
+        ("shared_local_data:lf3_product_v1", hashlib.sha256(mutated_product_raw).hexdigest()),
+    )
+    assert correlated.direct_input_sha256[1][1] != hashlib.sha256(product_raw).hexdigest()
 
 
 def test_correlated_table_has_literal_parity_masses_marginals_and_tv() -> None:
