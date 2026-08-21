@@ -13,6 +13,7 @@ from multiagent_elbo.config import (
     CategoricalDqmTheoryConfig,
     ConfigError,
     ExperimentConfig,
+    RenormalizationV2TheoryConfig,
     config_sha256,
     canonical_config_json,
 )
@@ -352,7 +353,23 @@ def new_lab_theories() -> list[tuple[dict[str, object], str]]:
             },
             "GaussianFixedRayTheoryConfig",
         ),
+        (
+            {
+                "experiment": "renormalization_v2",
+                "fixture": "lf3_product_v1",
+                "arithmetic": "exact_rational",
+            },
+            "RenormalizationV2TheoryConfig",
+        ),
     ]
+
+
+def new_lab_theory(experiment: str) -> dict[str, object]:
+    return next(
+        theory
+        for theory, _ in new_lab_theories()
+        if theory["experiment"] == experiment
+    )
 
 
 def test_legacy_four_dictionary_json_and_hash_are_byte_compatible():
@@ -377,7 +394,7 @@ def test_legacy_four_dictionary_json_and_hash_are_byte_compatible():
 
 
 @pytest.mark.parametrize(("theory", "type_name"), new_lab_theories())
-def test_all_seven_new_lab_schemas_resolve_strict_literal_smoke_configs(
+def test_all_eight_new_lab_schemas_resolve_strict_literal_smoke_configs(
     theory: dict[str, object], type_name: str
 ):
     run, _, numerics, output = valid_dicts()
@@ -423,26 +440,26 @@ def test_compute_schema_rejects_wrong_keys_and_types(
             "exact-rational experiments are CPU-only",
         ),
         (
-            new_lab_theories()[-1][0],
+            new_lab_theory("gaussian_fixed_ray"),
             valid_compute(dtype="float32"),
             "float32 and bfloat16 require CUDA",
         ),
         (
-            new_lab_theories()[-1][0],
+            new_lab_theory("gaussian_fixed_ray"),
             valid_compute(
                 backend="cuda", dtype="float32", heavy_sweep_enabled=False
             ),
             "reduced precision requires heavy_sweep_enabled",
         ),
         (
-            new_lab_theories()[-1][0],
+            new_lab_theory("gaussian_fixed_ray"),
             valid_compute(
                 backend="cuda", dtype="float64", cpu_cuda_parity=False
             ),
             "CUDA requires cpu_cuda_parity",
         ),
         (
-            new_lab_theories()[-1][0],
+            new_lab_theory("gaussian_fixed_ray"),
             valid_compute(
                 backend="cuda",
                 dtype="float64",
@@ -463,7 +480,7 @@ def test_compute_cross_field_failures_are_rejected_before_resolution(
 
 def test_explicit_compute_participates_in_new_configuration_identity():
     run, _, numerics, output = valid_dicts()
-    theory = new_lab_theories()[-1][0]
+    theory = new_lab_theory("gaussian_fixed_ray")
 
     config = ExperimentConfig.from_dicts(
         run, theory, numerics, output, valid_compute()
@@ -494,7 +511,10 @@ def test_explicit_compute_participates_in_new_configuration_identity():
             "retained_interaction_order must be a positive int",
         ),
         (
-            {**new_lab_theories()[6][0], "blocking_schemes": ["adjacent_pairs"]},
+            {
+                **new_lab_theory("gaussian_fixed_ray"),
+                "blocking_schemes": ["adjacent_pairs"],
+            },
             "blocking_schemes must contain exactly",
         ),
     ],
@@ -510,6 +530,51 @@ def test_new_lab_schema_mutations_are_rejected(
         )
 
 
+def test_renormalization_v2_schema_is_exact_and_frozen():
+    run, _, numerics, output = valid_dicts()
+    theory = new_lab_theory("renormalization_v2")
+
+    config = ExperimentConfig.from_dicts(run, theory, numerics, output)
+
+    assert isinstance(config.theory, RenormalizationV2TheoryConfig)
+    assert config.theory == RenormalizationV2TheoryConfig(
+        experiment="renormalization_v2",
+        fixture="lf3_product_v1",
+        arithmetic="exact_rational",
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ({"fixture": "other"}, "fixture must be one of"),
+        (
+            {"arithmetic": "float64"},
+            "arithmetic must be one of: exact_rational",
+        ),
+        ({"extra": True}, "unknown theory key: extra"),
+    ],
+)
+def test_renormalization_v2_schema_rejects_nonrelease_inputs(
+    mutation: dict[str, object],
+    message: str,
+):
+    run, _, numerics, output = valid_dicts()
+    theory = {**new_lab_theory("renormalization_v2"), **mutation}
+
+    with pytest.raises(ConfigError, match=message):
+        ExperimentConfig.from_dicts(run, theory, numerics, output)
+
+
+def test_renormalization_v2_schema_requires_all_three_keys():
+    run, _, numerics, output = valid_dicts()
+    theory = new_lab_theory("renormalization_v2")
+    theory.pop("fixture")
+
+    with pytest.raises(ConfigError, match="missing theory key: fixture"):
+        ExperimentConfig.from_dicts(run, theory, numerics, output)
+
+
 def test_reserved_experiment_names_are_complete_and_immutable():
     names = config_module.NEW_EXPERIMENT_NAMES
 
@@ -521,6 +586,7 @@ def test_reserved_experiment_names_are_complete_and_immutable():
         "gauge_holonomy",
         "scale_cocycle",
         "gaussian_fixed_ray",
+        "renormalization_v2",
     )
     with pytest.raises(TypeError):
         names[0] = "changed"  # type: ignore[index]

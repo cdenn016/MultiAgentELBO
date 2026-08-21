@@ -367,6 +367,35 @@ _EXPERIMENT_CONTRACTS = {
             "cpu_cuda_parity_residual",
         ),
     ),
+    "renormalization_v2": ExperimentContract(
+        experiment="renormalization_v2",
+        lane_owner="rg_v2_release_1",
+        launcher="run_renormalization_v2_lab.py",
+        config_keys=("experiment", "fixture", "arithmetic"),
+        artifact_inventory=(
+            "fixture_snapshot",
+            "population_joint",
+            "population_inference",
+            "aggregate_datum",
+            "metrics",
+            "arrays",
+        ),
+        metric_inventory=(
+            "agent_kernel_normalization_residual",
+            "evaluator_compatibility_residual",
+            "record_kernel_normalization_residual",
+            "record_ownership_violation_count",
+            "population_normalization_residual",
+            "independent_population_residual",
+            "recognition_marginal_residual",
+            "model_marginal_non_dirac_count",
+            "posterior_derivation_residual",
+            "common_channel_identity_violation_count",
+            "coarse_evidence_residual",
+            "conditional_kl_defect",
+            "kl_chain_residual",
+        ),
+    ),
 }
 
 if tuple(_EXPERIMENT_CONTRACTS) != NEW_EXPERIMENT_NAMES:

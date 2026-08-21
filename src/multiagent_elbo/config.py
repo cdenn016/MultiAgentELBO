@@ -62,6 +62,7 @@ NEW_EXPERIMENT_NAMES = (
     "gauge_holonomy",
     "scale_cocycle",
     "gaussian_fixed_ray",
+    "renormalization_v2",
 )
 
 
@@ -136,6 +137,17 @@ class GaussianFixedRayTheoryConfig:
 
 
 @dataclass(frozen=True)
+class RenormalizationV2TheoryConfig:
+    experiment: Literal["renormalization_v2"]
+    fixture: Literal[
+        "lf3_product_v1",
+        "lf3_correlated_v1",
+        "lf3_dirac_boundary_v1",
+    ]
+    arithmetic: Literal["exact_rational"]
+
+
+@dataclass(frozen=True)
 class CategoricalFalsificationTheoryConfig:
     experiment: Literal["categorical_falsification"]
     fixture: Literal["two_channel_z3_v1"]
@@ -157,6 +169,7 @@ ExperimentTheoryConfig = (
     | GaugeHolonomyTheoryConfig
     | ScaleCocycleTheoryConfig
     | GaussianFixedRayTheoryConfig
+    | RenormalizationV2TheoryConfig
 )
 
 
@@ -552,6 +565,30 @@ def _resolve_theory_config(theory: Mapping[str, object]) -> ExperimentTheoryConf
             blocking_schemes=(blocking_schemes[0], blocking_schemes[1]),
             matrix_dimension=_require_positive_int(
                 theory["matrix_dimension"], "matrix_dimension"
+            ),
+        )
+
+    if experiment == "renormalization_v2":
+        _require_exact_keys(
+            theory,
+            "theory",
+            {"experiment", "fixture", "arithmetic"},
+        )
+        return RenormalizationV2TheoryConfig(
+            experiment=experiment,
+            fixture=_require_literal(
+                theory["fixture"],
+                "fixture",
+                (
+                    "lf3_product_v1",
+                    "lf3_correlated_v1",
+                    "lf3_dirac_boundary_v1",
+                ),
+            ),
+            arithmetic=_require_literal(
+                theory["arithmetic"],
+                "arithmetic",
+                ("exact_rational",),
             ),
         )
 

@@ -537,6 +537,7 @@ def test_experiment_registry_is_complete_typed_and_immutable():
         "gauge_holonomy",
         "scale_cocycle",
         "gaussian_fixed_ray",
+        "renormalization_v2",
     )
     for name, contract in registry.items():
         assert contract.experiment == name
@@ -545,11 +546,48 @@ def test_experiment_registry_is_complete_typed_and_immutable():
         assert contract.config_keys[0] == "experiment"
         assert contract.artifact_inventory
         assert contract.metric_inventory
-        assert contract.lane_owner.startswith("session_")
+        if name == "renormalization_v2":
+            assert contract.lane_owner == "rg_v2_release_1"
+        else:
+            assert contract.lane_owner.startswith("session_")
     with pytest.raises(TypeError):
         registry["other"] = registry["multiagent_network"]  # type: ignore[index]
     with pytest.raises(AttributeError):
         registry["multiagent_network"].launcher = "changed.py"  # type: ignore[misc]
+
+
+def test_renormalization_v2_registry_contract_is_exact():
+    contract = experiment_support.EXPERIMENT_REGISTRY["renormalization_v2"]
+
+    assert contract == experiment_support.ExperimentContract(
+        experiment="renormalization_v2",
+        lane_owner="rg_v2_release_1",
+        launcher="run_renormalization_v2_lab.py",
+        config_keys=("experiment", "fixture", "arithmetic"),
+        artifact_inventory=(
+            "fixture_snapshot",
+            "population_joint",
+            "population_inference",
+            "aggregate_datum",
+            "metrics",
+            "arrays",
+        ),
+        metric_inventory=(
+            "agent_kernel_normalization_residual",
+            "evaluator_compatibility_residual",
+            "record_kernel_normalization_residual",
+            "record_ownership_violation_count",
+            "population_normalization_residual",
+            "independent_population_residual",
+            "recognition_marginal_residual",
+            "model_marginal_non_dirac_count",
+            "posterior_derivation_residual",
+            "common_channel_identity_violation_count",
+            "coarse_evidence_residual",
+            "conditional_kl_defect",
+            "kl_chain_residual",
+        ),
+    )
 
 
 def _valid_worker_manifest(
