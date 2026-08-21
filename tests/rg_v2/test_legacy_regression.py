@@ -58,18 +58,26 @@ def _payload(captured: Mapping[str, object]) -> dict[str, object]:
     assert tuple(captured["launchers"]) == _LAUNCHERS
     return {"baseline_commit":_BASELINE,"launchers":captured["launchers"],"scale_cocycle_metrics":captured["scale_cocycle_metrics"],"scale_cocycle_semantic_artifact_sha256":captured["scale_cocycle_semantic_artifact_sha256"],"schema_version":captured["schema_version"],"source_fixture_sha256":captured["source_fixture_sha256"]}
 
-def _refresh(tmp: Path) -> dict[str, object]:
+def _write_manifest(manifest_path: Path, payload: Mapping[str, object]) -> None:
+    temporary = manifest_path.with_name(f".{manifest_path.name}.refresh.tmp")
+    try:
+        temporary.write_text(json.dumps(payload, ensure_ascii=True, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        os.replace(temporary, manifest_path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+def _refresh(task_temp: Path, *, manifest_path: Path = _MANIFEST) -> dict[str, object]:
     if os.environ.get("RG_V2_REFRESH_LEGACY_BASELINE") != "1": raise RuntimeError("explicit refresh only")
-    base, out = (tmp/"detached-legacy-baseline").resolve(), (tmp/"detached-legacy-output").resolve(); assert _ROOT not in base.parents and not base.exists(); made=False
+    base, out = (task_temp/"detached-legacy-baseline").resolve(), (task_temp/"detached-legacy-output").resolve()
+    base, out = _guard_output(base, out)
+    assert _ROOT not in base.parents and not base.exists(); made=False
     try:
         subprocess.run(["git","-C",str(_ROOT),"worktree","add","--detach",str(base),_BASELINE],check=True,capture_output=True,text=True); made=True
         assert subprocess.check_output(["git","-C",str(base),"rev-parse","HEAD"],text=True).strip()==_BASELINE
         assert subprocess.run(["git","-C",str(base),"symbolic-ref","-q","HEAD"],capture_output=True).returncode==1
-        p=_payload(_capture_legacy_snapshot(base,out)); old=_MANIFEST.read_bytes(); assert json.loads(old)==p
-        t=_MANIFEST.with_name(".legacy_rescaling_v1.refresh.tmp")
-        try: t.write_bytes(old); os.replace(t,_MANIFEST)
-        finally: t.unlink(missing_ok=True)
-        return p
+        payload = _payload(_capture_legacy_snapshot(base,out))
+        _write_manifest(manifest_path, payload)
+        return payload
     finally:
         if made: subprocess.run(["git","-C",str(_ROOT),"worktree","remove",str(base)],check=True,capture_output=True,text=True); assert not base.exists()
 
@@ -84,6 +92,15 @@ def _same(expected: Mapping[str,str], actual: Mapping[str,str]) -> None:
 def test_output_guard_rejects_in_worktree_before_subprocess(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(subprocess,"run",lambda *a,**k: pytest.fail("subprocess launched"))
     with pytest.raises(ValueError,match="external"):_capture_legacy_snapshot(_ROOT,_ROOT/"rg_v2"/"forbidden-output")
+
+def test_refresh_rejects_in_worktree_candidate_before_git_or_path_effect(monkeypatch: pytest.MonkeyPatch) -> None:
+    candidate = _ROOT / "rg_v2" / ".refresh-preflight-guard"
+    assert not candidate.exists()
+    monkeypatch.setenv("RG_V2_REFRESH_LEGACY_BASELINE", "1")
+    monkeypatch.setattr(subprocess,"run",lambda *a,**k: pytest.fail("subprocess launched"))
+    monkeypatch.setattr(subprocess,"check_output",lambda *a,**k: pytest.fail("git launched"))
+    with pytest.raises(ValueError,match="external"):_refresh(candidate)
+    assert not candidate.exists()
 
 def test_blob_seam_rejects_all_drift() -> None:
     e={"src/multiagent_elbo/a.py":"x"}
@@ -101,6 +118,15 @@ def test_boundary() -> None:
             if isinstance(n,ast.ImportFrom): assert n.module is None or (n.module!="rg_v2" and not n.module.startswith("rg_v2."))
     for p in (*_LAUNCHERS,"tests/fixtures/two_scale_application_v1.json"): assert _work(_ROOT,p)==_blob(_ROOT,f"{_BASELINE}:{p}")
 
+def test_refresh_writes_absent_destination_from_detached_capture(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    destination = tmp_path / "legacy_rescaling_v1.json"
+    assert not destination.exists()
+    monkeypatch.setenv("RG_V2_REFRESH_LEGACY_BASELINE", "1")
+    payload = _refresh(tmp_path, manifest_path=destination)
+    assert json.loads(destination.read_text(encoding="utf-8")) == payload
+    assert destination.read_text(encoding="utf-8") == json.dumps(payload, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
+    assert not (tmp_path / "detached-legacy-baseline").exists()
+
 @pytest.mark.skipif(os.environ.get("RG_V2_REFRESH_LEGACY_BASELINE")!="1",reason="explicit refresh only")
 def test_refresh(tmp_path: Path) -> None:
-    before=_MANIFEST.read_bytes(); assert _refresh(tmp_path)==json.loads(before); assert _MANIFEST.read_bytes()==before; assert not (tmp_path/"detached-legacy-baseline").exists()
+    assert _refresh(tmp_path)==json.loads(_MANIFEST.read_text(encoding="utf-8")); assert not (tmp_path/"detached-legacy-baseline").exists()
