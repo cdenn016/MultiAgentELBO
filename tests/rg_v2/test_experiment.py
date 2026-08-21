@@ -125,11 +125,25 @@ def _direct_inputs(envelope: dict[str, object]) -> tuple[tuple[str, str], ...]:
 
 
 def _metric_records(envelope: dict[str, object]) -> dict[str, dict[str, object]]:
-    payload = envelope["payload"]
-    assert isinstance(payload, dict)
-    records = payload["records"]
-    assert isinstance(records, list)
-    return {record["name"]: record["record"] for record in records}
+    payload = _require_object(envelope["payload"], "metrics payload")
+    raw_records = _require_list(payload["records"], "metric records")
+    inventory = EXPERIMENT_REGISTRY["renormalization_v2"].metric_inventory
+    assert len(raw_records) == len(inventory), (
+        "metrics artifact must contain exactly thirteen records"
+    )
+    records = tuple(
+        _require_object(record, "metric record") for record in raw_records
+    )
+    assert all(type(record.get("name")) is str for record in records)
+    names = tuple(record["name"] for record in records)
+    assert len(set(names)) == len(names), "metric record names must be unique"
+    assert names == inventory, (
+        "metric record names must match the exact ordered inventory"
+    )
+    return {
+        name: _require_object(record["record"], "serialized MetricRecord")
+        for name, record in zip(names, records, strict=True)
+    }
 
 
 
@@ -1466,6 +1480,53 @@ def test_finalized_artifacts_replay_without_fixture_access(
     _replay_finalized_run(result.run_dir)
 
 
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        ("duplicate", "metric record names must be unique"),
+        ("extra", "metrics artifact must contain exactly thirteen records"),
+    ),
+)
+def test_artifact_replay_rejects_duplicate_or_extra_raw_metric_records(
+    mutation: str,
+    message: str,
+    tmp_path: Path,
+) -> None:
+    result = run_renormalization_v2_experiment(
+        _config(tmp_path, "lf3_product_v1")
+    )
+    metrics_path = result.run_dir / "metrics.json"
+    envelope = _read_json(result.run_dir, "metrics")
+    payload = _require_object(envelope["payload"], "metrics payload")
+    records = _require_list(payload["records"], "metric records")
+    assert len(records) == 13
+    if mutation == "duplicate":
+        first = _require_object(records[0], "first metric record")
+        last = _require_object(records[-1], "last metric record")
+        records[-1] = {**last, "name": first["name"]}
+    else:
+        records.append(
+            {
+                "name": "unexpected_metric",
+                "record": _require_object(records[0], "metric record")["record"],
+            }
+        )
+    metrics_path.write_text(
+        json.dumps(
+            envelope,
+            ensure_ascii=True,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(AssertionError, match=message):
+        _replay_finalized_run(result.run_dir)
+
+
 def test_absolute_launcher_runs_from_arbitrary_cwd_with_empty_pythonpath(
     tmp_path: Path,
 ) -> None:
@@ -1593,8 +1654,9 @@ def test_offline_wheel_excludes_root_local_rg_v2_and_imports_in_isolation(
                 "assert all(not item or pathlib.Path(item).resolve()!=repo_root "
                 "for item in sys.path); "
                 "sys.path.insert(0,str(wheel_root)); "
-                "spec=importlib.util.find_spec('multiagent_elbo'); "
-                "assert spec is not None and wheel_root in pathlib.Path(spec.origin).resolve().parents; "
+                "import multiagent_elbo; "
+                "installed=pathlib.Path(multiagent_elbo.__file__).resolve(); "
+                "assert wheel_root in installed.parents; "
                 "assert importlib.util.find_spec('rg_v2') is None"
             ),
             str(extracted),
