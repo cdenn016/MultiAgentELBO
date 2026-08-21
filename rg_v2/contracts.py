@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from fractions import Fraction
 import json
+import math
+import re
 from typing import Literal
 
 from multiagent_elbo.finite.scale_cocycle import ExactMarkovChannel
@@ -22,9 +24,7 @@ def _require_unique_labels(labels: tuple[str, ...], *, field: str) -> None:
         raise ValueError(f"{field} must be unique")
 
 
-def _require_fraction_masses(
-    labels: tuple[str, ...], masses: tuple[Fraction, ...], *, field: str, unit_mass: bool
-) -> None:
+def _require_fraction_masses(labels: tuple[str, ...], masses: tuple[Fraction, ...], *, field: str, unit_mass: bool) -> None:
     _require_unique_labels(labels, field=f"{field} labels")
     if not isinstance(masses, tuple) or len(masses) != len(labels):
         raise ValueError(f"{field} masses must align with labels")
@@ -40,8 +40,8 @@ def _canonical_json(value: object) -> str:
     return json.dumps(value, ensure_ascii=True, separators=(",", ":"))
 
 
-def _require_ordered_assignment(label: str, ids: tuple[str, ...], *, field: str) -> None:
-    """Validate a compact ordered ``[id, belief, model]`` assignment label."""
+def _require_ordered_assignment(label: str, ids: tuple[str, ...], *, width: int, field: str) -> None:
+    """Validate one compact ordered JSON assignment against its declared IDs."""
     if not isinstance(label, str) or not label:
         raise ValueError(f"{field} support labels must be nonempty strings")
     try:
@@ -53,7 +53,7 @@ def _require_ordered_assignment(label: str, ids: tuple[str, ...], *, field: str)
     for expected_id, item in zip(ids, parsed, strict=True):
         if (
             not isinstance(item, list)
-            or len(item) != 3
+            or len(item) != width
             or item[0] != expected_id
             or any(not isinstance(part, str) or not part for part in item)
         ):
@@ -61,11 +61,19 @@ def _require_ordered_assignment(label: str, ids: tuple[str, ...], *, field: str)
 
 
 def _canonical_local_labels(belief_labels: tuple[str, ...], model_labels: tuple[str, ...]) -> tuple[str, ...]:
-    return tuple(
-        _canonical_json([belief, model])
-        for belief in belief_labels
-        for model in model_labels
-    )
+    return tuple(_canonical_json([belief, model]) for belief in belief_labels for model in model_labels)
+
+
+def _require_exact_joint_matrix(rows: tuple[tuple[Fraction, ...], ...], *, row_count: int, column_count: int, field: str) -> None:
+    if not isinstance(rows, tuple) or len(rows) != row_count:
+        raise ValueError(f"{field} rows must align with labels")
+    if any(not isinstance(row, tuple) or len(row) != column_count for row in rows):
+        raise ValueError(f"{field} columns must align with labels")
+    flattened = tuple(mass for row in rows for mass in row)
+    if any(not isinstance(mass, Fraction) for mass in flattened):
+        raise TypeError(f"{field} masses must be exact Fraction values")
+    if any(mass < 0 for mass in flattened) or sum(flattened, Fraction(0)) != 1:
+        raise ValueError(f"{field} masses must be nonnegative and sum to one exactly")
 
 
 @dataclass(frozen=True)
@@ -107,8 +115,8 @@ class ModelEvaluation:
 class AgentDatum:
     """Local generative datum with exact evaluator compatibility.
 
-    For every positive model slice, ``G_i(b,m | pa) / G_i^M(m | pa)`` equals
-    the row of the evaluator declared for ``m``.
+    For positive model mass, ``G_i(b,m | pa) / G_i^M(m | pa)`` equals the
+    corresponding evaluator row.
     """
 
     agent_id: str
@@ -129,8 +137,7 @@ class AgentDatum:
             raise ValueError("an agent cannot be its own parent")
         _require_unique_labels(self.belief_labels, field="belief labels")
         _require_unique_labels(self.model_labels, field="model labels")
-        expected_states = _canonical_local_labels(self.belief_labels, self.model_labels)
-        if self.state_labels != expected_states:
+        if self.state_labels != _canonical_local_labels(self.belief_labels, self.model_labels):
             raise ValueError("state labels must be the belief-major canonical Cartesian product")
         if not isinstance(self.generative_kernel, ExactMarkovChannel):
             raise TypeError("generative kernel must be an ExactMarkovChannel")
@@ -142,7 +149,7 @@ class AgentDatum:
                 raise ValueError("root generative kernel source labels must equal ('()',)")
         else:
             for source_label in source_labels:
-                _require_ordered_assignment(source_label, self.parent_ids, field="parent")
+                _require_ordered_assignment(source_label, self.parent_ids, width=3, field="parent")
         if not isinstance(self.evaluator, tuple) or len(self.evaluator) != len(self.model_labels):
             raise ValueError("evaluator must contain one entry for every model label")
         if any(not isinstance(entry, ModelEvaluation) for entry in self.evaluator):
@@ -151,42 +158,30 @@ class AgentDatum:
             raise ValueError("evaluator labels must equal model labels in declared order")
         for entry in self.evaluator:
             if entry.kernel.source_labels != source_labels or entry.kernel.target_labels != self.belief_labels:
-                raise ValueError("evaluator support must match the generative parent and belief supports")
+                raise ValueError("evaluator support must match generative parent and belief supports")
         for source_index, row in enumerate(self.generative_kernel.matrix):
             for model_index, model_label in enumerate(self.model_labels):
-                state_indices = tuple(
-                    belief_index * len(self.model_labels) + model_index
-                    for belief_index in range(len(self.belief_labels))
-                )
+                state_indices = tuple(index * len(self.model_labels) + model_index for index in range(len(self.belief_labels)))
                 model_mass = sum((row[index] for index in state_indices), Fraction(0))
-                if model_mass == 0:
-                    continue
-                conditional = tuple(row[index] / model_mass for index in state_indices)
-                evaluator_row = self.evaluator[model_index].kernel.matrix[source_index]
-                if conditional != evaluator_row:
-                    raise ValueError(f"evaluator is incompatible with positive model slice {model_label!r}")
+                if model_mass != 0:
+                    conditional = tuple(row[index] / model_mass for index in state_indices)
+                    if conditional != self.evaluator[model_index].kernel.matrix[source_index]:
+                        raise ValueError(f"evaluator is incompatible with positive model slice {model_label!r}")
 
 
-def _marginalize_local_law(
-    agent: AgentDatum, joint: ExactProbabilityLaw, *, axis: Literal["belief", "model"]
-) -> ExactProbabilityLaw:
+def _marginalize_local_law(agent: AgentDatum, joint: ExactProbabilityLaw, *, axis: Literal["belief", "model"]) -> ExactProbabilityLaw:
     """Return the exact belief or model marginal of a local recognition law."""
     if joint.labels != agent.state_labels:
         raise ValueError("joint recognition labels must equal the agent state labels")
+    width = len(agent.model_labels)
     if axis == "belief":
-        labels = agent.belief_labels
-        width = len(agent.model_labels)
-        masses = tuple(sum(joint.masses[index * width : (index + 1) * width], Fraction(0)) for index in range(len(labels)))
-    else:
-        labels = agent.model_labels
-        width = len(agent.model_labels)
-        masses = tuple(sum(joint.masses[index::width], Fraction(0)) for index in range(width))
-    return ExactProbabilityLaw(labels, masses)
+        return ExactProbabilityLaw(agent.belief_labels, tuple(sum(joint.masses[index * width : (index + 1) * width], Fraction(0)) for index in range(len(agent.belief_labels))))
+    return ExactProbabilityLaw(agent.model_labels, tuple(sum(joint.masses[index::width], Fraction(0)) for index in range(width)))
 
 
 @dataclass(frozen=True, init=False)
 class AgentRecognitionDatum:
-    """A local recognition law with its two exact derived marginals."""
+    """A local recognition law with exact, derived belief and model marginals."""
 
     agent_id: str
     belief_labels: tuple[str, ...]
@@ -197,10 +192,8 @@ class AgentRecognitionDatum:
     model_marginal: ExactProbabilityLaw
 
     def __init__(self, agent: AgentDatum, joint: ExactProbabilityLaw) -> None:
-        if not isinstance(agent, AgentDatum):
-            raise TypeError("agent recognition requires an AgentDatum")
-        if not isinstance(joint, ExactProbabilityLaw):
-            raise TypeError("agent recognition joint must be an ExactProbabilityLaw")
+        if not isinstance(agent, AgentDatum) or not isinstance(joint, ExactProbabilityLaw):
+            raise TypeError("agent recognition requires an AgentDatum and exact joint law")
         _require_unique_labels(agent.belief_labels, field="belief labels")
         _require_unique_labels(agent.model_labels, field="model labels")
         if agent.state_labels != _canonical_local_labels(agent.belief_labels, agent.model_labels):
@@ -238,7 +231,7 @@ class RecordDatum:
         if self.kernel.target_labels != self.outcome_labels:
             raise ValueError("record kernel target labels must equal outcome labels")
         for source_label in self.kernel.source_labels:
-            _require_ordered_assignment(source_label, self.scope_ids, field="scope")
+            _require_ordered_assignment(source_label, self.scope_ids, width=3, field="scope")
 
 
 @dataclass(frozen=True)
@@ -280,7 +273,7 @@ class CoarseChannelSpec:
 
 @dataclass(frozen=True)
 class PopulationJoint:
-    """Exact complete population law, indexed by latent and observation support."""
+    """Exact complete population law over canonical latent and record assignments."""
 
     context_id: str
     agent_order: tuple[str, ...]
@@ -296,17 +289,14 @@ class PopulationJoint:
         _require_unique_labels(self.record_order, field="record order")
         _require_unique_labels(self.latent_labels, field="latent labels")
         _require_unique_labels(self.observation_labels, field="observation labels")
-        if not isinstance(self.joint_masses, tuple) or len(self.joint_masses) != len(self.latent_labels):
-            raise ValueError("population joint rows must align with latent labels")
-        if any(not isinstance(row, tuple) or len(row) != len(self.observation_labels) for row in self.joint_masses):
-            raise ValueError("population joint columns must align with observation labels")
-        flattened = tuple(mass for row in self.joint_masses for mass in row)
-        if any(not isinstance(mass, Fraction) for mass in flattened):
-            raise TypeError("population joint masses must be exact Fraction values")
-        if any(mass < 0 for mass in flattened) or sum(flattened, Fraction(0)) != 1:
-            raise ValueError("population joint masses must be nonnegative and sum to one exactly")
-        if self.construction_trace != self.agent_order + self.record_order:
-            raise ValueError("construction trace must list each agent and record exactly once in order")
+        for label in self.latent_labels:
+            _require_ordered_assignment(label, self.agent_order, width=3, field="latent")
+        for label in self.observation_labels:
+            _require_ordered_assignment(label, self.record_order, width=2, field="observation")
+        _require_exact_joint_matrix(self.joint_masses, row_count=len(self.latent_labels), column_count=len(self.observation_labels), field="population joint")
+        expected_trace = tuple(f"agent:{agent_id}" for agent_id in self.agent_order) + tuple(f"record:{record_id}" for record_id in self.record_order)
+        if self.construction_trace != expected_trace:
+            raise ValueError("construction trace must use typed agent and record IDs exactly once in order")
 
 
 @dataclass(frozen=True)
@@ -325,13 +315,21 @@ class PopulationInference:
     def __post_init__(self) -> None:
         if not isinstance(self.population, PopulationJoint) or not isinstance(self.selector, SelectorSpec):
             raise TypeError("population inference requires population and selector contracts")
-        _require_identifier(self.observed_record, field="observed record")
+        if self.observed_record not in self.population.observation_labels:
+            raise ValueError("observed record must be a population observation label")
         if not isinstance(self.recognitions, tuple) or any(not isinstance(item, AgentRecognitionDatum) for item in self.recognitions):
             raise TypeError("recognitions must be AgentRecognitionDatum values")
+        if tuple(item.agent_id for item in self.recognitions) != self.population.agent_order:
+            raise ValueError("recognition agent IDs must align exactly with population agent order")
         if not isinstance(self.recognition, ExactProbabilityLaw) or not isinstance(self.evidence_measure, ExactSubmeasure) or not isinstance(self.posterior, ExactProbabilityLaw):
             raise TypeError("inference laws must use exact law contracts")
+        for name, law in (("recognition", self.recognition), ("evidence measure", self.evidence_measure), ("posterior", self.posterior)):
+            if law.labels != self.population.latent_labels:
+                raise ValueError(f"{name} labels must equal population latent labels")
         if not isinstance(self.evidence, Fraction) or self.evidence < 0:
             raise ValueError("evidence must be a nonnegative exact Fraction")
+        if self.evidence != sum(self.evidence_measure.masses, Fraction(0)):
+            raise ValueError("evidence must equal the exact evidence-measure total")
 
     @property
     def selector_id(self) -> str:
@@ -359,23 +357,22 @@ class AggregateDatum:
     def __post_init__(self) -> None:
         _require_identifier(self.aggregate_id, field="aggregate ID")
         _require_unique_labels(self.source_agent_ids, field="source agent IDs")
-        _require_identifier(self.observed_record, field="observed record")
         _require_identifier(self.channel_id, field="channel ID")
-        _require_identifier(self.channel_sha256, field="channel SHA-256")
+        if not isinstance(self.channel_sha256, str) or re.fullmatch(r"[0-9a-f]{64}", self.channel_sha256) is None:
+            raise ValueError("channel SHA-256 must be 64 lowercase hexadecimal characters")
         _require_unique_labels(self.observation_labels, field="observation labels")
         _require_unique_labels(self.target_labels, field="target labels")
-        if not isinstance(self.generative_joint, tuple) or len(self.generative_joint) != len(self.target_labels):
-            raise ValueError("aggregate generative rows must align with target labels")
-        if any(not isinstance(row, tuple) or len(row) != len(self.observation_labels) for row in self.generative_joint):
-            raise ValueError("aggregate generative columns must align with observation labels")
-        flattened = tuple(mass for row in self.generative_joint for mass in row)
-        if any(not isinstance(mass, Fraction) for mass in flattened):
-            raise TypeError("aggregate generative masses must be exact Fraction values")
-        if any(mass < 0 for mass in flattened) or sum(flattened, Fraction(0)) != 1:
-            raise ValueError("aggregate generative masses must be nonnegative and sum to one exactly")
+        if self.observed_record not in self.observation_labels:
+            raise ValueError("observed record must be an aggregate observation label")
+        _require_exact_joint_matrix(self.generative_joint, row_count=len(self.target_labels), column_count=len(self.observation_labels), field="aggregate generative")
         if not isinstance(self.recognition, ExactProbabilityLaw) or not isinstance(self.posterior, ExactProbabilityLaw):
             raise TypeError("aggregate recognition and posterior must be exact probability laws")
+        if self.recognition.labels != self.target_labels:
+            raise ValueError("aggregate recognition labels must equal target labels")
+        if self.posterior.labels != self.target_labels:
+            raise ValueError("aggregate posterior labels must equal target labels")
         if not isinstance(self.evidence, Fraction) or self.evidence < 0:
             raise ValueError("aggregate evidence must be a nonnegative exact Fraction")
-        if not isinstance(self.conditional_kl_defect, float) or not isinstance(self.kl_chain_residual, float):
-            raise TypeError("aggregate KL diagnostics must be float values")
+        for name, value in (("conditional KL defect", self.conditional_kl_defect), ("KL chain residual", self.kl_chain_residual)):
+            if not isinstance(value, float) or not math.isfinite(value):
+                raise ValueError(f"{name} must be finite")
