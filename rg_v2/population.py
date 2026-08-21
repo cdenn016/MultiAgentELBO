@@ -7,7 +7,17 @@ from itertools import product
 import json
 
 from multiagent_elbo.finite.scale_cocycle import ExactMarkovChannel
-from rg_v2.contracts import AgentDatum, ModelEvaluation, PopulationJoint, RecordDatum
+from rg_v2.contracts import (
+    AgentDatum,
+    AgentRecognitionDatum,
+    ExactProbabilityLaw,
+    ExactSubmeasure,
+    ModelEvaluation,
+    PopulationInference,
+    PopulationJoint,
+    RecordDatum,
+    SelectorSpec,
+)
 
 
 _MAX_LATENT_STATES = 4096
@@ -546,4 +556,210 @@ def enumerate_population_joint_independently(
         observation_labels=tuple(observation_labels_list),
         joint_masses=exact_masses,
         construction_trace=independent_trace,
+    )
+
+
+def _validate_probability_law(
+    law: ExactProbabilityLaw,
+    expected_labels: tuple[str, ...],
+    field: str,
+) -> None:
+    if not isinstance(law, ExactProbabilityLaw):
+        raise TypeError(f"{field} must be an ExactProbabilityLaw")
+    if law.labels != expected_labels:
+        raise ValueError(f"{field} support must equal the declared support in order")
+    if not isinstance(law.masses, tuple) or len(law.masses) != len(expected_labels):
+        raise ValueError(f"{field} masses must align with its support")
+    if any(not isinstance(mass, Fraction) for mass in law.masses):
+        raise TypeError(f"{field} masses must be exact Fraction values")
+    if any(mass < 0 for mass in law.masses) or sum(law.masses, Fraction(0)) != 1:
+        raise ValueError(f"{field} masses must be nonnegative and normalized exactly")
+
+
+def _recognition_latent_labels(
+    recognitions: tuple[AgentRecognitionDatum, ...],
+) -> tuple[str, ...]:
+    return tuple(
+        _compact_json(
+            [
+                [recognition.agent_id, *_decode_local_label(state_label)]
+                for recognition, state_label in zip(recognitions, state_labels, strict=True)
+            ]
+        )
+        for state_labels in product(*(recognition.state_labels for recognition in recognitions))
+    )
+
+
+def _validate_recognition_metadata(
+    recognitions: tuple[AgentRecognitionDatum, ...],
+) -> tuple[str, ...]:
+    if not isinstance(recognitions, tuple) or not recognitions:
+        raise ValueError("recognitions must be a nonempty tuple")
+    if any(not isinstance(recognition, AgentRecognitionDatum) for recognition in recognitions):
+        raise TypeError("recognitions must contain only AgentRecognitionDatum values")
+    agent_ids = tuple(recognition.agent_id for recognition in recognitions)
+    if any(not isinstance(agent_id, str) or not agent_id for agent_id in agent_ids):
+        raise ValueError("recognition agent IDs must be nonempty strings")
+    if len(set(agent_ids)) != len(agent_ids):
+        raise ValueError("recognition agent IDs must be unique")
+
+    latent_count = 1
+    for recognition in recognitions:
+        for field, labels in (("belief", recognition.belief_labels), ("model", recognition.model_labels)):
+            if (
+                not isinstance(labels, tuple)
+                or not labels
+                or len(set(labels)) != len(labels)
+                or any(not isinstance(label, str) or not label for label in labels)
+            ):
+                raise ValueError(f"recognition {field} labels must be nonempty and unique")
+        canonical_states = tuple(
+            _compact_json([belief, model])
+            for belief in recognition.belief_labels
+            for model in recognition.model_labels
+        )
+        if recognition.state_labels != canonical_states:
+            raise ValueError("recognition must use canonical belief-major state support")
+        _validate_probability_law(recognition.joint, recognition.state_labels, "recognition joint")
+
+        model_count = len(recognition.model_labels)
+        expected_belief = tuple(
+            sum(recognition.joint.masses[index * model_count : (index + 1) * model_count], Fraction(0))
+            for index in range(len(recognition.belief_labels))
+        )
+        expected_model = tuple(
+            sum(recognition.joint.masses[index::model_count], Fraction(0))
+            for index in range(model_count)
+        )
+        _validate_probability_law(recognition.belief_marginal, recognition.belief_labels, "recognition belief marginal")
+        _validate_probability_law(recognition.model_marginal, recognition.model_labels, "recognition model marginal")
+        if recognition.belief_marginal.masses != expected_belief:
+            raise ValueError("recognition belief marginal must be derived from its joint")
+        if recognition.model_marginal.masses != expected_model:
+            raise ValueError("recognition model marginal must be derived from its joint")
+        latent_count *= len(recognition.state_labels)
+        if latent_count > _MAX_LATENT_STATES:
+            raise ValueError(f"recognition coupling exceeds the {_MAX_LATENT_STATES}-state exact limit")
+    return _recognition_latent_labels(recognitions)
+
+
+def _select_recognition(
+    recognitions: tuple[AgentRecognitionDatum, ...],
+    selector: SelectorSpec,
+) -> ExactProbabilityLaw:
+    """Select ``Q_V`` using only local recognition laws and selector data."""
+    latent_labels = _validate_recognition_metadata(recognitions)
+    if not isinstance(selector, SelectorSpec):
+        raise TypeError("selector must be a SelectorSpec")
+    if not isinstance(selector.selector_id, str) or not selector.selector_id:
+        raise ValueError("selector ID must be a nonempty string")
+
+    if selector.selector_kind == "product":
+        if selector.coupling is not None:
+            raise ValueError("product selector cannot supply a coupling")
+        masses: list[Fraction] = []
+        for state_indices in product(*(range(len(recognition.state_labels)) for recognition in recognitions)):
+            mass = Fraction(1)
+            for recognition, state_index in zip(recognitions, state_indices, strict=True):
+                mass *= recognition.joint.masses[state_index]
+            masses.append(mass)
+        return ExactProbabilityLaw(latent_labels, tuple(masses))
+
+    if selector.selector_kind != "declared_correlated":
+        raise ValueError("selector kind is unsupported")
+    if not isinstance(selector.coupling, ExactProbabilityLaw):
+        raise ValueError("declared-correlated selector requires an exact coupling")
+    coupling = selector.coupling
+    if coupling.labels != latent_labels:
+        raise ValueError("declared coupling must use the canonical latent support in order")
+    _validate_probability_law(coupling, latent_labels, "declared coupling")
+
+    local_index_maps = tuple(
+        {label: index for index, label in enumerate(recognition.state_labels)}
+        for recognition in recognitions
+    )
+    local_marginals = [
+        [Fraction(0) for _ in recognition.state_labels]
+        for recognition in recognitions
+    ]
+    for latent_label, mass in zip(coupling.labels, coupling.masses, strict=True):
+        assignment = json.loads(latent_label)
+        for agent_index, recognition in enumerate(recognitions):
+            entry = assignment[agent_index]
+            local_label = _compact_json(entry[1:])
+            local_marginals[agent_index][local_index_maps[agent_index][local_label]] += mass
+    for recognition, marginal in zip(recognitions, local_marginals, strict=True):
+        if tuple(marginal) != recognition.joint.masses:
+            raise ValueError(f"declared coupling local marginal disagrees with recognition {recognition.agent_id!r}")
+    return coupling
+
+
+def _canonical_observed_record(
+    population: PopulationJoint,
+    observations: tuple[tuple[str, str], ...],
+) -> str:
+    if not isinstance(observations, tuple):
+        raise TypeError("observations must be a tuple of record-outcome pairs")
+    if any(
+        not isinstance(item, tuple)
+        or len(item) != 2
+        or any(not isinstance(value, str) or not value for value in item)
+        for item in observations
+    ):
+        raise ValueError("observations must contain nonempty string record-outcome pairs")
+    record_ids = tuple(record_id for record_id, _ in observations)
+    if len(set(record_ids)) != len(record_ids):
+        raise ValueError("observation record IDs must not contain duplicates")
+    expected_ids = set(population.record_order)
+    supplied_ids = set(record_ids)
+    missing = tuple(record_id for record_id in population.record_order if record_id not in supplied_ids)
+    if missing:
+        raise ValueError(f"observation is missing record IDs {missing!r}")
+    extra = tuple(record_id for record_id in record_ids if record_id not in expected_ids)
+    if extra:
+        raise ValueError(f"observation contains extra undeclared record IDs {extra!r}")
+
+    outcomes = {record_id: outcome for record_id, outcome in observations}
+    observed_record = _compact_json([[record_id, outcomes[record_id]] for record_id in population.record_order])
+    if observed_record not in population.observation_labels:
+        raise ValueError("observation contains an undeclared outcome")
+    return observed_record
+
+
+def derive_population_inference(
+    population: PopulationJoint,
+    observations: tuple[tuple[str, str], ...],
+    recognitions: tuple[AgentRecognitionDatum, ...],
+    selector: SelectorSpec,
+) -> PopulationInference:
+    """Derive exact evidence and ``Pi_V(y | x)`` from a completed joint."""
+    if not isinstance(population, PopulationJoint):
+        raise TypeError("population must be a PopulationJoint")
+    recognition = _select_recognition(recognitions, selector)
+    if tuple(item.agent_id for item in recognitions) != population.agent_order:
+        raise ValueError("recognition agent IDs must equal the population agent order")
+    if recognition.labels != population.latent_labels:
+        raise ValueError("selected recognition support must equal the population latent support")
+    observed_record = _canonical_observed_record(population, observations)
+    column = population.observation_labels.index(observed_record)
+    evidence_measure = ExactSubmeasure(
+        population.latent_labels,
+        tuple(row[column] for row in population.joint_masses),
+    )
+    evidence = sum(evidence_measure.masses, Fraction(0))
+    if evidence <= 0:
+        raise ValueError("posterior requires positive evidence")
+    posterior = ExactProbabilityLaw(
+        population.latent_labels,
+        tuple(value / evidence for value in evidence_measure.masses),
+    )
+    return PopulationInference(
+        population=population,
+        observed_record=observed_record,
+        recognitions=recognitions,
+        selector=selector,
+        recognition=recognition,
+        evidence_measure=evidence_measure,
+        evidence=evidence,
+        posterior=posterior,
     )
