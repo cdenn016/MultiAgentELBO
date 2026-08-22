@@ -948,6 +948,85 @@ def _sparse_replay_diagnostics(
     return violations, maximum_tv
 
 
+_METRIC_INTERPRETATIONS = {
+    "block_channel_normalization_residual": "Every declared block-channel row is normalized exactly.",
+    "coarse_state_interpretation_violation_count": "Each coarse state support is the declared belief-major Cartesian interpretation.",
+    "observation_bijection_violation_count": "The fine-to-compound observation declaration is an ordered bijection.",
+    "coarse_agent_kernel_normalization_residual": "Every constructed coarse-agent generative row is normalized exactly.",
+    "coarse_evaluator_compatibility_residual": "Every positive coarse model slice agrees with its evaluator.",
+    "coarse_record_kernel_normalization_residual": "The dense combined record is normalized row by row.",
+    "coarse_population_normalization_residual": "The reconstructed coarse population is normalized exactly.",
+    "generative_roundtrip_residual": "Constructor, runtime oracle, pushforward, and reconstructed generative tables agree entrywise.",
+    "recognition_marginal_residual": "Each attached local recognition law is the exact marginal of the pushed joint.",
+    "recognition_roundtrip_residual": "Directly pushed and reconstructed coarse recognition laws agree for all observations.",
+    "evidence_roundtrip_residual": "Fine and relabeled coarse evidence agree for all observations.",
+    "posterior_roundtrip_residual": "Directly pushed and reconstructed coarse posteriors agree for all observations.",
+    "access_descent_residual": "Identity access descends the all-observation update table exactly.",
+    "update_normalization_residual": "Every exact Bayesian update row is normalized.",
+    "update_posterior_residual": "Every realized update row equals its coarse posterior marginal.",
+    "coarse_model_marginal_non_dirac_count": "Both constructed parents retain non-Dirac model-recognition marginals.",
+    "forbidden_dependency_violation_count": "The generative publication path has no recognition, selector, realized-observation, evidence, or posterior dependency.",
+    "sparse_record_factorization_violation_count": "The declared sparse record family fails at least one exact factorization identity.",
+    "minimum_conditional_kl_defect": "Every terminal common-channel conditional KL defect respects data processing within the declared float boundary.",
+    "maximum_kl_chain_residual": "Every terminal common-channel KL chain residual stays within the declared float boundary.",
+}
+_STANDARD_EXACT_METRICS = {
+    "block_channel_normalization_residual",
+    "coarse_agent_kernel_normalization_residual",
+    "coarse_evaluator_compatibility_residual",
+    "coarse_record_kernel_normalization_residual",
+    "coarse_population_normalization_residual",
+}
+_LOWER_BOUNDED_METRICS = {
+    "coarse_model_marginal_non_dirac_count",
+    "sparse_record_factorization_violation_count",
+}
+_FLOAT_BOUNDARY_METRICS = {
+    "minimum_conditional_kl_defect",
+    "maximum_kl_chain_residual",
+}
+_METRIC_RECORD_KEYS = {
+    "value",
+    "tolerance",
+    "status",
+    "interpretation",
+    "assessment_scope",
+    "theorem_status",
+    "verification_state",
+    "claim_origin",
+}
+
+
+def _expected_metric_records(
+    values: dict[str, float],
+) -> dict[str, dict[str, object]]:
+    inventory = EXPERIMENT_REGISTRY[
+        "renormalization_v2_recursive"
+    ].metric_inventory
+    expected: dict[str, dict[str, object]] = {}
+    for name in inventory:
+        lower_bounded = name in _LOWER_BOUNDED_METRICS
+        standard = (
+            name in _STANDARD_EXACT_METRICS
+            or name in _FLOAT_BOUNDARY_METRICS
+        )
+        expected[name] = {
+            "value": float(values[name]),
+            "tolerance": 0.0,
+            "status": "pass",
+            "interpretation": _METRIC_INTERPRETATIONS[name],
+            "assessment_scope": "implementation_check",
+            "theorem_status": "HYPOTHESIS" if lower_bounded else "ESTABLISHED",
+            "verification_state": "CANDIDATE",
+            "claim_origin": (
+                "APPLICATION_SPECIFIC"
+                if lower_bounded
+                else ("STANDARD" if standard else "PROJECT_NOVEL")
+            ),
+        }
+    return expected
+
+
 def _recursive_metric_records(
     envelope: dict[str, object],
 ) -> dict[str, dict[str, object]]:
@@ -961,6 +1040,9 @@ def _recursive_metric_records(
     )
     records = tuple(
         _require_object(record, "metric record") for record in raw_records
+    )
+    assert all(set(record) == {"name", "record"} for record in records), (
+        "metric record envelope keys must be exact"
     )
     assert all(type(record.get("name")) is str for record in records), (
         "metric record names must be built-in strings"
@@ -978,6 +1060,32 @@ def _recursive_metric_records(
     }
 
 
+def _manifest_direct_inputs(
+    value: object,
+    label: str,
+) -> tuple[tuple[str, str], ...]:
+    records = tuple(
+        _require_object(item, label)
+        for item in _require_list(value, label)
+    )
+    assert all(set(record) == {"name", "sha256"} for record in records), (
+        f"{label} keys mismatch"
+    )
+    assert all(
+        type(record["name"]) is str
+        and type(record["sha256"]) is str
+        and len(record["sha256"]) == 64
+        and all(
+            character in "0123456789abcdef"
+            for character in record["sha256"]
+        )
+        for record in records
+    ), f"{label} must contain named lowercase SHA-256 records"
+    return tuple(
+        (record["name"], record["sha256"]) for record in records
+    )
+
+
 def _replay_finalized_recursive_run(run_dir: Path) -> None:
     run_dir = run_dir.resolve()
     assert run_dir.is_dir(), "replay accepts only a finalized run directory"
@@ -985,6 +1093,50 @@ def _replay_finalized_recursive_run(run_dir: Path) -> None:
     assert {path.name for path in run_dir.iterdir()} == expected_files
     manifest = _read_json(run_dir, "manifest")
     config_document = _read_json(run_dir, "config")
+    assert set(manifest) == {
+        "config_hash",
+        "provenance",
+        "artifacts",
+        "complete",
+    }, "manifest keys mismatch"
+    provenance = _require_object(
+        manifest["provenance"], "manifest provenance"
+    )
+    assert set(provenance) == {
+        "config_hash",
+        "git_commit",
+        "git_dirty",
+        "git_status_format",
+        "git_status_sha256",
+        "dirty_tree_format",
+        "dirty_tree_sha256",
+        "theory_root",
+        "theory_exists",
+        "theory_digest_format",
+        "theory_sha256",
+        "input_hashes",
+        "python_version",
+        "numpy_version",
+        "scipy_version",
+        "platform",
+        "rng",
+        "experiment_scope",
+        "fixture_id",
+        "arithmetic",
+        "effective_backend",
+        "effective_dtype",
+        "semantic_artifact_sha256",
+        "arrays_direct_inputs",
+    }, "manifest provenance keys mismatch"
+    input_hashes = _require_object(
+        provenance["input_hashes"], "manifest input hashes"
+    )
+    assert set(input_hashes) == {
+        "resolved_config_sha256",
+        "theory_tree_sha256",
+        "fixture_direct_inputs",
+        "semantic_artifacts",
+    }, "manifest input_hashes keys mismatch"
     assert manifest["complete"] is True
     assert manifest["artifacts"] == {
         filename: "complete" for filename in sorted(expected_files)
@@ -1068,7 +1220,7 @@ def _replay_finalized_recursive_run(run_dir: Path) -> None:
         assert envelope["config_hash"] == config_hash
     assert fixture_id == "lf4_two_parent_recursive_v1"
     assert config_hash == config_document["config_hash"]
-    assert producer_commit == manifest["provenance"]["git_commit"]
+    assert producer_commit == provenance["git_commit"]
 
     hashes = {
         name: _canonical_sha256(envelope)
@@ -1093,10 +1245,16 @@ def _replay_finalized_recursive_run(run_dir: Path) -> None:
         character in "0123456789abcdef"
         for character in raw_fixture_sha256
     ), "raw fixture SHA-256 must be a lowercase provenance digest"
-    assert _direct_inputs(envelopes["fixture_snapshot"]) == (
+    fixture_inputs = (
         ("fixture_raw", raw_fixture_sha256),
         *semantic_subrecords,
-    ), "fixture_snapshot direct-input DAG mismatch"
+    )
+    assert _direct_inputs(envelopes["fixture_snapshot"]) == fixture_inputs, (
+        "fixture_snapshot direct-input DAG mismatch"
+    )
+    assert _manifest_direct_inputs(
+        input_hashes["fixture_direct_inputs"], "manifest fixture_direct_inputs"
+    ) == fixture_inputs, "manifest fixture_direct_inputs mismatch"
     assert _direct_inputs(envelopes["fine_population"]) == (
         ("generative", recomputed_subhashes["generative"]),
     ), "fine_population direct-input DAG mismatch"
@@ -1513,23 +1671,33 @@ def _replay_finalized_recursive_run(run_dir: Path) -> None:
             ),
         }
     )
+    expected_metric_records = _expected_metric_records(expected_values)
     for name in inventory:
         record = stored_metric_records[name]
-        assert record["value"] == expected_values[name]
-        assert record["tolerance"] == 0.0
-        assert record["status"] == "pass"
-        assert record["assessment_scope"] == "implementation_check"
-        assert record["verification_state"] == "CANDIDATE"
-        assert type(record["theorem_status"]) is str and record[
-            "theorem_status"
-        ]
-        assert type(record["claim_origin"]) is str and record["claim_origin"]
-        assert type(record["interpretation"]) is str and record[
-            "interpretation"
-        ]
+        assert set(record) == _METRIC_RECORD_KEYS, (
+            "serialized MetricRecord mismatch: exact keys"
+        )
+        assert type(record["value"]) is float, (
+            "serialized MetricRecord mismatch: value type"
+        )
+        assert type(record["tolerance"]) is float, (
+            "serialized MetricRecord mismatch: tolerance type"
+        )
+        assert all(
+            type(record[key]) is str
+            for key in _METRIC_RECORD_KEYS - {"value", "tolerance"}
+        ), "serialized MetricRecord mismatch: string field type"
+        assert record == expected_metric_records[name], (
+            f"serialized MetricRecord mismatch: {name}"
+        )
 
     array_inputs = tuple(
         (name, hashes[name]) for name in (*scientific_names, "metrics")
+    )
+    assert _strings(
+        provenance["arrays_direct_inputs"], "manifest arrays_direct_inputs"
+    ) == tuple(name for name, _ in array_inputs), (
+        "manifest arrays_direct_inputs mismatch"
     )
     expected_float_arrays = {
         "fine_population": np.asarray(literal_fine, dtype=np.float64),
@@ -1655,11 +1823,27 @@ def _replay_finalized_recursive_run(run_dir: Path) -> None:
                 for name in sorted(loaded)
             ]
         }
-    semantic_hashes = manifest["provenance"]["semantic_artifact_sha256"]
-    assert {
-        name: semantic_hashes[name] for name in _JSON_STEMS
-    } == hashes
-    assert semantic_hashes["arrays"] == _canonical_sha256(logical_arrays)
+    semantic_hash_values = {
+        **hashes,
+        "arrays": _canonical_sha256(logical_arrays),
+    }
+    expected_semantic_hashes = {
+        name: semantic_hash_values[name]
+        for name in sorted(semantic_hash_values)
+    }
+    semantic_hashes = _require_object(
+        provenance["semantic_artifact_sha256"], "manifest semantic hashes"
+    )
+    assert tuple(semantic_hashes) == tuple(expected_semantic_hashes) and (
+        semantic_hashes == expected_semantic_hashes
+    ), "manifest semantic_artifact_sha256 mismatch"
+    input_semantic_hashes = _require_object(
+        input_hashes["semantic_artifacts"],
+        "manifest input semantic hashes",
+    )
+    assert tuple(input_semantic_hashes) == tuple(expected_semantic_hashes) and (
+        input_semantic_hashes == expected_semantic_hashes
+    ), "manifest input semantic_artifacts mismatch"
 
 
 def _assert_no_forbidden_generative_fields(value: object) -> None:
@@ -2521,3 +2705,177 @@ def test_recursive_offline_wheel_excludes_rg_v2_and_imports_real_package(
         check=False,
     )
     assert isolated.returncode == 0, isolated.stderr
+
+
+def _write_artifact_json(
+    path: Path, payload: object, *, sort_keys: bool = True
+) -> None:
+    path.write_text(
+        json.dumps(payload, ensure_ascii=True, indent=2, sort_keys=sort_keys)
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _logical_npz_sha256(arrays: dict[str, np.ndarray]) -> str:
+    return _canonical_sha256(
+        {
+            "arrays": [
+                {
+                    "name": name,
+                    "dtype": arrays[name].dtype.str,
+                    "shape": list(arrays[name].shape),
+                    "values": arrays[name].tolist(),
+                }
+                for name in sorted(arrays)
+            ]
+        }
+    )
+
+
+def _coherently_rehash_metric_mutation(
+    run_dir: Path,
+    mutation: str,
+) -> None:
+    metrics_path = run_dir / "metrics.json"
+    metrics = _read_json(run_dir, "metrics")
+    payload = _require_object(metrics["payload"], "metrics payload")
+    records = _require_list(payload["records"], "metric records")
+    first = _require_object(records[0], "first metric")
+    serialized = _require_object(first["record"], "first MetricRecord")
+    if mutation == "theorem_status":
+        serialized["theorem_status"] = "OPEN"
+    elif mutation == "claim_origin":
+        serialized["claim_origin"] = "APPLICATION_SPECIFIC"
+    elif mutation == "interpretation":
+        serialized["interpretation"] = "Mutated but internally rehashed."
+    elif mutation == "boolean_value":
+        serialized["value"] = False
+    else:
+        serialized["tolerance"] = False
+    _write_artifact_json(metrics_path, metrics)
+    metrics_sha256 = _canonical_sha256(metrics)
+
+    arrays_path = run_dir / "arrays.npz"
+    with np.load(arrays_path, allow_pickle=False) as archive:
+        arrays = {name: archive[name].copy() for name in archive.files}
+    names = arrays["direct_input_names"].tolist()
+    metrics_index = names.index("metrics")
+    arrays["direct_input_sha256"][metrics_index] = metrics_sha256
+    np.savez(arrays_path, **arrays)
+    arrays_sha256 = _logical_npz_sha256(arrays)
+
+    manifest_path = run_dir / "manifest.json"
+    manifest = _read_json(run_dir, "manifest")
+    provenance = _require_object(manifest["provenance"], "provenance")
+    semantic = _require_object(
+        provenance["semantic_artifact_sha256"], "semantic hashes"
+    )
+    semantic["metrics"] = metrics_sha256
+    semantic["arrays"] = arrays_sha256
+    input_hashes = _require_object(
+        provenance["input_hashes"], "input hashes"
+    )
+    input_semantic = _require_object(
+        input_hashes["semantic_artifacts"], "input semantic hashes"
+    )
+    input_semantic["metrics"] = metrics_sha256
+    input_semantic["arrays"] = arrays_sha256
+    _write_artifact_json(manifest_path, manifest)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        "theorem_status",
+        "claim_origin",
+        "interpretation",
+        "boolean_value",
+        "boolean_tolerance",
+    ),
+)
+def test_recursive_replay_rejects_coherently_rehashed_metric_mutations(
+    mutation: str,
+    tmp_path: Path,
+) -> None:
+    result = run_renormalization_v2_recursive_experiment(_config(tmp_path))
+    _coherently_rehash_metric_mutation(result.run_dir, mutation)
+    with pytest.raises(
+        AssertionError, match="serialized MetricRecord mismatch"
+    ):
+        _replay_finalized_recursive_run(result.run_dir)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        ("semantic_corruption", "semantic_artifact_sha256 mismatch"),
+        ("semantic_reorder", "semantic_artifact_sha256 mismatch"),
+        ("arrays_corruption", "arrays_direct_inputs mismatch"),
+        ("arrays_reorder", "arrays_direct_inputs mismatch"),
+        ("fixture_corruption", "fixture_direct_inputs mismatch"),
+        ("fixture_reorder", "fixture_direct_inputs mismatch"),
+        ("input_semantic_corruption", "input semantic_artifacts mismatch"),
+        ("input_semantic_reorder", "input semantic_artifacts mismatch"),
+        ("provenance_extra", "manifest provenance keys mismatch"),
+        ("input_hashes_extra", "manifest input_hashes keys mismatch"),
+    ),
+)
+def test_recursive_replay_rejects_isolated_manifest_mutations(
+    mutation: str,
+    message: str,
+    tmp_path: Path,
+) -> None:
+    result = run_renormalization_v2_recursive_experiment(_config(tmp_path))
+    path = result.run_dir / "manifest.json"
+    manifest = _read_json(result.run_dir, "manifest")
+    provenance = _require_object(manifest["provenance"], "provenance")
+    semantic = _require_object(
+        provenance["semantic_artifact_sha256"], "semantic hashes"
+    )
+    arrays_inputs = _require_list(
+        provenance["arrays_direct_inputs"], "arrays direct inputs"
+    )
+    input_hashes = _require_object(
+        provenance["input_hashes"], "input hashes"
+    )
+    fixture_inputs = _require_list(
+        input_hashes["fixture_direct_inputs"], "fixture direct inputs"
+    )
+    input_semantic = _require_object(
+        input_hashes["semantic_artifacts"], "input semantic hashes"
+    )
+    if mutation == "semantic_corruption":
+        semantic["metrics"] = "0" * 64
+    elif mutation == "semantic_reorder":
+        provenance["semantic_artifact_sha256"] = dict(
+            reversed(tuple(semantic.items()))
+        )
+    elif mutation == "arrays_corruption":
+        arrays_inputs[-1] = "unexpected"
+    elif mutation == "arrays_reorder":
+        arrays_inputs[0], arrays_inputs[1] = (
+            arrays_inputs[1],
+            arrays_inputs[0],
+        )
+    elif mutation == "fixture_corruption":
+        first = _require_object(fixture_inputs[0], "fixture input")
+        fixture_inputs[0] = {**first, "sha256": "0" * 64}
+    elif mutation == "fixture_reorder":
+        fixture_inputs[0], fixture_inputs[1] = (
+            fixture_inputs[1],
+            fixture_inputs[0],
+        )
+    elif mutation == "input_semantic_corruption":
+        input_semantic["arrays"] = "0" * 64
+    elif mutation == "input_semantic_reorder":
+        input_hashes["semantic_artifacts"] = dict(
+            reversed(tuple(input_semantic.items()))
+        )
+    elif mutation == "provenance_extra":
+        provenance["unexpected"] = "value"
+    else:
+        input_hashes["unexpected"] = "value"
+    _write_artifact_json(path, manifest, sort_keys=False)
+    with pytest.raises(AssertionError, match=message):
+        _replay_finalized_recursive_run(result.run_dir)
