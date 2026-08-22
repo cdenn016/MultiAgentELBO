@@ -166,7 +166,7 @@ def test_subrecord_hashes_are_canonical_and_raw_bytes_are_separate() -> None:
     fixture = load_recursive_fixture(NAME)
     payload = _payload()
     subrecords = (
-        ("generative", {"agents": payload["agents"], "records": payload["records"], "observation": payload["observation"]}),
+        ("generative", {"agents": payload["agents"], "records": payload["records"]}),
         ("recognition", {"recognitions": payload["recognitions"], "selector": payload["selector"]}),
         ("structure", payload["recursive_structure"]),
         ("access", payload["access_specs"]),
@@ -175,6 +175,24 @@ def test_subrecord_hashes_are_canonical_and_raw_bytes_are_separate() -> None:
 
     assert fixture.subrecord_sha256 == expected
     assert fixture.fixture_sha256 == hashlib.sha256((DATA / f"{NAME}.json").read_bytes()).hexdigest()
+
+
+def test_selected_observation_changes_raw_sha_not_canonical_subrecord_hashes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    baseline = load_recursive_fixture(NAME)
+    payload = _payload()
+    payload["observation"][0][1] = "0"  # type: ignore[index]
+    mutated_raw = json.dumps(payload, ensure_ascii=True, separators=(",", ":"), indent=2).encode("utf-8")
+
+    mutated = _load_mutated(monkeypatch, payload)
+
+    assert mutated.observation != baseline.observation
+    assert mutated.fixture_sha256 == hashlib.sha256(mutated_raw).hexdigest()
+    assert mutated.fixture_sha256 != baseline.fixture_sha256
+    assert tuple(name for name, _ in mutated.subrecord_sha256) == ("generative", "recognition", "structure", "access")
+    assert dict(mutated.subrecord_sha256)["generative"] == dict(baseline.subrecord_sha256)["generative"]
+    assert mutated.subrecord_sha256 == baseline.subrecord_sha256
 
 
 def test_public_loader_hashes_exact_read_bytes_once_without_rederiving_tables(monkeypatch: pytest.MonkeyPatch) -> None:

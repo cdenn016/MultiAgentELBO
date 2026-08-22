@@ -403,7 +403,7 @@ def _decode_recursive_fixture(payload: dict[str, object], path: Path, raw_sha256
     structure = _structure(payload["recursive_structure"], agents, records, context_id)
     _validate_canonical_lf4_semantics(agents, records, structure)
     access_specs = _access(payload["access_specs"], structure)
-    subrecords = (("generative", {"agents": payload["agents"], "records": payload["records"], "observation": payload["observation"]}), ("recognition", {"recognitions": payload["recognitions"], "selector": payload["selector"]}), ("structure", payload["recursive_structure"]), ("access", payload["access_specs"]))
+    subrecords = (("generative", {"agents": payload["agents"], "records": payload["records"]}), ("recognition", {"recognitions": payload["recognitions"], "selector": payload["selector"]}), ("structure", payload["recursive_structure"]), ("access", payload["access_specs"]))
     return RecursiveFixture(_NAME, path, raw_sha256, tuple((name, _canonical_sha256(value)) for name, value in subrecords), context_id, agents, recognitions, records, observation, selector, structure, access_specs)
 
 
