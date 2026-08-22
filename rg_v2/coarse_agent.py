@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from fractions import Fraction
+from itertools import product
 import hashlib
 import json
 import re
@@ -15,10 +16,12 @@ from rg_v2.contracts import (
     AgentRecognitionDatum,
     CoarseChannelSpec,
     ExactProbabilityLaw,
+    ModelEvaluation,
     PopulationInference,
     PopulationJoint,
     RecordDatum,
 )
+from rg_v2.population import construct_population_joint
 
 
 def _canonical_json(value: object) -> str:
@@ -443,3 +446,534 @@ class RecursiveObservationDatum:
             raise TypeError("pushed recognition and posterior must be exact probability laws")
         if not isinstance(self.coarse_agents, tuple) or any(not isinstance(agent, CoarseAgentDatum) for agent in self.coarse_agents):
             raise TypeError("coarse agents must be CoarseAgentDatum values")
+
+
+def _population_sha256(population: PopulationJoint) -> str:
+    payload = {
+        "agent_order": list(population.agent_order),
+        "construction_trace": list(population.construction_trace),
+        "context_id": population.context_id,
+        "joint_masses": [
+            [
+                {"denominator": mass.denominator, "numerator": mass.numerator}
+                for mass in row
+            ]
+            for row in population.joint_masses
+        ],
+        "latent_labels": list(population.latent_labels),
+        "observation_labels": list(population.observation_labels),
+        "record_order": list(population.record_order),
+    }
+    return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
+
+
+def _build_combined_channel(
+    population: PopulationJoint,
+    structure: RecursiveCoarseStructure,
+) -> CoarseChannelSpec:
+    if len(structure.agent_specs) != 2:
+        raise ValueError("recursive construction requires exactly two coarse agents")
+    if population.agent_order != structure.source_agent_order:
+        raise ValueError("population agent order must equal the declared source agent order")
+    if any(spec.source_context_id != population.context_id for spec in structure.agent_specs):
+        raise ValueError("coarse source context must equal the population context")
+
+    local_supports: dict[str, list[str]] = {agent_id: [] for agent_id in population.agent_order}
+    for latent_label in population.latent_labels:
+        try:
+            assignment = json.loads(latent_label)
+        except json.JSONDecodeError as error:
+            raise ValueError("population latent labels must be canonical ordered assignments") from error
+        if _canonical_json(assignment) != latent_label or [entry[0] for entry in assignment] != list(population.agent_order):
+            raise ValueError("population latent labels must be canonical ordered assignments")
+        for entry in assignment:
+            local_label = _canonical_json(entry[1:])
+            if local_label not in local_supports[entry[0]]:
+                local_supports[entry[0]].append(local_label)
+
+    support_agents: list[AgentDatum] = []
+    for agent_id in population.agent_order:
+        state_labels = tuple(local_supports[agent_id])
+        decoded = tuple(_parse_local_state(label, field="population local state") for label in state_labels)
+        belief_labels = tuple(dict.fromkeys(belief for belief, _ in decoded))
+        model_labels = tuple(dict.fromkeys(model for _, model in decoded))
+        if state_labels != canonical_local_state_labels(belief_labels, model_labels):
+            raise ValueError("population local states must form a canonical Cartesian support")
+        generative_row = tuple(Fraction(1, len(state_labels)) for _ in state_labels)
+        evaluator = tuple(
+            ModelEvaluation(
+                model_label,
+                ExactMarkovChannel(
+                    ("()",),
+                    belief_labels,
+                    (tuple(Fraction(1, len(belief_labels)) for _ in belief_labels),),
+                    recognition_independent=True,
+                ),
+            )
+            for model_label in model_labels
+        )
+        support_agents.append(
+            AgentDatum(
+                agent_id,
+                (),
+                belief_labels,
+                model_labels,
+                state_labels,
+                evaluator,
+                ExactMarkovChannel(("()",), state_labels, (generative_row,), recognition_independent=True),
+            )
+        )
+    validate_coarse_structure_source_supports(structure, tuple(support_agents))
+
+    target_labels = tuple(
+        _canonical_json(
+            [
+                [spec.agent_id, *_parse_local_state(state_label, field="coarse state")]
+                for spec, state_label in zip(structure.agent_specs, states, strict=True)
+            ]
+        )
+        for states in product(*(spec.state_labels for spec in structure.agent_specs))
+    )
+    rows: list[tuple[Fraction, ...]] = []
+    for fine_label in population.latent_labels:
+        fine_assignment = {entry[0]: entry[1:] for entry in json.loads(fine_label)}
+        source_indices = []
+        for spec in structure.agent_specs:
+            source_label = _canonical_json([[agent_id, *fine_assignment[agent_id]] for agent_id in spec.source_agent_ids])
+            source_indices.append(spec.block_channel.source_labels.index(source_label))
+        row: list[Fraction] = []
+        for coarse_label in target_labels:
+            coarse_assignment = {entry[0]: _canonical_json(entry[1:]) for entry in json.loads(coarse_label)}
+            mass = Fraction(1)
+            for spec, source_index in zip(structure.agent_specs, source_indices, strict=True):
+                target_index = spec.block_channel.target_labels.index(coarse_assignment[spec.agent_id])
+                mass *= spec.block_channel.matrix[source_index][target_index]
+            row.append(mass)
+        rows.append(tuple(row))
+    channel = ExactMarkovChannel(
+        population.latent_labels,
+        target_labels,
+        tuple(rows),
+        recognition_independent=True,
+    )
+    return CoarseChannelSpec(
+        f"{structure.structure_id}:combined",
+        structure.source_agent_order,
+        (structure.structure_id,) + tuple(f"block:{spec.agent_id}" for spec in structure.agent_specs),
+        channel,
+    )
+
+
+def _push_population_joint(
+    population: PopulationJoint,
+    combined_channel: CoarseChannelSpec,
+) -> PushedCoarseJoint:
+    channel = combined_channel.channel
+    if channel.source_labels != population.latent_labels:
+        raise ValueError("combined channel source support must equal the population latent support")
+    rows = tuple(
+        tuple(
+            sum(
+                (
+                    population.joint_masses[source_index][observation_index]
+                    * channel.matrix[source_index][target_index]
+                    for source_index in range(len(channel.source_labels))
+                ),
+                Fraction(0),
+            )
+            for observation_index in range(len(population.observation_labels))
+        )
+        for target_index in range(len(channel.target_labels))
+    )
+    return PushedCoarseJoint(
+        population.context_id,
+        channel.target_labels,
+        population.observation_labels,
+        rows,
+        channel_sha256(channel),
+    )
+
+
+def _derive_evaluator(
+    spec: CoarseAgentSpec,
+    source_labels: tuple[str, ...],
+    generative_rows: tuple[tuple[Fraction, ...], ...],
+) -> tuple[ModelEvaluation, ...]:
+    model_count = len(spec.model_labels)
+    evaluators: list[ModelEvaluation] = []
+    for model_index, model_label in enumerate(spec.model_labels):
+        rows: list[tuple[Fraction, ...]] = []
+        for generative_row in generative_rows:
+            indices = tuple(belief_index * model_count + model_index for belief_index in range(len(spec.belief_labels)))
+            denominator = sum((generative_row[index] for index in indices), Fraction(0))
+            if denominator == 0:
+                raise ValueError("null row policy forbids zero positive-model-slice denominator")
+            rows.append(tuple(generative_row[index] / denominator for index in indices))
+        evaluators.append(
+            ModelEvaluation(
+                model_label,
+                ExactMarkovChannel(source_labels, spec.belief_labels, tuple(rows), recognition_independent=True),
+            )
+        )
+    return tuple(evaluators)
+
+
+def _derive_coarse_agents(
+    pushed: PushedCoarseJoint,
+    structure: RecursiveCoarseStructure,
+    source_population_sha256: str,
+    combined_channel_sha256: str,
+) -> tuple[CoarseGenerativeDatum, ...]:
+    spec_a, spec_b = structure.agent_specs
+    latent_masses = tuple(sum(row, Fraction(0)) for row in pushed.joint_masses)
+    joint_indices: list[tuple[int, int]] = []
+    for label in pushed.latent_labels:
+        assignment = json.loads(label)
+        if tuple(entry[0] for entry in assignment) != structure.coarse_agent_order:
+            raise ValueError("pushed coarse latent support must use coarse agent order")
+        joint_indices.append(
+            (
+                spec_a.state_labels.index(_canonical_json(assignment[0][1:])),
+                spec_b.state_labels.index(_canonical_json(assignment[1][1:])),
+            )
+        )
+    marginal_a = [Fraction(0) for _ in spec_a.state_labels]
+    for mass, (a_index, _) in zip(latent_masses, joint_indices, strict=True):
+        marginal_a[a_index] += mass
+    if any(mass == 0 for mass in marginal_a):
+        raise ValueError("null row policy forbids zero parent denominator")
+    rows_a = (tuple(marginal_a),)
+    agent_a = AgentDatum(
+        spec_a.agent_id,
+        spec_a.parent_ids,
+        spec_a.belief_labels,
+        spec_a.model_labels,
+        spec_a.state_labels,
+        _derive_evaluator(spec_a, ("()",), rows_a),
+        ExactMarkovChannel(("()",), spec_a.state_labels, rows_a, recognition_independent=True),
+    )
+    source_b = canonical_agent_assignment_labels((agent_a,))
+    rows_b: list[tuple[Fraction, ...]] = []
+    for a_index, denominator in enumerate(marginal_a):
+        row = [Fraction(0) for _ in spec_b.state_labels]
+        for mass, (candidate_a, b_index) in zip(latent_masses, joint_indices, strict=True):
+            if candidate_a == a_index:
+                row[b_index] += mass / denominator
+        rows_b.append(tuple(row))
+    exact_rows_b = tuple(rows_b)
+    agent_b = AgentDatum(
+        spec_b.agent_id,
+        spec_b.parent_ids,
+        spec_b.belief_labels,
+        spec_b.model_labels,
+        spec_b.state_labels,
+        _derive_evaluator(spec_b, source_b, exact_rows_b),
+        ExactMarkovChannel(source_b, spec_b.state_labels, exact_rows_b, recognition_independent=True),
+    )
+    return (
+        CoarseGenerativeDatum(spec_a, agent_a, source_population_sha256, channel_sha256(spec_a.block_channel), combined_channel_sha256),
+        CoarseGenerativeDatum(spec_b, agent_b, source_population_sha256, channel_sha256(spec_b.block_channel), combined_channel_sha256),
+    )
+
+
+def _build_combined_record(
+    pushed: PushedCoarseJoint,
+    structure: RecursiveCoarseStructure,
+) -> RecordDatum:
+    observation = structure.observation
+    if observation.fine_observation_labels != pushed.fine_observation_labels:
+        raise ValueError("fine observation support must equal the declared observation support")
+    outcome_indices = tuple(
+        observation.compound_outcome_labels.index(outcome)
+        for outcome in observation.compound_outcome_by_fine_observation
+    )
+    rows: list[tuple[Fraction, ...]] = []
+    for pushed_row in pushed.joint_masses:
+        denominator = sum(pushed_row, Fraction(0))
+        if denominator == 0:
+            raise ValueError("null row policy forbids zero pushed latent denominator")
+        row = [Fraction(0) for _ in observation.compound_outcome_labels]
+        for fine_index, outcome_index in enumerate(outcome_indices):
+            row[outcome_index] += pushed_row[fine_index] / denominator
+        rows.append(tuple(row))
+    return RecordDatum(
+        observation.record_id,
+        structure.coarse_agent_order[-1],
+        structure.coarse_agent_order,
+        observation.compound_outcome_labels,
+        ExactMarkovChannel(pushed.latent_labels, observation.compound_outcome_labels, tuple(rows), recognition_independent=True),
+    )
+
+
+def _relabel_reconstructed_joint(
+    reconstructed: PopulationJoint,
+    observation: CoarseObservationSpec,
+) -> tuple[tuple[Fraction, ...], ...]:
+    columns = tuple(
+        reconstructed.observation_labels.index(_canonical_json([[observation.record_id, outcome]]))
+        for outcome in observation.compound_outcome_by_fine_observation
+    )
+    return tuple(tuple(row[column] for column in columns) for row in reconstructed.joint_masses)
+
+
+def _validate_coarse_population_datum(datum: CoarsePopulationDatum) -> None:
+    structure = datum.structure
+    declared_sources = tuple(agent_id for spec in structure.agent_specs for agent_id in spec.source_agent_ids)
+    if declared_sources != structure.source_agent_order:
+        raise ValueError("source blocks must be disjoint and exhaustive")
+    validated_specs = tuple(
+        CoarseAgentSpec(
+            spec.agent_id,
+            spec.source_agent_ids,
+            spec.parent_ids,
+            spec.source_context_id,
+            spec.belief_labels,
+            spec.model_labels,
+            spec.state_labels,
+            spec.block_channel,
+            spec.null_row_policy,
+        )
+        for spec in structure.agent_specs
+    )
+    validated_observation = CoarseObservationSpec(
+        structure.observation.record_id,
+        structure.observation.fine_observation_labels,
+        structure.observation.compound_outcome_labels,
+        structure.observation.compound_outcome_by_fine_observation,
+    )
+    validated_sparse = SparseRecordFactorizationSpec(
+        structure.sparse_record_candidate.left_record_ids,
+        structure.sparse_record_candidate.right_record_ids,
+        structure.sparse_record_candidate.left_outcome_labels,
+        structure.sparse_record_candidate.right_outcome_labels,
+        structure.sparse_record_candidate.left_outcome_by_fine_observation,
+        structure.sparse_record_candidate.right_outcome_by_fine_observation,
+    )
+    RecursiveCoarseStructure(
+        structure.structure_id,
+        structure.source_agent_order,
+        structure.coarse_agent_order,
+        validated_specs,
+        validated_observation,
+        validated_sparse,
+    )
+    if datum.combined_channel.source_agent_ids != structure.source_agent_order:
+        raise ValueError("combined channel source agents must equal the declared source order")
+    if datum.combined_channel.channel.target_labels != datum.pushed_joint.latent_labels:
+        raise ValueError("combined channel target labels must equal the pushed latent labels")
+    for spec in validated_specs:
+        expected_sources: list[str] = []
+        for fine_label in datum.combined_channel.channel.source_labels:
+            assignment = {entry[0]: entry[1:] for entry in json.loads(fine_label)}
+            label = _canonical_json([[agent_id, *assignment[agent_id]] for agent_id in spec.source_agent_ids])
+            if label not in expected_sources:
+                expected_sources.append(label)
+        if spec.block_channel.source_labels != tuple(expected_sources):
+            raise ValueError("block channel source labels must equal declared source-agent support")
+    if tuple(item.agent.agent_id for item in datum.generative_agents) != structure.coarse_agent_order:
+        raise ValueError("generative agents must equal the coarse agent order")
+    if len(datum.records) != 1 or datum.records[0].owner_id != structure.coarse_agent_order[-1] or datum.records[0].scope_ids != structure.coarse_agent_order:
+        raise ValueError("combined record must be owned once by the final coarse agent over both parents")
+    reconstructed = construct_population_joint(
+        tuple(item.agent for item in datum.generative_agents),
+        datum.records,
+        datum.pushed_joint.context_id,
+    )
+    if reconstructed != datum.reconstructed_population:
+        raise ValueError("coarse generative roundtrip does not equal its declared factors")
+    if reconstructed.latent_labels != datum.pushed_joint.latent_labels:
+        raise ValueError("reconstructed and pushed latent supports must agree")
+    if _relabel_reconstructed_joint(reconstructed, validated_observation) != datum.pushed_joint.joint_masses:
+        raise ValueError("coarse generative roundtrip does not match the pushed joint")
+
+
+def construct_coarse_population_joint(
+    population: PopulationJoint,
+    structure: RecursiveCoarseStructure,
+) -> CoarsePopulationDatum:
+    """Construct the exact two-parent coarse generative population."""
+    if not isinstance(population, PopulationJoint):
+        raise ValueError(
+            "generative construction requires PopulationJoint; aggregate-only input lacks structural, generative, observation, recognition, and update obligations"
+        )
+    if not isinstance(structure, RecursiveCoarseStructure):
+        raise TypeError("structure must be a RecursiveCoarseStructure")
+    combined = _build_combined_channel(population, structure)
+    pushed = _push_population_joint(population, combined)
+    population_hash = _population_sha256(population)
+    agents = _derive_coarse_agents(pushed, structure, population_hash, pushed.combined_channel_sha256)
+    record = _build_combined_record(pushed, structure)
+    reconstructed = construct_population_joint(
+        tuple(item.agent for item in agents),
+        (record,),
+        population.context_id,
+    )
+    datum = CoarsePopulationDatum(structure, combined, agents, (record,), pushed, reconstructed)
+    _validate_coarse_population_datum(datum)
+    return datum
+
+
+def _enumerate_coarse_population_independently(
+    population: PopulationJoint,
+    structure: RecursiveCoarseStructure,
+) -> CoarsePopulationDatum:
+    """Independently reconstruct the complete coarse generative arrow."""
+    if not isinstance(population, PopulationJoint) or not isinstance(structure, RecursiveCoarseStructure):
+        raise TypeError("independent coarse oracle requires PopulationJoint and RecursiveCoarseStructure")
+    if len(structure.agent_specs) != 2 or population.agent_order != structure.source_agent_order:
+        raise ValueError("independent coarse oracle requires the declared two-block source order")
+    spec_a, spec_b = structure.agent_specs
+    decoded_fine: list[list[list[str]]] = []
+    for label in population.latent_labels:
+        assignment = json.loads(label)
+        if json.dumps(assignment, ensure_ascii=True, separators=(",", ":")) != label:
+            raise ValueError("independent coarse oracle requires canonical fine labels")
+        decoded_fine.append(assignment)
+    for spec in structure.agent_specs:
+        seen: list[str] = []
+        for assignment in decoded_fine:
+            by_id = {entry[0]: entry[1:] for entry in assignment}
+            label = json.dumps([[agent_id, *by_id[agent_id]] for agent_id in spec.source_agent_ids], ensure_ascii=True, separators=(",", ":"))
+            if label not in seen:
+                seen.append(label)
+        if tuple(seen) != spec.block_channel.source_labels or spec.block_channel.target_labels != spec.state_labels:
+            raise ValueError("independent coarse oracle found incompatible block-channel support")
+    coarse_labels = tuple(
+        json.dumps(
+            [[spec_a.agent_id, *json.loads(state_a)], [spec_b.agent_id, *json.loads(state_b)]],
+            ensure_ascii=True,
+            separators=(",", ":"),
+        )
+        for state_a, state_b in product(spec_a.state_labels, spec_b.state_labels)
+    )
+    combined_rows: list[tuple[Fraction, ...]] = []
+    for assignment in decoded_fine:
+        by_id = {entry[0]: entry[1:] for entry in assignment}
+        source_a = json.dumps([[agent_id, *by_id[agent_id]] for agent_id in spec_a.source_agent_ids], ensure_ascii=True, separators=(",", ":"))
+        source_b = json.dumps([[agent_id, *by_id[agent_id]] for agent_id in spec_b.source_agent_ids], ensure_ascii=True, separators=(",", ":"))
+        row_a = spec_a.block_channel.matrix[spec_a.block_channel.source_labels.index(source_a)]
+        row_b = spec_b.block_channel.matrix[spec_b.block_channel.source_labels.index(source_b)]
+        combined_rows.append(tuple(row_a[a_index] * row_b[b_index] for a_index, b_index in product(range(4), repeat=2)))
+    combined_exact_rows = tuple(combined_rows)
+    combined_exact = ExactMarkovChannel(population.latent_labels, coarse_labels, combined_exact_rows, recognition_independent=True)
+    channel_payload = {
+        "matrix": [[{"denominator": mass.denominator, "numerator": mass.numerator} for mass in row] for row in combined_exact.matrix],
+        "recognition_independent": True,
+        "source_labels": list(combined_exact.source_labels),
+        "target_labels": list(combined_exact.target_labels),
+    }
+    combined_hash = hashlib.sha256(json.dumps(channel_payload, ensure_ascii=True, separators=(",", ":"), sort_keys=True, allow_nan=False).encode("utf-8")).hexdigest()
+    pushed_rows = tuple(
+        tuple(
+            sum((population.joint_masses[source][observation] * combined_exact_rows[source][target] for source in range(len(population.latent_labels))), Fraction(0))
+            for observation in range(len(population.observation_labels))
+        )
+        for target in range(len(coarse_labels))
+    )
+    pushed = PushedCoarseJoint(population.context_id, coarse_labels, population.observation_labels, pushed_rows, combined_hash)
+    latent_masses = tuple(sum(row, Fraction(0)) for row in pushed_rows)
+    marginal_a = tuple(sum((latent_masses[a_index * 4 + b_index] for b_index in range(4)), Fraction(0)) for a_index in range(4))
+    if any(value == 0 for value in marginal_a):
+        raise ValueError("independent coarse oracle forbids null parent rows")
+    rows_a = (marginal_a,)
+
+    def oracle_evaluator(spec: CoarseAgentSpec, sources: tuple[str, ...], rows: tuple[tuple[Fraction, ...], ...]) -> tuple[ModelEvaluation, ...]:
+        result: list[ModelEvaluation] = []
+        for model_index, model_label in enumerate(spec.model_labels):
+            evaluator_rows = []
+            for row in rows:
+                indices = tuple(belief_index * len(spec.model_labels) + model_index for belief_index in range(len(spec.belief_labels)))
+                denominator = sum((row[index] for index in indices), Fraction(0))
+                if denominator == 0:
+                    raise ValueError("independent coarse oracle forbids null evaluator rows")
+                evaluator_rows.append(tuple(row[index] / denominator for index in indices))
+            result.append(ModelEvaluation(model_label, ExactMarkovChannel(sources, spec.belief_labels, tuple(evaluator_rows), recognition_independent=True)))
+        return tuple(result)
+
+    agent_a = AgentDatum(spec_a.agent_id, spec_a.parent_ids, spec_a.belief_labels, spec_a.model_labels, spec_a.state_labels, oracle_evaluator(spec_a, ("()",), rows_a), ExactMarkovChannel(("()",), spec_a.state_labels, rows_a, recognition_independent=True))
+    sources_b = tuple(json.dumps([[spec_a.agent_id, *json.loads(label)]], ensure_ascii=True, separators=(",", ":")) for label in spec_a.state_labels)
+    rows_b = tuple(tuple(latent_masses[a_index * 4 + b_index] / marginal_a[a_index] for b_index in range(4)) for a_index in range(4))
+    agent_b = AgentDatum(spec_b.agent_id, spec_b.parent_ids, spec_b.belief_labels, spec_b.model_labels, spec_b.state_labels, oracle_evaluator(spec_b, sources_b, rows_b), ExactMarkovChannel(sources_b, spec_b.state_labels, rows_b, recognition_independent=True))
+    observation = structure.observation
+    if observation.fine_observation_labels != population.observation_labels:
+        raise ValueError("independent coarse oracle found incompatible observation support")
+    outcome_indices = tuple(observation.compound_outcome_labels.index(value) for value in observation.compound_outcome_by_fine_observation)
+    record_rows: list[tuple[Fraction, ...]] = []
+    for row, denominator in zip(pushed_rows, latent_masses, strict=True):
+        if denominator == 0:
+            raise ValueError("independent coarse oracle forbids null record rows")
+        record_row = [Fraction(0) for _ in observation.compound_outcome_labels]
+        for fine_index, outcome_index in enumerate(outcome_indices):
+            record_row[outcome_index] += row[fine_index] / denominator
+        record_rows.append(tuple(record_row))
+    record = RecordDatum(observation.record_id, spec_b.agent_id, (spec_a.agent_id, spec_b.agent_id), observation.compound_outcome_labels, ExactMarkovChannel(coarse_labels, observation.compound_outcome_labels, tuple(record_rows), recognition_independent=True))
+    reconstructed_observations = tuple(json.dumps([[observation.record_id, outcome]], ensure_ascii=True, separators=(",", ":")) for outcome in observation.compound_outcome_labels)
+    reconstructed_rows: list[tuple[Fraction, ...]] = []
+    for latent_index, (a_index, b_index) in enumerate(product(range(4), repeat=2)):
+        generative_mass = rows_a[0][a_index] * rows_b[a_index][b_index]
+        reconstructed_rows.append(tuple(generative_mass * record_rows[latent_index][outcome_index] for outcome_index in range(16)))
+    exact_reconstructed_rows = tuple(reconstructed_rows)
+    if sum((sum(row, Fraction(0)) for row in exact_reconstructed_rows), Fraction(0)) != 1:
+        raise ArithmeticError("independent coarse reconstruction is not normalized")
+    reconstructed = PopulationJoint(population.context_id, (spec_a.agent_id, spec_b.agent_id), (observation.record_id,), coarse_labels, reconstructed_observations, exact_reconstructed_rows, (f"agent:{spec_a.agent_id}", f"agent:{spec_b.agent_id}", f"record:{observation.record_id}"))
+    relabeled = tuple(tuple(row[outcome_indices[fine_index]] for fine_index in range(16)) for row in exact_reconstructed_rows)
+    if relabeled != pushed_rows:
+        raise ValueError("independent coarse reconstruction does not roundtrip")
+    population_payload = {
+        "agent_order": list(population.agent_order), "construction_trace": list(population.construction_trace), "context_id": population.context_id,
+        "joint_masses": [[{"denominator": mass.denominator, "numerator": mass.numerator} for mass in row] for row in population.joint_masses],
+        "latent_labels": list(population.latent_labels), "observation_labels": list(population.observation_labels), "record_order": list(population.record_order),
+    }
+    population_hash = hashlib.sha256(json.dumps(population_payload, ensure_ascii=True, separators=(",", ":"), sort_keys=True, allow_nan=False).encode("utf-8")).hexdigest()
+    agents = (
+        CoarseGenerativeDatum(spec_a, agent_a, population_hash, channel_sha256(spec_a.block_channel), combined_hash),
+        CoarseGenerativeDatum(spec_b, agent_b, population_hash, channel_sha256(spec_b.block_channel), combined_hash),
+    )
+    combined = CoarseChannelSpec(f"{structure.structure_id}:combined", structure.source_agent_order, (structure.structure_id, f"block:{spec_a.agent_id}", f"block:{spec_b.agent_id}"), combined_exact)
+    return CoarsePopulationDatum(structure, combined, agents, (record,), pushed, reconstructed)
+
+
+def _sparse_record_factorization_diagnostics(
+    coarse_population: CoarsePopulationDatum,
+) -> tuple[int, Fraction]:
+    """Return exact failed sparse identities and maximum conditional TV."""
+    if not isinstance(coarse_population, CoarsePopulationDatum):
+        raise TypeError("coarse_population must be a CoarsePopulationDatum")
+    sparse = coarse_population.structure.sparse_record_candidate
+    pushed = coarse_population.pushed_joint
+    left_indices = tuple(sparse.left_outcome_labels.index(value) for value in sparse.left_outcome_by_fine_observation)
+    right_indices = tuple(sparse.right_outcome_labels.index(value) for value in sparse.right_outcome_by_fine_observation)
+    conditional: list[tuple[tuple[Fraction, ...], ...]] = []
+    left_marginals: list[tuple[Fraction, ...]] = []
+    right_marginals: list[tuple[Fraction, ...]] = []
+    for pushed_row in pushed.joint_masses:
+        denominator = sum(pushed_row, Fraction(0))
+        if denominator == 0:
+            raise ValueError("sparse diagnostics require positive coarse latent mass")
+        joint = [[Fraction(0) for _ in sparse.right_outcome_labels] for _ in sparse.left_outcome_labels]
+        for fine_index, mass in enumerate(pushed_row):
+            joint[left_indices[fine_index]][right_indices[fine_index]] += mass / denominator
+        exact_joint = tuple(tuple(row) for row in joint)
+        conditional.append(exact_joint)
+        left_marginals.append(tuple(sum(row, Fraction(0)) for row in exact_joint))
+        right_marginals.append(tuple(sum((exact_joint[left][right] for left in range(len(exact_joint))), Fraction(0)) for right in range(len(exact_joint[0]))))
+    violations = 0
+    for a_index in range(4):
+        for left_b, right_b in __import__("itertools").combinations(range(4), 2):
+            for outcome in range(4):
+                violations += int(left_marginals[a_index * 4 + left_b][outcome] != left_marginals[a_index * 4 + right_b][outcome])
+    for b_index in range(4):
+        for left_a, right_a in __import__("itertools").combinations(range(4), 2):
+            for outcome in range(4):
+                violations += int(right_marginals[left_a * 4 + b_index][outcome] != right_marginals[right_a * 4 + b_index][outcome])
+    maximum_tv = Fraction(0)
+    for latent_index, joint in enumerate(conditional):
+        tv = Fraction(0)
+        for left in range(4):
+            for right in range(4):
+                product_mass = left_marginals[latent_index][left] * right_marginals[latent_index][right]
+                difference = joint[left][right] - product_mass
+                violations += int(difference != 0)
+                tv += abs(difference)
+        maximum_tv = max(maximum_tv, tv / 2)
+    return violations, maximum_tv

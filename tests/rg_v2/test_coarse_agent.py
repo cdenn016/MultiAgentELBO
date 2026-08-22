@@ -5,11 +5,14 @@ from __future__ import annotations
 from dataclasses import FrozenInstanceError, fields
 from fractions import Fraction
 import hashlib
+from inspect import signature
 import itertools
 import json
+from typing import Never
 
 import pytest
 
+import rg_v2.coarse_agent as coarse_agent
 from multiagent_elbo.finite.scale_cocycle import ExactMarkovChannel
 from rg_v2.coarse_agent import (
     CoarseAccessSpec,
@@ -29,7 +32,15 @@ from rg_v2.coarse_agent import (
     channel_sha256,
     validate_coarse_structure_source_supports,
 )
-from rg_v2.contracts import AgentDatum, AgentRecognitionDatum, ExactProbabilityLaw, ModelEvaluation
+from rg_v2.contracts import (
+    AgentDatum,
+    AgentRecognitionDatum,
+    AggregateDatum,
+    ExactProbabilityLaw,
+    ModelEvaluation,
+)
+from rg_v2.population import construct_population_joint, enumerate_population_joint_independently
+from rg_v2.recursive_fixtures import load_recursive_fixture
 
 
 def _local_states() -> tuple[str, ...]:
@@ -201,3 +212,219 @@ def test_source_support_validator_rejects_missing_or_substituted_fine_state() ->
         validate_coarse_structure_source_supports(missing_structure, source_agents)
     with pytest.raises(ValueError, match="block channel source labels must equal declared source-agent support"):
         validate_coarse_structure_source_supports(substituted_structure, source_agents)
+
+
+def _explode(*_args: object, **_kwargs: object) -> Never:
+    raise AssertionError("coarse constructor helper was reused")
+
+
+def _literal_lf4_oracle() -> tuple[
+    tuple[str, ...],
+    tuple[str, ...],
+    tuple[tuple[Fraction, ...], ...],
+    tuple[tuple[Fraction, ...], ...],
+]:
+    """Enumerate LF4 and its parity push from literal rational tables."""
+    agent_ids = ("a0", "a1", "a2", "a3")
+    record_ids = ("r0", "r1", "r2", "r3")
+    local_states = (("b0", "m0"), ("b0", "m1"), ("b1", "m0"), ("b1", "m1"))
+    root_row = (Fraction(3, 8), Fraction(1, 8), Fraction(1, 8), Fraction(3, 8))
+    child_rows = (
+        (Fraction(3, 5), Fraction(3, 20), Fraction(3, 20), Fraction(1, 10)),
+        (Fraction(1, 5), Fraction(9, 20), Fraction(1, 20), Fraction(3, 10)),
+        (Fraction(3, 10), Fraction(1, 20), Fraction(9, 20), Fraction(1, 5)),
+        (Fraction(1, 10), Fraction(3, 20), Fraction(3, 20), Fraction(3, 5)),
+    )
+    high = (Fraction(4, 5), Fraction(1, 5))
+    low = (Fraction(1, 5), Fraction(4, 5))
+    observation_labels = tuple(
+        json.dumps(
+            [[record_id, str(outcome)] for record_id, outcome in zip(record_ids, outcomes, strict=True)],
+            ensure_ascii=True,
+            separators=(",", ":"),
+        )
+        for outcomes in itertools.product(range(2), repeat=4)
+    )
+    latent_labels: list[str] = []
+    fine_rows: list[tuple[Fraction, ...]] = []
+    coarse_rows = [[Fraction(0) for _ in range(16)] for _ in range(16)]
+    for states in itertools.product(range(4), repeat=4):
+        a0, a1, a2, a3 = states
+        latent_labels.append(
+            json.dumps(
+                [[agent_id, *local_states[state]] for agent_id, state in zip(agent_ids, states, strict=True)],
+                ensure_ascii=True,
+                separators=(",", ":"),
+            )
+        )
+        generative = root_row[a0] * child_rows[a0][a1] * child_rows[a1][a2] * child_rows[a2][a3]
+        belief_agrees = local_states[a1][0] == local_states[a2][0]
+        record_rows = (
+            high if local_states[a0][0] == "b0" else low,
+            high if belief_agrees else low,
+            high if belief_agrees else low,
+            high if local_states[a3][0] == "b0" else low,
+        )
+        row: list[Fraction] = []
+        for observation_index, outcomes in enumerate(itertools.product(range(2), repeat=4)):
+            mass = generative
+            for record_row, outcome in zip(record_rows, outcomes, strict=True):
+                mass *= record_row[outcome]
+            row.append(mass)
+            a_target = ((a0 // 2) ^ (a1 // 2)) * 2 + ((a0 % 2) ^ (a1 % 2))
+            b_target = ((a2 // 2) ^ (a3 // 2)) * 2 + ((a2 % 2) ^ (a3 % 2))
+            coarse_rows[a_target * 4 + b_target][observation_index] += mass
+        fine_rows.append(tuple(row))
+    return tuple(latent_labels), observation_labels, tuple(fine_rows), tuple(tuple(row) for row in coarse_rows)
+
+
+def _relabel_reconstructed_rows(coarse: CoarsePopulationDatum) -> tuple[tuple[Fraction, ...], ...]:
+    observation = coarse.structure.observation
+    reconstructed = coarse.reconstructed_population
+    columns = tuple(
+        reconstructed.observation_labels.index(
+            json.dumps([[observation.record_id, outcome]], ensure_ascii=True, separators=(",", ":"))
+        )
+        for outcome in observation.compound_outcome_by_fine_observation
+    )
+    return tuple(tuple(row[column] for column in columns) for row in reconstructed.joint_masses)
+
+
+def _fine_population() -> tuple[object, object]:
+    fixture = load_recursive_fixture("lf4_two_parent_recursive_v1")
+    population = construct_population_joint(fixture.agents, fixture.records, fixture.context_id)
+    return fixture, population
+
+
+def test_generative_public_signature_has_only_population_and_structure() -> None:
+    function = coarse_agent.construct_coarse_population_joint
+    assert tuple(signature(function).parameters) == ("population", "structure")
+    forbidden = {"inference", "recognition", "selector", "observation", "posterior", "numerics", "aggregate"}
+    assert forbidden.isdisjoint(signature(function).parameters)
+
+
+def test_generative_constructor_runtime_oracle_and_literal_oracle_match_all_cells() -> None:
+    fixture, fine = _fine_population()
+    runtime_fine = enumerate_population_joint_independently(fixture.agents, fixture.records, fixture.context_id)
+    literal_latent, literal_observations, literal_fine, literal_coarse = _literal_lf4_oracle()
+    assert fine.latent_labels == runtime_fine.latent_labels == literal_latent
+    assert fine.observation_labels == runtime_fine.observation_labels == literal_observations
+    assert fine.joint_masses == runtime_fine.joint_masses == literal_fine
+    assert sum(len(row) for row in fine.joint_masses) == 4096
+
+    constructed = coarse_agent.construct_coarse_population_joint(fine, fixture.structure)
+    runtime = coarse_agent._enumerate_coarse_population_independently(fine, fixture.structure)
+    assert constructed.pushed_joint.joint_masses == runtime.pushed_joint.joint_masses == literal_coarse
+    assert constructed.reconstructed_population == runtime.reconstructed_population
+    assert _relabel_reconstructed_rows(constructed) == constructed.pushed_joint.joint_masses
+    assert sum(len(row) for row in constructed.pushed_joint.joint_masses) == 256
+
+
+def test_generative_constructor_builds_two_agents_one_record_and_exact_roundtrip() -> None:
+    fixture, fine = _fine_population()
+    coarse = coarse_agent.construct_coarse_population_joint(fine, fixture.structure)
+    assert coarse.reconstructed_population.agent_order == ("A", "B")
+    assert coarse.reconstructed_population.record_order == ("r_AB",)
+    assert len(coarse.pushed_joint.joint_masses) == 16
+    assert all(len(row) == 16 for row in coarse.pushed_joint.joint_masses)
+    assert _relabel_reconstructed_rows(coarse) == coarse.pushed_joint.joint_masses
+    assert tuple(item.agent.agent_id for item in coarse.generative_agents) == ("A", "B")
+    assert coarse.records[0].owner_id == "B"
+    assert coarse.records[0].scope_ids == ("A", "B")
+    assert coarse.combined_channel.channel.source_labels == fine.latent_labels
+    assert coarse.combined_channel.channel.target_labels == coarse.pushed_joint.latent_labels
+    assert all(sum(row, Fraction(0)) == 1 for row in coarse.combined_channel.channel.matrix)
+
+
+def test_generative_runtime_oracle_reuses_no_constructor_helper(monkeypatch: pytest.MonkeyPatch) -> None:
+    fixture, fine = _fine_population()
+    expected = coarse_agent.construct_coarse_population_joint(fine, fixture.structure)
+    for name in (
+        "_population_sha256",
+        "_build_combined_channel",
+        "_push_population_joint",
+        "_derive_coarse_agents",
+        "_derive_evaluator",
+        "_build_combined_record",
+        "_relabel_reconstructed_joint",
+        "_validate_coarse_population_datum",
+    ):
+        monkeypatch.setattr(coarse_agent, name, _explode)
+    actual = coarse_agent._enumerate_coarse_population_independently(fine, fixture.structure)
+    assert actual.pushed_joint.joint_masses == expected.pushed_joint.joint_masses
+    assert actual.reconstructed_population.joint_masses == expected.reconstructed_population.joint_masses
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        ("block_partition", "source blocks must be disjoint and exhaustive"),
+        ("channel_source", "block channel source labels"),
+        ("channel_target", "block channel target labels"),
+        ("factor_order", "generative agents must equal the coarse agent order"),
+        ("positive_evaluator", "evaluator"),
+        ("compound_bijection", "observation map|roundtrip"),
+        ("combined_record", "roundtrip"),
+    ),
+)
+def test_generative_validation_rejects_named_mutations(mutation: str, message: str) -> None:
+    fixture, fine = _fine_population()
+    coarse = coarse_agent.construct_coarse_population_joint(fine, fixture.structure)
+    if mutation == "block_partition":
+        object.__setattr__(coarse.structure.agent_specs[1], "source_agent_ids", ("a1", "a2"))
+    elif mutation == "channel_source":
+        channel = coarse.structure.agent_specs[0].block_channel
+        object.__setattr__(channel, "source_labels", tuple(reversed(channel.source_labels)))
+    elif mutation == "channel_target":
+        channel = coarse.structure.agent_specs[0].block_channel
+        object.__setattr__(channel, "target_labels", tuple(reversed(channel.target_labels)))
+    elif mutation == "factor_order":
+        object.__setattr__(coarse, "generative_agents", tuple(reversed(coarse.generative_agents)))
+    elif mutation == "positive_evaluator":
+        evaluator = coarse.generative_agents[0].agent.evaluator[0]
+        kernel = evaluator.kernel
+        altered = tuple(tuple(reversed(row)) for row in kernel.matrix)
+        object.__setattr__(evaluator, "kernel", ExactMarkovChannel(kernel.source_labels, kernel.target_labels, altered))
+    elif mutation == "compound_bijection":
+        observation = coarse.structure.observation
+        object.__setattr__(observation, "compound_outcome_by_fine_observation", tuple(reversed(observation.compound_outcome_by_fine_observation)))
+    else:
+        record = coarse.records[0]
+        kernel = record.kernel
+        altered = (tuple(reversed(kernel.matrix[0])),) + kernel.matrix[1:]
+        object.__setattr__(record, "kernel", ExactMarkovChannel(kernel.source_labels, kernel.target_labels, altered))
+    with pytest.raises(ValueError, match=message):
+        coarse_agent._validate_coarse_population_datum(coarse)
+
+
+def test_generative_sparse_record_diagnostics_match_literal_control() -> None:
+    fixture, fine = _fine_population()
+    coarse = coarse_agent.construct_coarse_population_joint(fine, fixture.structure)
+    violations, maximum_tv = coarse_agent._sparse_record_factorization_diagnostics(coarse)
+    assert violations == 448
+    assert maximum_tv == Fraction(47889, 245000)
+
+
+def test_generative_seam_rejects_aggregate_only_promotion_with_all_obligations() -> None:
+    fixture, fine = _fine_population()
+    singleton = ExactProbabilityLaw(("z",), (Fraction(1),))
+    aggregate = AggregateDatum(
+        "aggregate-only",
+        fine.agent_order,
+        fine.observation_labels[0],
+        "terminal-channel",
+        "0" * 64,
+        fine.observation_labels,
+        ("z",),
+        ((Fraction(1),) + (Fraction(0),) * (len(fine.observation_labels) - 1),),
+        singleton,
+        singleton,
+        Fraction(1),
+        0.0,
+        0.0,
+    )
+    with pytest.raises(
+        ValueError,
+        match="structural.*generative.*observation.*recognition.*update",
+    ):
+        coarse_agent.construct_coarse_population_joint(aggregate, fixture.structure)  # type: ignore[arg-type]
