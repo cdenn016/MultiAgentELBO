@@ -63,6 +63,7 @@ NEW_EXPERIMENT_NAMES = (
     "scale_cocycle",
     "gaussian_fixed_ray",
     "renormalization_v2",
+    "renormalization_v2_recursive",
 )
 
 
@@ -148,6 +149,13 @@ class RenormalizationV2TheoryConfig:
 
 
 @dataclass(frozen=True)
+class RenormalizationV2RecursiveTheoryConfig:
+    experiment: Literal["renormalization_v2_recursive"]
+    fixture: Literal["lf4_two_parent_recursive_v1"]
+    arithmetic: Literal["exact_rational"]
+
+
+@dataclass(frozen=True)
 class CategoricalFalsificationTheoryConfig:
     experiment: Literal["categorical_falsification"]
     fixture: Literal["two_channel_z3_v1"]
@@ -170,6 +178,7 @@ ExperimentTheoryConfig = (
     | ScaleCocycleTheoryConfig
     | GaussianFixedRayTheoryConfig
     | RenormalizationV2TheoryConfig
+    | RenormalizationV2RecursiveTheoryConfig
 )
 
 
@@ -584,6 +593,26 @@ def _resolve_theory_config(theory: Mapping[str, object]) -> ExperimentTheoryConf
                     "lf3_correlated_v1",
                     "lf3_dirac_boundary_v1",
                 ),
+            ),
+            arithmetic=_require_literal(
+                theory["arithmetic"],
+                "arithmetic",
+                ("exact_rational",),
+            ),
+        )
+
+    if experiment == "renormalization_v2_recursive":
+        _require_exact_keys(
+            theory,
+            "theory",
+            {"experiment", "fixture", "arithmetic"},
+        )
+        return RenormalizationV2RecursiveTheoryConfig(
+            experiment=experiment,
+            fixture=_require_literal(
+                theory["fixture"],
+                "fixture",
+                ("lf4_two_parent_recursive_v1",),
             ),
             arithmetic=_require_literal(
                 theory["arithmetic"],
