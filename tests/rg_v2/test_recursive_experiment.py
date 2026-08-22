@@ -1060,6 +1060,15 @@ def _recursive_metric_records(
     }
 
 
+def _require_sha256(value: object, label: str) -> str:
+    assert (
+        type(value) is str
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    ), f"{label} must be a lowercase SHA-256"
+    return value
+
+
 def _manifest_direct_inputs(
     value: object,
     label: str,
@@ -1158,8 +1167,45 @@ def _replay_finalized_recursive_run(run_dir: Path) -> None:
             )
         ),
     )
-    assert config_sha256(config) == config_document["config_hash"]
-    assert manifest["config_hash"] == config_document["config_hash"]
+    resolved_config_hash = _require_sha256(
+        config_document["config_hash"], "config hash"
+    )
+    assert config_sha256(config) == resolved_config_hash
+    assert _require_sha256(
+        manifest["config_hash"], "manifest config_hash"
+    ) == resolved_config_hash
+    assert _require_sha256(
+        provenance["config_hash"], "manifest provenance config_hash"
+    ) == resolved_config_hash, "manifest provenance config_hash mismatch"
+    assert _require_sha256(
+        input_hashes["resolved_config_sha256"],
+        "manifest resolved_config_sha256",
+    ) == resolved_config_hash, "manifest resolved_config_sha256 mismatch"
+    provenance_theory_hash = _require_sha256(
+        provenance["theory_sha256"], "manifest provenance theory_sha256"
+    )
+    assert _require_sha256(
+        input_hashes["theory_tree_sha256"],
+        "manifest theory_tree_sha256",
+    ) == provenance_theory_hash, "manifest theory_tree_sha256 mismatch"
+    for field in (
+        "fixture_id",
+        "arithmetic",
+        "effective_backend",
+        "effective_dtype",
+    ):
+        assert type(provenance[field]) is str, (
+            f"manifest provenance {field} must be a built-in string"
+        )
+    assert provenance["arithmetic"] == (
+        f"{config.theory.arithmetic}_with_{config.compute.dtype}_vfe_boundary"
+    ), "manifest provenance arithmetic mismatch"
+    assert provenance["effective_backend"] == config.compute.backend, (
+        "manifest provenance effective_backend mismatch"
+    )
+    assert provenance["effective_dtype"] == (
+        config.compute.dtype
+    ) == config.numerics.dtype, "manifest provenance effective_dtype mismatch"
 
     envelopes = {
         name: _read_json(run_dir, name) for name in _JSON_STEMS
@@ -1219,7 +1265,11 @@ def _replay_finalized_recursive_run(run_dir: Path) -> None:
         assert envelope["producer_commit"] == producer_commit
         assert envelope["config_hash"] == config_hash
     assert fixture_id == "lf4_two_parent_recursive_v1"
-    assert config_hash == config_document["config_hash"]
+    assert fixture_id == config.theory.fixture
+    assert provenance["fixture_id"] == fixture_id, (
+        "manifest provenance fixture_id mismatch"
+    )
+    assert config_hash == resolved_config_hash
     assert producer_commit == provenance["git_commit"]
 
     hashes = {
@@ -1349,6 +1399,18 @@ def _replay_finalized_recursive_run(run_dir: Path) -> None:
     fine_payload = _require_object(
         envelopes["fine_population"]["payload"], "fine population payload"
     )
+    assert set(fine_payload) == {
+        "population",
+        "independent_population",
+        "exact_equality",
+        "factor_trace",
+        "fine_input_hashes",
+    }, "fine population payload keys mismatch"
+    assert _manifest_direct_inputs(
+        fine_payload["fine_input_hashes"], "fine input hashes"
+    ) == (
+        ("generative", recomputed_subhashes["generative"]),
+    ), "fine input hashes mismatch"
     assert _population_from_artifact(
         fine_payload["population"]
     ) == fine_population
@@ -1379,7 +1441,64 @@ def _replay_finalized_recursive_run(run_dir: Path) -> None:
         envelopes["coarse_generative"]["payload"],
         "coarse generative payload",
     )
+    assert set(coarse_generative) == {
+        "structure_id",
+        "source_agent_order",
+        "coarse_agent_order",
+        "parent_specifications",
+        "combined_channel",
+        "observation_bijection",
+        "sparse_record_candidate",
+        "generative_agents",
+        "combined_record",
+    }, "coarse generative payload keys mismatch"
     _assert_no_forbidden_generative_fields(coarse_generative)
+    expected_observation_bijection = {
+        "record_id": structure.observation.record_id,
+        "fine_observation_labels": list(
+            structure.observation.fine_observation_labels
+        ),
+        "compound_outcome_labels": list(
+            structure.observation.compound_outcome_labels
+        ),
+        "fine_to_compound": [
+            {
+                "fine_observation": fine,
+                "compound_outcome": compound,
+            }
+            for fine, compound in zip(
+                structure.observation.fine_observation_labels,
+                structure.observation.compound_outcome_by_fine_observation,
+                strict=True,
+            )
+        ],
+    }
+    assert coarse_generative["observation_bijection"] == (
+        expected_observation_bijection
+    ), "observation bijection mismatch"
+    sparse = structure.sparse_record_candidate
+    expected_sparse_record_candidate = {
+        "left_record_ids": list(sparse.left_record_ids),
+        "right_record_ids": list(sparse.right_record_ids),
+        "left_outcome_labels": list(sparse.left_outcome_labels),
+        "right_outcome_labels": list(sparse.right_outcome_labels),
+        "projections": [
+            {
+                "fine_observation": fine,
+                "left_outcome": left,
+                "right_outcome": right,
+            }
+            for fine, left, right in zip(
+                structure.observation.fine_observation_labels,
+                sparse.left_outcome_by_fine_observation,
+                sparse.right_outcome_by_fine_observation,
+                strict=True,
+            )
+        ],
+    }
+    assert coarse_generative["sparse_record_candidate"] == (
+        expected_sparse_record_candidate
+    ), "sparse record candidate mismatch"
     assert coarse_generative["structure_id"] == structure.structure_id
     assert _strings(
         coarse_generative["source_agent_order"], "source agent order"
@@ -1426,6 +1545,15 @@ def _replay_finalized_recursive_run(run_dir: Path) -> None:
         envelopes["coarse_population"]["payload"],
         "coarse population payload",
     )
+    assert set(coarse_population_payload) == {
+        "pushed_joint",
+        "reconstructed_population",
+        "runtime_oracle_pushed_joint",
+        "relabeled_cellwise_equality",
+        "dense_record_result",
+        "sparse_record_factorization_violation_count",
+        "maximum_exact_conditional_tv_violation",
+    }, "coarse population payload keys mismatch"
     pushed = _require_object(
         coarse_population_payload["pushed_joint"], "pushed joint"
     )
@@ -1451,6 +1579,26 @@ def _replay_finalized_recursive_run(run_dir: Path) -> None:
     )
     assert _matrix(runtime_pushed["joint_masses"]) == (
         runtime_coarse.pushed_joint.joint_masses
+    )
+    expected_runtime_pushed = {
+        "context_id": runtime_coarse.pushed_joint.context_id,
+        "latent_labels": list(runtime_coarse.pushed_joint.latent_labels),
+        "fine_observation_labels": list(
+            runtime_coarse.pushed_joint.fine_observation_labels
+        ),
+        "joint_masses": [
+            [
+                {"numerator": mass.numerator, "denominator": mass.denominator}
+                for mass in row
+            ]
+            for row in runtime_coarse.pushed_joint.joint_masses
+        ],
+        "combined_channel_sha256": (
+            runtime_coarse.pushed_joint.combined_channel_sha256
+        ),
+    }
+    assert runtime_pushed == expected_runtime_pushed, (
+        "runtime oracle pushed joint mismatch"
     )
     assert coarse_population_payload["relabeled_cellwise_equality"] is True
     assert coarse_population_payload["dense_record_result"] == "pass"
@@ -1788,6 +1936,20 @@ def _replay_finalized_recursive_run(run_dir: Path) -> None:
             "metric_tolerances": np.zeros(20, dtype=np.float64),
         }
     )
+    expected_provenance_values = {
+        "schema_version": ("rg-v2-recursive-phase2-artifact-v1",),
+        "fixture_id": (fixture_id,),
+        "producer_commit": (producer_commit,),
+        "config_hash": (config_hash,),
+        "direct_input_names": tuple(name for name, _ in array_inputs),
+        "direct_input_sha256": tuple(sha256 for _, sha256 in array_inputs),
+    }
+    expected_provenance_dtypes = {
+        name: np.dtype(
+            f"<U{max(1, max((len(value) for value in values), default=0))}"
+        ).str
+        for name, values in expected_provenance_values.items()
+    }
     expected_array_names = (*_PROVENANCE_ARRAYS, *_FLOAT_ARRAYS)
     with np.load(run_dir / "arrays.npz", allow_pickle=False) as archive:
         assert tuple(archive.files) == expected_array_names
@@ -1795,8 +1957,9 @@ def _replay_finalized_recursive_run(run_dir: Path) -> None:
         assert all(array.dtype != object for array in loaded.values()), (
             "NPZ mirrors must not use object dtype"
         )
-        for name in _PROVENANCE_ARRAYS:
-            assert loaded[name].dtype.kind == "U"
+        assert {
+            name: loaded[name].dtype.str for name in _PROVENANCE_ARRAYS
+        } == expected_provenance_dtypes, "NPZ provenance dtype mismatch"
         assert str(loaded["schema_version"].item()) == (
             "rg-v2-recursive-phase2-artifact-v1"
         )
@@ -2878,4 +3041,291 @@ def test_recursive_replay_rejects_isolated_manifest_mutations(
         input_hashes["unexpected"] = "value"
     _write_artifact_json(path, manifest, sort_keys=False)
     with pytest.raises(AssertionError, match=message):
+        _replay_finalized_recursive_run(result.run_dir)
+
+def _replace_direct_inputs(
+    envelope: dict[str, object],
+    inputs: tuple[tuple[str, str], ...],
+) -> None:
+    envelope["direct_inputs"] = [
+        {"name": name, "sha256": sha256} for name, sha256 in inputs
+    ]
+
+
+def _coherently_rehash_recursive_artifacts(run_dir: Path) -> None:
+    envelopes = {
+        name: _read_json(run_dir, name) for name in _JSON_STEMS
+    }
+    fixture_payload = _require_object(
+        envelopes["fixture_snapshot"]["payload"], "fixture payload"
+    )
+    subhashes = _raw_semantic_subhashes(fixture_payload)
+    hashes = {
+        "fixture_snapshot": _canonical_sha256(envelopes["fixture_snapshot"])
+    }
+    _replace_direct_inputs(
+        envelopes["fine_population"],
+        (("generative", subhashes["generative"]),),
+    )
+    _write_artifact_json(
+        run_dir / "fine_population.json", envelopes["fine_population"]
+    )
+    hashes["fine_population"] = _canonical_sha256(
+        envelopes["fine_population"]
+    )
+    _replace_direct_inputs(
+        envelopes["coarse_generative"],
+        (
+            ("fine_population", hashes["fine_population"]),
+            ("structure", subhashes["structure"]),
+        ),
+    )
+    _write_artifact_json(
+        run_dir / "coarse_generative.json", envelopes["coarse_generative"]
+    )
+    hashes["coarse_generative"] = _canonical_sha256(
+        envelopes["coarse_generative"]
+    )
+    _replace_direct_inputs(
+        envelopes["coarse_interfaces"],
+        (
+            ("coarse_generative", hashes["coarse_generative"]),
+            ("access", subhashes["access"]),
+            ("recognition", subhashes["recognition"]),
+        ),
+    )
+    _write_artifact_json(
+        run_dir / "coarse_interfaces.json", envelopes["coarse_interfaces"]
+    )
+    hashes["coarse_interfaces"] = _canonical_sha256(
+        envelopes["coarse_interfaces"]
+    )
+    _replace_direct_inputs(
+        envelopes["coarse_population"],
+        (("coarse_generative", hashes["coarse_generative"]),),
+    )
+    _write_artifact_json(
+        run_dir / "coarse_population.json", envelopes["coarse_population"]
+    )
+    hashes["coarse_population"] = _canonical_sha256(
+        envelopes["coarse_population"]
+    )
+    _replace_direct_inputs(
+        envelopes["all_observation_inference"],
+        (
+            ("fine_population", hashes["fine_population"]),
+            ("coarse_interfaces", hashes["coarse_interfaces"]),
+            ("coarse_population", hashes["coarse_population"]),
+        ),
+    )
+    _write_artifact_json(
+        run_dir / "all_observation_inference.json",
+        envelopes["all_observation_inference"],
+    )
+    hashes["all_observation_inference"] = _canonical_sha256(
+        envelopes["all_observation_inference"]
+    )
+    scientific_names = _JSON_STEMS[:-1]
+    _replace_direct_inputs(
+        envelopes["metrics"],
+        tuple((name, hashes[name]) for name in scientific_names),
+    )
+    _write_artifact_json(run_dir / "metrics.json", envelopes["metrics"])
+    hashes["metrics"] = _canonical_sha256(envelopes["metrics"])
+
+    arrays_path = run_dir / "arrays.npz"
+    with np.load(arrays_path, allow_pickle=False) as archive:
+        arrays = {name: archive[name].copy() for name in archive.files}
+    array_inputs = tuple((name, hashes[name]) for name in _JSON_STEMS)
+    assert tuple(arrays["direct_input_names"].tolist()) == tuple(
+        name for name, _ in array_inputs
+    )
+    arrays["direct_input_sha256"] = np.asarray(
+        tuple(sha256 for _, sha256 in array_inputs),
+        dtype=arrays["direct_input_sha256"].dtype,
+    )
+    np.savez(arrays_path, **arrays)
+    semantic_hashes = {
+        name: sha256
+        for name, sha256 in sorted(
+            {**hashes, "arrays": _logical_npz_sha256(arrays)}.items()
+        )
+    }
+
+    manifest_path = run_dir / "manifest.json"
+    manifest = _read_json(run_dir, "manifest")
+    provenance = _require_object(manifest["provenance"], "provenance")
+    provenance["semantic_artifact_sha256"] = dict(semantic_hashes)
+    input_hashes = _require_object(
+        provenance["input_hashes"], "input hashes"
+    )
+    input_hashes["semantic_artifacts"] = dict(semantic_hashes)
+    _write_artifact_json(manifest_path, manifest)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        ("provenance_config_hash", "manifest provenance config_hash mismatch"),
+        ("provenance_fixture_id", "manifest provenance fixture_id mismatch"),
+        ("provenance_arithmetic", "manifest provenance arithmetic mismatch"),
+        (
+            "provenance_effective_backend",
+            "manifest provenance effective_backend mismatch",
+        ),
+        (
+            "provenance_effective_dtype",
+            "manifest provenance effective_dtype mismatch",
+        ),
+        (
+            "resolved_config_sha256",
+            "manifest resolved_config_sha256 mismatch",
+        ),
+        ("theory_tree_sha256", "manifest theory_tree_sha256 mismatch"),
+        (
+            "effective_backend_type",
+            "manifest provenance effective_backend must be a built-in string",
+        ),
+        (
+            "resolved_config_type",
+            "manifest resolved_config_sha256 must be a lowercase SHA-256",
+        ),
+    ),
+)
+def test_recursive_replay_rejects_unbound_provenance_mutations(
+    mutation: str,
+    message: str,
+    tmp_path: Path,
+) -> None:
+    result = run_renormalization_v2_recursive_experiment(_config(tmp_path))
+    path = result.run_dir / "manifest.json"
+    manifest = _read_json(result.run_dir, "manifest")
+    provenance = _require_object(manifest["provenance"], "provenance")
+    input_hashes = _require_object(
+        provenance["input_hashes"], "input hashes"
+    )
+    if mutation == "provenance_config_hash":
+        provenance["config_hash"] = "0" * 64
+    elif mutation == "provenance_fixture_id":
+        provenance["fixture_id"] = "mutated_fixture"
+    elif mutation == "provenance_arithmetic":
+        provenance["arithmetic"] = "float64_only"
+    elif mutation == "provenance_effective_backend":
+        provenance["effective_backend"] = "cuda"
+    elif mutation == "provenance_effective_dtype":
+        provenance["effective_dtype"] = "float32"
+    elif mutation == "resolved_config_sha256":
+        input_hashes["resolved_config_sha256"] = "0" * 64
+    elif mutation == "theory_tree_sha256":
+        input_hashes["theory_tree_sha256"] = "0" * 64
+    elif mutation == "effective_backend_type":
+        provenance["effective_backend"] = False
+    else:
+        input_hashes["resolved_config_sha256"] = False
+    _write_artifact_json(path, manifest)
+    with pytest.raises(AssertionError, match=message):
+        _replay_finalized_recursive_run(result.run_dir)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        ("fine_input_hashes", "fine input hashes mismatch"),
+        ("fine_payload_extra", "fine population payload keys mismatch"),
+        ("observation_bijection", "observation bijection mismatch"),
+        ("sparse_record_candidate", "sparse record candidate mismatch"),
+        (
+            "coarse_generative_payload_extra",
+            "coarse generative payload keys mismatch",
+        ),
+        ("runtime_context_id", "runtime oracle pushed joint mismatch"),
+        ("runtime_latent_labels", "runtime oracle pushed joint mismatch"),
+        (
+            "runtime_fine_observation_labels",
+            "runtime oracle pushed joint mismatch",
+        ),
+        (
+            "runtime_combined_channel_sha256",
+            "runtime oracle pushed joint mismatch",
+        ),
+        ("runtime_oracle_extra", "runtime oracle pushed joint mismatch"),
+        (
+            "coarse_population_payload_extra",
+            "coarse population payload keys mismatch",
+        ),
+    ),
+)
+def test_recursive_replay_rejects_coherently_rehashed_final_payload_mutations(
+    mutation: str,
+    message: str,
+    tmp_path: Path,
+) -> None:
+    result = run_renormalization_v2_recursive_experiment(_config(tmp_path))
+    if mutation.startswith("fine_"):
+        stem = "fine_population"
+    elif mutation in {
+        "observation_bijection",
+        "sparse_record_candidate",
+        "coarse_generative_payload_extra",
+    }:
+        stem = "coarse_generative"
+    else:
+        stem = "coarse_population"
+    envelope = _read_json(result.run_dir, stem)
+    payload = _require_object(envelope["payload"], f"{stem} payload")
+    if mutation == "fine_input_hashes":
+        fine_inputs = _require_list(payload["fine_input_hashes"], "fine inputs")
+        first = _require_object(fine_inputs[0], "fine input")
+        first["sha256"] = "0" * 64
+    elif mutation == "fine_payload_extra":
+        payload["unexpected"] = "value"
+    elif mutation == "observation_bijection":
+        observation = _require_object(
+            payload["observation_bijection"], "observation bijection"
+        )
+        observation["record_id"] = "mutated_record"
+    elif mutation == "sparse_record_candidate":
+        sparse = _require_object(
+            payload["sparse_record_candidate"], "sparse record candidate"
+        )
+        sparse["left_record_ids"] = ["mutated_record"]
+    elif mutation == "coarse_generative_payload_extra":
+        payload["unexpected"] = "value"
+    elif mutation == "coarse_population_payload_extra":
+        payload["unexpected"] = "value"
+    else:
+        runtime = _require_object(
+            payload["runtime_oracle_pushed_joint"], "runtime oracle"
+        )
+        if mutation == "runtime_context_id":
+            runtime["context_id"] = "mutated_context"
+        elif mutation == "runtime_latent_labels":
+            runtime["latent_labels"] = ["mutated_latent"]
+        elif mutation == "runtime_fine_observation_labels":
+            runtime["fine_observation_labels"] = ["mutated_observation"]
+        elif mutation == "runtime_combined_channel_sha256":
+            runtime["combined_channel_sha256"] = "0" * 64
+        else:
+            runtime["unexpected"] = "value"
+    _write_artifact_json(result.run_dir / f"{stem}.json", envelope)
+    _coherently_rehash_recursive_artifacts(result.run_dir)
+    with pytest.raises(AssertionError, match=message):
+        _replay_finalized_recursive_run(result.run_dir)
+
+
+def test_recursive_replay_rejects_coherently_rehashed_unicode_width_mutation(
+    tmp_path: Path,
+) -> None:
+    result = run_renormalization_v2_recursive_experiment(_config(tmp_path))
+    arrays_path = result.run_dir / "arrays.npz"
+    with np.load(arrays_path, allow_pickle=False) as archive:
+        arrays = {name: archive[name].copy() for name in archive.files}
+    schema = arrays["schema_version"]
+    width = schema.dtype.itemsize // np.dtype("U1").itemsize
+    arrays["schema_version"] = np.asarray(
+        str(schema.item()), dtype=f"<U{width + 1}"
+    )
+    np.savez(arrays_path, **arrays)
+    _coherently_rehash_recursive_artifacts(result.run_dir)
+    with pytest.raises(AssertionError, match="NPZ provenance dtype mismatch"):
         _replay_finalized_recursive_run(result.run_dir)
