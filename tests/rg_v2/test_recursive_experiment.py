@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import ast
 from dataclasses import replace
 from fractions import Fraction
 import hashlib
 import inspect
-from itertools import product
+from itertools import combinations, product
 import json
+import os
 from pathlib import Path
 import shutil
+import subprocess
+import zipfile
 
 import numpy as np
 import pytest
@@ -16,9 +20,16 @@ from multiagent_elbo.artifacts import RunStore
 from multiagent_elbo.config import (
     ExperimentConfig,
     RenormalizationV2TheoryConfig,
+    config_sha256,
 )
 from multiagent_elbo.experiment_support import EXPERIMENT_REGISTRY
+from multiagent_elbo.finite.scale_cocycle import ExactMarkovChannel
 from rg_v2.coarse_agent import (
+    CoarseAccessSpec,
+    CoarseAgentSpec,
+    CoarseObservationSpec,
+    RecursiveCoarseStructure,
+    SparseRecordFactorizationSpec,
     _enumerate_coarse_population_independently,
     construct_coarse_information_interfaces,
     construct_coarse_population_joint,
@@ -26,9 +37,18 @@ from rg_v2.coarse_agent import (
     derive_recursive_observation,
     validate_recursive_observation,
 )
+from rg_v2.coarse import aggregate_population
 from rg_v2.contracts import (
+    AgentDatum,
     AgentRecognitionDatum,
+    AggregateDatum,
+    CoarseChannelSpec,
     ExactProbabilityLaw,
+    ExactSubmeasure,
+    ModelEvaluation,
+    PopulationInference,
+    PopulationJoint,
+    RecordDatum,
     SelectorSpec,
 )
 import rg_v2.recursive_experiment as experiment_module
@@ -82,6 +102,8 @@ _FLOAT_ARRAYS = (
     "metric_values",
     "metric_tolerances",
 )
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_PYTHON = Path(r"C:\\Python314\\python.exe")
 
 
 def _config(
@@ -144,10 +166,15 @@ def _fraction(payload: object) -> Fraction:
     assert set(payload) == {"numerator", "denominator"}
     numerator = payload["numerator"]
     denominator = payload["denominator"]
-    assert type(numerator) is int
-    assert type(denominator) is int and denominator > 0
+    assert type(numerator) is int, "fraction numerator must be a built-in int"
+    assert type(denominator) is int, (
+        "fraction denominator must be a built-in int"
+    )
+    assert denominator > 0, "fraction denominator must be positive"
     value = Fraction(numerator, denominator)
-    assert (value.numerator, value.denominator) == (numerator, denominator)
+    assert (value.numerator, value.denominator) == (numerator, denominator), (
+        "fraction must be reduced and canonical"
+    )
     return value
 
 
@@ -178,6 +205,1461 @@ def _semantic_subhashes(fixture: RecursiveFixture) -> dict[str, str]:
     result = dict(fixture.subrecord_sha256)
     assert tuple(result) == ("generative", "recognition", "structure", "access")
     return result
+
+
+def _require_object(value: object, label: str) -> dict[str, object]:
+    assert type(value) is dict, f"{label} must be an object"
+    return value
+
+
+def _require_list(value: object, label: str) -> list[object]:
+    assert type(value) is list, f"{label} must be a list"
+    return value
+
+
+def _strings(value: object, label: str) -> tuple[str, ...]:
+    items = _require_list(value, label)
+    assert all(type(item) is str for item in items), (
+        f"{label} must contain built-in strings"
+    )
+    return tuple(items)
+
+
+def _exact_channel(value: object) -> ExactMarkovChannel:
+    payload = _require_object(value, "exact channel")
+    assert set(payload) == {
+        "source_labels",
+        "target_labels",
+        "matrix",
+        "recognition_independent",
+    }
+    assert payload["recognition_independent"] is True
+    return ExactMarkovChannel(
+        _strings(payload["source_labels"], "channel sources"),
+        _strings(payload["target_labels"], "channel targets"),
+        _matrix(payload["matrix"]),
+        recognition_independent=True,
+    )
+
+
+def _probability_law(value: object) -> ExactProbabilityLaw:
+    labels, masses = _law(value)
+    return ExactProbabilityLaw(labels, masses)
+
+
+def _submeasure(value: object) -> ExactSubmeasure:
+    labels, masses = _law(value)
+    return ExactSubmeasure(labels, masses)
+
+
+def _agent_from_artifact(value: object) -> AgentDatum:
+    payload = _require_object(value, "agent")
+    generative_payload = _require_object(
+        payload["generative_kernel"], "agent generative kernel"
+    )
+    generative_kernel = _exact_channel(generative_payload)
+    assert payload["generative_kernel_sha256"] == _canonical_sha256(
+        generative_payload
+    )
+    evaluations: list[ModelEvaluation] = []
+    for raw in _require_list(payload["evaluator"], "agent evaluator"):
+        item = _require_object(raw, "model evaluation")
+        kernel_payload = _require_object(item["kernel"], "evaluator kernel")
+        evaluator_kernel = _exact_channel(kernel_payload)
+        assert item["kernel_sha256"] == _canonical_sha256(kernel_payload)
+        assert type(item["model_label"]) is str
+        evaluations.append(
+            ModelEvaluation(item["model_label"], evaluator_kernel)
+        )
+    return AgentDatum(
+        agent_id=str(payload["agent_id"]),
+        parent_ids=_strings(payload["parent_ids"], "agent parent IDs"),
+        belief_labels=_strings(payload["belief_labels"], "agent belief labels"),
+        model_labels=_strings(payload["model_labels"], "agent model labels"),
+        state_labels=_strings(payload["state_labels"], "agent state labels"),
+        evaluator=tuple(evaluations),
+        generative_kernel=generative_kernel,
+    )
+
+
+def _recognition_from_artifact(
+    value: object,
+    agent: AgentDatum,
+) -> AgentRecognitionDatum:
+    payload = _require_object(value, "recognition")
+    assert payload["agent_id"] == agent.agent_id
+    assert _strings(payload["belief_labels"], "recognition beliefs") == (
+        agent.belief_labels
+    )
+    assert _strings(payload["model_labels"], "recognition models") == (
+        agent.model_labels
+    )
+    assert _strings(payload["state_labels"], "recognition states") == (
+        agent.state_labels
+    )
+    datum = AgentRecognitionDatum(agent, _probability_law(payload["joint"]))
+    assert datum.belief_marginal == _probability_law(
+        payload["belief_marginal"]
+    )
+    assert datum.model_marginal == _probability_law(payload["model_marginal"])
+    body = {key: item for key, item in payload.items() if key != "sha256"}
+    assert payload["sha256"] == _canonical_sha256(body)
+    return datum
+
+
+def _record_from_artifact(value: object) -> RecordDatum:
+    payload = _require_object(value, "record")
+    kernel_payload = _require_object(payload["kernel"], "record kernel")
+    assert payload["kernel_sha256"] == _canonical_sha256(kernel_payload)
+    body = {key: item for key, item in payload.items() if key != "sha256"}
+    assert payload["sha256"] == _canonical_sha256(body)
+    return RecordDatum(
+        record_id=str(payload["record_id"]),
+        owner_id=str(payload["owner_id"]),
+        scope_ids=_strings(payload["scope_ids"], "record scope IDs"),
+        outcome_labels=_strings(payload["outcome_labels"], "record outcomes"),
+        kernel=_exact_channel(kernel_payload),
+    )
+
+
+def _selector_from_artifact(value: object) -> SelectorSpec:
+    payload = _require_object(value, "selector")
+    coupling = payload["coupling"]
+    return SelectorSpec(
+        str(payload["selector_id"]),
+        str(payload["selector_kind"]),
+        None if coupling is None else _probability_law(coupling),
+    )
+
+
+def _population_from_artifact(value: object) -> PopulationJoint:
+    payload = _require_object(value, "population")
+    return PopulationJoint(
+        context_id=str(payload["context_id"]),
+        agent_order=_strings(payload["agent_order"], "population agent order"),
+        record_order=_strings(payload["record_order"], "population record order"),
+        latent_labels=_strings(payload["latent_labels"], "population latent labels"),
+        observation_labels=_strings(
+            payload["observation_labels"], "population observation labels"
+        ),
+        joint_masses=_matrix(payload["joint_masses"]),
+        construction_trace=_strings(
+            payload["construction_trace"], "population construction trace"
+        ),
+    )
+
+
+def _inference_from_artifact(
+    value: object,
+    population: PopulationJoint,
+    agents_by_id: dict[str, AgentDatum],
+) -> PopulationInference:
+    payload = _require_object(value, "population inference")
+    recognitions = tuple(
+        _recognition_from_artifact(
+            raw,
+            agents_by_id[
+                str(_require_object(raw, "inference recognition")["agent_id"])
+            ],
+        )
+        for raw in _require_list(
+            payload["recognitions"], "inference recognitions"
+        )
+    )
+    return PopulationInference(
+        population=population,
+        observed_record=str(payload["observed_record"]),
+        recognitions=recognitions,
+        selector=_selector_from_artifact(payload["selector"]),
+        recognition=_probability_law(payload["recognition"]),
+        evidence_measure=_submeasure(payload["evidence_measure"]),
+        evidence=_fraction(payload["evidence"]),
+        posterior=_probability_law(payload["posterior"]),
+    )
+
+
+def _aggregate_from_artifact(value: object) -> AggregateDatum:
+    payload = _require_object(value, "aggregate")
+    return AggregateDatum(
+        aggregate_id=str(payload["aggregate_id"]),
+        source_agent_ids=_strings(
+            payload["source_agent_ids"], "aggregate source agents"
+        ),
+        observed_record=str(payload["observed_record"]),
+        channel_id=str(payload["channel_id"]),
+        channel_sha256=str(payload["channel_sha256"]),
+        observation_labels=_strings(
+            payload["observation_labels"], "aggregate observations"
+        ),
+        target_labels=_strings(payload["target_labels"], "aggregate targets"),
+        generative_joint=_matrix(payload["generative_joint"]),
+        recognition=_probability_law(payload["recognition"]),
+        posterior=_probability_law(payload["posterior"]),
+        evidence=_fraction(payload["evidence"]),
+        conditional_kl_defect=float(payload["conditional_kl_defect"]),
+        kl_chain_residual=float(payload["kl_chain_residual"]),
+    )
+
+
+def _coarse_agent_spec_from_artifact(value: object) -> CoarseAgentSpec:
+    payload = _require_object(value, "coarse agent specification")
+    block_payload = _require_object(payload["block_channel"], "block channel")
+    assert payload["block_channel_sha256"] == _canonical_sha256(block_payload)
+    return CoarseAgentSpec(
+        agent_id=str(payload["agent_id"]),
+        source_agent_ids=_strings(
+            payload["source_agent_ids"], "coarse source agents"
+        ),
+        parent_ids=_strings(payload["parent_ids"], "coarse parents"),
+        source_context_id=str(payload["source_context_id"]),
+        belief_labels=_strings(payload["belief_labels"], "coarse beliefs"),
+        model_labels=_strings(payload["model_labels"], "coarse models"),
+        state_labels=_strings(payload["state_labels"], "coarse states"),
+        block_channel=_exact_channel(block_payload),
+        null_row_policy=str(payload["null_row_policy"]),
+    )
+
+
+def _structure_from_artifact(value: object) -> RecursiveCoarseStructure:
+    payload = _require_object(value, "recursive structure")
+    observation_payload = _require_object(
+        payload["observation_bijection"], "observation bijection"
+    )
+    fine_labels = _strings(
+        observation_payload["fine_observation_labels"],
+        "fine observation labels",
+    )
+    compound_labels = _strings(
+        observation_payload["compound_outcome_labels"],
+        "compound outcome labels",
+    )
+    pairs = tuple(
+        _require_object(raw, "observation bijection pair")
+        for raw in _require_list(
+            observation_payload["fine_to_compound"],
+            "observation bijection pairs",
+        )
+    )
+    assert len(pairs) == len(fine_labels), (
+        "observation bijection pairs must cover every fine observation"
+    )
+    assert tuple(pair.get("fine_observation") for pair in pairs) == fine_labels, (
+        "observation bijection pairs must preserve fine observation order"
+    )
+    compounds = tuple(pair.get("compound_outcome") for pair in pairs)
+    assert all(type(item) is str for item in compounds), (
+        "observation bijection pairs must contain built-in strings"
+    )
+    assert compounds == compound_labels and len(set(compounds)) == len(compounds), (
+        "observation bijection pairs must form the ordered bijection"
+    )
+    observation = CoarseObservationSpec(
+        str(observation_payload["record_id"]),
+        fine_labels,
+        compound_labels,
+        compounds,
+    )
+    sparse_payload = _require_object(
+        payload["sparse_record_candidate"], "sparse record candidate"
+    )
+    projections = tuple(
+        _require_object(raw, "sparse projection")
+        for raw in _require_list(
+            sparse_payload["projections"], "sparse projections"
+        )
+    )
+    assert tuple(item.get("fine_observation") for item in projections) == (
+        fine_labels
+    ), "sparse projections must preserve fine observation order"
+    sparse = SparseRecordFactorizationSpec(
+        left_record_ids=_strings(
+            sparse_payload["left_record_ids"], "sparse left records"
+        ),
+        right_record_ids=_strings(
+            sparse_payload["right_record_ids"], "sparse right records"
+        ),
+        left_outcome_labels=_strings(
+            sparse_payload["left_outcome_labels"], "sparse left outcomes"
+        ),
+        right_outcome_labels=_strings(
+            sparse_payload["right_outcome_labels"], "sparse right outcomes"
+        ),
+        left_outcome_by_fine_observation=tuple(
+            str(item["left_outcome"]) for item in projections
+        ),
+        right_outcome_by_fine_observation=tuple(
+            str(item["right_outcome"]) for item in projections
+        ),
+    )
+    return RecursiveCoarseStructure(
+        structure_id=str(payload["structure_id"]),
+        source_agent_order=_strings(
+            payload["source_agent_order"], "source agent order"
+        ),
+        coarse_agent_order=_strings(
+            payload["coarse_agent_order"], "coarse agent order"
+        ),
+        agent_specs=tuple(
+            _coarse_agent_spec_from_artifact(raw)
+            for raw in _require_list(
+                payload["agent_specs"], "coarse agent specifications"
+            )
+        ),
+        observation=observation,
+        sparse_record_candidate=sparse,
+    )
+
+
+def _access_from_artifact(value: object) -> CoarseAccessSpec:
+    payload = _require_object(value, "coarse access")
+    observations = _strings(
+        payload["observation_labels"], "access observation labels"
+    )
+    mappings = tuple(
+        _require_object(raw, "access mapping")
+        for raw in _require_list(
+            payload["observation_to_information"], "access mappings"
+        )
+    )
+    assert tuple(item.get("observation") for item in mappings) == observations
+    information = tuple(item.get("information") for item in mappings)
+    assert all(type(item) is str for item in information)
+    return CoarseAccessSpec(
+        agent_id=str(payload["agent_id"]),
+        observation_labels=observations,
+        information_labels=_strings(
+            payload["information_labels"], "access information labels"
+        ),
+        information_by_observation=information,
+        access_kind=str(payload["access_kind"]),
+    )
+
+
+def _coarse_channel_from_artifact(value: object) -> CoarseChannelSpec:
+    payload = _require_object(value, "coarse channel")
+    declaration = _require_object(payload["channel"], "coarse exact channel")
+    assert payload["channel_sha256"] == _canonical_sha256(declaration)
+    return CoarseChannelSpec(
+        channel_id=str(payload["channel_id"]),
+        source_agent_ids=_strings(
+            payload["source_agent_ids"], "combined source agents"
+        ),
+        structural_input_ids=_strings(
+            payload["structural_input_ids"], "combined structural inputs"
+        ),
+        channel=_exact_channel(declaration),
+    )
+
+
+def _raw_semantic_subhashes(
+    fixture_payload: dict[str, object],
+) -> dict[str, str]:
+    typed_agents = tuple(
+        _agent_from_artifact(raw)
+        for raw in _require_list(fixture_payload["agents"], "fixture agents")
+    )
+    typed_agents_by_id = {agent.agent_id: agent for agent in typed_agents}
+    tuple(
+        _recognition_from_artifact(
+            raw,
+            typed_agents_by_id[
+                str(_require_object(raw, "fixture recognition")["agent_id"])
+            ],
+        )
+        for raw in _require_list(
+            fixture_payload["recognitions"], "fixture recognitions"
+        )
+    )
+    tuple(_record_from_artifact(raw) for raw in _require_list(fixture_payload["records"], "fixture records"))
+    _selector_from_artifact(fixture_payload["selector"])
+    _structure_from_artifact(fixture_payload["recursive_structure"])
+    tuple(_access_from_artifact(raw) for raw in _require_list(fixture_payload["access_specs"], "fixture access specs"))
+    raw_agents: list[dict[str, object]] = []
+    for raw in _require_list(fixture_payload["agents"], "fixture agents"):
+        agent = _require_object(raw, "fixture agent")
+        raw_agents.append(
+            {
+                "agent_id": agent["agent_id"],
+                "parent_ids": agent["parent_ids"],
+                "belief_labels": agent["belief_labels"],
+                "model_labels": agent["model_labels"],
+                "generative_rows": _require_object(
+                    agent["generative_kernel"], "generative kernel"
+                )["matrix"],
+                "evaluator": [
+                    {
+                        "model_label": evaluation["model_label"],
+                        "rows": _require_object(
+                            evaluation["kernel"], "evaluator kernel"
+                        )["matrix"],
+                    }
+                    for evaluation in (
+                        _require_object(item, "model evaluation")
+                        for item in _require_list(
+                            agent["evaluator"], "agent evaluator"
+                        )
+                    )
+                ],
+            }
+        )
+    raw_records = []
+    for raw in _require_list(fixture_payload["records"], "fixture records"):
+        record = _require_object(raw, "fixture record")
+        raw_records.append(
+            {
+                "record_id": record["record_id"],
+                "owner_id": record["owner_id"],
+                "scope_ids": record["scope_ids"],
+                "outcome_labels": record["outcome_labels"],
+                "rows": _require_object(record["kernel"], "record kernel")[
+                    "matrix"
+                ],
+            }
+        )
+    raw_recognitions = [
+        {
+            "agent_id": recognition["agent_id"],
+            "masses": _require_object(
+                recognition["joint"], "recognition joint"
+            )["masses"],
+        }
+        for recognition in (
+            _require_object(item, "fixture recognition")
+            for item in _require_list(
+                fixture_payload["recognitions"], "fixture recognitions"
+            )
+        )
+    ]
+    selector = _require_object(fixture_payload["selector"], "fixture selector")
+    coupling = selector["coupling"]
+    raw_selector = {
+        "selector_id": selector["selector_id"],
+        "selector_kind": selector["selector_kind"],
+        "coupling": (
+            None
+            if coupling is None
+            else {
+                "masses": _require_object(coupling, "selector coupling")[
+                    "masses"
+                ]
+            }
+        ),
+    }
+    structure = _require_object(
+        fixture_payload["recursive_structure"], "recursive structure"
+    )
+    observation = _require_object(
+        structure["observation_bijection"], "observation bijection"
+    )
+    pairs = tuple(
+        _require_object(item, "observation pair")
+        for item in _require_list(
+            observation["fine_to_compound"], "observation pairs"
+        )
+    )
+    sparse = _require_object(
+        structure["sparse_record_candidate"], "sparse candidate"
+    )
+    projections = tuple(
+        _require_object(item, "sparse projection")
+        for item in _require_list(sparse["projections"], "sparse projections")
+    )
+    raw_structure = {
+        "structure_id": structure["structure_id"],
+        "source_agent_order": structure["source_agent_order"],
+        "coarse_agent_order": structure["coarse_agent_order"],
+        "agents": [
+            {
+                "agent_id": spec["agent_id"],
+                "source_agent_ids": spec["source_agent_ids"],
+                "parent_ids": spec["parent_ids"],
+                "source_context_id": spec["source_context_id"],
+                "belief_labels": spec["belief_labels"],
+                "model_labels": spec["model_labels"],
+                "block_rows": _require_object(
+                    spec["block_channel"], "block channel"
+                )["matrix"],
+                "null_row_policy": spec["null_row_policy"],
+            }
+            for spec in (
+                _require_object(item, "coarse agent specification")
+                for item in _require_list(
+                    structure["agent_specs"], "coarse agent specifications"
+                )
+            )
+        ],
+        "observation": {
+            "record_id": observation["record_id"],
+            "fine_observation_labels": observation[
+                "fine_observation_labels"
+            ],
+            "compound_outcome_labels": observation[
+                "compound_outcome_labels"
+            ],
+            "compound_outcome_by_fine_observation": [
+                pair["compound_outcome"] for pair in pairs
+            ],
+        },
+        "sparse_record_candidate": {
+            "left_record_ids": sparse["left_record_ids"],
+            "right_record_ids": sparse["right_record_ids"],
+            "left_outcome_labels": sparse["left_outcome_labels"],
+            "right_outcome_labels": sparse["right_outcome_labels"],
+            "left_outcome_by_fine_observation": [
+                item["left_outcome"] for item in projections
+            ],
+            "right_outcome_by_fine_observation": [
+                item["right_outcome"] for item in projections
+            ],
+        },
+    }
+    raw_access = []
+    for raw in _require_list(
+        fixture_payload["access_specs"], "fixture access specs"
+    ):
+        access = _require_object(raw, "fixture access")
+        mappings = tuple(
+            _require_object(item, "access mapping")
+            for item in _require_list(
+                access["observation_to_information"], "access mappings"
+            )
+        )
+        raw_access.append(
+            {
+                "agent_id": access["agent_id"],
+                "observation_labels": access["observation_labels"],
+                "information_labels": access["information_labels"],
+                "information_by_observation": [
+                    item["information"] for item in mappings
+                ],
+                "access_kind": access["access_kind"],
+            }
+        )
+    raw_subrecords = {
+        "generative": {"agents": raw_agents, "records": raw_records},
+        "recognition": {
+            "recognitions": raw_recognitions,
+            "selector": raw_selector,
+        },
+        "structure": raw_structure,
+        "access": raw_access,
+    }
+    return {
+        name: _canonical_sha256(raw_subrecords[name])
+        for name in ("generative", "recognition", "structure", "access")
+    }
+
+
+def _literal_lf4_oracle() -> tuple[
+    tuple[str, ...],
+    tuple[str, ...],
+    tuple[tuple[Fraction, ...], ...],
+    tuple[tuple[Fraction, ...], ...],
+]:
+    agent_ids = ("a0", "a1", "a2", "a3")
+    record_ids = ("r0", "r1", "r2", "r3")
+    local_states = (
+        ("b0", "m0"),
+        ("b0", "m1"),
+        ("b1", "m0"),
+        ("b1", "m1"),
+    )
+    root_row = (
+        Fraction(3, 8),
+        Fraction(1, 8),
+        Fraction(1, 8),
+        Fraction(3, 8),
+    )
+    child_rows = (
+        (Fraction(3, 5), Fraction(3, 20), Fraction(3, 20), Fraction(1, 10)),
+        (Fraction(1, 5), Fraction(9, 20), Fraction(1, 20), Fraction(3, 10)),
+        (Fraction(3, 10), Fraction(1, 20), Fraction(9, 20), Fraction(1, 5)),
+        (Fraction(1, 10), Fraction(3, 20), Fraction(3, 20), Fraction(3, 5)),
+    )
+    high = (Fraction(4, 5), Fraction(1, 5))
+    low = (Fraction(1, 5), Fraction(4, 5))
+    observation_labels = tuple(
+        json.dumps(
+            [
+                [record_id, str(outcome)]
+                for record_id, outcome in zip(
+                    record_ids, outcomes, strict=True
+                )
+            ],
+            ensure_ascii=True,
+            separators=(",", ":"),
+        )
+        for outcomes in product(range(2), repeat=4)
+    )
+    latent_labels: list[str] = []
+    fine_rows: list[tuple[Fraction, ...]] = []
+    coarse_rows = [
+        [Fraction(0) for _ in range(16)] for _ in range(16)
+    ]
+    for states in product(range(4), repeat=4):
+        a0, a1, a2, a3 = states
+        latent_labels.append(
+            json.dumps(
+                [
+                    [agent_id, *local_states[state]]
+                    for agent_id, state in zip(
+                        agent_ids, states, strict=True
+                    )
+                ],
+                ensure_ascii=True,
+                separators=(",", ":"),
+            )
+        )
+        generative = (
+            root_row[a0]
+            * child_rows[a0][a1]
+            * child_rows[a1][a2]
+            * child_rows[a2][a3]
+        )
+        belief_agrees = local_states[a1][0] == local_states[a2][0]
+        record_rows = (
+            high if local_states[a0][0] == "b0" else low,
+            high if belief_agrees else low,
+            high if belief_agrees else low,
+            high if local_states[a3][0] == "b0" else low,
+        )
+        row: list[Fraction] = []
+        for observation_index, outcomes in enumerate(
+            product(range(2), repeat=4)
+        ):
+            mass = generative
+            for record_row, outcome in zip(
+                record_rows, outcomes, strict=True
+            ):
+                mass *= record_row[outcome]
+            row.append(mass)
+            a_target = (
+                ((a0 // 2) ^ (a1 // 2)) * 2
+                + ((a0 % 2) ^ (a1 % 2))
+            )
+            b_target = (
+                ((a2 // 2) ^ (a3 // 2)) * 2
+                + ((a2 % 2) ^ (a3 % 2))
+            )
+            coarse_rows[a_target * 4 + b_target][
+                observation_index
+            ] += mass
+        fine_rows.append(tuple(row))
+    return (
+        tuple(latent_labels),
+        observation_labels,
+        tuple(fine_rows),
+        tuple(tuple(row) for row in coarse_rows),
+    )
+
+
+def _relabel_coarse_rows(
+    coarse_population: object,
+) -> tuple[tuple[Fraction, ...], ...]:
+    structure = coarse_population.structure
+    reconstructed = coarse_population.reconstructed_population
+    columns = tuple(
+        reconstructed.observation_labels.index(
+            json.dumps(
+                [[structure.observation.record_id, outcome]],
+                ensure_ascii=True,
+                separators=(",", ":"),
+            )
+        )
+        for outcome in (
+            structure.observation.compound_outcome_by_fine_observation
+        )
+    )
+    return tuple(
+        tuple(row[column] for column in columns)
+        for row in reconstructed.joint_masses
+    )
+
+
+def _sparse_replay_diagnostics(
+    coarse_population: object,
+) -> tuple[int, Fraction]:
+    sparse = coarse_population.structure.sparse_record_candidate
+    pushed = coarse_population.pushed_joint
+    left_indices = tuple(
+        sparse.left_outcome_labels.index(value)
+        for value in sparse.left_outcome_by_fine_observation
+    )
+    right_indices = tuple(
+        sparse.right_outcome_labels.index(value)
+        for value in sparse.right_outcome_by_fine_observation
+    )
+    conditionals = []
+    left_marginals = []
+    right_marginals = []
+    for pushed_row in pushed.joint_masses:
+        denominator = sum(pushed_row, Fraction(0))
+        assert denominator > 0
+        joint = [
+            [Fraction(0) for _ in sparse.right_outcome_labels]
+            for _ in sparse.left_outcome_labels
+        ]
+        for index, mass in enumerate(pushed_row):
+            joint[left_indices[index]][right_indices[index]] += (
+                mass / denominator
+            )
+        exact = tuple(tuple(row) for row in joint)
+        conditionals.append(exact)
+        left_marginals.append(
+            tuple(sum(row, Fraction(0)) for row in exact)
+        )
+        right_marginals.append(
+            tuple(
+                sum(
+                    (exact[left][right] for left in range(4)),
+                    Fraction(0),
+                )
+                for right in range(4)
+            )
+        )
+    violations = 0
+    for a_index in range(4):
+        for left_b, right_b in combinations(range(4), 2):
+            for outcome in range(4):
+                violations += int(
+                    left_marginals[a_index * 4 + left_b][outcome]
+                    != left_marginals[a_index * 4 + right_b][outcome]
+                )
+    for b_index in range(4):
+        for left_a, right_a in combinations(range(4), 2):
+            for outcome in range(4):
+                violations += int(
+                    right_marginals[left_a * 4 + b_index][outcome]
+                    != right_marginals[right_a * 4 + b_index][outcome]
+                )
+    maximum_tv = Fraction(0)
+    for latent_index, joint in enumerate(conditionals):
+        tv = Fraction(0)
+        for left in range(4):
+            for right in range(4):
+                product_mass = (
+                    left_marginals[latent_index][left]
+                    * right_marginals[latent_index][right]
+                )
+                difference = joint[left][right] - product_mass
+                violations += int(difference != 0)
+                tv += abs(difference)
+        maximum_tv = max(maximum_tv, tv / 2)
+    return violations, maximum_tv
+
+
+def _recursive_metric_records(
+    envelope: dict[str, object],
+) -> dict[str, dict[str, object]]:
+    payload = _require_object(envelope["payload"], "metrics payload")
+    raw_records = _require_list(payload["records"], "metric records")
+    inventory = EXPERIMENT_REGISTRY[
+        "renormalization_v2_recursive"
+    ].metric_inventory
+    assert len(raw_records) == 20, (
+        "metrics artifact must contain exactly twenty raw records"
+    )
+    records = tuple(
+        _require_object(record, "metric record") for record in raw_records
+    )
+    assert all(type(record.get("name")) is str for record in records), (
+        "metric record names must be built-in strings"
+    )
+    names = tuple(record["name"] for record in records)
+    assert len(set(names)) == len(names), (
+        "metric record names must be unique"
+    )
+    assert names == inventory, (
+        "metric record names must match the exact ordered inventory"
+    )
+    return {
+        name: _require_object(record["record"], "serialized MetricRecord")
+        for name, record in zip(names, records, strict=True)
+    }
+
+
+def _replay_finalized_recursive_run(run_dir: Path) -> None:
+    run_dir = run_dir.resolve()
+    assert run_dir.is_dir(), "replay accepts only a finalized run directory"
+    expected_files = set(_CORE_FILES + _ARTIFACT_FILES)
+    assert {path.name for path in run_dir.iterdir()} == expected_files
+    manifest = _read_json(run_dir, "manifest")
+    config_document = _read_json(run_dir, "config")
+    assert manifest["complete"] is True
+    assert manifest["artifacts"] == {
+        filename: "complete" for filename in sorted(expected_files)
+    }
+
+    resolved = _require_object(
+        config_document["resolved_config"], "resolved configuration"
+    )
+    config = ExperimentConfig.from_dicts(
+        _require_object(resolved["run"], "run configuration"),
+        _require_object(resolved["theory"], "theory configuration"),
+        _require_object(resolved["numerics"], "numerics configuration"),
+        _require_object(resolved["output"], "output configuration"),
+        (
+            None
+            if "compute" not in resolved
+            else _require_object(
+                resolved["compute"], "compute configuration"
+            )
+        ),
+    )
+    assert config_sha256(config) == config_document["config_hash"]
+    assert manifest["config_hash"] == config_document["config_hash"]
+
+    envelopes = {
+        name: _read_json(run_dir, name) for name in _JSON_STEMS
+    }
+    stored_metric_records = _recursive_metric_records(envelopes["metrics"])
+    fixture_payload = _require_object(
+        envelopes["fixture_snapshot"]["payload"], "fixture payload"
+    )
+    boundary_structure = _structure_from_artifact(
+        fixture_payload["recursive_structure"]
+    )
+    raw_observation_payload = _require_object(
+        envelopes["all_observation_inference"]["payload"],
+        "all-observation payload",
+    )
+    raw_observations = tuple(
+        _require_object(raw, "observation result")
+        for raw in _require_list(
+            raw_observation_payload["observations"], "observation results"
+        )
+    )
+    assert len(raw_observations) == 16
+    boundary_mapping = dict(
+        zip(
+            boundary_structure.observation.fine_observation_labels,
+            boundary_structure.observation.compound_outcome_by_fine_observation,
+            strict=True,
+        )
+    )
+    for fine_label, stored in zip(
+        boundary_structure.observation.fine_observation_labels,
+        raw_observations,
+        strict=True,
+    ):
+        expected_coarse = json.dumps(
+            [[boundary_structure.observation.record_id, boundary_mapping[fine_label]]],
+            ensure_ascii=True,
+            separators=(",", ":"),
+        )
+        assert (
+            stored.get("fine_observed_record"),
+            stored.get("coarse_observed_record"),
+        ) == (fine_label, expected_coarse), (
+            "observation result pairs must preserve the declared ordered bijection"
+        )
+    fixture_id = str(envelopes["fixture_snapshot"]["fixture_id"])
+    producer_commit = str(
+        envelopes["fixture_snapshot"]["producer_commit"]
+    )
+    config_hash = str(envelopes["fixture_snapshot"]["config_hash"])
+    for envelope in envelopes.values():
+        assert (
+            envelope["schema_version"]
+            == "rg-v2-recursive-phase2-artifact-v1"
+        )
+        assert envelope["fixture_id"] == fixture_id
+        assert envelope["producer_commit"] == producer_commit
+        assert envelope["config_hash"] == config_hash
+    assert fixture_id == "lf4_two_parent_recursive_v1"
+    assert config_hash == config_document["config_hash"]
+    assert producer_commit == manifest["provenance"]["git_commit"]
+
+    hashes = {
+        name: _canonical_sha256(envelope)
+        for name, envelope in envelopes.items()
+    }
+    semantic_subrecords = tuple(
+        (
+            str(_require_object(raw, "semantic subrecord")["name"]),
+            str(_require_object(raw, "semantic subrecord")["sha256"]),
+        )
+        for raw in _require_list(
+            fixture_payload["semantic_subrecords"],
+            "semantic subrecords",
+        )
+    )
+    recomputed_subhashes = _raw_semantic_subhashes(fixture_payload)
+    assert semantic_subrecords == tuple(recomputed_subhashes.items()), (
+        "semantic subrecord hashes must replay from embedded semantics"
+    )
+    raw_fixture_sha256 = str(fixture_payload["fixture_sha256"])
+    assert len(raw_fixture_sha256) == 64 and all(
+        character in "0123456789abcdef"
+        for character in raw_fixture_sha256
+    ), "raw fixture SHA-256 must be a lowercase provenance digest"
+    assert _direct_inputs(envelopes["fixture_snapshot"]) == (
+        ("fixture_raw", raw_fixture_sha256),
+        *semantic_subrecords,
+    ), "fixture_snapshot direct-input DAG mismatch"
+    assert _direct_inputs(envelopes["fine_population"]) == (
+        ("generative", recomputed_subhashes["generative"]),
+    ), "fine_population direct-input DAG mismatch"
+    assert _direct_inputs(envelopes["coarse_generative"]) == (
+        ("fine_population", hashes["fine_population"]),
+        ("structure", recomputed_subhashes["structure"]),
+    ), "coarse_generative direct-input DAG mismatch"
+    assert _direct_inputs(envelopes["coarse_interfaces"]) == (
+        ("coarse_generative", hashes["coarse_generative"]),
+        ("access", recomputed_subhashes["access"]),
+        ("recognition", recomputed_subhashes["recognition"]),
+    ), "coarse_interfaces direct-input DAG mismatch"
+    assert _direct_inputs(envelopes["coarse_population"]) == (
+        ("coarse_generative", hashes["coarse_generative"]),
+    ), "coarse_population direct-input DAG mismatch"
+    assert _direct_inputs(envelopes["all_observation_inference"]) == (
+        ("fine_population", hashes["fine_population"]),
+        ("coarse_interfaces", hashes["coarse_interfaces"]),
+        ("coarse_population", hashes["coarse_population"]),
+    ), "all-observation direct-input DAG mismatch"
+    scientific_names = _JSON_STEMS[:-1]
+    assert _direct_inputs(envelopes["metrics"]) == tuple(
+        (name, hashes[name]) for name in scientific_names
+    ), "metrics direct-input DAG mismatch"
+
+    agents = tuple(
+        _agent_from_artifact(raw)
+        for raw in _require_list(fixture_payload["agents"], "fixture agents")
+    )
+    agents_by_id = {agent.agent_id: agent for agent in agents}
+    assert len(agents_by_id) == len(agents) == 4
+    records = tuple(
+        _record_from_artifact(raw)
+        for raw in _require_list(
+            fixture_payload["records"], "fixture records"
+        )
+    )
+    assert len(records) == 4
+    recognitions = tuple(
+        _recognition_from_artifact(
+            raw,
+            agents_by_id[
+                str(_require_object(raw, "fixture recognition")["agent_id"])
+            ],
+        )
+        for raw in _require_list(
+            fixture_payload["recognitions"], "fixture recognitions"
+        )
+    )
+    selector = _selector_from_artifact(fixture_payload["selector"])
+    structure = _structure_from_artifact(
+        fixture_payload["recursive_structure"]
+    )
+    access_specs = tuple(
+        _access_from_artifact(raw)
+        for raw in _require_list(
+            fixture_payload["access_specs"], "fixture access specs"
+        )
+    )
+    assert tuple(access.agent_id for access in access_specs) == (
+        structure.coarse_agent_order
+    )
+
+    fine_population = construct_population_joint(
+        agents, records, str(fixture_payload["context_id"])
+    )
+    runtime_fine = enumerate_population_joint_independently(
+        agents, records, str(fixture_payload["context_id"])
+    )
+    (
+        literal_latent,
+        literal_observations,
+        literal_fine,
+        literal_coarse,
+    ) = _literal_lf4_oracle()
+    assert (
+        fine_population.latent_labels
+        == runtime_fine.latent_labels
+        == literal_latent
+    )
+    assert (
+        fine_population.observation_labels
+        == runtime_fine.observation_labels
+        == literal_observations
+    )
+    assert (
+        fine_population.joint_masses
+        == runtime_fine.joint_masses
+        == literal_fine
+    )
+    assert sum(len(row) for row in literal_fine) == 4096
+    fine_payload = _require_object(
+        envelopes["fine_population"]["payload"], "fine population payload"
+    )
+    assert _population_from_artifact(
+        fine_payload["population"]
+    ) == fine_population
+    assert _population_from_artifact(
+        fine_payload["independent_population"]
+    ) == runtime_fine
+    assert fine_payload["exact_equality"] is True
+    assert _strings(
+        fine_payload["factor_trace"], "fine factor trace"
+    ) == fine_population.construction_trace
+
+    coarse_population = construct_coarse_population_joint(
+        fine_population, structure
+    )
+    runtime_coarse = _enumerate_coarse_population_independently(
+        fine_population, structure
+    )
+    assert coarse_population == runtime_coarse
+    assert (
+        coarse_population.pushed_joint.joint_masses
+        == runtime_coarse.pushed_joint.joint_masses
+        == literal_coarse
+    )
+    assert _relabel_coarse_rows(coarse_population) == literal_coarse
+    assert sum(len(row) for row in literal_coarse) == 256
+
+    coarse_generative = _require_object(
+        envelopes["coarse_generative"]["payload"],
+        "coarse generative payload",
+    )
+    _assert_no_forbidden_generative_fields(coarse_generative)
+    assert coarse_generative["structure_id"] == structure.structure_id
+    assert _strings(
+        coarse_generative["source_agent_order"], "source agent order"
+    ) == structure.source_agent_order
+    assert _strings(
+        coarse_generative["coarse_agent_order"], "coarse agent order"
+    ) == structure.coarse_agent_order
+    assert tuple(
+        _coarse_agent_spec_from_artifact(raw)
+        for raw in _require_list(
+            coarse_generative["parent_specifications"],
+            "parent specifications",
+        )
+    ) == structure.agent_specs
+    assert _coarse_channel_from_artifact(
+        coarse_generative["combined_channel"]
+    ) == coarse_population.combined_channel
+    generative_payloads = tuple(
+        _require_object(raw, "coarse generative datum")
+        for raw in _require_list(
+            coarse_generative["generative_agents"],
+            "coarse generative agents",
+        )
+    )
+    for raw, expected in zip(
+        generative_payloads,
+        coarse_population.generative_agents,
+        strict=True,
+    ):
+        assert _coarse_agent_spec_from_artifact(raw["spec"]) == expected.spec
+        assert _agent_from_artifact(raw["agent"]) == expected.agent
+        assert raw["source_population_sha256"] == (
+            expected.source_population_sha256
+        )
+        assert raw["block_channel_sha256"] == expected.block_channel_sha256
+        assert raw["combined_channel_sha256"] == (
+            expected.combined_channel_sha256
+        )
+    assert _record_from_artifact(
+        coarse_generative["combined_record"]
+    ) == coarse_population.records[0]
+
+    coarse_population_payload = _require_object(
+        envelopes["coarse_population"]["payload"],
+        "coarse population payload",
+    )
+    pushed = _require_object(
+        coarse_population_payload["pushed_joint"], "pushed joint"
+    )
+    assert str(pushed["context_id"]) == coarse_population.pushed_joint.context_id
+    assert _strings(
+        pushed["latent_labels"], "pushed latent labels"
+    ) == coarse_population.pushed_joint.latent_labels
+    assert _strings(
+        pushed["fine_observation_labels"], "pushed observation labels"
+    ) == coarse_population.pushed_joint.fine_observation_labels
+    assert _matrix(
+        pushed["joint_masses"]
+    ) == coarse_population.pushed_joint.joint_masses
+    assert pushed["combined_channel_sha256"] == (
+        coarse_population.pushed_joint.combined_channel_sha256
+    )
+    assert _population_from_artifact(
+        coarse_population_payload["reconstructed_population"]
+    ) == coarse_population.reconstructed_population
+    runtime_pushed = _require_object(
+        coarse_population_payload["runtime_oracle_pushed_joint"],
+        "runtime oracle pushed joint",
+    )
+    assert _matrix(runtime_pushed["joint_masses"]) == (
+        runtime_coarse.pushed_joint.joint_masses
+    )
+    assert coarse_population_payload["relabeled_cellwise_equality"] is True
+    assert coarse_population_payload["dense_record_result"] == "pass"
+    sparse_count, sparse_tv = _sparse_replay_diagnostics(
+        coarse_population
+    )
+    assert sparse_count > 0 and sparse_tv > 0
+    assert coarse_population_payload[
+        "sparse_record_factorization_violation_count"
+    ] == sparse_count
+    assert _fraction(
+        coarse_population_payload[
+            "maximum_exact_conditional_tv_violation"
+        ]
+    ) == sparse_tv
+
+    information = construct_coarse_information_interfaces(
+        coarse_population, access_specs
+    )
+    interface_payload = _require_object(
+        envelopes["coarse_interfaces"]["payload"],
+        "coarse interfaces payload",
+    )
+    stored_interfaces = tuple(
+        _require_object(raw, "coarse interface")
+        for raw in _require_list(
+            interface_payload["interfaces"], "coarse interfaces"
+        )
+    )
+    assert len(stored_interfaces) == len(information) == 2
+    for raw, expected in zip(
+        stored_interfaces, information, strict=True
+    ):
+        raw_information = _require_object(
+            raw["information"], "stored information"
+        )
+        assert _access_from_artifact(
+            raw_information["access"]
+        ) == expected.access
+        update = _require_object(
+            raw_information["update"], "stored update"
+        )
+        assert update["agent_id"] == expected.update.agent_id
+        assert update["update_kind"] == expected.update.update_kind
+        assert _exact_channel(update["kernel"]) == expected.update.kernel
+        assert update["source_population_sha256"] == (
+            expected.update.source_population_sha256
+        )
+        assert update["access_sha256"] == expected.update.access_sha256
+
+    all_observation_payload = _require_object(
+        envelopes["all_observation_inference"]["payload"],
+        "all-observation payload",
+    )
+    stored_observations = tuple(
+        _require_object(raw, "observation result")
+        for raw in _require_list(
+            all_observation_payload["observations"],
+            "observation results",
+        )
+    )
+    assert len(stored_observations) == 16
+    aggregates: list[AggregateDatum] = []
+    first_coarse_agents = None
+    first_coarse_selector = None
+    mapping = dict(
+        zip(
+            structure.observation.fine_observation_labels,
+            structure.observation.compound_outcome_by_fine_observation,
+            strict=True,
+        )
+    )
+    for fine_label, stored in zip(
+        structure.observation.fine_observation_labels,
+        stored_observations,
+        strict=True,
+    ):
+        assert stored["fine_observed_record"] == fine_label, (
+            "observation result pairs must preserve fine observation order"
+        )
+        expected_coarse_label = json.dumps(
+            [
+                [
+                    structure.observation.record_id,
+                    mapping[fine_label],
+                ]
+            ],
+            ensure_ascii=True,
+            separators=(",", ":"),
+        )
+        assert stored["coarse_observed_record"] == expected_coarse_label, (
+            "observation result pairs must preserve the declared bijection"
+        )
+        fine_inference = derive_population_inference(
+            fine_population,
+            _observation(fine_label),
+            recognitions,
+            selector,
+        )
+        assert _inference_from_artifact(
+            stored["fine_inference"],
+            fine_population,
+            agents_by_id,
+        ) == fine_inference
+        coarse_agents = construct_coarse_recognition(
+            coarse_population, information, fine_inference
+        )
+        recursive = derive_recursive_observation(
+            coarse_population, coarse_agents, fine_inference
+        )
+        validate_recursive_observation(
+            recursive, coarse_population, config.numerics
+        )
+        coarse_agent_map = {
+            datum.generative.agent.agent_id: datum.generative.agent
+            for datum in coarse_agents
+        }
+        assert _inference_from_artifact(
+            stored["coarse_inference"],
+            coarse_population.reconstructed_population,
+            coarse_agent_map,
+        ) == recursive.coarse_inference
+        assert _fraction(stored["fine_evidence"]) == fine_inference.evidence
+        assert _fraction(stored["coarse_evidence"]) == (
+            recursive.coarse_inference.evidence
+        )
+        assert _probability_law(
+            stored["pushed_recognition"]
+        ) == recursive.pushed_recognition
+        assert _probability_law(
+            stored["coarse_recognition"]
+        ) == recursive.coarse_inference.recognition
+        assert _probability_law(
+            stored["pushed_posterior"]
+        ) == recursive.pushed_posterior
+        assert _probability_law(
+            stored["coarse_posterior"]
+        ) == recursive.coarse_inference.posterior
+        assert _fraction(stored["recognition_roundtrip_residual"]) == 0
+        assert _fraction(stored["evidence_roundtrip_residual"]) == 0
+        assert _fraction(stored["posterior_roundtrip_residual"]) == 0
+        for raw_access, datum in zip(
+            _require_list(stored["access_values"], "access values"),
+            coarse_agents,
+            strict=True,
+        ):
+            access_value = _require_object(raw_access, "access value")
+            assert access_value["agent_id"] == datum.generative.agent.agent_id
+            index = datum.information.access.observation_labels.index(
+                expected_coarse_label
+            )
+            assert access_value["information"] == (
+                datum.information.access.information_by_observation[index]
+            )
+        for raw_update, datum in zip(
+            _require_list(stored["update_rows"], "update rows"),
+            coarse_agents,
+            strict=True,
+        ):
+            update = _require_object(raw_update, "update row")
+            assert update["agent_id"] == datum.generative.agent.agent_id
+            index = datum.information.access.information_labels.index(
+                expected_coarse_label
+            )
+            assert _vector(update["masses"]) == (
+                datum.information.update.kernel.matrix[index]
+            )
+        aggregate = aggregate_population(
+            fine_inference, coarse_population.combined_channel, config.numerics
+        )
+        assert _aggregate_from_artifact(
+            stored["terminal_common_channel_aggregate"]
+        ) == aggregate
+        aggregates.append(aggregate)
+        if first_coarse_agents is None:
+            first_coarse_agents = coarse_agents
+            first_coarse_selector = recursive.coarse_inference.selector
+
+    assert first_coarse_agents is not None
+    assert first_coarse_selector is not None
+    for raw, datum in zip(
+        stored_interfaces, first_coarse_agents, strict=True
+    ):
+        recognition = _require_object(
+            raw["initial_recognition"], "stored coarse recognition"
+        )
+        assert recognition["agent_id"] == datum.generative.agent.agent_id
+        assert _recognition_from_artifact(
+            recognition["initial_recognition"],
+            datum.generative.agent,
+        ) == datum.recognition.initial_recognition
+        assert _exact_channel(
+            recognition["recognition_kernel"]
+        ) == datum.recognition.recognition_kernel
+        assert recognition["source_recognition_sha256"] == (
+            datum.recognition.source_recognition_sha256
+        )
+    assert _selector_from_artifact(
+        interface_payload["declared_correlated_selector"]
+    ) == first_coarse_selector
+
+    inventory = EXPERIMENT_REGISTRY[
+        "renormalization_v2_recursive"
+    ].metric_inventory
+    expected_values = {name: 0.0 for name in inventory[:15]}
+    expected_values.update(
+        {
+            "coarse_model_marginal_non_dirac_count": 2.0,
+            "forbidden_dependency_violation_count": 0.0,
+            "sparse_record_factorization_violation_count": float(
+                sparse_count
+            ),
+            "minimum_conditional_kl_defect": min(
+                item.conditional_kl_defect for item in aggregates
+            ),
+            "maximum_kl_chain_residual": max(
+                abs(item.kl_chain_residual) for item in aggregates
+            ),
+        }
+    )
+    for name in inventory:
+        record = stored_metric_records[name]
+        assert record["value"] == expected_values[name]
+        assert record["tolerance"] == 0.0
+        assert record["status"] == "pass"
+        assert record["assessment_scope"] == "implementation_check"
+        assert record["verification_state"] == "CANDIDATE"
+        assert type(record["theorem_status"]) is str and record[
+            "theorem_status"
+        ]
+        assert type(record["claim_origin"]) is str and record["claim_origin"]
+        assert type(record["interpretation"]) is str and record[
+            "interpretation"
+        ]
+
+    array_inputs = tuple(
+        (name, hashes[name]) for name in (*scientific_names, "metrics")
+    )
+    expected_float_arrays = {
+        "fine_population": np.asarray(literal_fine, dtype=np.float64),
+        "fine_population_oracle": np.asarray(
+            runtime_fine.joint_masses, dtype=np.float64
+        ),
+        "coarse_pushed_population": np.asarray(
+            literal_coarse, dtype=np.float64
+        ),
+        "coarse_reconstructed_population": np.asarray(
+            _relabel_coarse_rows(coarse_population), dtype=np.float64
+        ),
+    }
+    expected_float_arrays["fine_recognition"] = np.asarray(
+        [
+            float(value)
+            for value in _probability_law(
+                _require_object(
+                    stored_observations[0]["fine_inference"],
+                    "first fine inference",
+                )["recognition"]
+            ).masses
+        ],
+        dtype=np.float64,
+    )
+    expected_float_arrays.update(
+        {
+            "coarse_recognition": np.asarray(
+                [
+                    float(value)
+                    for value in _probability_law(
+                        stored_observations[0]["pushed_recognition"]
+                    ).masses
+                ],
+                dtype=np.float64,
+            ),
+            "fine_evidences": np.asarray(
+                [
+                    float(_fraction(item["fine_evidence"]))
+                    for item in stored_observations
+                ],
+                dtype=np.float64,
+            ),
+            "coarse_evidences": np.asarray(
+                [
+                    float(_fraction(item["coarse_evidence"]))
+                    for item in stored_observations
+                ],
+                dtype=np.float64,
+            ),
+            "pushed_posteriors": np.asarray(
+                [
+                    [
+                        float(value)
+                        for value in _probability_law(
+                            item["pushed_posterior"]
+                        ).masses
+                    ]
+                    for item in stored_observations
+                ],
+                dtype=np.float64,
+            ),
+            "coarse_posteriors": np.asarray(
+                [
+                    [
+                        float(value)
+                        for value in _probability_law(
+                            item["coarse_posterior"]
+                        ).masses
+                    ]
+                    for item in stored_observations
+                ],
+                dtype=np.float64,
+            ),
+            "coarse_update_A": np.asarray(
+                information[0].update.kernel.matrix, dtype=np.float64
+            ),
+            "coarse_update_B": np.asarray(
+                information[1].update.kernel.matrix, dtype=np.float64
+            ),
+            "sparse_conditional_tv": np.asarray(
+                sparse_tv, dtype=np.float64
+            ),
+            "metric_values": np.asarray(
+                [expected_values[name] for name in inventory],
+                dtype=np.float64,
+            ),
+            "metric_tolerances": np.zeros(20, dtype=np.float64),
+        }
+    )
+    expected_array_names = (*_PROVENANCE_ARRAYS, *_FLOAT_ARRAYS)
+    with np.load(run_dir / "arrays.npz", allow_pickle=False) as archive:
+        assert tuple(archive.files) == expected_array_names
+        loaded = {name: archive[name] for name in archive.files}
+        assert all(array.dtype != object for array in loaded.values()), (
+            "NPZ mirrors must not use object dtype"
+        )
+        for name in _PROVENANCE_ARRAYS:
+            assert loaded[name].dtype.kind == "U"
+        assert str(loaded["schema_version"].item()) == (
+            "rg-v2-recursive-phase2-artifact-v1"
+        )
+        assert str(loaded["fixture_id"].item()) == fixture_id
+        assert str(loaded["producer_commit"].item()) == producer_commit
+        assert str(loaded["config_hash"].item()) == config_hash
+        assert tuple(loaded["direct_input_names"].tolist()) == tuple(
+            name for name, _ in array_inputs
+        )
+        assert tuple(loaded["direct_input_sha256"].tolist()) == tuple(
+            sha256 for _, sha256 in array_inputs
+        )
+        for name, expected in expected_float_arrays.items():
+            assert loaded[name].dtype == np.float64
+            np.testing.assert_array_equal(loaded[name], expected)
+        logical_arrays = {
+            "arrays": [
+                {
+                    "name": name,
+                    "dtype": loaded[name].dtype.str,
+                    "shape": list(loaded[name].shape),
+                    "values": loaded[name].tolist(),
+                }
+                for name in sorted(loaded)
+            ]
+        }
+    semantic_hashes = manifest["provenance"]["semantic_artifact_sha256"]
+    assert {
+        name: semantic_hashes[name] for name in _JSON_STEMS
+    } == hashes
+    assert semantic_hashes["arrays"] == _canonical_sha256(logical_arrays)
 
 
 def _assert_no_forbidden_generative_fields(value: object) -> None:
@@ -714,3 +2196,328 @@ def test_mathematics_is_equal_across_output_roots_without_provenance_equality(
         assert _read_json(first.run_dir, name)["payload"] == _read_json(second.run_dir, name)["payload"]
     for name in _FLOAT_ARRAYS:
         np.testing.assert_array_equal(first.arrays[name], second.arrays[name])
+
+
+def test_recursive_artifact_only_replay_reconstructs_without_primitive_access(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Removing finalized semantics or reading primitives must break replay."""
+    result = run_renormalization_v2_recursive_experiment(_config(tmp_path))
+    fixture_data_root = (_REPO_ROOT / "rg_v2" / "data").resolve()
+    real_read_bytes = Path.read_bytes
+    real_read_text = Path.read_text
+
+    def guarded_read_bytes(path: Path) -> bytes:
+        resolved = path.resolve()
+        if resolved == fixture_data_root or fixture_data_root in resolved.parents:
+            pytest.fail(f"replay read primitive fixture bytes: {resolved}")
+        return real_read_bytes(path)
+
+    def guarded_read_text(path: Path, *args: object, **kwargs: object) -> str:
+        resolved = path.resolve()
+        if resolved == fixture_data_root or fixture_data_root in resolved.parents:
+            pytest.fail(f"replay read primitive fixture text: {resolved}")
+        return real_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(
+        experiment_module,
+        "load_recursive_fixture",
+        lambda _: pytest.fail("replay called the primitive fixture loader"),
+    )
+    monkeypatch.setattr(Path, "read_bytes", guarded_read_bytes)
+    monkeypatch.setattr(Path, "read_text", guarded_read_text)
+
+    _replay_finalized_recursive_run(result.run_dir)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        ("duplicate", "metric record names must be unique"),
+        ("extra", "exactly twenty raw records"),
+        ("reordered", "exact ordered inventory"),
+        ("malformed", "built-in strings"),
+    ),
+)
+def test_recursive_artifact_replay_rejects_raw_metric_inventory_mutations(
+    mutation: str,
+    message: str,
+    tmp_path: Path,
+) -> None:
+    """Duplicate, extra, reordered, or malformed raw metrics must fail closed."""
+    result = run_renormalization_v2_recursive_experiment(_config(tmp_path))
+    path = result.run_dir / "metrics.json"
+    envelope = _read_json(result.run_dir, "metrics")
+    payload = _require_object(envelope["payload"], "metrics payload")
+    records = _require_list(payload["records"], "metric records")
+    if mutation == "duplicate":
+        first = _require_object(records[0], "first metric")
+        last = _require_object(records[-1], "last metric")
+        records[-1] = {**last, "name": first["name"]}
+    elif mutation == "extra":
+        records.append(
+            {
+                "name": "unexpected_metric",
+                "record": _require_object(records[0], "metric")["record"],
+            }
+        )
+    elif mutation == "reordered":
+        records[0], records[1] = records[1], records[0]
+    else:
+        first = _require_object(records[0], "first metric")
+        records[0] = {**first, "name": True}
+    path.write_text(
+        json.dumps(envelope, ensure_ascii=True, indent=2, sort_keys=True)
+        + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(AssertionError, match=message):
+        _replay_finalized_recursive_run(result.run_dir)
+
+
+def test_recursive_artifact_replay_rejects_direct_input_hash_mutation(
+    tmp_path: Path,
+) -> None:
+    """Changing one direct-input digest must break the named DAG edge."""
+    result = run_renormalization_v2_recursive_experiment(_config(tmp_path))
+    path = result.run_dir / "coarse_generative.json"
+    envelope = _read_json(result.run_dir, "coarse_generative")
+    direct_inputs = _require_list(envelope["direct_inputs"], "direct inputs")
+    first = _require_object(direct_inputs[0], "first direct input")
+    direct_inputs[0] = {**first, "sha256": "0" * 64}
+    path.write_text(
+        json.dumps(envelope, ensure_ascii=True, indent=2, sort_keys=True)
+        + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(
+        AssertionError, match="coarse_generative direct-input DAG mismatch"
+    ):
+        _replay_finalized_recursive_run(result.run_dir)
+
+
+def test_recursive_artifact_replay_rejects_noncanonical_rational(
+    tmp_path: Path,
+) -> None:
+    """A zero exact denominator must fail at the rational decoder."""
+    result = run_renormalization_v2_recursive_experiment(_config(tmp_path))
+    path = result.run_dir / "fixture_snapshot.json"
+    envelope = _read_json(result.run_dir, "fixture_snapshot")
+    payload = _require_object(envelope["payload"], "fixture payload")
+    agents = _require_list(payload["agents"], "fixture agents")
+    first_agent = _require_object(agents[0], "first agent")
+    kernel = _require_object(
+        first_agent["generative_kernel"], "generative kernel"
+    )
+    matrix = _require_list(kernel["matrix"], "generative matrix")
+    row = _require_list(matrix[0], "generative row")
+    rational = _require_object(row[0], "generative rational")
+    row[0] = {**rational, "denominator": 0}
+    path.write_text(
+        json.dumps(envelope, ensure_ascii=True, indent=2, sort_keys=True)
+        + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(AssertionError, match="denominator must be positive"):
+        _replay_finalized_recursive_run(result.run_dir)
+
+
+def test_recursive_artifact_replay_rejects_observation_pair_mutation(
+    tmp_path: Path,
+) -> None:
+    """Changing a fine/coarse pair must fail at the ordered bijection seam."""
+    result = run_renormalization_v2_recursive_experiment(_config(tmp_path))
+    path = result.run_dir / "all_observation_inference.json"
+    envelope = _read_json(result.run_dir, "all_observation_inference")
+    payload = _require_object(envelope["payload"], "all-observation payload")
+    observations = _require_list(payload["observations"], "observations")
+    first = _require_object(observations[0], "first observation")
+    observations[0] = {
+        **first,
+        "coarse_observed_record": observations[1]["coarse_observed_record"],
+    }
+    path.write_text(
+        json.dumps(envelope, ensure_ascii=True, indent=2, sort_keys=True)
+        + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(AssertionError, match="ordered bijection"):
+        _replay_finalized_recursive_run(result.run_dir)
+
+
+def test_recursive_artifact_replay_rejects_npz_object_dtype(
+    tmp_path: Path,
+) -> None:
+    """An object-dtype mirror must fail under allow_pickle=False."""
+    result = run_renormalization_v2_recursive_experiment(_config(tmp_path))
+    path = result.run_dir / "arrays.npz"
+    with np.load(path, allow_pickle=False) as archive:
+        arrays = {name: archive[name] for name in archive.files}
+    arrays["metric_values"] = arrays["metric_values"].astype(object)
+    np.savez(path, **arrays)
+    with pytest.raises(
+        ValueError, match="Object arrays cannot be loaded when allow_pickle=False"
+    ):
+        _replay_finalized_recursive_run(result.run_dir)
+
+
+def test_recursive_launcher_runs_once_from_arbitrary_cwd_with_empty_pythonpath(
+    tmp_path: Path,
+) -> None:
+    environment = dict(os.environ)
+    environment.update(
+        CUDA_VISIBLE_DEVICES="-1",
+        PYTHONHASHSEED="0",
+        PYTHONPATH="",
+    )
+    completed = subprocess.run(
+        [
+            str(_PYTHON),
+            str(_REPO_ROOT / "run_renormalization_v2_recursive_lab.py"),
+        ],
+        cwd=tmp_path,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.count("run_dir=") == 1
+    assert completed.stdout.count("status=pass") == 1
+    run_root = tmp_path / "artifacts" / "renormalization-v2-recursive"
+    config_roots = tuple(path for path in run_root.iterdir() if path.is_dir())
+    assert len(config_roots) == 1
+    runs = tuple(
+        path for path in config_roots[0].iterdir() if path.is_dir()
+    )
+    assert len(runs) == 1
+    assert {path.name for path in runs[0].iterdir()} == set(
+        _CORE_FILES + _ARTIFACT_FILES
+    )
+
+
+def test_recursive_launcher_has_one_source_only_sys_path_insertion() -> None:
+    launcher = _REPO_ROOT / "run_renormalization_v2_recursive_lab.py"
+    tree = ast.parse(
+        launcher.read_text(encoding="utf-8"), filename=str(launcher)
+    )
+    insertions = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "insert"
+        and isinstance(node.func.value, ast.Attribute)
+        and node.func.value.attr == "path"
+        and isinstance(node.func.value.value, ast.Name)
+        and node.func.value.value.id == "sys"
+    ]
+    assert len(insertions) == 1
+    insertion = insertions[0]
+    assert len(insertion.args) == 2
+    assert isinstance(insertion.args[0], ast.Constant)
+    assert insertion.args[0].value == 0
+    assert isinstance(insertion.args[1], ast.Call)
+    assert isinstance(insertion.args[1].func, ast.Name)
+    assert insertion.args[1].func.id == "str"
+    assert len(insertion.args[1].args) == 1
+    assert isinstance(insertion.args[1].args[0], ast.Name)
+    assert insertion.args[1].args[0].id == "SRC"
+
+
+def test_recursive_installed_sources_do_not_reverse_import_rg_v2() -> None:
+    for source in (_REPO_ROOT / "src" / "multiagent_elbo").rglob("*.py"):
+        tree = ast.parse(
+            source.read_text(encoding="utf-8"), filename=str(source)
+        )
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                assert all(
+                    alias.name != "rg_v2"
+                    and not alias.name.startswith("rg_v2.")
+                    for alias in node.names
+                )
+            elif isinstance(node, ast.ImportFrom):
+                assert node.module is None or (
+                    node.module != "rg_v2"
+                    and not node.module.startswith("rg_v2.")
+                )
+
+
+def test_recursive_offline_wheel_excludes_rg_v2_and_imports_real_package(
+    tmp_path: Path,
+) -> None:
+    project = tmp_path / "wheel-project"
+    project.mkdir()
+    shutil.copy2(_REPO_ROOT / "pyproject.toml", project / "pyproject.toml")
+    shutil.copytree(_REPO_ROOT / "src", project / "src")
+    shutil.copytree(_REPO_ROOT / "rg_v2", project / "rg_v2")
+    wheel_output = tmp_path / "wheel-output"
+    wheel_output.mkdir()
+    environment = dict(os.environ)
+    environment.update(
+        CUDA_VISIBLE_DEVICES="-1",
+        PYTHONHASHSEED="0",
+        PYTHONPATH="",
+        PIP_NO_INDEX="1",
+    )
+    build = subprocess.run(
+        [
+            str(_PYTHON),
+            "-B",
+            "-c",
+            (
+                "from setuptools.build_meta import build_wheel; "
+                "import sys; print(build_wheel(sys.argv[1]))"
+            ),
+            str(wheel_output),
+        ],
+        cwd=project,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert build.returncode == 0, build.stderr
+    wheels = tuple(wheel_output.glob("*.whl"))
+    assert len(wheels) == 1
+    with zipfile.ZipFile(wheels[0]) as archive:
+        members = tuple(archive.namelist())
+        assert any(
+            name.startswith("multiagent_elbo/") for name in members
+        )
+        assert not any(
+            name == "rg_v2" or name.startswith("rg_v2/")
+            for name in members
+        )
+        extracted = tmp_path / "unpacked-wheel"
+        archive.extractall(extracted)
+    isolated = subprocess.run(
+        [
+            str(_PYTHON),
+            "-I",
+            "-B",
+            "-c",
+            (
+                "import importlib.util,pathlib,sys;"
+                "wheel_root=pathlib.Path(sys.argv[1]).resolve();"
+                "repo_root=pathlib.Path(sys.argv[2]).resolve();"
+                "assert all(not item or pathlib.Path(item).resolve()!=repo_root "
+                "for item in sys.path);"
+                "sys.path.insert(0,str(wheel_root));"
+                "import multiagent_elbo;"
+                "installed=pathlib.Path(multiagent_elbo.__file__).resolve();"
+                "assert wheel_root in installed.parents;"
+                "assert importlib.util.find_spec('rg_v2') is None"
+            ),
+            str(extracted),
+            str(_REPO_ROOT),
+        ],
+        cwd=tmp_path,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert isolated.returncode == 0, isolated.stderr
