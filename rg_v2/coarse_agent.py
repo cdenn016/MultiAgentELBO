@@ -7,9 +7,11 @@ from fractions import Fraction
 from itertools import product
 import hashlib
 import json
+import math
 import re
 from typing import Literal
 
+from multiagent_elbo.config import NumericsConfig
 from multiagent_elbo.finite.scale_cocycle import ExactMarkovChannel
 from rg_v2.contracts import (
     AgentDatum,
@@ -20,8 +22,9 @@ from rg_v2.contracts import (
     PopulationInference,
     PopulationJoint,
     RecordDatum,
+    SelectorSpec,
 )
-from rg_v2.population import construct_population_joint
+from rg_v2.population import construct_population_joint, derive_population_inference
 
 
 def _canonical_json(value: object) -> str:
@@ -977,3 +980,353 @@ def _sparse_record_factorization_diagnostics(
                 tv += abs(difference)
         maximum_tv = max(maximum_tv, tv / 2)
     return violations, maximum_tv
+
+
+def _probability_sha256(law: ExactProbabilityLaw) -> str:
+    payload = {
+        "labels": list(law.labels),
+        "masses": [
+            {"denominator": mass.denominator, "numerator": mass.numerator}
+            for mass in law.masses
+        ],
+    }
+    return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
+
+
+def _access_sha256(access: CoarseAccessSpec) -> str:
+    payload = {
+        "access_kind": access.access_kind,
+        "agent_id": access.agent_id,
+        "information_by_observation": list(access.information_by_observation),
+        "information_labels": list(access.information_labels),
+        "observation_labels": list(access.observation_labels),
+    }
+    return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
+
+
+def _marginalize_coarse_law(
+    law: ExactProbabilityLaw,
+    agent: AgentDatum,
+) -> ExactProbabilityLaw:
+    masses = [Fraction(0) for _ in agent.state_labels]
+    for latent_label, mass in zip(law.labels, law.masses, strict=True):
+        assignment = json.loads(latent_label)
+        entries = tuple(entry for entry in assignment if entry[0] == agent.agent_id)
+        if len(entries) != 1:
+            raise ValueError("coarse law must contain each coarse agent exactly once")
+        state_label = _canonical_json(entries[0][1:])
+        if state_label not in agent.state_labels:
+            raise ValueError("coarse law local support must equal the coarse agent support")
+        masses[agent.state_labels.index(state_label)] += mass
+    return ExactProbabilityLaw(agent.state_labels, tuple(masses))
+
+
+def _posterior_for_observation(
+    population: PopulationJoint,
+    observation_label: str,
+) -> ExactProbabilityLaw:
+    if observation_label not in population.observation_labels:
+        raise ValueError("posterior observation must belong to the reconstructed population")
+    column = population.observation_labels.index(observation_label)
+    evidence = sum((row[column] for row in population.joint_masses), Fraction(0))
+    if evidence <= 0:
+        raise ValueError("coarse update table requires positive evidence for every observation")
+    return ExactProbabilityLaw(
+        population.latent_labels,
+        tuple(row[column] / evidence for row in population.joint_masses),
+    )
+
+
+def _total_variation(
+    left: tuple[Fraction, ...],
+    right: tuple[Fraction, ...],
+) -> Fraction:
+    if len(left) != len(right):
+        raise ValueError("total variation requires equal finite supports")
+    return sum((abs(left_mass - right_mass) for left_mass, right_mass in zip(left, right, strict=True)), Fraction(0)) / 2
+
+
+def construct_coarse_information_interfaces(
+    coarse_population: CoarsePopulationDatum,
+    access_specs: tuple[CoarseAccessSpec, ...],
+) -> tuple[CoarseInformationDatum, ...]:
+    """Derive inference-free identity access and exact Bayes-update tables."""
+    if not isinstance(coarse_population, CoarsePopulationDatum):
+        raise TypeError("coarse_population must be a CoarsePopulationDatum")
+    _validate_coarse_population_datum(coarse_population)
+    if not isinstance(access_specs, tuple) or any(not isinstance(access, CoarseAccessSpec) for access in access_specs):
+        raise TypeError("access_specs must contain only CoarseAccessSpec values")
+    expected_order = coarse_population.structure.coarse_agent_order
+    if tuple(access.agent_id for access in access_specs) != expected_order:
+        raise ValueError("access specs must use the coarse agent order")
+
+    population = coarse_population.reconstructed_population
+    posteriors = tuple(
+        _posterior_for_observation(population, observation_label)
+        for observation_label in population.observation_labels
+    )
+    population_hash = _population_sha256(population)
+    result: list[CoarseInformationDatum] = []
+    for generative, access in zip(coarse_population.generative_agents, access_specs, strict=True):
+        if access.observation_labels != population.observation_labels:
+            raise ValueError("access observations must cover the reconstructed observation support in order")
+        _require_labels(access.information_labels, field="access information labels")
+        if (
+            not isinstance(access.information_by_observation, tuple)
+            or len(access.information_by_observation) != len(access.observation_labels)
+            or any(label not in access.information_labels for label in access.information_by_observation)
+        ):
+            raise ValueError("access map must be total over reconstructed observations")
+        observation_rows = tuple(
+            _marginalize_coarse_law(posterior, generative.agent).masses
+            for posterior in posteriors
+        )
+        equal_access_pairs = tuple(
+            (left, right)
+            for left, right in __import__("itertools").combinations(range(len(access.observation_labels)), 2)
+            if access.information_by_observation[left] == access.information_by_observation[right]
+        )
+        max_tv = max(
+            (_total_variation(observation_rows[left], observation_rows[right]) for left, right in equal_access_pairs),
+            default=Fraction(0),
+        )
+        if max_tv != 0:
+            raise ValueError(f"access descent residual must be zero exactly, got {max_tv}")
+        if (
+            access.access_kind != "identity_observation"
+            or access.information_labels != access.observation_labels
+            or access.information_by_observation != access.observation_labels
+        ):
+            raise ValueError("identity access must preserve every reconstructed observation label")
+        rows_by_information = {
+            information_label: observation_rows[access.observation_labels.index(information_label)]
+            for information_label in access.information_labels
+        }
+        update_rows = tuple(rows_by_information[label] for label in access.information_labels)
+        if len(set(update_rows)) < 2:
+            raise ValueError("each coarse update table must contain at least two distinct rows")
+        update = CoarseUpdateDatum(
+            generative.agent.agent_id,
+            "exact_bayes_marginal",
+            ExactMarkovChannel(
+                access.information_labels,
+                generative.agent.state_labels,
+                update_rows,
+                recognition_independent=True,
+            ),
+            population_hash,
+            _access_sha256(access),
+        )
+        result.append(CoarseInformationDatum(access, update))
+    return tuple(result)
+
+
+def _validate_information_order(
+    coarse_population: CoarsePopulationDatum,
+    information: tuple[CoarseInformationDatum, ...],
+) -> None:
+    if not isinstance(information, tuple) or any(not isinstance(item, CoarseInformationDatum) for item in information):
+        raise TypeError("information must contain only CoarseInformationDatum values")
+    expected_order = coarse_population.structure.coarse_agent_order
+    if tuple(item.access.agent_id for item in information) != expected_order:
+        raise ValueError("information order must equal the coarse agent order")
+    for generative, item in zip(coarse_population.generative_agents, information, strict=True):
+        if item.update.kernel.target_labels != generative.agent.state_labels:
+            raise ValueError("information update target support must equal the coarse agent support")
+
+
+def _validate_fine_inference_route(
+    coarse_population: CoarsePopulationDatum,
+    fine_inference: PopulationInference,
+) -> ExactMarkovChannel:
+    if not isinstance(fine_inference, PopulationInference):
+        raise TypeError("fine_inference must be a PopulationInference")
+    channel = coarse_population.combined_channel.channel
+    if channel.source_labels != fine_inference.population.latent_labels:
+        raise ValueError("combined channel source support must equal the fine inference support")
+    if channel.target_labels != coarse_population.reconstructed_population.latent_labels:
+        raise ValueError("combined channel target support must equal the coarse population support")
+    fine_population_hash = _population_sha256(fine_inference.population)
+    if any(item.source_population_sha256 != fine_population_hash for item in coarse_population.generative_agents):
+        raise ValueError("fine inference population must equal the coarse generative source population")
+    return channel
+
+
+def construct_coarse_recognition(
+    coarse_population: CoarsePopulationDatum,
+    information: tuple[CoarseInformationDatum, ...],
+    fine_inference: PopulationInference,
+) -> tuple[CoarseAgentDatum, ...]:
+    """Attach pushed local recognition laws after generative construction."""
+    if not isinstance(coarse_population, CoarsePopulationDatum):
+        raise TypeError("coarse_population must be a CoarsePopulationDatum")
+    _validate_coarse_population_datum(coarse_population)
+    _validate_information_order(coarse_population, information)
+    channel = _validate_fine_inference_route(coarse_population, fine_inference)
+    pushed = ExactProbabilityLaw(channel.target_labels, channel.pushforward(fine_inference.recognition.masses))
+    recognition_hash = _probability_sha256(fine_inference.recognition)
+    result: list[CoarseAgentDatum] = []
+    for generative, interface in zip(coarse_population.generative_agents, information, strict=True):
+        local_law = _marginalize_coarse_law(pushed, generative.agent)
+        initial = AgentRecognitionDatum(generative.agent, local_law)
+        recognition = CoarseRecognitionDatum(
+            generative.agent,
+            initial,
+            ExactMarkovChannel(
+                interface.access.information_labels,
+                generative.agent.state_labels,
+                tuple(local_law.masses for _ in interface.access.information_labels),
+                recognition_independent=True,
+            ),
+            recognition_hash,
+        )
+        result.append(CoarseAgentDatum(generative, interface, recognition))
+    return tuple(result)
+
+
+def derive_recursive_observation(
+    coarse_population: CoarsePopulationDatum,
+    coarse_agents: tuple[CoarseAgentDatum, ...],
+    fine_inference: PopulationInference,
+) -> RecursiveObservationDatum:
+    """Derive one paired observation through unchanged population inference."""
+    if not isinstance(coarse_population, CoarsePopulationDatum):
+        raise TypeError("coarse_population must be a CoarsePopulationDatum")
+    if not isinstance(coarse_agents, tuple) or any(not isinstance(agent, CoarseAgentDatum) for agent in coarse_agents):
+        raise TypeError("coarse_agents must contain only CoarseAgentDatum values")
+    if tuple(agent.generative for agent in coarse_agents) != coarse_population.generative_agents:
+        raise ValueError("coarse agents must use the completed coarse generative data in order")
+    _validate_information_order(coarse_population, tuple(agent.information for agent in coarse_agents))
+    channel = _validate_fine_inference_route(coarse_population, fine_inference)
+    pushed_recognition = ExactProbabilityLaw(
+        channel.target_labels,
+        channel.pushforward(fine_inference.recognition.masses),
+    )
+    for agent in coarse_agents:
+        expected_local = _marginalize_coarse_law(pushed_recognition, agent.generative.agent)
+        if agent.recognition.initial_recognition.joint != expected_local:
+            raise ValueError("coarse recognition marginal must equal the common-channel push")
+    observation = coarse_population.structure.observation
+    if fine_inference.observed_record not in observation.fine_observation_labels:
+        raise ValueError("fine observed record must belong to the declared observation relabeling")
+    fine_index = observation.fine_observation_labels.index(fine_inference.observed_record)
+    outcome = observation.compound_outcome_by_fine_observation[fine_index]
+    coarse_observed_record = _canonical_json([[observation.record_id, outcome]])
+    selector = SelectorSpec(
+        f"{coarse_population.structure.structure_id}:declared-correlated",
+        "declared_correlated",
+        pushed_recognition,
+    )
+    coarse_inference = derive_population_inference(
+        coarse_population.reconstructed_population,
+        ((observation.record_id, outcome),),
+        tuple(agent.recognition.initial_recognition for agent in coarse_agents),
+        selector,
+    )
+    pushed_posterior = ExactProbabilityLaw(
+        channel.target_labels,
+        channel.pushforward(fine_inference.posterior.masses),
+    )
+    return RecursiveObservationDatum(
+        fine_inference.observed_record,
+        coarse_observed_record,
+        fine_inference,
+        coarse_inference,
+        pushed_recognition,
+        pushed_posterior,
+        coarse_agents,
+    )
+
+
+def validate_recursive_observation(
+    datum: RecursiveObservationDatum,
+    coarse_population: CoarsePopulationDatum,
+    numerics: NumericsConfig,
+) -> None:
+    """Validate the exact common-channel recursive observation diagram."""
+    if not isinstance(datum, RecursiveObservationDatum):
+        raise TypeError("datum must be a RecursiveObservationDatum")
+    if not isinstance(coarse_population, CoarsePopulationDatum):
+        raise TypeError("coarse_population must be a CoarsePopulationDatum")
+    if not isinstance(numerics, NumericsConfig):
+        raise TypeError("numerics must be a NumericsConfig")
+    if (
+        numerics.dtype != "float64"
+        or not math.isfinite(numerics.atol)
+        or not math.isfinite(numerics.rtol)
+        or numerics.atol < 0
+        or numerics.rtol < 0
+    ):
+        raise ValueError("recursive validation requires finite nonnegative float64 numerics")
+    _validate_coarse_population_datum(coarse_population)
+    channel = _validate_fine_inference_route(coarse_population, datum.fine_inference)
+    actual_channel_hash = channel_sha256(channel)
+    expected_channel_hashes = (
+        coarse_population.pushed_joint.combined_channel_sha256,
+        *(item.combined_channel_sha256 for item in coarse_population.generative_agents),
+    )
+    if any(value != actual_channel_hash for value in expected_channel_hashes):
+        raise ValueError("combined channel hash must agree at every recursive route")
+    if datum.fine_observed_record != datum.fine_inference.observed_record:
+        raise ValueError("fine observed record must equal the supplied fine inference")
+    if datum.coarse_inference.population != coarse_population.reconstructed_population:
+        raise ValueError("coarse inference population must equal the reconstructed population")
+    if datum.coarse_inference.recognitions != tuple(agent.recognition.initial_recognition for agent in datum.coarse_agents):
+        raise ValueError("coarse inference recognitions must equal the attached coarse recognition data")
+    if tuple(agent.generative for agent in datum.coarse_agents) != coarse_population.generative_agents:
+        raise ValueError("coarse agent generative data must equal the completed coarse population")
+    _validate_information_order(coarse_population, tuple(agent.information for agent in datum.coarse_agents))
+
+    observation = coarse_population.structure.observation
+    if datum.fine_observed_record not in observation.fine_observation_labels:
+        raise ValueError("fine observed record must belong to the observation relabeling")
+    fine_index = observation.fine_observation_labels.index(datum.fine_observed_record)
+    expected_outcome = observation.compound_outcome_by_fine_observation[fine_index]
+    expected_coarse_record = _canonical_json([[observation.record_id, expected_outcome]])
+    if datum.coarse_observed_record != expected_coarse_record or datum.coarse_inference.observed_record != expected_coarse_record:
+        raise ValueError("observation relabeling must preserve the paired realized observation")
+
+    expected_recognition = ExactProbabilityLaw(
+        channel.target_labels,
+        channel.pushforward(datum.fine_inference.recognition.masses),
+    )
+    expected_posterior = ExactProbabilityLaw(
+        channel.target_labels,
+        channel.pushforward(datum.fine_inference.posterior.masses),
+    )
+    selector = datum.coarse_inference.selector
+    if selector.selector_kind != "declared_correlated" or selector.coupling is None:
+        raise ValueError("coarse selector must retain the declared correlated coupling")
+    for agent in datum.coarse_agents:
+        expected_local_recognition = _marginalize_coarse_law(selector.coupling, agent.generative.agent)
+        if expected_local_recognition != agent.recognition.initial_recognition.joint:
+            raise ValueError("selector marginal must equal each coarse local recognition law")
+    if selector.coupling != expected_recognition:
+        raise ValueError("coarse selector coupling must equal the pushed recognition law")
+    if datum.pushed_recognition != expected_recognition or datum.coarse_inference.recognition != expected_recognition:
+        raise ValueError("pushed and reconstructed recognition laws must agree exactly")
+    if datum.coarse_inference.evidence != datum.fine_inference.evidence:
+        raise ValueError("fine and coarse evidence must agree exactly")
+    if datum.pushed_posterior != expected_posterior or datum.coarse_inference.posterior != expected_posterior:
+        raise ValueError("pushed and reconstructed posterior laws must agree exactly")
+
+    declared_information = tuple(agent.information for agent in datum.coarse_agents)
+    expected_information = construct_coarse_information_interfaces(
+        coarse_population,
+        tuple(item.access for item in declared_information),
+    )
+    for agent, declared, expected in zip(datum.coarse_agents, declared_information, expected_information, strict=True):
+        recognition_kernel = agent.recognition.recognition_kernel
+        initial_masses = agent.recognition.initial_recognition.joint.masses
+        if (
+            recognition_kernel.source_labels != declared.access.information_labels
+            or recognition_kernel.target_labels != agent.generative.agent.state_labels
+            or any(row != initial_masses or sum(row, Fraction(0)) != 1 for row in recognition_kernel.matrix)
+        ):
+            raise ValueError("initial recognition rows must be normalized constant local laws")
+        if declared.update != expected.update:
+            raise ValueError("update row must equal the exact all-observation Bayes marginal")
+        information_index = declared.access.information_labels.index(expected_coarse_record)
+        posterior_marginal = _marginalize_coarse_law(expected_posterior, agent.generative.agent)
+        if declared.update.kernel.matrix[information_index] != posterior_marginal.masses:
+            raise ValueError("realized update row must equal the coarse posterior marginal")

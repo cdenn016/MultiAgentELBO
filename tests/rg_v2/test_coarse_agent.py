@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import FrozenInstanceError, fields
+from dataclasses import FrozenInstanceError, fields, replace
 from fractions import Fraction
 import hashlib
 from inspect import signature
@@ -13,6 +13,7 @@ from typing import Never
 import pytest
 
 import rg_v2.coarse_agent as coarse_agent
+from multiagent_elbo.config import NumericsConfig
 from multiagent_elbo.finite.scale_cocycle import ExactMarkovChannel
 from rg_v2.coarse_agent import (
     CoarseAccessSpec,
@@ -38,8 +39,10 @@ from rg_v2.contracts import (
     AggregateDatum,
     ExactProbabilityLaw,
     ModelEvaluation,
+    PopulationInference,
+    SelectorSpec,
 )
-from rg_v2.population import construct_population_joint, enumerate_population_joint_independently
+from rg_v2.population import construct_population_joint, derive_population_inference, enumerate_population_joint_independently
 from rg_v2.recursive_fixtures import load_recursive_fixture
 
 
@@ -428,3 +431,320 @@ def test_generative_seam_rejects_aggregate_only_promotion_with_all_obligations()
         match="structural.*generative.*observation.*recognition.*update",
     ):
         coarse_agent.construct_coarse_population_joint(aggregate, fixture.structure)  # type: ignore[arg-type]
+
+
+def _observations(label: str) -> tuple[tuple[str, str], ...]:
+    return tuple((record_id, outcome) for record_id, outcome in json.loads(label))
+
+
+def _local_marginal(
+    law: ExactProbabilityLaw,
+    agent_id: str,
+    state_labels: tuple[str, ...],
+) -> ExactProbabilityLaw:
+    masses = [Fraction(0) for _ in state_labels]
+    for latent_label, mass in zip(law.labels, law.masses, strict=True):
+        assignment = json.loads(latent_label)
+        entry = next(item for item in assignment if item[0] == agent_id)
+        state_label = json.dumps(entry[1:], ensure_ascii=True, separators=(",", ":"))
+        masses[state_labels.index(state_label)] += mass
+    return ExactProbabilityLaw(state_labels, tuple(masses))
+
+
+def _fine_inference_for_label(fixture: object, population: object, label: str) -> PopulationInference:
+    return derive_population_inference(
+        population,
+        _observations(label),
+        fixture.recognitions,
+        fixture.selector,
+    )
+
+
+class _ExplodingInferenceSentinel:
+    def __init__(self, touches: list[str]) -> None:
+        object.__setattr__(self, "_touches", touches)
+
+    def __getattribute__(self, name: str) -> Never:
+        touches = object.__getattribute__(self, "_touches")
+        touches.append(name)
+        raise AssertionError(f"information construction touched inference attribute {name!r}")
+
+
+def test_task4_public_signatures_are_exact_and_separated() -> None:
+    expected = {
+        "construct_coarse_information_interfaces": (
+            (("coarse_population", "CoarsePopulationDatum"), ("access_specs", "tuple[CoarseAccessSpec, ...]")),
+            "tuple[CoarseInformationDatum, ...]",
+        ),
+        "construct_coarse_recognition": (
+            (
+                ("coarse_population", "CoarsePopulationDatum"),
+                ("information", "tuple[CoarseInformationDatum, ...]"),
+                ("fine_inference", "PopulationInference"),
+            ),
+            "tuple[CoarseAgentDatum, ...]",
+        ),
+        "derive_recursive_observation": (
+            (
+                ("coarse_population", "CoarsePopulationDatum"),
+                ("coarse_agents", "tuple[CoarseAgentDatum, ...]"),
+                ("fine_inference", "PopulationInference"),
+            ),
+            "RecursiveObservationDatum",
+        ),
+        "validate_recursive_observation": (
+            (
+                ("datum", "RecursiveObservationDatum"),
+                ("coarse_population", "CoarsePopulationDatum"),
+                ("numerics", "NumericsConfig"),
+            ),
+            "None",
+        ),
+    }
+    for function_name, (parameters, return_annotation) in expected.items():
+        function_signature = signature(getattr(coarse_agent, function_name))
+        assert tuple(
+            (name, parameter.annotation)
+            for name, parameter in function_signature.parameters.items()
+        ) == parameters
+        assert function_signature.return_annotation == return_annotation
+
+
+def test_task4_information_is_inference_free_and_rejects_live_collapsed_access() -> None:
+    fixture, fine = _fine_population()
+    coarse = coarse_agent.construct_coarse_population_joint(fine, fixture.structure)
+    information = coarse_agent.construct_coarse_information_interfaces(coarse, fixture.access_specs)
+    assert tuple(item.access.agent_id for item in information) == ("A", "B")
+    assert all(len(item.update.kernel.matrix) == 16 for item in information)
+    assert all(sum(row, Fraction(0)) == 1 for item in information for row in item.update.kernel.matrix)
+    assert all(len(set(item.update.kernel.matrix)) >= 2 for item in information)
+
+    touches: list[str] = []
+    sentinel = _ExplodingInferenceSentinel(touches)
+    with pytest.raises(TypeError):
+        coarse_agent.construct_coarse_information_interfaces(coarse, fixture.access_specs, sentinel)  # type: ignore[call-arg]
+    assert touches == []
+
+    access = replace(fixture.access_specs[0])
+    rows = information[0].update.kernel.matrix
+    left, right = next(
+        (left, right)
+        for left, right in itertools.combinations(range(len(rows)), 2)
+        if rows[left] != rows[right]
+    )
+    collapsed = list(access.information_by_observation)
+    collapsed[right] = collapsed[left]
+    object.__setattr__(access, "information_by_observation", tuple(collapsed))
+    with pytest.raises(ValueError, match="access descent"):
+        coarse_agent.construct_coarse_information_interfaces(coarse, (access, fixture.access_specs[1]))
+
+
+def test_task4_all_sixteen_observations_reconstruct_exact_inference_and_updates() -> None:
+    fixture, fine = _fine_population()
+    coarse = coarse_agent.construct_coarse_population_joint(fine, fixture.structure)
+    information = coarse_agent.construct_coarse_information_interfaces(coarse, fixture.access_specs)
+    numerics = NumericsConfig("float64", 1.0e-12, 1.0e-12)
+    seen: list[str] = []
+    first_recursive: RecursiveObservationDatum | None = None
+
+    for fine_label in fine.observation_labels:
+        fine_inference = _fine_inference_for_label(fixture, fine, fine_label)
+        coarse_agents = coarse_agent.construct_coarse_recognition(coarse, information, fine_inference)
+        recursive = coarse_agent.derive_recursive_observation(coarse, coarse_agents, fine_inference)
+        coarse_agent.validate_recursive_observation(recursive, coarse, numerics)
+        seen.append(recursive.fine_observed_record)
+        if first_recursive is None:
+            first_recursive = recursive
+
+        direct_recognition = ExactProbabilityLaw(
+            coarse.combined_channel.channel.target_labels,
+            coarse.combined_channel.channel.pushforward(fine_inference.recognition.masses),
+        )
+        direct_posterior = ExactProbabilityLaw(
+            coarse.combined_channel.channel.target_labels,
+            coarse.combined_channel.channel.pushforward(fine_inference.posterior.masses),
+        )
+        fine_index = fine.observation_labels.index(fine_label)
+        outcome = coarse.structure.observation.compound_outcome_by_fine_observation[fine_index]
+        paired_record = json.dumps(
+            [[coarse.structure.observation.record_id, outcome]],
+            ensure_ascii=True,
+            separators=(",", ":"),
+        )
+        assert recursive.coarse_observed_record == paired_record
+        assert recursive.coarse_inference.observed_record == paired_record
+        assert recursive.coarse_inference.evidence == fine_inference.evidence
+        assert recursive.pushed_recognition == direct_recognition
+        assert recursive.coarse_inference.recognition == direct_recognition
+        assert recursive.pushed_posterior == direct_posterior
+        assert recursive.coarse_inference.posterior == direct_posterior
+
+        for agent, interface in zip(coarse_agents, information, strict=True):
+            recognition = agent.recognition
+            assert recognition.initial_recognition.joint == _local_marginal(
+                direct_recognition,
+                recognition.agent.agent_id,
+                recognition.agent.state_labels,
+            )
+            assert len(recognition.recognition_kernel.matrix) == 16
+            assert all(row == recognition.initial_recognition.joint.masses for row in recognition.recognition_kernel.matrix)
+            assert all(sum(row, Fraction(0)) == 1 for row in recognition.recognition_kernel.matrix)
+            information_index = interface.access.information_labels.index(paired_record)
+            assert interface.update.kernel.matrix[information_index] == _local_marginal(
+                direct_posterior,
+                recognition.agent.agent_id,
+                recognition.agent.state_labels,
+            ).masses
+
+    assert seen == list(fine.observation_labels)
+    assert first_recursive is not None
+    for agent in first_recursive.coarse_agents:
+        assert agent.recognition.initial_recognition.model_marginal.masses == (Fraction(1, 2), Fraction(1, 2))
+        assert len(set(agent.information.update.kernel.matrix)) >= 2
+    local_a, local_b = (
+        agent.recognition.initial_recognition.joint.masses
+        for agent in first_recursive.coarse_agents
+    )
+    product_masses = tuple(mass_a * mass_b for mass_a in local_a for mass_b in local_b)
+    assert first_recursive.pushed_recognition.masses != product_masses
+
+
+def test_task4_generation_and_information_are_stable_under_all_inference_mutations() -> None:
+    fixture, fine = _fine_population()
+    base_coarse = coarse_agent.construct_coarse_population_joint(fine, fixture.structure)
+    base_information = coarse_agent.construct_coarse_information_interfaces(base_coarse, fixture.access_specs)
+    base = _fine_inference_for_label(fixture, fine, fine.observation_labels[0])
+    product_selector = SelectorSpec("task4-product-selector", "product", None)
+    selector_mutation = derive_population_inference(
+        fine,
+        _observations(fine.observation_labels[0]),
+        fixture.recognitions,
+        product_selector,
+    )
+    altered_first = AgentRecognitionDatum(
+        fixture.agents[0],
+        ExactProbabilityLaw(fixture.agents[0].state_labels, (Fraction(1, 2), Fraction(1, 6), Fraction(1, 6), Fraction(1, 6))),
+    )
+    recognition_mutation = derive_population_inference(
+        fine,
+        _observations(fine.observation_labels[0]),
+        (altered_first,) + fixture.recognitions[1:],
+        SelectorSpec("task4-recognition-product-selector", "product", None),
+    )
+    observation_mutation = _fine_inference_for_label(fixture, fine, fine.observation_labels[1])
+    posterior_mutation = replace(
+        base,
+        posterior=ExactProbabilityLaw(base.posterior.labels, tuple(reversed(base.posterior.masses))),
+    )
+
+    for inference in (recognition_mutation, selector_mutation, observation_mutation, posterior_mutation):
+        rebuilt = coarse_agent.construct_coarse_population_joint(fine, fixture.structure)
+        rebuilt_information = coarse_agent.construct_coarse_information_interfaces(rebuilt, fixture.access_specs)
+        assert rebuilt == base_coarse
+        assert rebuilt_information == base_information
+
+    base_recognition = coarse_agent.construct_coarse_recognition(base_coarse, base_information, base)
+    assert coarse_agent.construct_coarse_recognition(base_coarse, base_information, recognition_mutation) != base_recognition
+    assert coarse_agent.construct_coarse_recognition(base_coarse, base_information, selector_mutation) != base_recognition
+
+
+def test_task4_recognition_rejects_mismatched_information_order() -> None:
+    fixture, fine = _fine_population()
+    coarse = coarse_agent.construct_coarse_population_joint(fine, fixture.structure)
+    information = coarse_agent.construct_coarse_information_interfaces(coarse, fixture.access_specs)
+    fine_inference = _fine_inference_for_label(fixture, fine, fine.observation_labels[0])
+    with pytest.raises(ValueError, match="information order"):
+        coarse_agent.construct_coarse_recognition(coarse, tuple(reversed(information)), fine_inference)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        ("split_channel", "combined channel"),
+        ("observation_relabel", "observation relabel|roundtrip"),
+        ("selector_marginal", "selector marginal"),
+        ("update_row", "update row"),
+        ("record", "roundtrip"),
+        ("evaluator", "evaluator"),
+    ),
+)
+def test_task4_validation_rejects_named_live_mutations(mutation: str, message: str) -> None:
+    fixture, fine = _fine_population()
+    coarse = coarse_agent.construct_coarse_population_joint(fine, fixture.structure)
+    information = coarse_agent.construct_coarse_information_interfaces(coarse, fixture.access_specs)
+    fine_inference = _fine_inference_for_label(fixture, fine, fine.observation_labels[0])
+    coarse_agents = coarse_agent.construct_coarse_recognition(coarse, information, fine_inference)
+    recursive = coarse_agent.derive_recursive_observation(coarse, coarse_agents, fine_inference)
+
+    if mutation == "split_channel":
+        channel = coarse.combined_channel.channel
+        altered = ExactMarkovChannel(
+            channel.source_labels,
+            channel.target_labels,
+            tuple(tuple(reversed(row)) for row in channel.matrix),
+            recognition_independent=True,
+        )
+        object.__setattr__(coarse.combined_channel, "channel", altered)
+    elif mutation == "observation_relabel":
+        observation = coarse.structure.observation
+        object.__setattr__(
+            observation,
+            "compound_outcome_by_fine_observation",
+            tuple(reversed(observation.compound_outcome_by_fine_observation)),
+        )
+    elif mutation == "selector_marginal":
+        coupling = recursive.coarse_inference.selector.coupling
+        assert coupling is not None
+        bad_coupling = ExactProbabilityLaw(
+            coupling.labels,
+            (Fraction(1),) + (Fraction(0),) * (len(coupling.labels) - 1),
+        )
+        object.__setattr__(
+            recursive.coarse_inference,
+            "selector",
+            SelectorSpec("task4-bad-selector", "declared_correlated", bad_coupling),
+        )
+    elif mutation == "update_row":
+        update = recursive.coarse_agents[0].information.update
+        kernel = update.kernel
+        row_index = next(index for index, row in enumerate(kernel.matrix) if tuple(reversed(row)) != row)
+        rows = list(kernel.matrix)
+        rows[row_index] = tuple(reversed(rows[row_index]))
+        object.__setattr__(
+            update,
+            "kernel",
+            ExactMarkovChannel(kernel.source_labels, kernel.target_labels, tuple(rows), recognition_independent=True),
+        )
+    elif mutation == "record":
+        record = coarse.records[0]
+        kernel = record.kernel
+        object.__setattr__(
+            record,
+            "kernel",
+            ExactMarkovChannel(
+                kernel.source_labels,
+                kernel.target_labels,
+                (tuple(reversed(kernel.matrix[0])),) + kernel.matrix[1:],
+                recognition_independent=True,
+            ),
+        )
+    else:
+        evaluator = coarse.generative_agents[0].agent.evaluator[0]
+        kernel = evaluator.kernel
+        object.__setattr__(
+            evaluator,
+            "kernel",
+            ExactMarkovChannel(
+                kernel.source_labels,
+                kernel.target_labels,
+                tuple(tuple(reversed(row)) for row in kernel.matrix),
+                recognition_independent=True,
+            ),
+        )
+
+    with pytest.raises(ValueError, match=message):
+        coarse_agent.validate_recursive_observation(
+            recursive,
+            coarse,
+            NumericsConfig("float64", 1.0e-12, 1.0e-12),
+        )
