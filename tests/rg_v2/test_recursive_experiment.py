@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 from fractions import Fraction
 import hashlib
+import inspect
 from itertools import product
 import json
 from pathlib import Path
@@ -201,6 +202,162 @@ def _assert_no_forbidden_generative_fields(value: object) -> None:
     elif type(value) is list:
         for child in value:
             _assert_no_forbidden_generative_fields(child)
+
+
+def _passing_science_values() -> dict[str, Fraction | int | float]:
+    inventory = EXPERIMENT_REGISTRY["renormalization_v2_recursive"].metric_inventory
+    values: dict[str, Fraction | int | float] = {
+        name: Fraction(0) for name in inventory[:15]
+    }
+    values.update(
+        {
+            "coarse_model_marginal_non_dirac_count": 2,
+            "forbidden_dependency_violation_count": 0,
+            "sparse_record_factorization_violation_count": 1,
+            "minimum_conditional_kl_defect": 0.0,
+            "maximum_kl_chain_residual": 0.0,
+        }
+    )
+    return values
+
+
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("block_channel_normalization_residual", Fraction(1, 10**400)),
+        ("forbidden_dependency_violation_count", 1),
+        ("coarse_model_marginal_non_dirac_count", 1),
+        ("sparse_record_factorization_violation_count", 0),
+    ],
+)
+def test_exact_metric_classes_fail_closed_before_float_conversion(
+    name: str,
+    value: Fraction | int,
+) -> None:
+    values = _passing_science_values()
+    values[name] = value
+
+    records = experiment_module._metric_records(values)
+
+    assert tuple(records) == EXPERIMENT_REGISTRY[
+        "renormalization_v2_recursive"
+    ].metric_inventory
+    assert records[name].status == "fail"
+    assert records["minimum_conditional_kl_defect"].status == "pass"
+    assert records["maximum_kl_chain_residual"].status == "pass"
+    if isinstance(value, Fraction):
+        assert records[name].value == 0.0
+
+
+def test_generative_bodies_freeze_before_information_or_inference(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    events: list[str] = []
+    real_json_native = experiment_module._json_native
+    real_information = experiment_module.construct_coarse_information_interfaces
+    real_inference = experiment_module.derive_population_inference
+
+    def traced_json_native(payload: object) -> dict[str, object]:
+        frozen = real_json_native(payload)
+        if set(frozen) >= {"population", "independent_population", "exact_equality"}:
+            events.append("fine_population_frozen")
+        if set(frozen) >= {"generative_agents", "combined_record", "combined_channel"}:
+            events.append("coarse_generative_frozen")
+        return frozen
+
+    def traced_information(*args: object) -> object:
+        assert events[:2] == [
+            "fine_population_frozen",
+            "coarse_generative_frozen",
+        ]
+        events.append("information")
+        return real_information(*args)
+
+    def traced_inference(*args: object) -> object:
+        assert events[:2] == [
+            "fine_population_frozen",
+            "coarse_generative_frozen",
+        ]
+        events.append("inference")
+        return real_inference(*args)
+
+    monkeypatch.setattr(experiment_module, "_json_native", traced_json_native)
+    monkeypatch.setattr(
+        experiment_module,
+        "construct_coarse_information_interfaces",
+        traced_information,
+    )
+    monkeypatch.setattr(
+        experiment_module,
+        "derive_population_inference",
+        traced_inference,
+    )
+
+    run_renormalization_v2_recursive_experiment(_config(tmp_path))
+
+    assert events[:3] == [
+        "fine_population_frozen",
+        "coarse_generative_frozen",
+        "information",
+    ]
+    assert "inference" in events[3:]
+
+
+def test_narrow_generative_builder_and_dependency_audit_ignore_inference_mutations() -> None:
+    fixture = load_recursive_fixture("lf4_two_parent_recursive_v1")
+    fine_population = construct_population_joint(
+        fixture.agents, fixture.records, fixture.context_id
+    )
+    coarse_population = construct_coarse_population_joint(
+        fine_population, fixture.structure
+    )
+    assert tuple(
+        inspect.signature(experiment_module._build_coarse_generative_body).parameters
+    ) == ("structure", "coarse_population")
+    body = experiment_module._build_coarse_generative_body(
+        fixture.structure, coarse_population
+    )
+    canonical = _canonical_bytes(body)
+    sha256 = _canonical_sha256(body)
+
+    first = derive_population_inference(
+        fine_population,
+        _observation(fixture.structure.observation.fine_observation_labels[0]),
+        fixture.recognitions,
+        fixture.selector,
+    )
+    second = derive_population_inference(
+        fine_population,
+        _observation(fixture.structure.observation.fine_observation_labels[-1]),
+        fixture.recognitions,
+        fixture.selector,
+    )
+    assert first.evidence != second.evidence or first.posterior != second.posterior
+    rebuilt = experiment_module._build_coarse_generative_body(
+        fixture.structure, coarse_population
+    )
+    assert _canonical_bytes(rebuilt) == canonical
+    assert _canonical_sha256(rebuilt) == sha256
+
+    direct_inputs = ("fine_population", "structure")
+    assert experiment_module._forbidden_dependency_violation_count(
+        body, direct_inputs
+    ) == 0
+    contaminated = {**body, "posterior": _law({"labels": [], "masses": []})}
+    body_violations = experiment_module._forbidden_dependency_violation_count(
+        contaminated, direct_inputs
+    )
+    input_violations = experiment_module._forbidden_dependency_violation_count(
+        body, ("fine_population", "recognition")
+    )
+    assert body_violations > 0
+    assert input_violations > 0
+    values = _passing_science_values()
+    values["forbidden_dependency_violation_count"] = body_violations + input_violations
+    assert experiment_module._metric_records(values)[
+        "forbidden_dependency_violation_count"
+    ].status == "fail"
 
 
 def test_recursive_publication_has_exact_dag_metrics_arrays_and_science(

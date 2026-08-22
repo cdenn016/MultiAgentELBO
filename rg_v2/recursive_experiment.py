@@ -24,7 +24,6 @@ from multiagent_elbo.experiment_support import (
     EXPERIMENT_REGISTRY,
     MetricRecord,
     lower_bounded_metric,
-    target_metric,
     upper_bounded_metric,
 )
 from multiagent_elbo.finite.scale_cocycle import ExactMarkovChannel
@@ -90,6 +89,27 @@ _DECLARED_ARTIFACTS = tuple(f"{name}.json" for name in _JSON_ARTIFACTS) + (
 )
 _CONTRACT = EXPERIMENT_REGISTRY["renormalization_v2_recursive"]
 _COMMIT_PATTERN = re.compile(r"[0-9a-f]{40,64}\Z")
+_COARSE_GENERATIVE_DIRECT_INPUT_NAMES = ("fine_population", "structure")
+_FORBIDDEN_GENERATIVE_KEYS = frozenset(
+    {
+        "access",
+        "access_specs",
+        "update",
+        "updates",
+        "recognition",
+        "recognitions",
+        "selector",
+        "observation",
+        "default_observation",
+        "realized_observation",
+        "observed_record",
+        "evidence",
+        "evidence_measure",
+        "posterior",
+        "fine_inference",
+        "coarse_inference",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -145,6 +165,38 @@ def _json_native(payload: object) -> dict[str, object]:
     if type(result) is not dict:
         raise TypeError("artifact envelope must be a JSON object")
     return result
+
+
+def _forbidden_dependency_violation_count(
+    body: Mapping[str, object],
+    direct_input_names: tuple[str, ...],
+) -> int:
+    """Count forbidden semantic keys and coarse-generative DAG inputs."""
+    if not isinstance(body, Mapping):
+        raise TypeError("generative body must be a mapping")
+    if not isinstance(direct_input_names, tuple):
+        raise TypeError("direct input names must be a tuple")
+
+    def count_keys(value: object) -> int:
+        if isinstance(value, Mapping):
+            return sum(
+                int(type(key) is not str or key in _FORBIDDEN_GENERATIVE_KEYS)
+                + count_keys(child)
+                for key, child in value.items()
+            )
+        if isinstance(value, (list, tuple)):
+            return sum(count_keys(child) for child in value)
+        return 0
+
+    input_violations = abs(
+        len(direct_input_names) - len(_COARSE_GENERATIVE_DIRECT_INPUT_NAMES)
+    ) + sum(
+        actual != expected
+        for actual, expected in zip(
+            direct_input_names, _COARSE_GENERATIVE_DIRECT_INPUT_NAMES
+        )
+    )
+    return count_keys(body) + input_violations
 
 
 def _fraction_payload(value: Fraction) -> dict[str, int]:
@@ -526,6 +578,54 @@ def _marginal_masses(
     return tuple(result[label] for label in agent.state_labels)
 
 
+def _exact_value(value: Fraction | int, *, name: str) -> Fraction:
+    if isinstance(value, Fraction):
+        return value
+    if type(value) is int:
+        return Fraction(value)
+    raise TypeError(f"{name} must be an exact Fraction or int")
+
+
+def _exact_target_metric(
+    value: Fraction | int,
+    *,
+    name: str,
+    interpretation: str,
+    claim_origin: Literal["STANDARD", "PROJECT_NOVEL", "APPLICATION_SPECIFIC"],
+) -> MetricRecord:
+    exact = _exact_value(value, name=name)
+    return MetricRecord(
+        value=float(exact),
+        tolerance=0.0,
+        status="pass" if exact == 0 else "fail",
+        interpretation=interpretation,
+        assessment_scope="implementation_check",
+        theorem_status="ESTABLISHED",
+        verification_state="CANDIDATE",
+        claim_origin=claim_origin,
+    )
+
+
+def _exact_lower_bounded_metric(
+    value: Fraction | int,
+    *,
+    name: str,
+    lower_bound: int,
+    interpretation: str,
+) -> MetricRecord:
+    exact = _exact_value(value, name=name)
+    return MetricRecord(
+        value=float(exact),
+        tolerance=0.0,
+        status="pass" if exact >= lower_bound else "fail",
+        interpretation=interpretation,
+        assessment_scope="implementation_check",
+        theorem_status="HYPOTHESIS",
+        verification_state="CANDIDATE",
+        claim_origin="APPLICATION_SPECIFIC",
+    )
+
+
 def _metric_records(
     science_values: Mapping[str, Fraction | int | float],
 ) -> Mapping[str, MetricRecord]:
@@ -554,13 +654,10 @@ def _metric_records(
     records: dict[str, MetricRecord] = {}
     exact_target_names = (*_CONTRACT.metric_inventory[:15], "forbidden_dependency_violation_count")
     for name in exact_target_names:
-        records[name] = target_metric(
-            float(science_values[name]),
-            0.0,
-            target=0.0,
+        records[name] = _exact_target_metric(
+            science_values[name],
+            name=name,
             interpretation=interpretations[name],
-            theorem_status="ESTABLISHED",
-            verification_state="CANDIDATE",
             claim_origin=("STANDARD" if name in {
                 "block_channel_normalization_residual",
                 "coarse_agent_kernel_normalization_residual",
@@ -569,23 +666,17 @@ def _metric_records(
                 "coarse_population_normalization_residual",
             } else "PROJECT_NOVEL"),
         )
-    records["coarse_model_marginal_non_dirac_count"] = lower_bounded_metric(
-        float(science_values["coarse_model_marginal_non_dirac_count"]),
-        0.0,
-        lower_bound=2.0,
+    records["coarse_model_marginal_non_dirac_count"] = _exact_lower_bounded_metric(
+        science_values["coarse_model_marginal_non_dirac_count"],
+        name="coarse_model_marginal_non_dirac_count",
+        lower_bound=2,
         interpretation=interpretations["coarse_model_marginal_non_dirac_count"],
-        theorem_status="HYPOTHESIS",
-        verification_state="CANDIDATE",
-        claim_origin="APPLICATION_SPECIFIC",
     )
-    records["sparse_record_factorization_violation_count"] = lower_bounded_metric(
-        float(science_values["sparse_record_factorization_violation_count"]),
-        0.0,
-        lower_bound=1.0,
+    records["sparse_record_factorization_violation_count"] = _exact_lower_bounded_metric(
+        science_values["sparse_record_factorization_violation_count"],
+        name="sparse_record_factorization_violation_count",
+        lower_bound=1,
         interpretation=interpretations["sparse_record_factorization_violation_count"],
-        theorem_status="HYPOTHESIS",
-        verification_state="CANDIDATE",
-        claim_origin="APPLICATION_SPECIFIC",
     )
     records["minimum_conditional_kl_defect"] = lower_bounded_metric(
         float(science_values["minimum_conditional_kl_defect"]),
@@ -690,6 +781,7 @@ def _science_values(
     observations: tuple[RecursiveObservationDatum, ...],
     aggregates: tuple[AggregateDatum, ...],
     sparse_violation_count: int,
+    forbidden_dependency_violation_count: int,
 ) -> Mapping[str, Fraction | int | float]:
     block_residual = _maximum_fraction(
         [
@@ -824,10 +916,81 @@ def _science_values(
             "update_normalization_residual": update_normalization_residual,
             "update_posterior_residual": _maximum_fraction(update_residuals),
             "coarse_model_marginal_non_dirac_count": non_dirac,
-            "forbidden_dependency_violation_count": 0,
+            "forbidden_dependency_violation_count": forbidden_dependency_violation_count,
             "sparse_record_factorization_violation_count": sparse_violation_count,
             "minimum_conditional_kl_defect": min(item.conditional_kl_defect for item in aggregates),
             "maximum_kl_chain_residual": max(abs(item.kl_chain_residual) for item in aggregates),
+        }
+    )
+
+
+def _build_fine_population_body(
+    fine_population: PopulationJoint,
+    fine_oracle: PopulationJoint,
+    generative_sha256: str,
+) -> dict[str, object]:
+    return _json_native(
+        {
+            "population": _population_payload(fine_population),
+            "independent_population": _population_payload(fine_oracle),
+            "exact_equality": fine_population == fine_oracle,
+            "factor_trace": list(fine_population.construction_trace),
+            "fine_input_hashes": [
+                {"name": "generative", "sha256": generative_sha256}
+            ],
+        }
+    )
+
+
+def _build_coarse_generative_body(
+    structure: RecursiveCoarseStructure,
+    coarse_population: CoarsePopulationDatum,
+) -> dict[str, object]:
+    return _json_native(
+        {
+            "structure_id": structure.structure_id,
+            "source_agent_order": list(structure.source_agent_order),
+            "coarse_agent_order": list(structure.coarse_agent_order),
+            "parent_specifications": [
+                _coarse_agent_spec_payload(spec) for spec in structure.agent_specs
+            ],
+            "combined_channel": _coarse_channel_payload(coarse_population.combined_channel),
+            "observation_bijection": _observation_spec_payload(structure.observation),
+            "sparse_record_candidate": _sparse_spec_payload(
+                structure.sparse_record_candidate,
+                structure.observation.fine_observation_labels,
+            ),
+            "generative_agents": [
+                _generative_payload(item)
+                for item in coarse_population.generative_agents
+            ],
+            "combined_record": _record_payload(coarse_population.records[0]),
+        }
+    )
+
+
+def _build_coarse_population_body(
+    coarse_population: CoarsePopulationDatum,
+    coarse_oracle: CoarsePopulationDatum,
+    sparse_violation_count: int,
+    sparse_conditional_tv: Fraction,
+) -> dict[str, object]:
+    return _json_native(
+        {
+            "pushed_joint": _pushed_joint_payload(coarse_population),
+            "reconstructed_population": _population_payload(
+                coarse_population.reconstructed_population
+            ),
+            "runtime_oracle_pushed_joint": _pushed_joint_payload(coarse_oracle),
+            "relabeled_cellwise_equality": (
+                coarse_population.pushed_joint.joint_masses
+                == _relabel_reconstructed_joint(coarse_population)
+            ),
+            "dense_record_result": "pass",
+            "sparse_record_factorization_violation_count": sparse_violation_count,
+            "maximum_exact_conditional_tv_violation": _fraction_payload(
+                sparse_conditional_tv
+            ),
         }
     )
 
@@ -854,6 +1017,26 @@ def _build_scientific_run(
         raise ArithmeticError("coarse constructor and independent runtime oracle disagree")
     sparse_count, sparse_tv = _sparse_record_factorization_diagnostics(
         coarse_population
+    )
+    semantic = dict(fixture.subrecord_sha256)
+    fine_population_body = _build_fine_population_body(
+        fine_population,
+        fine_oracle,
+        semantic["generative"],
+    )
+    coarse_generative_body = _build_coarse_generative_body(
+        fixture.structure,
+        coarse_population,
+    )
+    coarse_population_body = _build_coarse_population_body(
+        coarse_population,
+        coarse_oracle,
+        sparse_count,
+        sparse_tv,
+    )
+    forbidden_dependency_violations = _forbidden_dependency_violation_count(
+        coarse_generative_body,
+        _COARSE_GENERATIVE_DIRECT_INPUT_NAMES,
     )
     information = construct_coarse_information_interfaces(
         coarse_population, fixture.access_specs
@@ -898,6 +1081,7 @@ def _build_scientific_run(
         exact_observations,
         exact_aggregates,
         sparse_count,
+        forbidden_dependency_violations,
     )
     metrics = _metric_records(values)
     if any(metric.status != "pass" for metric in metrics.values()):
@@ -924,35 +1108,6 @@ def _build_scientific_run(
         "recursive_structure": _structure_payload(fixture.structure),
         "access_specs": [_access_payload(access) for access in fixture.access_specs],
     }
-    fine_population_body = {
-        "population": _population_payload(fine_population),
-        "independent_population": _population_payload(fine_oracle),
-        "exact_equality": fine_population == fine_oracle,
-        "factor_trace": list(fine_population.construction_trace),
-        "fine_input_hashes": [
-            {"name": name, "sha256": sha256}
-            for name, sha256 in fixture.subrecord_sha256
-            if name == "generative"
-        ],
-    }
-    coarse_generative_body = {
-        "structure_id": fixture.structure.structure_id,
-        "source_agent_order": list(fixture.structure.source_agent_order),
-        "coarse_agent_order": list(fixture.structure.coarse_agent_order),
-        "parent_specifications": [
-            _coarse_agent_spec_payload(spec) for spec in fixture.structure.agent_specs
-        ],
-        "combined_channel": _coarse_channel_payload(coarse_population.combined_channel),
-        "observation_bijection": _observation_spec_payload(fixture.structure.observation),
-        "sparse_record_candidate": _sparse_spec_payload(
-            fixture.structure.sparse_record_candidate,
-            fixture.structure.observation.fine_observation_labels,
-        ),
-        "generative_agents": [
-            _generative_payload(item) for item in coarse_population.generative_agents
-        ],
-        "combined_record": _record_payload(coarse_population.records[0]),
-    }
     first_observation = exact_observations[0]
     coarse_interfaces_body = {
         "interfaces": [
@@ -965,20 +1120,6 @@ def _build_scientific_run(
         "declared_correlated_selector": _selector_payload(
             first_observation.coarse_inference.selector
         ),
-    }
-    coarse_population_body = {
-        "pushed_joint": _pushed_joint_payload(coarse_population),
-        "reconstructed_population": _population_payload(
-            coarse_population.reconstructed_population
-        ),
-        "runtime_oracle_pushed_joint": _pushed_joint_payload(coarse_oracle),
-        "relabeled_cellwise_equality": (
-            coarse_population.pushed_joint.joint_masses
-            == _relabel_reconstructed_joint(coarse_population)
-        ),
-        "dense_record_result": "pass",
-        "sparse_record_factorization_violation_count": sparse_count,
-        "maximum_exact_conditional_tv_violation": _fraction_payload(sparse_tv),
     }
     observation_payloads: list[dict[str, object]] = []
     for datum, aggregate in zip(exact_observations, exact_aggregates, strict=True):
@@ -1050,10 +1191,10 @@ def _build_scientific_run(
         sparse_violation_count=sparse_count,
         sparse_conditional_tv=sparse_tv,
         fixture_body=_json_native(fixture_body),
-        fine_population_body=_json_native(fine_population_body),
-        coarse_generative_body=_json_native(coarse_generative_body),
+        fine_population_body=fine_population_body,
+        coarse_generative_body=coarse_generative_body,
         coarse_interfaces_body=_json_native(coarse_interfaces_body),
-        coarse_population_body=_json_native(coarse_population_body),
+        coarse_population_body=coarse_population_body,
         all_observation_body=_json_native(all_observation_body),
         metrics=metrics,
         metrics_body=_json_native(metrics_body),
@@ -1216,9 +1357,12 @@ def run_renormalization_v2_recursive_experiment(
         science.fine_population_body,
     )
     fine_hash = _canonical_sha256(fine_envelope)
-    coarse_generative_inputs = (
-        ("fine_population", fine_hash),
-        ("structure", semantic["structure"]),
+    coarse_generative_inputs = tuple(
+        zip(
+            _COARSE_GENERATIVE_DIRECT_INPUT_NAMES,
+            (fine_hash, semantic["structure"]),
+            strict=True,
+        )
     )
     coarse_generative_envelope = _envelope(
         fixture.fixture_id,
