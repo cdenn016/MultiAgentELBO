@@ -226,3 +226,33 @@ def test_public_loader_rejects_replaced_exact_fixture_name(monkeypatch: pytest.M
 
     with pytest.raises(ValueError, match="identity or schema version"):
         _load_mutated(monkeypatch, payload)
+
+
+@pytest.mark.parametrize("mutation", ("block_channel", "record", "agent_evaluator"))
+def test_public_loader_rejects_normalized_canonical_lf4_semantic_drift(
+    monkeypatch: pytest.MonkeyPatch,
+    mutation: str,
+) -> None:
+    payload = _payload()
+    if mutation == "block_channel":
+        rows = payload["recursive_structure"]["agents"][0]["block_rows"]  # type: ignore[index]
+        rows[0], rows[1] = rows[1], rows[0]  # type: ignore[index]
+    elif mutation == "record":
+        payload["records"][0]["rows"][0] = [  # type: ignore[index]
+            {"numerator": 3, "denominator": 4},
+            {"numerator": 1, "denominator": 4},
+        ]
+    else:
+        payload["agents"][1]["evaluator"][0]["rows"][0] = [  # type: ignore[index]
+            {"numerator": 3, "denominator": 4},
+            {"numerator": 1, "denominator": 4},
+        ]
+        payload["agents"][1]["generative_rows"][0] = [  # type: ignore[index]
+            {"numerator": 9, "denominator": 16},
+            {"numerator": 3, "denominator": 20},
+            {"numerator": 3, "denominator": 16},
+            {"numerator": 1, "denominator": 10},
+        ]
+
+    with pytest.raises(ValueError, match="canonical LF4"):
+        _load_mutated(monkeypatch, payload)

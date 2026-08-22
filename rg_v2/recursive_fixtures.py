@@ -290,6 +290,83 @@ def _structure(value: object, agents: tuple[AgentDatum, ...], records: tuple[Rec
     return structure
 
 
+def _validate_canonical_lf4_semantics(
+    agents: tuple[AgentDatum, ...],
+    records: tuple[RecordDatum, ...],
+    structure: RecursiveCoarseStructure,
+) -> None:
+    """Validate the fixed LF4 primitive laws without constructing missing tables."""
+    root_generation = (
+        (Fraction(3, 8), Fraction(1, 8), Fraction(1, 8), Fraction(3, 8)),
+    )
+    root_evaluator = (
+        ((Fraction(3, 4), Fraction(1, 4)),),
+        ((Fraction(1, 4), Fraction(3, 4)),),
+    )
+    child_generation = (
+        (Fraction(3, 5), Fraction(3, 20), Fraction(3, 20), Fraction(1, 10)),
+        (Fraction(1, 5), Fraction(9, 20), Fraction(1, 20), Fraction(3, 10)),
+        (Fraction(3, 10), Fraction(1, 20), Fraction(9, 20), Fraction(1, 5)),
+        (Fraction(1, 10), Fraction(3, 20), Fraction(3, 20), Fraction(3, 5)),
+    )
+    child_evaluator = (
+        (
+            (Fraction(4, 5), Fraction(1, 5)),
+            (Fraction(4, 5), Fraction(1, 5)),
+            (Fraction(2, 5), Fraction(3, 5)),
+            (Fraction(2, 5), Fraction(3, 5)),
+        ),
+        (
+            (Fraction(3, 5), Fraction(2, 5)),
+            (Fraction(3, 5), Fraction(2, 5)),
+            (Fraction(1, 5), Fraction(4, 5)),
+            (Fraction(1, 5), Fraction(4, 5)),
+        ),
+    )
+    for index, agent in enumerate(agents):
+        expected_generation = root_generation if index == 0 else child_generation
+        expected_evaluator = root_evaluator if index == 0 else child_evaluator
+        actual_evaluator = tuple(entry.kernel.matrix for entry in agent.evaluator)
+        if agent.generative_kernel.matrix != expected_generation or actual_evaluator != expected_evaluator:
+            raise ValueError("canonical LF4 agent and evaluator semantics are invalid")
+        if any(mass <= 0 for row in agent.generative_kernel.matrix for mass in row):
+            raise ValueError("canonical LF4 agent mechanisms must be strictly positive")
+        if any(mass <= 0 for entry in agent.evaluator for row in entry.kernel.matrix for mass in row):
+            raise ValueError("canonical LF4 evaluator mechanisms must be strictly positive")
+
+    for record in records:
+        expected_rows: list[tuple[Fraction, Fraction]] = []
+        for source_label in record.kernel.source_labels:
+            assignment = json.loads(source_label)
+            if record.record_id in ("r0", "r3"):
+                high_probability = assignment[0][1] == "b0"
+            else:
+                high_probability = assignment[0][1] == assignment[1][1]
+            expected_rows.append(
+                (Fraction(4, 5), Fraction(1, 5))
+                if high_probability
+                else (Fraction(1, 5), Fraction(4, 5))
+            )
+        if record.kernel.matrix != tuple(expected_rows):
+            raise ValueError("canonical LF4 record semantics are invalid")
+        if any(mass <= 0 for row in record.kernel.matrix for mass in row):
+            raise ValueError("canonical LF4 record mechanisms must be strictly positive")
+
+    for spec in structure.agent_specs:
+        if len(spec.block_channel.source_labels) != 16 or len(spec.block_channel.target_labels) != 4:
+            raise ValueError("canonical LF4 block channels must be explicit 16 x 4 tables")
+        expected_rows = []
+        for source_label in spec.block_channel.source_labels:
+            assignment = json.loads(source_label)
+            belief_parity = sum(int(entry[1][-1]) for entry in assignment) % 2
+            model_parity = sum(int(entry[2][-1]) for entry in assignment) % 2
+            target = json.dumps([f"B{belief_parity}", f"M{model_parity}"], ensure_ascii=True, separators=(",", ":"))
+            target_index = spec.block_channel.target_labels.index(target)
+            expected_rows.append(tuple(Fraction(int(index == target_index)) for index in range(4)))
+        if spec.block_channel.matrix != tuple(expected_rows):
+            raise ValueError("canonical LF4 block channels must implement belief/model parity")
+
+
 def _access(value: object, structure: RecursiveCoarseStructure) -> tuple[CoarseAccessSpec, ...]:
     result: list[CoarseAccessSpec] = []
     expected_observations = tuple(json.dumps([[structure.observation.record_id, outcome]], ensure_ascii=True, separators=(",", ":")) for outcome in structure.observation.compound_outcome_labels)
@@ -324,6 +401,7 @@ def _decode_recursive_fixture(payload: dict[str, object], path: Path, raw_sha256
     observation = _observation(payload["observation"], records)
     selector = _selector(payload["selector"], agents, recognitions)
     structure = _structure(payload["recursive_structure"], agents, records, context_id)
+    _validate_canonical_lf4_semantics(agents, records, structure)
     access_specs = _access(payload["access_specs"], structure)
     subrecords = (("generative", {"agents": payload["agents"], "records": payload["records"], "observation": payload["observation"]}), ("recognition", {"recognitions": payload["recognitions"], "selector": payload["selector"]}), ("structure", payload["recursive_structure"]), ("access", payload["access_specs"]))
     return RecursiveFixture(_NAME, path, raw_sha256, tuple((name, _canonical_sha256(value)) for name, value in subrecords), context_id, agents, recognitions, records, observation, selector, structure, access_specs)
