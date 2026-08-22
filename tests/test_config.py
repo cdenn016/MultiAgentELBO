@@ -13,6 +13,7 @@ from multiagent_elbo.config import (
     CategoricalDqmTheoryConfig,
     ConfigError,
     ExperimentConfig,
+    RenormalizationV2RecursiveTheoryConfig,
     RenormalizationV2TheoryConfig,
     config_sha256,
     canonical_config_json,
@@ -361,6 +362,14 @@ def new_lab_theories() -> list[tuple[dict[str, object], str]]:
             },
             "RenormalizationV2TheoryConfig",
         ),
+        (
+            {
+                "experiment": "renormalization_v2_recursive",
+                "fixture": "lf4_two_parent_recursive_v1",
+                "arithmetic": "exact_rational",
+            },
+            "RenormalizationV2RecursiveTheoryConfig",
+        ),
     ]
 
 
@@ -394,7 +403,7 @@ def test_legacy_four_dictionary_json_and_hash_are_byte_compatible():
 
 
 @pytest.mark.parametrize(("theory", "type_name"), new_lab_theories())
-def test_all_eight_new_lab_schemas_resolve_strict_literal_smoke_configs(
+def test_all_nine_new_lab_schemas_resolve_strict_literal_smoke_configs(
     theory: dict[str, object], type_name: str
 ):
     run, _, numerics, output = valid_dicts()
@@ -575,6 +584,54 @@ def test_renormalization_v2_schema_requires_all_three_keys():
         ExperimentConfig.from_dicts(run, theory, numerics, output)
 
 
+def test_renormalization_v2_recursive_schema_is_exact_and_frozen():
+    run, _, numerics, output = valid_dicts()
+    theory = new_lab_theory("renormalization_v2_recursive")
+
+    config = ExperimentConfig.from_dicts(run, theory, numerics, output)
+
+    assert isinstance(config.theory, RenormalizationV2RecursiveTheoryConfig)
+    assert config.theory == RenormalizationV2RecursiveTheoryConfig(
+        experiment="renormalization_v2_recursive",
+        fixture="lf4_two_parent_recursive_v1",
+        arithmetic="exact_rational",
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ({"fixture": "lf3_product_v1"}, "fixture must be one of"),
+        ({"fixture": "lf3_correlated_v1"}, "fixture must be one of"),
+        ({"fixture": "lf3_dirac_boundary_v1"}, "fixture must be one of"),
+        ({"fixture": "other"}, "fixture must be one of"),
+        (
+            {"arithmetic": "float64"},
+            "arithmetic must be one of: exact_rational",
+        ),
+        ({"extra": True}, "unknown theory key: extra"),
+    ],
+)
+def test_renormalization_v2_recursive_schema_rejects_nonphase2_inputs(
+    mutation: dict[str, object],
+    message: str,
+):
+    run, _, numerics, output = valid_dicts()
+    theory = {**new_lab_theory("renormalization_v2_recursive"), **mutation}
+
+    with pytest.raises(ConfigError, match=message):
+        ExperimentConfig.from_dicts(run, theory, numerics, output)
+
+
+def test_renormalization_v2_recursive_schema_requires_all_three_keys():
+    run, _, numerics, output = valid_dicts()
+    theory = new_lab_theory("renormalization_v2_recursive")
+    theory.pop("fixture")
+
+    with pytest.raises(ConfigError, match="missing theory key: fixture"):
+        ExperimentConfig.from_dicts(run, theory, numerics, output)
+
+
 def test_reserved_experiment_names_are_complete_and_immutable():
     names = config_module.NEW_EXPERIMENT_NAMES
 
@@ -587,6 +644,7 @@ def test_reserved_experiment_names_are_complete_and_immutable():
         "scale_cocycle",
         "gaussian_fixed_ray",
         "renormalization_v2",
+        "renormalization_v2_recursive",
     )
     with pytest.raises(TypeError):
         names[0] = "changed"  # type: ignore[index]

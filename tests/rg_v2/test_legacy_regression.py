@@ -15,7 +15,7 @@ from typing import Mapping
 import pytest
 
 
-_BASELINE = "c04a56e80abf3fd956941aa0021a3a93ea53eaae"
+_BASELINE = "244f4893b135decfb8e61627bc8f12c409da3e98"
 _ROOT = Path(__file__).resolve().parents[2]
 _MANIFEST = _ROOT / "rg_v2/data/legacy_rescaling_v1.json"
 _PYTHON = Path(r"C:\Python314\python.exe")

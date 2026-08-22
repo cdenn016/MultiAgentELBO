@@ -26,3 +26,17 @@ The Release 1 run contract publishes six semantic artifacts:
 `population_inference.json`, `aggregate_datum.json`, `metrics.json`, and
 `arrays.npz`. Its terminal constructed object is `AggregateDatum`; it is not a
 coarse agent and has no evaluator, observation interface, or update rule.
+
+## Static recursive coarse-agent phase
+
+Run the Phase 2 click-to-run laboratory from the repository root with:
+
+```powershell
+C:\Python314\python.exe run_renormalization_v2_recursive_lab.py
+```
+
+Phase 2 constructs one exact, finite, static two-parent witness with a complete
+all-observation Bayesian update table. This is closure for the declared LF4
+fixture in the Release 1 combined-state agent family. It does not establish an
+autonomous RG flow, repeated scale composition, a semigroup, a fixed point,
+universality, or a continuum limit.

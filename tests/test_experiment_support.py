@@ -538,6 +538,7 @@ def test_experiment_registry_is_complete_typed_and_immutable():
         "scale_cocycle",
         "gaussian_fixed_ray",
         "renormalization_v2",
+        "renormalization_v2_recursive",
     )
     for name, contract in registry.items():
         assert contract.experiment == name
@@ -548,6 +549,8 @@ def test_experiment_registry_is_complete_typed_and_immutable():
         assert contract.metric_inventory
         if name == "renormalization_v2":
             assert contract.lane_owner == "rg_v2_release_1"
+        elif name == "renormalization_v2_recursive":
+            assert contract.lane_owner == "rg_v2_recursive_phase2"
         else:
             assert contract.lane_owner.startswith("session_")
     with pytest.raises(TypeError):
@@ -586,6 +589,51 @@ def test_renormalization_v2_registry_contract_is_exact():
             "coarse_evidence_residual",
             "conditional_kl_defect",
             "kl_chain_residual",
+        ),
+    )
+
+
+def test_renormalization_v2_recursive_registry_contract_is_exact():
+    contract = experiment_support.EXPERIMENT_REGISTRY[
+        "renormalization_v2_recursive"
+    ]
+
+    assert contract == experiment_support.ExperimentContract(
+        experiment="renormalization_v2_recursive",
+        lane_owner="rg_v2_recursive_phase2",
+        launcher="run_renormalization_v2_recursive_lab.py",
+        config_keys=("experiment", "fixture", "arithmetic"),
+        artifact_inventory=(
+            "fixture_snapshot",
+            "fine_population",
+            "coarse_generative",
+            "coarse_interfaces",
+            "coarse_population",
+            "all_observation_inference",
+            "metrics",
+            "arrays",
+        ),
+        metric_inventory=(
+            "block_channel_normalization_residual",
+            "coarse_state_interpretation_violation_count",
+            "observation_bijection_violation_count",
+            "coarse_agent_kernel_normalization_residual",
+            "coarse_evaluator_compatibility_residual",
+            "coarse_record_kernel_normalization_residual",
+            "coarse_population_normalization_residual",
+            "generative_roundtrip_residual",
+            "recognition_marginal_residual",
+            "recognition_roundtrip_residual",
+            "evidence_roundtrip_residual",
+            "posterior_roundtrip_residual",
+            "access_descent_residual",
+            "update_normalization_residual",
+            "update_posterior_residual",
+            "coarse_model_marginal_non_dirac_count",
+            "forbidden_dependency_violation_count",
+            "sparse_record_factorization_violation_count",
+            "minimum_conditional_kl_defect",
+            "maximum_kl_chain_residual",
         ),
     )
 

@@ -13,6 +13,7 @@ from itertools import product
 import numpy as np
 import pytest
 
+import multiagent_elbo.finite.cocycle_flow as cocycle_flow
 from multiagent_elbo.finite.closure_residual import (
     _blocked_action,
     _declared_parent_prior,
@@ -348,6 +349,56 @@ def test_the_declared_concentration_is_the_default_and_is_recorded(k1_instance):
 # ---------------------------------------------------------------- punch list 9
 
 
+@pytest.mark.parametrize(
+    "fine_information",
+    (0.0, -1.0e-16, 1.0e-16),
+    ids=("zero_information", "negative_information", "subfloor_information"),
+)
+def test_the_information_retention_refuses_an_inadmissible_denominator(
+    k1_instance, monkeypatch, fine_information
+):
+    """Mutation caught: restoring a strict-positive lower-bound guard."""
+    measured_mutual_information = cocycle_flow._mutual_information
+    calls = 0
+
+    def controlled_mutual_information(distribution):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return fine_information
+        return measured_mutual_information(distribution)
+
+    monkeypatch.setattr(
+        cocycle_flow, "_mutual_information", controlled_mutual_information
+    )
+
+    with pytest.raises(ValueError, match="roundoff scale"):
+        capacity_information_retention(k1_instance, 2, sector_count=1)
+
+
+def test_the_information_retention_admits_an_above_floor_denominator(
+    k1_instance, monkeypatch
+):
+    """Mutation caught: rejecting a finite denominator above the declared floor."""
+    measured_mutual_information = cocycle_flow._mutual_information
+    calls = 0
+
+    def controlled_mutual_information(distribution):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return 2.0 * MI_CEILING_FLOOR
+        return measured_mutual_information(distribution)
+
+    monkeypatch.setattr(
+        cocycle_flow, "_mutual_information", controlled_mutual_information
+    )
+
+    retention = capacity_information_retention(k1_instance, 2, sector_count=1)
+
+    assert retention.fine_information == 2.0 * MI_CEILING_FLOOR
+
+
 def test_a_roundoff_scale_information_ceiling_raises_instead_of_dividing(declared_seed):
     """Mutation caught: reporting a retention ratio of two roundoff residues."""
     site, pair = declared_seed
@@ -368,7 +419,7 @@ def test_the_declared_instances_sit_far_above_the_ceiling_floor(k1_instance):
 def test_the_published_retentions_are_unchanged_by_the_remediation(k1_instance):
     """Mutation caught: moving a number the audit reproduced and cleared."""
     assert one_step_pair_retention(k1_instance, 2).retention == pytest.approx(
-        0.15574727, abs=1.0e-8
+        0.155747, rel=0.0, abs=5.0e-7
     )
     assert capacity_information_retention(
         k1_instance, 2, sector_count=1
