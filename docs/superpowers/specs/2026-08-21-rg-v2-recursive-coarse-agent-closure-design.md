@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-21
 
-**Status:** Approved in-chat architecture; committed specification awaiting final review
+**Status:** Approved for implementation on 2026-08-21
 
 **Repository baseline:** `d4ce80bc9eda90ec54dc9c97d8405d7d28ca6182`
 
