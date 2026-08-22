@@ -1286,6 +1286,42 @@ def validate_recursive_observation(
     if datum.coarse_observed_record != expected_coarse_record or datum.coarse_inference.observed_record != expected_coarse_record:
         raise ValueError("observation relabeling must preserve the paired realized observation")
 
+    try:
+        fine_observations = tuple(
+            (record_id, outcome)
+            for record_id, outcome in json.loads(datum.fine_observed_record)
+        )
+        replayed_fine_inference = derive_population_inference(
+            datum.fine_inference.population,
+            fine_observations,
+            datum.fine_inference.recognitions,
+            datum.fine_inference.selector,
+        )
+    except (TypeError, ValueError) as error:
+        raise ValueError("fine inference replay failed its retained semantic inputs") from error
+    if replayed_fine_inference != datum.fine_inference:
+        raise ValueError("fine inference replay must equal every stored inference field")
+
+    selector = datum.coarse_inference.selector
+    try:
+        replayed_coarse_inference = derive_population_inference(
+            coarse_population.reconstructed_population,
+            ((observation.record_id, expected_outcome),),
+            tuple(agent.recognition.initial_recognition for agent in datum.coarse_agents),
+            selector,
+        )
+    except (TypeError, ValueError) as error:
+        raise ValueError("coarse inference replay failed selector marginal validation") from error
+    if replayed_coarse_inference != datum.coarse_inference:
+        raise ValueError("coarse inference replay must equal every stored inference field")
+
+    expected_recognition_hash = _probability_sha256(replayed_fine_inference.recognition)
+    if any(
+        agent.recognition.source_recognition_sha256 != expected_recognition_hash
+        for agent in datum.coarse_agents
+    ):
+        raise ValueError("source recognition SHA-256 must equal the exact fine recognition law hash")
+
     expected_recognition = ExactProbabilityLaw(
         channel.target_labels,
         channel.pushforward(datum.fine_inference.recognition.masses),
@@ -1294,7 +1330,6 @@ def validate_recursive_observation(
         channel.target_labels,
         channel.pushforward(datum.fine_inference.posterior.masses),
     )
-    selector = datum.coarse_inference.selector
     if selector.selector_kind != "declared_correlated" or selector.coupling is None:
         raise ValueError("coarse selector must retain the declared correlated coupling")
     for agent in datum.coarse_agents:

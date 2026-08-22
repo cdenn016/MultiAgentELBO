@@ -38,6 +38,7 @@ from rg_v2.contracts import (
     AgentRecognitionDatum,
     AggregateDatum,
     ExactProbabilityLaw,
+    ExactSubmeasure,
     ModelEvaluation,
     PopulationInference,
     SelectorSpec,
@@ -740,6 +741,64 @@ def test_task4_validation_rejects_named_live_mutations(mutation: str, message: s
                 tuple(tuple(reversed(row)) for row in kernel.matrix),
                 recognition_independent=True,
             ),
+        )
+
+    with pytest.raises(ValueError, match=message):
+        coarse_agent.validate_recursive_observation(
+            recursive,
+            coarse,
+            NumericsConfig("float64", 1.0e-12, 1.0e-12),
+        )
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        ("coordinated_evidence", "fine inference replay"),
+        ("within_channel_posterior", "fine inference replay"),
+        ("source_recognition_hash", "source recognition SHA-256"),
+    ),
+)
+def test_task4_public_validator_rejects_review_mutations(mutation: str, message: str) -> None:
+    fixture, fine = _fine_population()
+    coarse = coarse_agent.construct_coarse_population_joint(fine, fixture.structure)
+    information = coarse_agent.construct_coarse_information_interfaces(coarse, fixture.access_specs)
+    fine_inference = _fine_inference_for_label(fixture, fine, fine.observation_labels[0])
+    coarse_agents = coarse_agent.construct_coarse_recognition(coarse, information, fine_inference)
+    recursive = coarse_agent.derive_recursive_observation(coarse, coarse_agents, fine_inference)
+
+    if mutation == "coordinated_evidence":
+        for inference in (recursive.fine_inference, recursive.coarse_inference):
+            object.__setattr__(
+                inference,
+                "evidence_measure",
+                ExactSubmeasure(
+                    inference.evidence_measure.labels,
+                    tuple(mass / 2 for mass in inference.evidence_measure.masses),
+                ),
+            )
+            object.__setattr__(inference, "evidence", inference.evidence / 2)
+    elif mutation == "within_channel_posterior":
+        channel = coarse.combined_channel.channel
+        left, right = next(
+            (left, right)
+            for left, right in itertools.combinations(range(len(channel.source_labels)), 2)
+            if channel.matrix[left] == channel.matrix[right]
+            and recursive.fine_inference.posterior.masses[right] > 0
+        )
+        masses = list(recursive.fine_inference.posterior.masses)
+        transfer = masses[right] / 2
+        masses[left] += transfer
+        masses[right] -= transfer
+        mutated = ExactProbabilityLaw(recursive.fine_inference.posterior.labels, tuple(masses))
+        assert channel.pushforward(mutated.masses) == channel.pushforward(recursive.fine_inference.posterior.masses)
+        object.__setattr__(recursive.fine_inference, "posterior", mutated)
+    else:
+        assert recursive.coarse_agents[0].recognition.source_recognition_sha256 != "0" * 64
+        object.__setattr__(
+            recursive.coarse_agents[0].recognition,
+            "source_recognition_sha256",
+            "0" * 64,
         )
 
     with pytest.raises(ValueError, match=message):
