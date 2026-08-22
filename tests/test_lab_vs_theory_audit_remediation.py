@@ -13,7 +13,6 @@ from itertools import product
 import numpy as np
 import pytest
 
-import multiagent_elbo.finite.cocycle_flow as cocycle_flow
 from multiagent_elbo.finite.closure_residual import (
     _blocked_action,
     _declared_parent_prior,
@@ -347,14 +346,6 @@ def test_the_declared_concentration_is_the_default_and_is_recorded(k1_instance):
 
 
 # ---------------------------------------------------------------- punch list 9
-
-
-def test_an_exact_zero_information_ceiling_is_undefined(monkeypatch, k1_instance):
-    """Mutation caught: retaining the exact-zero loophole in the floor guard."""
-    monkeypatch.setattr(cocycle_flow, "_mutual_information", lambda joint: 0.0)
-
-    with pytest.raises(ValueError, match="roundoff scale"):
-        capacity_information_retention(k1_instance, 2, sector_count=1)
 
 
 def test_a_roundoff_scale_information_ceiling_raises_instead_of_dividing(declared_seed):

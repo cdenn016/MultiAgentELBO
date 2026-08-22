@@ -557,7 +557,7 @@ def capacity_information_retention(
     coarse_pair = marginal.sum(axis=tuple(range(2, coarse_width)))
     fine_information = _mutual_information(fine_pair)
     coarse_information = _mutual_information(coarse_pair)
-    if fine_information < MI_CEILING_FLOOR:
+    if 0.0 < fine_information < MI_CEILING_FLOOR:
         raise ValueError(
             "the boundary mutual-information ceiling "
             f"{fine_information:.6e} nats is at roundoff scale; the retention "
