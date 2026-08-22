@@ -127,7 +127,7 @@ metric records.
 $env:CUDA_VISIBLE_DEVICES = "-1"
 $env:PYTHONHASHSEED = "0"
 $env:RG_V2_REFRESH_LEGACY_BASELINE = "1"
-C:\Python314\python.exe -B -m pytest tests\rg_v2\test_legacy_regression.py -k "^test_refresh$" -q -p no:cacheprovider --basetemp=.pytest-v1-rebaseline-refresh
+C:\Python314\python.exe -B -m pytest tests\rg_v2\test_legacy_regression.py::test_refresh -q -p no:cacheprovider --basetemp=.pytest-v1-rebaseline-refresh
 ```
 
 - [ ] **Step 4: Compare old and new scientific payloads**
