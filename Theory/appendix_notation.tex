@@ -19,10 +19,10 @@ Symbol & Type & Meaning and prohibited identification \\
 smooth base manifold &
 Context space.  It is neither the population graph nor a probability
 sample space. \\
-\(\mathcal C_i;\ \mathcal U_A=\bigcap_{i\in I}\mathcal C_i\) &
+\(\mathcal C_i;\ U_A=\bigcap_{i\in I}\mathcal C_i\) &
 agent support and common overlap patch &
 A finite child block \(I\) has parent label \(A\), and the pointwise program fixes
-\(r_*\in\mathcal U_A\). Ordinary \(R\) is not an
+\(c_*\in U_A\). Ordinary \(R\) is not an
 overlap region. \\
 \(q_i^{b;o,X},q_i^{m;o,X}\) &
 measurable belief-law and model-law response sections &
@@ -389,11 +389,51 @@ and a general law uses Markov pushforward. \\
 normalized interaction-record kernel and its fixed-record negative log density &
 One actual record is one global factor.  It may occur in several incident
 coordinate-local VFEs without being duplicated in the joint. \\
-\(\alpha_i^x;\ \eta_{ij}^q=\alpha_i^q\beta_{ij};\
+\(\alpha_i^x;\ \eta_{ij}^b=\alpha_i^b\beta_{ij};\
 \eta_{ij}^m=\alpha_i^m\gamma_{ij}\) &
-external receiver occupancy and channel-typed joint edge-event laws &
+receiver occupancy and channel-typed joint edge-event laws &
 Exact meta-attention pushes \(\eta^x\) and then disintegrates. A row
 \(\beta\) alone does not determine receiver weights. \\
+\(c_*;\ U\ni c_*;\ \ell;\
+f_\ell:\mathcal C_\ell\to\mathcal C_{\ell+1}\) &
+fixed base point, base neighborhood, RG depth, and actual base coarse map &
+The fixed-fiber theory is vertical over \(c_*\). It neither constructs sections
+over \(U\) nor implies a base map \(f_\ell\). RG depth is not a base coordinate
+or physical time. \\
+\(m_\ell(I\mid i,R_\ell);\
+M_\ell(I,J\mid i,j,R_\ell)\) &
+normalized one-endpoint and correlated two-endpoint membership kernels &
+Their target sums equal one. A hard partition gives a deterministic kernel; a
+product formula for \(M_\ell\) requires conditional independence. Literal
+unit-weight multiple membership is replication of a finite measure, not a
+normalized pushforward. The fully argumented \(M_\ell(\cdot)\) is distinct from
+the scalar evidence mass \(M_\ell\) below. \\
+\(\eta_\ell^{b},\eta_\ell^{m}\) &
+retained recursive marked receiver--source event laws &
+Receiver occupancies are their first marginals, and the conditional attention
+rows are disintegrations on positive occupancy. Chapman--Kolmogorov composition
+of membership kernels also retains every mark needed by the next step. \\
+\(\widehat{\mathsf Y}_{\ell+1\leftarrow\ell}\) &
+augmented fixed-fiber transition state &
+It is
+\((\mathsf Y_{\ell,c_*},R_\ell,\mathsf Y_{\ell+1,c_*})\). The current
+\(\mathsf Y_{\ell,c_*}\) includes \(\eta_\ell^b,\eta_\ell^m\), rooted-holonomy,
+and dressed-boundary marks. Interaction-record or memory marks must additionally
+be retained whenever the claimed exact closure requires them. \\
+\(C^{\mathrm{struct},c_*}_{\ell+1\leftarrow\ell}\) &
+common structural channel &
+Its type is \(\mathsf Y_{\ell,c_*}\rightsquigarrow
+\mathsf R_\ell\times\mathsf Y_{\ell+1,c_*}\). It samples and retains
+\(R_\ell\); its transition joint is the augmented state above. When declared,
+the normalized recognition-independent channel pushes \(\mathbb P_\ell\), the
+selected \(\boldsymbol\Pi_\ell\), and \(\mathbb Q_\ell\). \\
+\(\tau^x_{I\leftarrow i};\ H_I^x;\
+V_e^x=\tau^x_{I\leftarrow i}\Theta_e^x
+(\tau^x_{J\leftarrow j})^{-1}\) &
+root transport, based holonomy representation, and dressed boundary edge &
+For \(e:j\to i\) from \(J\) to \(I\),
+\(V_e^{x\prime}=(a^x_{r_I})^{-1}V_e^xa^x_{r_J}\). These are the retained
+parent-frame objects; no undeclared coarse dressing legs are used. \\
 \(\mathscr P_\ell\xrightarrow{\varpi_\ell}\mathcal C_\ell\) &
 scale-\(\ell\) principal bundle and its principal projection &
 \(\mathscr P_\ell\) is distinct from the root-level notation \(\mathscr P_G\), from the
@@ -410,7 +450,9 @@ scale-\(\ell\) probability reference, finite evidence measure, its mass, and
 normalized law &
 Here \(M_\ell=m_\ell(\mathsf X_\ell)\in(0,\infty)\) and
 \(\pi_\ell=m_\ell/M_\ell\).  The measure pair is the primary law-level RG
-state; normalization does not discard the separately tracked evidence mass. \\
+state; normalization does not discard the separately tracked evidence mass.
+The bare \(m_\ell\) here is a finite measure and is distinct from the fully
+argumented membership kernel \(m_\ell(I\mid i,R_\ell)\). \\
 \(c_{\mathrm{ray}}(b);\ n_{\mathrm{cut}}(b)\) &
 additive fixed-action-ray shift; cut-edge count for the declared block ratio \(b\) &
 It is present only on the projective action tier of the \(b\)-step map
@@ -582,11 +624,12 @@ arrow in the scale diagram &
 Composes abstractly as \(C_{kr}\circ C_{\ell k}=C_{\ell r}\).  Right-acting
 kernel juxtaposition is the separate convention stated above.  A renormalization dynamics
 also needs comparison and rescaling maps. \\
-\(c_\ell,C_\ell^b,C_\ell^m\) &
+\(f_\ell,C_\ell^b,C_\ell^m\) &
 base and channelwise adjacent-scale maps &
-\(C_\ell^x\) covers \(c_\ell\).  Their failures to commute with
+\(C_\ell^x\) covers \(f_\ell:\mathcal C_\ell\to\mathcal C_{\ell+1}\). Their failures to commute with
 \(\Phi_\ell,\widetilde\Phi_\ell\) or parallel transport are covariant
-defect diagrams. \\
+defect diagrams. This base-changing tier is distinct from a fixed-\(c_*\)
+vertical coarse channel. \\
 \(Q,R\) &
 coarse map and stochastic refinement kernel &
 For noninjective \(Q\), \(Q_\#R(c,\cdot)=\delta_c\) is only a stochastic

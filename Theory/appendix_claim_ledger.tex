@@ -186,10 +186,12 @@ dissipation alone. \status{OPEN}
 \begin{description}
 \item[Full pointwise probabilistic datum (established).]
 Fix a nonempty finite child block \(I\), a parent label \(A\), one
-\(r_*\in\mathcal U_A=\bigcap_{i\in I}\mathcal C_i\), and structural data \(X\)
+\(c_*\in U_A=\bigcap_{i\in I}\mathcal C_i\), and structural data \(X\)
 with \(X_A=\chi_A(X)\) outside the random channel. Under the hypotheses of
 \Cref{thm:rg-pointwise-parent-datum}, one normalized recognition-independent
-\(C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A\) pushes the fixed fine generative
+vertical channel
+\(C_{A,c_*}:\mathsf Y_{I,c_*}\rightsquigarrow\mathsf Z_{A,c_*}\), covering
+\(\operatorname{id}_{c_*}\), pushes the fixed fine generative
 joint, selected posterior-version family, and correlated recognition law to a
 normalized parent triple while leaving the observation in \(\mathsf O\)
 unchanged. An induced parent evaluator exists by standard-Borel disintegration;
@@ -207,41 +209,82 @@ required for ordinary subtraction
 \(\Fenergy_I-\Fenergy_A=\Delta_A\) and for the stated two-way pairwise
 common-recovery equivalence. Holonomy blindness requires
 typed actions, full fine-law covariance, compatible selected posterior versions,
-\(C_A\) equivariance, and evaluator covariance; same-slice invariance requires
-fixed-\((o,X)\) isotropy. Raw holonomy retention is the alternative and makes no
-blindness or membership-selection claim. The manuscript status is
-\textsc{established}; the bound release records ledger state
+\(C_{A,c_*}\) equivariance, and evaluator covariance; same-slice invariance requires
+fixed-\((o,X)\) isotropy. Raw holonomy retention uses component roots \(r_I\),
+tree transports \(\tau^x_{I\leftarrow i}\), based representations \(H_I^x\),
+and dressed boundary marks
+\(V_e^x=\tau^x_{I\leftarrow i}\Theta_e^x
+(\tau^x_{J\leftarrow j})^{-1}\). It is the alternative and makes no
+blindness or membership-selection claim. The mathematical implication remains
+\textsc{established}. The earlier bound release recorded ledger state
 \texttt{EVIDENCE\_VERIFIED} and terminal package status
-\texttt{COMPLETE\_AFFIRMATIVE}. \status{ESTABLISHED}
+\texttt{COMPLETE\_AFFIRMATIVE} for its pinned pre-amendment artifact; those
+formal states do not bind this amended Part II revision. \status{ESTABLISHED}
 
-\item[Partition selection and experiment-level recovery (open).]
-\Cref{thm:cg-holonomy-kl-marginal} proves that the marginal-law distortion is
-invariant under gauge, path, and root choices. It characterizes its attained
-zero as a holonomy-stabilized parallel marginal section.  The normalized
+\item[Membership pushforward and selection (established/open split).]
+Gauge, path, and root invariance of the marginal-law distortion follows from
+\Cref{thm:cg-holonomy-kl-marginal}. Its attained zero characterizes a
+holonomy-stabilized parallel marginal section. The normalized
 evidence-preserving full pointwise joint-law pushforward and finite pairwise
 recovery criterion are supplied by \Cref{thm:rg-pointwise-parent-datum}; what
 remains open is one common recovery kernel for an entire statistical experiment
-without separately imposing simultaneous family hypotheses, and a relabeling-natural,
-gauge-compatible nondegenerate partition selector. \status{OPEN}
+without separately imposing simultaneous family hypotheses.
+
+Given a declared membership law, normalized assignment kernels
+\(m_\ell(I\mid i,R_\ell)\) include hard partitions as deterministic special
+cases. Correlated endpoint membership uses the normalized joint kernel
+\(M_\ell(I,J\mid i,j,R_\ell)\), not an unjustified product. Literal unit-weight
+multiple membership replicates a finite measure and is not a probability
+pushforward. Exact recursion retains \(\eta_\ell^b,\eta_\ell^m\), recovers
+\(\alpha\) and the conditional rows by marginalization and disintegration, and
+requires Chapman--Kolmogorov composition together with all marks used by the
+next assignment. When adaptive membership is random, one normalized
+recognition-independent
+\(C^{\mathrm{struct},c_*}_{\ell+1\leftarrow\ell}:
+\mathsf Y_{\ell,c_*}\rightsquigarrow
+\mathsf R_\ell\times\mathsf Y_{\ell+1,c_*}\) samples and retains \(R_\ell\).
+The current state already contains \(\eta_\ell^b,\eta_\ell^m\) and the declared
+rooted-holonomy and dressed-boundary marks. Interaction-record or memory marks
+must additionally be retained whenever the claimed exact closure requires
+them. Its induced transition joint on
+\(\widehat{\mathsf Y}_{\ell+1\leftarrow\ell}
+:=(\mathsf Y_{\ell,c_*},R_\ell,\mathsf Y_{\ell+1,c_*})\) is the augmented law.
+The same declared channel pushes the generative, selected-posterior, and
+recognition laws. Conditional on that declaration, normalization and the typed
+pushforward are established; a relabeling-natural, gauge-compatible,
+nondegenerate selector remains open. \status{OPEN}
 
 \item[Downstream comparison, gluing, and agency (open).]
 The next order is fixed but none of its members lies in the static release
 ancestry. First, a comparison theorem must freeze the parent experiment and a
 typed category for target retention, the ordered \(R\to E\to O\) boundary,
 time orientation, and protocol-independent relabeling; interventions remain
-analyst probes. Second, a patchwise theorem over \(\mathcal U_A\) must supply
+analyst probes. Second, a patchwise theorem over \(U_A\) must supply
 measurable or smooth channel families, cocycles, changing active components,
 strata, normalized soft multiple membership, holonomy selection, and an
 integrable defect. Only that theorem can construct parent local sections and a
-geometric meta-agent. Third, participatory nonequilibrium and emergent agency
+geometric meta-agent. The fixed-fiber result at \(c_*\) does not supply these
+neighborhood sections or an actual base map
+\(f_\ell:\mathcal C_\ell\to\mathcal C_{\ell+1}\). Third, participatory
+nonequilibrium and emergent agency
 require one tower action or proved reduction without double counting, a typed
 choice among gradient, open, antisymmetric, kinetic, stochastic, delayed,
 memory, or adaptive mechanisms, and operational agency grades. Canonical
 channel and membership selection, autonomy, physical time, continuum limits,
-unique microscopic physics, and ontology remain open. \status{OPEN}
+unique microscopic physics, and ontology remain open. Normalized downward
+kernels also do not by themselves make parent and child optimization
+bidirectionally coupled. That claim requires nontrivial parent dependence and a
+parameterization that transmits it to the cross-scale VFE; a universal claim
+requires a proved nonzero cross-derivative or equivalent sensitivity condition.
+\status{OPEN}
 
 \item[Infinite-volume RG limit (open).]
-The finite exact scale theory supplies normalized kernels, pushed measure
+The complete finite law-level closure theorem is established as a conditional
+implication. Globally gauge-equivariant jointly measurable conditional versions
+and scale-compatible rescaling kernels remain supplied hypotheses and open
+instantiation obligations; neither is exhibited in the active theory tree.
+Subject to those hypotheses, the finite exact scale theory supplies normalized
+kernels, pushed measure
 pairs, a local analytic bounded-action calculus, its \(L^p\) conditional
 expectation extension, the exact conditional-variance loss, full
 power-set Hoeffding interaction coordinates, and an exact nonlinear

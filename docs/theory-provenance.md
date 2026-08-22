@@ -1,9 +1,12 @@
-# Theory snapshot provenance
+# Theory provenance
 
-`Theory/` is a supplied, read-only snapshot of
+`Theory/` began as a supplied snapshot of
 `C:\Users\chris and christine\Desktop\Research\manuscripts\gauge_vfe_rg`.
-It is evidence input to this repository, not an implementation output. No
-build task may modify its tracked contents.
+The snapshot record below remains the historical comparison baseline, but the
+tree is not permanently read-only: it may receive an explicitly authorized
+in-repository amendment when this repository is designated the active theory
+authority. Each such amendment must be recorded here. Ordinary build or
+implementation tasks remain unauthorized to modify its tracked contents.
 
 ## Snapshot check
 
@@ -29,7 +32,7 @@ The comparison excludes TeX build products and Python caches, including
 must compare the tracked `Theory/` content against this snapshot record before
 claiming preservation.
 
-## Post-snapshot additions — outside the read-only scope (recorded 2026-08-13)
+## Post-snapshot additions — outside the original snapshot scope (recorded 2026-08-13)
 
 The 44-file record above is **no longer a complete inventory of `Theory/`**. Two files were added
 after the snapshot, by commit `90fcd42` ("docs: land ultradeep audits, roadmap review, and PIFB2
@@ -39,16 +42,18 @@ source"), and are **not** present in the snapshot source tree
 - `Theory/PIFB2.tex`
 - `Theory/references.bib`
 
-These two are **outside** the read-only declaration of line 5–6 and outside the 44-file digest at
-line 17–18. The digest and the "zero path or content differences" statement remain valid for the 44
-snapshot files only, and must not be read as covering the two additions.
+These two are outside the original 44-file inventory and digest. The digest and the "zero path or
+content differences" statement remain valid for those 44 snapshot files only and must not be read
+as covering the additions or later authorized amendments.
 
-Consequence for editing. `Theory/PIFB2.tex` is a *copy*; the live authority is
+Consequence for editing. `Theory/PIFB2.tex` is a *copy*; absent a separate
+authorization, its live authority is
 `Desktop/Research/manuscripts/PIFB2.tex`, verified byte-identical (3956 lines, `diff` clean), so line
 numbers transfer unchanged. Edits to PIFB2 — including the outstanding observation-term binding at
 `:689` — should be made against the Research-vault copy and the repo copy re-synced, not applied to
-`Theory/PIFB2.tex` in place. The remaining 44 files stay read-only: changes to them require the
-per-result `SPEC.md:17` compliance gate recorded in the worklog's write policy.
+`Theory/PIFB2.tex` in place. Changes to the original 44 files require explicit authorization and an
+amendment record here; their historical snapshot hashes remain a comparison baseline, not a claim
+that the active in-repository files stay byte-identical forever.
 
 ## Evidence boundary
 
@@ -103,3 +108,16 @@ respectively. `Theory/verification/current-results.json` was also excluded and r
 That JSON remains archived and stale: it is not evidence for Research revision
 `451af943493d5ee1621f30410a9698a4e02251c2`. Codebase tests were skipped by user direction,
 and no test result is claimed for this sync.
+
+## Explicit Part II in-repository remediation — 2026-08-22
+
+For the accepted Part II renormalization remediation,
+`MultiAgentELBO/Theory` was explicitly designated the active authority. Immediately before the
+amendment, the four Part II core sources
+`Theory/06_general_coarsegraining.tex`, `Theory/07_general_renormalization.tex`,
+`Theory/07b_agent_network_rg.tex`, and `Theory/07c_full_graph_meta_agent_vfe.tex` matched their
+Research-vault counterparts byte-for-byte. This repository's `Theory/SPEC.md` and
+`Theory/appendix_notation.tex` already contained later in-repository revisions. The remediation
+therefore amends the active repository tree and records the resulting divergence here; it does not
+rewrite the historical snapshot record above. The Research vault was consulted for context and was
+not modified in this remediation.

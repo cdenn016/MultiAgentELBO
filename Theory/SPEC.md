@@ -207,8 +207,8 @@ calculate a path integral is auxiliary and must disappear from the final arc len
 
 **Phase 0 pointwise-parent symbols.** For a finite child block \(I\) with parent label \(A\), agent
 \(i\in I\) supplies its section pair on \(\mathcal C_i\); the common overlap is
-\(\mathcal U_A=\bigcap_{i\in I}\mathcal C_i\), and the present construction fixes
-\(r_*\in\mathcal U_A\). Ordinary \(R\) is not an overlap: the intervention comparison retains
+\(U_A=\bigcap_{i\in I}\mathcal C_i\), and the present construction fixes
+\(c_*\in U_A\). Ordinary \(R\) is not an overlap: the intervention comparison retains
 \(R\to E\to O\). The action functional is \(\mathscr S\). The associated-bundle projection
 remains \(\varpi_x\); it is never receiver occupancy.
 
@@ -226,6 +226,12 @@ measurable typed family, not one map into a common kernel space. General normali
 spaces on standard-Borel domains are primary; smooth statistical manifolds require separate
 regularity, and Gaussian families are optional computational realizations only.
 
+The fixed base point is \(c_*\). A neighborhood is \(U\ni c_*\), an actual base coarse map is
+\(f_\ell:\mathcal C_\ell\to\mathcal C_{\ell+1}\), and \(\ell\) denotes RG depth only. At the
+fixed-fiber tier, evaluated spaces carry the suffix \(c_*\), and a vertical coarse channel covers
+the identity of \(c_*\). Statements about such a channel do not construct sections over \(U\),
+gluing data, connection-compatible bundle maps, or a base coarse map \(f_\ell\).
+
 Structural \(X\) is fixed outside the random channel, with \(X_A=\chi_A(X)\). The retained random
 interface is \(\xi_A\in\boldsymbol\Xi_A\), and
 \(\mathsf Z_A=\mathsf B_A\times\mathsf M_A\times\boldsymbol\Xi_A\times\mathsf H_A\) contains random
@@ -234,8 +240,11 @@ and \(\boldsymbol\Pi_{I,o,X}\). The parent full laws are \(\mathbb P_A(Do,Dz\mid
 \(\mathbb Q_{A,o,X}\), and \(\boldsymbol\Pi_{A,o,X}\). Bare global \(P_A,Q_A\) are forbidden;
 bare \(P,Q\) are lemma-local dummy probability measures only after a nearby type declaration.
 
-The pointwise coarse object is one normalized recognition-independent Markov kernel
-\(C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A\), not a matrix or deterministic map. A moving
+The abstract law-level pointwise coarse object is one normalized recognition-independent Markov
+kernel \(C_A:\mathsf Y_I\rightsquigarrow\mathsf Z_A\), not a matrix or deterministic map. Its
+fixed-fiber realization is
+\(C_{A,c_*}:\mathsf Y_{I,c_*}\rightsquigarrow\mathsf Z_{A,c_*}\), vertical over
+\(\operatorname{id}_{c_*}\). A moving
 deterministic map is \(c_t\) only after a flow is declared. The parent model evaluation is
 \(\operatorname{ev}_A:m_A\mapsto K^{X_A}_{A,m_A}\). At locally fixed \((o,X)\),
 \(q_A^b,q_A^m\), \(p_A^b,p_A^m\), and
@@ -264,10 +273,13 @@ posterior slice is \(\boldsymbol\Pi_{\theta,V,o,X}\). Evidence is
 `K_a(y_{\partial a},do_a)`. At a regular record its fixed negative log density is `E_{a,o}`.
 Coordinate-local VFEs include every incident factor, while the global joint owns each record once.
 For directed attention, `\pi_{ij}` is the generative source prior, `\beta^P_{ij}` the generative
-posterior row, `\beta^Q_{ij}` the recognition row, and `\alpha_i^x` the external normalized receiver
-occupancy in channel `x`. The marked event laws are `\eta_{ij}^q=\alpha_i^q\beta_{ij}` and
-`\eta_{ij}^m=\alpha_i^m\gamma_{ij}`. Exact coarse attention pushes
-`\eta`, not `\beta` alone.
+posterior row, `\beta^Q_{ij}` the recognition row, and `\alpha_i^x` the normalized receiver
+occupancy in channel `x`. The retained recursive state contains the marked event laws
+`\eta_{ij}^{b,\ell}=\alpha_i^{b,\ell}\beta_{ij}^{\ell}` and
+`\eta_{ij}^{m,\ell}=\alpha_i^{m,\ell}\gamma_{ij}^{\ell}`. At the next level, `\alpha` is recovered
+by marginalizing `\eta`, and `\beta` or `\gamma` is recovered by disintegration on positive
+receiver occupancy. Exact coarse attention pushes `\eta`; a conditional row alone is not recursive
+state.
 
 **Gaussian information form.** Natural parameters `(h,J)`, moments `\mu=J^{-1}h`, `C=J^{-1}`.
 Log normalizer `A(h,J)` — **note the clash**: use `\mathsf A(h,J)` for the log normalizer so it does
@@ -278,7 +290,32 @@ not collide with the self terms `A_i`.
 `\Lambda_{ii}=A_i+\sum_{j\neq i}W_{ij}` and `\Lambda_{ij}=-W_{ij}` for `i\neq j`.
 Laplacian part `L`. Trivialized coordinates `z_i=U_i^{-1}\mu_i`.
 
-**Coarse-graining.** Partition into clusters `I,J`. Aggregation matrix `S` (`0/1`, `\hat S\otimes I_K`).
+**Coarse-graining.** At RG depth `\ell`, normalized membership is a Markov kernel
+`m_\ell(I\mid i,R_\ell)\geq0` with `\sum_I m_\ell(I\mid i,R_\ell)=1`. A hard partition is the
+deterministic special case. For correlated endpoint assignments use one normalized joint kernel
+`M_\ell(I,J\mid i,j,R_\ell)`; the product of one-endpoint kernels is valid only under the declared
+conditional-independence hypothesis. Literal unit weight in every overlapping block replicates a
+finite measure and multiplies its mass, so it is not a normalized probability pushforward.
+Multi-step membership requires the Chapman--Kolmogorov composition law and retention of every mark
+on which the next assignment kernel depends.
+
+At fixed `c_*`, the exact adaptive step requires one declared normalized recognition-independent
+structural channel
+`C^{\mathrm{struct},c_*}_{\ell+1\leftarrow\ell}:\mathsf Y_{\ell,c_*}
+\rightsquigarrow\mathsf R_\ell\times\mathsf Y_{\ell+1,c_*}`. The current state
+`\mathsf Y_{\ell,c_*}` already contains `\eta_\ell^b,\eta_\ell^m` and the declared rooted-holonomy
+and dressed-boundary marks; the channel samples and retains `R_\ell`. Interaction-record or memory
+marks must additionally be retained whenever the claimed exact closure requires them.
+Its induced transition law lives on
+`\widehat{\mathsf Y}_{\ell+1\leftarrow\ell}:=
+(\mathsf Y_{\ell,c_*},R_\ell,\mathsf Y_{\ell+1,c_*})` and therefore contains the membership,
+event, and retained-mark data without duplicating `R_\ell` as a kernel input. The same channel
+pushes the generative, selected-posterior, and recognition laws, even when
+those three laws induce different distributions of `R_\ell`. Composition is exact only when the
+retained augmented transition state is sufficient for the next structural kernel.
+
+For a hard partition into clusters `I,J`, the Gaussian aggregation matrix is `S` (`0/1`,
+`\hat S\otimes I_K`).
 Coarse precision `\Lambda_{\mathrm c}=S^\top\Lambda S`. Cluster size `n_I`, block size `b`.
 Orthonormal bases: `B` spans `\operatorname{range}(S)`, `B_\perp` its complement.
 
@@ -299,6 +336,9 @@ remain explicit, so a density Jacobian cannot be hidden inside a coupling rescal
 identifications produce endomorphisms with ordinary fixed points. A scale-independent endomorphism
 is autonomous; a scale-dependent sequence is a cocycle, with periodic points, invariant sections,
 or monodromy fixed points as separately typed notions.
+When the scale diagram changes the contextual base, the base component is
+`f_\ell:\mathcal C_\ell\to\mathcal C_{\ell+1}`. It is absent from the fixed-`c_*` vertical tier and
+must not be inferred from an increase in RG depth.
 
 **MVG operator component.** In the multivariate-Gaussian realization, with rescaling
 `\zeta_\ell>0`, the precision component of the scale diagram is
@@ -627,6 +667,13 @@ a marginal-law statement. It neither selects a partition nor supplies a normaliz
 and exact joint recovery still requires a parameter-independent coarse Markov kernel with a common
 recovery kernel.
 
+The complete finite law-level gauge-VFE closure theorem remains **ESTABLISHED** only as an
+implication from its displayed hypotheses. Globally gauge-equivariant jointly measurable versions
+of every conditional law used by the bridge construction, and scale-compatible rescaling kernels,
+are supplied hypotheses and **OPEN** instantiation obligations; neither family is exhibited in the
+active theory tree. Per-step consequences that do not require the missing scale-composition clause
+remain conditional on the relevant measurable equivariant versions.
+
 ### 5d.5 What remains realization-specific
 
 The determinant gap, the Schur-complement mean-tie cost, explicit Gaussian Fisher charts, matrix
@@ -839,9 +886,9 @@ domain approvals are stale, one provenance stage is unauditable, and the adversa
 is not evidence — see
 `docs/derivations/2026-08-15-full-pointwise-meta-agent/POST-RELEASE-CORRECTIONS.md`).
 Fix a nonempty finite child block `I`, a parent label `A`, one
-`r_* in U_A = intersection_{i in I} C_i`, fixed structural `X`, and `X_A=chi_A(X)` outside the
-random channel. One normalized recognition-independent
-`C_A:Y_I rightsquigarrow Z_A`, with the observation space `O` unchanged, pushes the fixed fine
+`c_* in U_A = intersection_{i in I} C_i`, fixed structural `X`, and `X_A=chi_A(X)` outside the
+random channel. One normalized recognition-independent vertical channel
+`C_{A,c_*}:Y_{I,c_*} rightsquigarrow Z_{A,c_*}`, with the observation space `O` unchanged, pushes the fixed fine
 generative joint, selected posterior-version family, and correlated recognition law to the
 normalized parent triple `mathbb P_A`, `boldsymbol Pi_A`, and `mathbb Q_A`. The selected parent
 posterior identity holds at the observation-kernel level, not by applying an almost-sure equality at
@@ -859,11 +906,16 @@ required for ordinary subtraction `F_I-F_A=Delta_A` and for the stated two-way p
 common-recovery equivalence; family-wide recovery requires simultaneous hypotheses for every member.
 
 Holonomy blindness is conditional on typed fine and parent actions, full fine-law covariance,
-compatible selected posterior versions, `C_A` equivariance, and evaluator covariance. Same-slice
+compatible selected posterior versions, `C_{A,c_*}` equivariance, and evaluator covariance. Same-slice
 invariance at fixed `(o,X)` follows only for isotropy arrows fixing that slice and its selected
-versions. The alternative retains raw root-framed holonomy and boundary marks and makes no blindness
+versions. The alternative chooses component roots `r_I`, uses tree transports
+`\tau^x_{I\leftarrow i}`, retains the based holonomy representations `H_I^x`, and dresses a boundary
+edge `e:j\to i` as
+`V_e^x=\tau^x_{I\leftarrow i}\Theta_e^x(\tau^x_{J\leftarrow j})^{-1}` with the stated endpoint
+gauge law. It retains these raw root-framed holonomy and boundary marks and makes no blindness
 claim; neither branch selects membership. Canonical channel or partition selection, family-wide
-recovery, the comparison category, gluing over `U_A`, parent local sections, a geometric meta-agent,
+recovery, the comparison category, gluing over `U_A`, parent local sections, connection-compatible
+bundle maps or base coarse maps `f_\ell`, a geometric meta-agent,
 autonomy, agency, nonequilibrium persistence, continuum limits, physical time, a unique DAG or
 microscopic physics, and ontology remain **OPEN**.
 
@@ -896,6 +948,11 @@ fine orbit. It does not compare independently recomputed fine and meta natural-g
 without an oriented semiconjugacy. A parameter-dependent channel, a fitted coarse approximation,
 a Galerkin restriction, and a generative-versus-recognition parameter mismatch lie outside the
 contraction theorem.
+
+Bidirectional parent--child optimization is not implied by normalization of a downward kernel. It
+requires nontrivial dependence of that kernel on the parent coordinate and a parameterization that
+transmits the dependence to the cross-scale VFE. A universal bidirectional claim additionally
+requires a proved nonzero cross-derivative or an equivalent sensitivity condition.
 
 **Cross-scale first jets require descent and connection compatibility.** A fine section determines
 only a section of a pulled-back coarse bundle until it is constant on fibers of the base coarse

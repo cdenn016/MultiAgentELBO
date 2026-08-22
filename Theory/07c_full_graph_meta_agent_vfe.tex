@@ -19,25 +19,30 @@ does not inherit an evidence interpretation. \status{ESTABLISHED}
 \section{The full answer before decomposition}
 \label{sec:full-graph-vfe-global}
 
-Fix structural data $X$, an admitted observation
-$o\in\mathsf O_{\theta,X}^{\mathrm{reg}}$, and a finite scale depth $S$. Let
-$W$ contain every random object retained by the multiscale model: all belief
-and model coordinates at scales $0,\ldots,S$, edge and connection variables,
-partition or membership variables, retained holonomy marks, and auxiliary
-latents. Declare one normalized generative kernel
-$\mathbb P_\theta(do,dW\given X)$ before recognition and one normalized
-recognition kernel $\mathbb Q_\phi(dW\given o,X)$. With selected posterior
-$\boldsymbol\Pi_{\theta,o,X}$ and evidence density
-$p_\theta(o\given X)\in(0,\infty)$, the full multiscale VFE is
+Fix once and for all one base point $c_*\in\mathcal C$ and write
+$X_*:=X(c_*)$ for its structural data. Every graph variable, belief or model
+presentation, transport, membership kernel, and retained mark in this chapter
+is evaluated in the fiber over $c_*$. We suppress that fixed argument. The
+symbol $\ell$ denotes RG depth, while $f_\ell$ is reserved for an actual base
+coarse map; no such map is present in this fixed-base construction. Fix an
+admitted observation $o\in\mathsf O_{\theta,X_*}^{\mathrm{reg}}$ and a finite
+depth $L$. Let $W$ contain every random object retained by the multiscale
+model: all belief and model coordinates at depths $0,\ldots,L$, edge and
+connection variables, partition or membership variables, retained holonomy
+marks, and auxiliary latents. Declare one normalized generative kernel
+$\mathbb P_\theta(do,dW\given X_*)$ before recognition and one normalized
+recognition kernel $\mathbb Q_\phi(dW\given o,X_*)$. With selected posterior
+$\boldsymbol\Pi_{\theta,o,X_*}$ and evidence density
+$p_\theta(o\given X_*)\in(0,\infty)$, the full multiscale VFE is
 \begin{equation}
 \boxed{
 \mathcal F_{\mathrm{tower}}^{\mathrm{ext}}
-[\mathbb Q_\phi;X,o]
-=-\log p_\theta(o\given X)
+[\mathbb Q_\phi;X_*,o]
+=-\log p_\theta(o\given X_*)
 +\KL\left(
-\mathbb Q_\phi(\cdot\given o,X)
+\mathbb Q_\phi(\cdot\given o,X_*)
 \middle\Vert
-\boldsymbol\Pi_{\theta,o,X}
+\boldsymbol\Pi_{\theta,o,X_*}
 \right).}
 \label{eq:full-graph-vfe-global}
 \end{equation}
@@ -46,7 +51,7 @@ Equivalently, on the finite-density domain,
 \mathcal F_{\mathrm{tower}}
 =\E_{\mathbb Q_\phi}
 \left[
-\log\frac{q_\phi(W\given o,X)}{p_\theta(o,W\given X)}
+\log\frac{q_\phi(W\given o,X_*)}{p_\theta(o,W\given X_*)}
 \right].
 \label{eq:full-graph-vfe-density}
 \end{equation}
@@ -58,29 +63,87 @@ potential. \status{ESTABLISHED}
 \section{A normalized hierarchical graph model}
 \label{sec:full-graph-vfe-joint}
 
-At scale $s$, let $V_s$ be the vertex set and let
-$Z_s=(Z_{i,s})_{i\in V_s}$ contain the full probabilistic coordinates of that
-scale, including belief and model presentations rather than only their
-marginals. Let $G_s$ contain the directed graph data
-$(\beta^s,\gamma^s,\Omega^{b,s},\Omega^{m,s})$, and let $R_s$ be a possibly
-stochastic membership relation from $V_s$ to $V_{s+1}$. The structural
-configuration $X$ and observation $O$ stay outside the coarse channels.
+At depth $\ell$, let $V_\ell$ be the vertex set and let
+$Z_\ell=(Z_{i,\ell})_{i\in V_\ell}$ contain the full probabilistic coordinates
+of that depth, including belief and model presentations rather than only their
+marginals. Put
+\begin{equation}
+\eta_\ell=(\eta^{b,\ell},\eta^{m,\ell}),
+\qquad
+G_\ell=(\eta_\ell,\Omega^{b,\ell},\Omega^{m,\ell},\mathsf h_\ell),
+\label{eq:full-graph-closed-scale-datum}
+\end{equation}
+where $\mathsf h_\ell$ contains the retained root, based-holonomy, and dressed
+boundary marks defined below. The occupancies and normalized attention rows
+are obtained from $\eta_\ell$ by marginalization and disintegration, so they
+are not substituted for the edge-event laws in the recursive state. Let
+$R_\ell$ be a possibly stochastic membership assignment from $V_\ell$ to
+$V_{\ell+1}$. The fixed structural configuration $X_*$ and observation $O$
+stay outside the coarse channels.
+
+For adaptive structural coarsening, set $\mathsf Y_\ell=(Z_\ell,G_\ell)$ and
+declare one normalized recognition-independent Markov channel
+\begin{equation}
+C^{\mathrm{struct},c_*}_{\ell+1\leftarrow\ell}:
+\mathsf Y_\ell\rightsquigarrow
+\mathsf R_\ell\times\mathsf Y_{\ell+1}.
+\label{eq:full-graph-common-structural-channel}
+\end{equation}
+Its output includes $(R_\ell,\eta_{\ell+1},\mathsf h_{\ell+1})$. This channel
+supplies the conditional law of $(R_\ell,\mathsf Y_{\ell+1})$ given
+$\mathsf Y_\ell$. Define the augmented transition state
+\begin{equation}
+\widehat{\mathsf Y}_{\ell+1\leftarrow\ell}
+:=(\mathsf Y_\ell,R_\ell,\mathsf Y_{\ell+1}).
+\label{eq:full-graph-augmented-transition-state}
+\end{equation}
+Apply the same channel separately to the fine generative marginal, its
+selected posterior, and recognition law to obtain the transition joint laws
+\begin{align}
+\widehat{\mathbb P}^{\mathrm{struct}}_{\ell+1\leftarrow\ell}
+(dy_\ell,dr_\ell,dy_{\ell+1})
+&:=\mathbb P_\ell(dy_\ell)
+C^{\mathrm{struct},c_*}_{\ell+1\leftarrow\ell}
+(y_\ell;dr_\ell,dy_{\ell+1}),
+\nonumber\\
+\widehat{\boldsymbol\Pi}^{\mathrm{struct}}_{\ell+1\leftarrow\ell}
+(dy_\ell,dr_\ell,dy_{\ell+1})
+&:=\boldsymbol\Pi_\ell(dy_\ell)
+C^{\mathrm{struct},c_*}_{\ell+1\leftarrow\ell}
+(y_\ell;dr_\ell,dy_{\ell+1}),
+\nonumber\\
+\widehat{\mathbb Q}^{\mathrm{struct}}_{\ell+1\leftarrow\ell}
+(dy_\ell,dr_\ell,dy_{\ell+1})
+&:=\mathbb Q_\ell(dy_\ell)
+C^{\mathrm{struct},c_*}_{\ell+1\leftarrow\ell}
+(y_\ell;dr_\ell,dy_{\ell+1}).
+\label{eq:full-graph-common-structural-pushforwards}
+\end{align}
+These joint laws genuinely retain $(R_\ell,\eta_\ell,\mathsf h_\ell)$; their
+next-depth marginals additionally contain
+$(\eta_{\ell+1},\mathsf h_{\ell+1})$.
+The induced marginals of $R_\ell$ may differ because the three input laws
+differ. The structural channel does not. If the channel is represented by an
+auxiliary seed, the same measurable map and seed law define all three
+pushforwards, and each realized seed gives the same structural map in all three
+applications; a law-dependent realized blocking rule is not admitted. The
+observation coordinate remains unchanged. \status{HYPOTHESIS}
 
 A normalized top-down generative factorization is
 \begin{align}
-\mathbb P_\theta(do,dW\given X)
-={}&L_\theta(do\given Z_0,X)P_S(dZ_S,dG_S\given X)
+\mathbb P_\theta(do,dW\given X_*)
+={}&L_\theta(do\given Z_0,X_*)P_L(dZ_L,dG_L\given X_*)
 \nonumber\\
-&\times\prod_{s=0}^{S-1}
-P_R^s(dR_s\given Z_{s+1},G_{s+1},X)
-P_G^s(dG_s\given Z_{s+1},R_s,X)
+&\times\prod_{\ell=0}^{L-1}
+P_R^\ell(dR_\ell\given Z_{\ell+1},G_{\ell+1},X_*)
+P_G^\ell(dG_\ell\given Z_{\ell+1},R_\ell,X_*)
 \nonumber\\
-&\times\prod_{s=0}^{S-1}
-K_\downarrow^s(dZ_s\given Z_{s+1},R_s,G_s,X).
+&\times\prod_{\ell=0}^{L-1}
+K_\downarrow^\ell(dZ_\ell\given Z_{\ell+1},R_\ell,G_\ell,X_*).
 \label{eq:full-graph-generative-factorization}
 \end{align}
 Every factor is a normalized measurable kernel. In particular,
-$K_\downarrow^s$ is the mathematical location of downward influence: a parent
+$K_\downarrow^\ell$ is the mathematical location of downward influence: a parent
 belief or model changes the conditional prior of its children. The bottom-up
 coarse map belongs to recognition or to an induced pushforward; it is not
 inserted as a second incompatible generative arrow at the same time slice.
@@ -89,40 +152,45 @@ inserted as a second incompatible generative arrow at the same time slice.
 For an exact chain-rule decomposition, disintegrate recognition along the same
 ordering:
 \begin{align}
-\mathbb Q_\phi(dW\given o,X)
-={}&Q_S(dZ_S,dG_S\given o,X)
+\mathbb Q_\phi(dW\given o,X_*)
+={}&Q_L(dZ_L,dG_L\given o,X_*)
 \nonumber\\
-&\times\prod_{s=0}^{S-1}
-Q_R^s(dR_s\given Z_{s+1},G_{s+1},o,X)
-Q_G^s(dG_s\given Z_{s+1},R_s,o,X)
+&\times\prod_{\ell=0}^{L-1}
+Q_R^\ell(dR_\ell\given Z_{\ell+1},G_{\ell+1},o,X_*)
+Q_G^\ell(dG_\ell\given Z_{\ell+1},R_\ell,o,X_*)
 \nonumber\\
-&\times\prod_{s=0}^{S-1}
-Q_s(dZ_s\given Z_{s+1},R_s,G_s,o,X).
+&\times\prod_{\ell=0}^{L-1}
+Q_\ell(dZ_\ell\given Z_{\ell+1},R_\ell,G_\ell,o,X_*).
 \label{eq:full-graph-recognition-factorization}
 \end{align}
 This is a disintegration of a correlated law, not a mean-field assumption. A
 bottom-up recognition network may parameterize the same joint; the written
 ordering is only an accounting choice. \status{HYPOTHESIS}
 
+When the hierarchy is adaptive, the displayed $P_R^\ell,P_G^\ell$ and
+$Q_R^\ell,Q_G^\ell$ are selected disintegrations of the respective joint laws
+induced by \eqref{eq:full-graph-common-structural-pushforwards}. They are not
+independently chosen structural channels.
+
 \theoremheading{Exact hierarchical decomposition}{thm:full-graph-vfe-decomposition}
 Assume the normalized factorizations above, common domination, and the
 integrability needed for the finite log-density form. Then
 \begin{align}
 \mathcal F_{\mathrm{tower}}
-={}&-\E_{\mathbb Q_\phi}\log L_\theta(o\given Z_0,X)
-+\KL(Q_S\Vert P_S)
+={}&-\E_{\mathbb Q_\phi}\log L_\theta(o\given Z_0,X_*)
++\KL(Q_L\Vert P_L)
 \nonumber\\
-&+\sum_{s=0}^{S-1}\E_{\mathbb Q_\phi}
-\KL\left(Q_R^s(\cdot\given Z_{s+1},G_{s+1},o,X)
-\middle\Vert P_R^s(\cdot\given Z_{s+1},G_{s+1},X)\right)
+&+\sum_{\ell=0}^{L-1}\E_{\mathbb Q_\phi}
+\KL\left(Q_R^\ell(\cdot\given Z_{\ell+1},G_{\ell+1},o,X_*)
+\middle\Vert P_R^\ell(\cdot\given Z_{\ell+1},G_{\ell+1},X_*)\right)
 \nonumber\\
-&+\sum_{s=0}^{S-1}\E_{\mathbb Q_\phi}
-\KL\left(Q_G^s(\cdot\given Z_{s+1},R_s,o,X)
-\middle\Vert P_G^s(\cdot\given Z_{s+1},R_s,X)\right)
+&+\sum_{\ell=0}^{L-1}\E_{\mathbb Q_\phi}
+\KL\left(Q_G^\ell(\cdot\given Z_{\ell+1},R_\ell,o,X_*)
+\middle\Vert P_G^\ell(\cdot\given Z_{\ell+1},R_\ell,X_*)\right)
 \nonumber\\
-&+\sum_{s=0}^{S-1}\E_{\mathbb Q_\phi}
-\KL\left(Q_s(\cdot\given Z_{s+1},R_s,G_s,o,X)
-\middle\Vert K_\downarrow^s(\cdot\given Z_{s+1},R_s,G_s,X)\right).
+&+\sum_{\ell=0}^{L-1}\E_{\mathbb Q_\phi}
+\KL\left(Q_\ell(\cdot\given Z_{\ell+1},R_\ell,G_\ell,o,X_*)
+\middle\Vert K_\downarrow^\ell(\cdot\given Z_{\ell+1},R_\ell,G_\ell,X_*)\right).
 \label{eq:full-graph-vfe-factorized}
 \end{align}
 Each conditional divergence is averaged over its displayed parent variables
@@ -135,12 +203,13 @@ Substitute the two factorizations into the Radon--Nikodym ratio in
 chain rule. The extended-real version must use the measure-level chain rule
 without subtracting infinities. \hfill$\square$
 
-A deterministic same-time parent $Z_{s+1}=C_s(Z_s)$ and an independently
-sampled parent that generates $Z_s$ are not two free descriptions of one
-joint. One may use the hierarchy above, a deterministic pushforward, or a
-normalized undirected compatibility factor. Reciprocal same-time influence
+A deterministic same-time parent $Z_{\ell+1}=C_\ell(Z_\ell)$ and an
+independently sampled parent that generates $Z_\ell$ are not two free
+descriptions of one joint. One may use the hierarchy above, a deterministic
+pushforward, or a normalized undirected compatibility factor. Reciprocal
+same-time influence
 requires the last option and its partition function. Delayed Wheelerian
-feedback instead lets $Z_{s+1}(t)$ parameterize the child kernel at
+feedback instead lets $Z_{\ell+1}(t)$ parameterize the child kernel at
 $t+\Delta t$; that is a dynamical extension, not a static ELBO identity.
 \status{NOT-CLAIMED}
 
@@ -149,44 +218,47 @@ $t+\Delta t$; that is a dynamical extension, not a static ELBO identity.
 
 For arbitrary directed, generally non-flat transports, define
 \begin{align}
-D_{ij}^{b,s}
-&:=\KL\left(q_{i,s}^b\middle\Vert
-(\Omega_{ij}^{b,s})_\#q_{j,s}^b\right),
+D_{ij}^{b,\ell}
+&:=\KL\left(q_{i,\ell}^b\middle\Vert
+(\Omega_{ij}^{b,\ell})_\#q_{j,\ell}^b\right),
 &
-D_{ij}^{m,s}
-&:=\KL\left(q_{i,s}^m\middle\Vert
-(\Omega_{ij}^{m,s})_\#q_{j,s}^m\right).
+D_{ij}^{m,\ell}
+&:=\KL\left(q_{i,\ell}^m\middle\Vert
+(\Omega_{ij}^{m,\ell})_\#q_{j,\ell}^m\right).
 \label{eq:full-graph-transported-divergences}
 \end{align}
-The rows $\beta_i^s$ and $\gamma_i^s$ are normalized conditional source laws.
-With external receiver occupancies $\alpha_{i,s}^b$ and
-$\alpha_{i,s}^m$, define
+Here and below the suppressed base argument is $c_*$. The edge-event laws in
+$G_\ell$ determine their receiver occupancies and normalized source rows by
 \begin{equation}
-\eta_{ij}^{b,s}=\alpha_{i,s}^b\beta_{ij}^s,
+\alpha_i^{x,\ell}:=\sum_j\eta_{ij}^{x,\ell},
 \qquad
-\eta_{ij}^{m,s}=\alpha_{i,s}^m\gamma_{ij}^s.
-\label{eq:full-graph-edge-event-laws}
+\beta_{ij}^\ell:=\frac{\eta_{ij}^{b,\ell}}{\alpha_i^{b,\ell}},
+\qquad
+\gamma_{ij}^\ell:=\frac{\eta_{ij}^{m,\ell}}{\alpha_i^{m,\ell}},
+\label{eq:full-graph-edge-event-disintegration}
 \end{equation}
+for $x\in\{b,m\}$ and positive occupancy. On a zero-occupancy row, choose a
+declared normalized version; it does not change the joint edge-event law.
 The correct energy-unit row free energies are
 \begin{align}
-\Phi_{i,s}^b
-&=\sum_j\beta_{ij}^sD_{ij}^{b,s}
-+\tau_{i,s}^b\KL(\beta_i^s\Vert\pi_i^{b,s}),
+\Phi_{i,\ell}^b
+&=\sum_j\beta_{ij}^\ell D_{ij}^{b,\ell}
++\tau_{i,\ell}^b\KL(\beta_i^\ell\Vert\pi_i^{b,\ell}),
 \nonumber\\
-\Phi_{i,s}^m
-&=\sum_j\gamma_{ij}^sD_{ij}^{m,s}
-+\tau_{i,s}^m\KL(\gamma_i^s\Vert\pi_i^{m,s}).
+\Phi_{i,\ell}^m
+&=\sum_j\gamma_{ij}^\ell D_{ij}^{m,\ell}
++\tau_{i,\ell}^m\KL(\gamma_i^\ell\Vert\pi_i^{m,\ell}).
 \label{eq:full-graph-row-free-energies}
 \end{align}
 Their conditional minimizers are
 \begin{equation}
-\beta_{ij}^{s,*}
-=\frac{\pi_{ij}^{b,s}e^{-D_{ij}^{b,s}/\tau_{i,s}^b}}
-{\sum_k\pi_{ik}^{b,s}e^{-D_{ik}^{b,s}/\tau_{i,s}^b}},
+\beta_{ij}^{\ell,*}
+=\frac{\pi_{ij}^{b,\ell}e^{-D_{ij}^{b,\ell}/\tau_{i,\ell}^b}}
+{\sum_k\pi_{ik}^{b,\ell}e^{-D_{ik}^{b,\ell}/\tau_{i,\ell}^b}},
 \qquad
-\gamma_{ij}^{s,*}
-=\frac{\pi_{ij}^{m,s}e^{-D_{ij}^{m,s}/\tau_{i,s}^m}}
-{\sum_k\pi_{ik}^{m,s}e^{-D_{ik}^{m,s}/\tau_{i,s}^m}}.
+\gamma_{ij}^{\ell,*}
+=\frac{\pi_{ij}^{m,\ell}e^{-D_{ij}^{m,\ell}/\tau_{i,\ell}^m}}
+{\sum_k\pi_{ik}^{m,\ell}e^{-D_{ik}^{m,\ell}/\tau_{i,\ell}^m}}.
 \label{eq:full-graph-gibbs-rows}
 \end{equation}
 Thus $\beta_{ij}$ and $\gamma_{ij}$ coevolve with the transported divergences.
@@ -197,9 +269,9 @@ fixed row. It is directed, depends on all competing sources through row
 normalization, diverges at zero, and need not obey a triangle inequality. At
 the Gibbs optimum the source-relative surprisal
 \begin{equation}
-\ell_{ij}^{b,s}:=-\tau_{i,s}^b
-\log\frac{\beta_{ij}^{s,*}}{\pi_{ij}^{b,s}}
-=D_{ij}^{b,s}+\tau_{i,s}^b\log Z_i^{b,s}
+\lambda_{ij}^{b,\ell}:=-\tau_{i,\ell}^b
+\log\frac{\beta_{ij}^{\ell,*}}{\pi_{ij}^{b,\ell}}
+=D_{ij}^{b,\ell}+\tau_{i,\ell}^b\log Z_i^{b,\ell}
 \label{eq:full-graph-attention-length}
 \end{equation}
 is the transported mismatch plus a row-dependent constant. Raw conductance,
@@ -207,20 +279,20 @@ a symmetrized resistance, or diffusion time is required for a genuine graph
 metric. \status{ESTABLISHED}
 
 If a scale-local prior is a normalized Gibbs law containing the self terms and
-$\sum_{ij}\eta_{ij}^{b,s}D_{ij}^{b,s}
-+\sum_{ij}\eta_{ij}^{m,s}D_{ij}^{m,s}$, those terms and the global normalizer
+$\sum_{ij}\eta_{ij}^{b,\ell}D_{ij}^{b,\ell}
++\sum_{ij}\eta_{ij}^{m,\ell}D_{ij}^{m,\ell}$, those terms and the global normalizer
 belong to the exact VFE. If they are merely appended to an already fixed
 state-level VFE, define instead
 \begin{align}
 \mathcal G_{\mathrm{composite}}
 ={}&\mathcal F_{\mathrm{population}}
-+\sum_s\sum_i\left(
-\alpha_{i,s}^b\Phi_{i,s}^b
-+\alpha_{i,s}^m\Phi_{i,s}^m\right)
++\sum_\ell\sum_i\left(
+\alpha_i^{b,\ell}\Phi_{i,\ell}^b
++\alpha_i^{m,\ell}\Phi_{i,\ell}^m\right)
 \nonumber\\
-&+\sum_s\mathcal F_{\mathrm{partition}}^s
-+\sum_s\mathcal F_{\mathrm{cross}}^s
-+\sum_s\mathcal R_{\mathrm{connection}}^s.
+&+\sum_\ell\mathcal F_{\mathrm{partition}}^\ell
++\sum_\ell\mathcal F_{\mathrm{cross}}^\ell
++\sum_\ell\mathcal R_{\mathrm{connection}}^\ell.
 \label{eq:full-graph-composite-potential}
 \end{align}
 This is a composite multiscale free-energy potential, not automatically an
@@ -229,48 +301,67 @@ evidence bound. \status{DEFINITION}
 \section{Non-flat edges and what the parent retains}
 \label{sec:full-graph-vfe-nonflat}
 
-The edge transports are not assumed flat. For an oriented cycle
-$C=e_1\cdots e_r$, let
+The edge transports are not assumed flat. Use the rooted construction of
+\Cref{sec:rg-gauge-cross-scale}: in every connected block $I$, choose a root
+$r_I$ and a rooted spanning tree, with nested choices across admitted depths.
+For $x\in\{b,m\}$, let $\tau_{I\leftarrow i}^{x,\ell}$ be the ordered tree
+transport from $i$ to $r_I$. Under endpoint frame changes $a_i^b=a_i$ and
+$a_i^m=b_i$,
 \begin{equation}
-H_C^x=\Omega_{e_r}^{x}\cdots\Omega_{e_1}^{x},
-\qquad x\in\{b,m\}.
-\label{eq:full-graph-cycle-holonomy}
+\tau_{I\leftarrow i}^{x,\ell\prime}
+=(a_{r_I}^x)^{-1}\tau_{I\leftarrow i}^{x,\ell}a_i^x.
+\label{eq:full-graph-tree-transport-law}
 \end{equation}
-Nonidentity $H_C^x$ is allowed. A holonomy-blind parent law $Q_I^x$ can be
-path independent only on the stabilized sector
+The non-tree edges define the based holonomy representation
 \begin{equation}
-(H_C^x)_\#Q_I^x=Q_I^x
-\quad\text{for every retained loop }C.
+H_I^{x,\ell}:\pi_1(\Gamma_I,r_I)\longrightarrow G,
+\qquad
+H_I^{x,\ell\prime}(\gamma)
+=(a_{r_I}^x)^{-1}H_I^{x,\ell}(\gamma)a_{r_I}^x.
+\label{eq:full-graph-based-holonomy}
+\end{equation}
+Nonidentity based holonomy is allowed. A holonomy-blind parent law
+$Q_I^{x,\ell}$ is path independent only on the stabilized sector
+\begin{equation}
+\bigl(H_I^{x,\ell}(\gamma)\bigr)_\#Q_I^{x,\ell}=Q_I^{x,\ell}
+\quad\text{for every retained based loop }\gamma.
 \label{eq:full-graph-holonomy-stabilization}
 \end{equation}
-This is not a flatness condition and it does not select $I$. If it fails, the
-exact parent must retain a root, path, holonomy representation, or boundary
-mark. \status{ESTABLISHED}
+This is not a flatness condition and does not select $I$.
 
-For blocks $I,J$, dress each microscopic edge into parent coordinates,
-\begin{equation}
-\Theta_{ij}^{IJ,x}
-=\Omega_{Ii}^{x}\Omega_{ij}^{x}\Omega_{jJ}^{x}.
+For a marked boundary edge $e:j\to i$ from block $J$ to block $I$, write
+$\Theta_e^{x,\ell}$ for its microscopic channel-$x$ transport. Its endpoint
+gauge law and its root-framed dressed boundary mark are
+\begin{align}
+\Theta_e^{x,\ell\prime}
+&=(a_i^x)^{-1}\Theta_e^{x,\ell}a_j^x,
+\nonumber\\
+V_e^{x,\ell}
+&=\tau_{I\leftarrow i}^{x,\ell}\Theta_e^{x,\ell}
+\bigl(\tau_{J\leftarrow j}^{x,\ell}\bigr)^{-1},
+\qquad
+V_e^{x,\ell\prime}
+=(a_{r_I}^x)^{-1}V_e^{x,\ell}a_{r_J}^x.
 \label{eq:full-graph-dressed-edge}
-\end{equation}
-On a non-flat graph the family
-$\{\Theta_{ij}^{IJ,x}:i\in I,j\in J\}$ need not collapse to one group
-element. Exact coarse data retains its conditional distribution or a mean
-together with a declared residual. Penalizing that residual to zero is an
-extra modeling preference, not a consequence of gauge covariance.
-\status{ESTABLISHED}
+\end{align}
+Thus $\mathsf h_\ell$ retains the simultaneous root-framed datum
+$(r_I,H_I^{x,\ell},\{V_e^{x,\ell}\})$ and its joint law. On a non-flat graph,
+the family of dressed boundary marks need not collapse to one group element.
+An exact coarse datum retains their conditional distribution; a reduced mean
+must carry a declared residual. Penalizing that residual to zero is an extra
+modeling preference, not a consequence of gauge covariance. \status{ESTABLISHED}
 
 \section{Partition variables and graph renormalization}
 \label{sec:full-graph-vfe-partitions}
 
 The weights $\beta$ and $\gamma$ do not themselves create a parent random
 variable. A hierarchy intended to emerge under the same variational principle
-must put $R_s$ inside $\mathbb P$ and $\mathbb Q$. A common finite-temperature
+must put $R_\ell$ inside $\mathbb P$ and $\mathbb Q$. A common finite-temperature
 form is
 \begin{equation}
-\mathcal F_{\mathrm{partition}}^s
-=\E_{Q_R^s}[E_{\mathrm{block}}^s(R_s;Z_s,G_s)]
-+\tau_R^s\KL(Q_R^s\Vert\Pi_R^s),
+\mathcal F_{\mathrm{partition}}^\ell
+=\E_{Q_R^\ell}[E_{\mathrm{block}}^\ell(R_\ell;Z_\ell,G_\ell)]
++\tau_R^\ell\KL(Q_R^\ell\Vert\Pi_R^\ell),
 \label{eq:full-graph-partition-free-energy}
 \end{equation}
 provided the normalized Gibbs factor represented by this expression is part
@@ -279,55 +370,114 @@ mismatch against boundary retention, evaluator closure, and residual cost.
 No canonical selector follows from the global VFE alone. \status{HYPOTHESIS}
 
 Coarse attention is obtained by pushing the joint edge-event law, not by
-averaging normalized rows. For deterministic blocks,
+averaging normalized rows. Genuine overlapping assignment requires a
+normalized membership Markov kernel
 \begin{equation}
-\eta_{IJ}^{x,s+1}
-=\sum_{i\in I}\sum_{j\in J}\eta_{ij}^{x,s},
+m_\ell(I\mid i,R_\ell)\geq0,
 \qquad
-\alpha_I^{x,s+1}=\sum_J\eta_{IJ}^{x,s+1},
-\qquad
-\beta_{IJ}^{x,s+1}
-=\frac{\eta_{IJ}^{x,s+1}}{\alpha_I^{x,s+1}},
+\sum_{I\in V_{\ell+1}}m_\ell(I\mid i,R_\ell)=1.
+\label{eq:full-graph-membership-kernel}
+\end{equation}
+When the two endpoint assignments are conditionally independent given
+$R_\ell$, the coarse directed event law is
+\begin{equation}
+\eta_{IJ}^{x,\ell+1}
+=\sum_{i,j\in V_\ell}\eta_{ij}^{x,\ell}
+\E_\mu\left[
+m_\ell(I\mid i,R_\ell)m_\ell(J\mid j,R_\ell)
+\right],
+\qquad x\in\{b,m\},
 \label{eq:full-graph-edge-pushforward}
 \end{equation}
-on positive parent occupancy. The model channel uses the same construction
-with $\gamma$. Stochastic or overlapping membership replaces indicator sums
-by expectations under $Q_R^s$. Nested application requires a composition
-theorem for membership kernels and retained marks. \status{ESTABLISHED}
+where $\mu$ is the generative, selected-posterior, or recognition input law
+being pushed through the same structural channel. When endpoint assignments
+are correlated, replace the product by a normalized joint endpoint-assignment
+kernel
+\begin{equation}
+M_\ell(I,J\mid i,j,R_\ell)\geq0,
+\qquad
+\sum_{I,J}M_\ell(I,J\mid i,j,R_\ell)=1,
+\label{eq:full-graph-joint-endpoint-kernel}
+\end{equation}
+and use
+\begin{equation}
+\eta_{IJ}^{x,\ell+1}
+=\sum_{i,j\in V_\ell}\eta_{ij}^{x,\ell}
+\E_\mu\left[M_\ell(I,J\mid i,j,R_\ell)\right].
+\label{eq:full-graph-correlated-edge-pushforward}
+\end{equation}
+The resulting $\eta_{\ell+1}$ is part of $G_{\ell+1}$, and its occupancies and
+rows are recovered by \eqref{eq:full-graph-edge-event-disintegration}. A hard
+random partition is the deterministic conditional special case
+$m_\ell(I\mid i,R_\ell)=\mathbf 1\{R_\ell(i)=I\}$. Literal unit-weight
+membership in several parents has total mass greater than one; it is
+finite-measure replication, not a probability pushforward. Arbitrary
+overlapping indicator sums therefore have no established probability status.
+
+Nested assignments must satisfy Chapman--Kolmogorov composition. In the
+single-endpoint case this means
+\begin{equation}
+m_{\ell+2\leftarrow\ell}(A\mid i,R_\ell,R_{\ell+1})
+=\sum_I m_{\ell+1}(A\mid I,R_{\ell+1})
+m_\ell(I\mid i,R_\ell),
+\label{eq:full-graph-membership-composition}
+\end{equation}
+with the analogous normalized composition
+\begin{equation}
+M_{\ell+2\leftarrow\ell}(A,B\mid i,j,R_\ell,R_{\ell+1})
+=\sum_{I,J}M_{\ell+1}(A,B\mid I,J,R_{\ell+1})
+M_\ell(I,J\mid i,j,R_\ell).
+\label{eq:full-graph-joint-membership-composition}
+\end{equation}
+when correlated endpoint kernels are used. The complete augmented structural
+channels, including retained marks, must likewise obey
+\begin{equation}
+C^{\mathrm{struct},c_*}_{\ell+2\leftarrow\ell}
+=C^{\mathrm{struct},c_*}_{\ell+2\leftarrow\ell+1}
+\circ C^{\mathrm{struct},c_*}_{\ell+1\leftarrow\ell},
+\label{eq:full-graph-structural-channel-composition}
+\end{equation}
+where the composition integrates all intermediate assignments, edge-event
+laws, and marks. Retained root, holonomy, and boundary marks must be included
+in the target of each composed channel rather than silently discarded.
+\status{ESTABLISHED}
 
 \section{How a parent influences its children}
 \label{sec:full-graph-vfe-downward}
 
-The normalized kernel $K_\downarrow^s$ supplies the cleanest static answer.
+The normalized kernel $K_\downarrow^\ell$ supplies the cleanest static answer.
 For a block $I$ with children $i\in I$, a factorization such as
 \begin{equation}
-K_\downarrow^s(dZ_s\given Z_{s+1},R_s,G_s,X)
-=\prod_{I\in V_{s+1}}K_I^s
-\left(dZ_I^s\given Z_{I,s+1},R_s,G_s,X\right)
+K_\downarrow^\ell(dZ_\ell\given Z_{\ell+1},R_\ell,G_\ell,X_*)
+=\prod_{I\in V_{\ell+1}}K_I^\ell
+\left(dZ_I^\ell\given Z_{I,\ell+1},R_\ell,G_\ell,X_*\right)
 \label{eq:full-graph-downward-kernel}
 \end{equation}
 makes the parent belief and model presentations arguments of the children's
 conditional generative prior. The corresponding term is
 \begin{equation}
-\mathcal F_{\mathrm{cross}}^s
+\mathcal F_{\mathrm{cross}}^\ell
 =\E_{\mathbb Q_\phi}
 \KL\left(
-Q_s(dZ_s\given Z_{s+1},R_s,G_s,o,X)
+Q_\ell(dZ_\ell\given Z_{\ell+1},R_\ell,G_\ell,o,X_*)
 \middle\Vert
-K_\downarrow^s(dZ_s\given Z_{s+1},R_s,G_s,X)
+K_\downarrow^\ell(dZ_\ell\given Z_{\ell+1},R_\ell,G_\ell,X_*)
 \right).
 \label{eq:full-graph-cross-scale-kl}
 \end{equation}
-Variation with respect to a parent coordinate changes the parent update;
-variation with respect to a child coordinate changes the child update. The
-optimization is bidirectionally coupled even though the normalized generative
-arrow is top-down. This is the precise static sense in which a meta-agent can
-influence its sub-agents without allowing a generative factor to read the
-posterior. \status{ESTABLISHED}
+If $K_\downarrow^\ell$ depends nontrivially on the parent coordinates and the
+parameterization transmits that dependence to the objective, variation with
+respect to a parent coordinate changes the parent update while variation with
+respect to a child coordinate changes the child update. Under those
+hypotheses, optimization is bidirectionally coupled even though the normalized
+generative arrow is top-down. A constant parent-independent downward kernel
+decouples this cross-scale term. This is the precise static sense in which a
+meta-agent can influence its sub-agents without allowing a generative factor
+to read the posterior. \status{ESTABLISHED}
 
 Calling the optimization parameter physical time requires more. Delayed
 feedback may use the inferred parent at time $t$ to modify
-$K_\downarrow^s$ at $t+\Delta t$. A same-time reciprocal factor may instead
+$K_\downarrow^\ell$ at $t+\Delta t$. A same-time reciprocal factor may instead
 be placed in a normalized Gibbs joint. Either construction needs work or flux
 accounting before it supports Wheelerian nonequilibrium. Static VFE descent
 alone proves neither sustained nonequilibrium nor downward causation in
@@ -359,7 +509,7 @@ The network-RG review identifies the last problem as open.
 The proposed synthesis is hybrid: use edge-event laws or raw conductances to
 construct a gauge-invariant multiplex graph operator; use spectral or
 Bayesian information diagnostics to propose scales and relevant directions;
-infer $R_s$ through a normalized partition factor; push the full
+infer $R_\ell$ through a normalized partition factor; push the full
 probabilistic law and edge-event measures; retain non-flat holonomy or prove
 stabilization; and measure failure of the parent family by an explicit closure
 residual. \status{HYPOTHESIS}
@@ -367,15 +517,16 @@ residual. \status{HYPOTHESIS}
 \section{The next theorem}
 \label{sec:full-graph-vfe-target}
 
-Starting at one shared $c_*\in\mathcal C$ with a finite directed multiplex
-graph $(\beta_{ij},\gamma_{ij},\Omega_{ij}^b,\Omega_{ij}^m)$, construct a
+Starting from the fixed $c_*\in\mathcal C$ with a finite directed multiplex
+datum $G_0=(\eta_0^b,\eta_0^m,\Omega_0^b,\Omega_0^m,\mathsf h_0)$, construct a
 normalized partition law and parent--child kernels such that descent of
 \eqref{eq:full-graph-vfe-global} produces persistent nested blocks, the
-pushforward rule \eqref{eq:full-graph-edge-pushforward} composes across scales,
+pushforward rules \eqref{eq:full-graph-edge-pushforward}--
+\eqref{eq:full-graph-structural-channel-composition} compose across depths,
 the parent family has a controlled closure residual, and non-flat holonomy is
 retained or stabilized without imposing flatness. Then determine whether the
 coupled variational dynamics has a separated slow manifold on which
-scale-$s+1$ variables feed back consistently into scale-$s$ kernels.
+depth-$\ell+1$ variables feed back consistently into depth-$\ell$ kernels.
 
 No current result proves that arbitrary descent from arbitrary
 $\beta,\gamma$ produces such a hierarchy. The exact VFE tells us how a

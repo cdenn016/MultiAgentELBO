@@ -179,10 +179,13 @@ lane records and the serial-integration summary are indexed by
 
 ## Theory and evidence boundary
 
-`Theory/` is a byte-matched, read-only snapshot of the Research-vault
-`manuscripts/gauge_vfe_rg` source used to type the implementation. Its precise
-revision, dirty-source caveat, and aggregate digest are recorded in
-`docs/theory-provenance.md`.
+`Theory/` began as a byte-matched snapshot of the Research-vault
+`manuscripts/gauge_vfe_rg` source used to type the implementation. It may also
+receive explicitly authorized in-repository amendments; those amendments and
+the original revision, dirty-source caveat, and aggregate digest are recorded
+in `docs/theory-provenance.md`. For the 2026-08-22 Part II remediation,
+`MultiAgentELBO/Theory` is the active authority and the Research vault was not
+modified.
 
 Passing tests establish that this code reproduces the declared deterministic
 finite fixtures and metamorphic identities. The categorical family's DQM status
@@ -203,7 +206,7 @@ src/multiagent_elbo/finite/                 exact finite probability layer
 src/multiagent_elbo/geometry/               finite relabeling metamorphics
 src/multiagent_elbo/realizations/gaussian/  Gaussian-only adapter
 src/multiagent_elbo/figures.py              pure saved-artifact renderer
-Theory/                                     frozen theory input
+Theory/                                     versioned theory source and authorized amendments
 tests/                                      literal, boundary, and integration checks
 docs/                                       design, plan, hypotheses, results, evidence
 ```
