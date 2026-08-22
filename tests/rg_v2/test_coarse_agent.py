@@ -1,13 +1,10 @@
-"""Contract tests for the recursive coarse-agent semantic boundary.
-
-Each structural mutation below names the validation it must break.  The
-fixtures use real exact channels; no constructor is mocked.
-"""
+"""Contract tests for the recursive coarse-agent semantic boundary."""
 
 from __future__ import annotations
 
 from dataclasses import FrozenInstanceError, fields
 from fractions import Fraction
+import hashlib
 import itertools
 import json
 
@@ -28,8 +25,11 @@ from rg_v2.coarse_agent import (
     RecursiveCoarseStructure,
     RecursiveObservationDatum,
     SparseRecordFactorizationSpec,
+    canonical_agent_assignment_labels,
     channel_sha256,
+    validate_coarse_structure_source_supports,
 )
+from rg_v2.contracts import AgentDatum, AgentRecognitionDatum, ExactProbabilityLaw, ModelEvaluation
 
 
 def _local_states() -> tuple[str, ...]:
@@ -50,10 +50,28 @@ def _source_support(source_agent_ids: tuple[str, ...]) -> tuple[str, ...]:
 def _block_channel(source_agent_ids: tuple[str, ...], target_labels: tuple[str, ...] | None = None) -> ExactMarkovChannel:
     targets = _local_states() if target_labels is None else target_labels
     return ExactMarkovChannel(
-        _source_support(source_agent_ids),
-        targets,
+        _source_support(source_agent_ids), targets,
         tuple((Fraction(1),) + (Fraction(0),) * (len(targets) - 1) for _ in _source_support(source_agent_ids)),
         recognition_independent=True,
+    )
+
+
+def _agent(
+    agent_id: str,
+    belief_labels: tuple[str, ...] = ("b0", "b1"),
+    model_labels: tuple[str, ...] = ("m0", "m1"),
+) -> AgentDatum:
+    state_labels = tuple(json.dumps([belief, model], separators=(",", ":")) for belief in belief_labels for model in model_labels)
+    evaluator = tuple(
+        ModelEvaluation(
+            model_label,
+            ExactMarkovChannel(("()",), belief_labels, (tuple(Fraction(1, len(belief_labels)) for _ in belief_labels),), recognition_independent=True),
+        )
+        for model_label in model_labels
+    )
+    return AgentDatum(
+        agent_id, (), belief_labels, model_labels, state_labels, evaluator,
+        ExactMarkovChannel(("()",), state_labels, (tuple(Fraction(1, len(state_labels)) for _ in state_labels),), recognition_independent=True),
     )
 
 
@@ -63,40 +81,25 @@ def _valid_structure(mutation: str | None = None) -> RecursiveCoarseStructure:
     source_a = ("a2", "a3") if reversed_order else ("a0", "a1")
     source_b = ("a0", "a1") if reversed_order else ("a2", "a3")
     spec_a = CoarseAgentSpec(
-        agent_id="A", source_agent_ids=source_a, parent_ids=(), source_context_id="fine-context",
-        belief_labels=("b0", "b1"), model_labels=("m0", "m1"),
-        state_labels=state_labels if mutation != "noncanonical_state" else tuple(reversed(state_labels)),
-        block_channel=_block_channel(source_a, ("wrong",) if mutation == "wrong_channel_target" else state_labels),
-        null_row_policy="forbid",
+        "A", source_a, (), "fine-context", ("b0", "b1"), ("m0", "m1"),
+        state_labels if mutation != "noncanonical_state" else tuple(reversed(state_labels)),
+        _block_channel(source_a, ("wrong",) if mutation == "wrong_channel_target" else state_labels), "forbid",
     )
-    spec_b = CoarseAgentSpec(
-        agent_id="B", source_agent_ids=source_b, parent_ids=("A",), source_context_id="fine-context",
-        belief_labels=("b0", "b1"), model_labels=("m0", "m1"), state_labels=state_labels,
-        block_channel=_block_channel(source_b), null_row_policy="forbid",
-    )
+    spec_b = CoarseAgentSpec("B", source_b, ("A",), "fine-context", ("b0", "b1"), ("m0", "m1"), state_labels, _block_channel(source_b), "forbid")
     observation = CoarseObservationSpec(
-        record_id="r_AB", fine_observation_labels=("fine-0", "fine-1"),
-        compound_outcome_labels=("coarse-0", "coarse-1"),
-        compound_outcome_by_fine_observation=("coarse-0", "coarse-0") if mutation == "nonbijective_observation" else ("coarse-0", "coarse-1"),
+        "r_AB", ("fine-0", "fine-1"), ("coarse-0", "coarse-1"),
+        ("coarse-0", "coarse-0") if mutation == "nonbijective_observation" else ("coarse-0", "coarse-1"),
     )
     sparse = SparseRecordFactorizationSpec(
-        left_record_ids=("r0", "r1"), right_record_ids=("r2", "r3"),
-        left_outcome_labels=("left-0", "left-1"), right_outcome_labels=("right-0", "right-1"),
-        left_outcome_by_fine_observation=("left-0",) if mutation == "incomplete_sparse_projection" else ("left-0", "left-1"),
-        right_outcome_by_fine_observation=("right-0", "right-1"),
+        ("r0", "r1"), ("r2", "r3"), ("left-0", "left-1"), ("right-0", "right-1"),
+        ("left-0",) if mutation == "incomplete_sparse_projection" else ("left-0", "left-1"),
+        ("right-0", "right-1"),
     )
     if mutation == "duplicate_source":
-        spec_b = CoarseAgentSpec(
-            agent_id=spec_b.agent_id, source_agent_ids=("a1", "a2"), parent_ids=spec_b.parent_ids,
-            source_context_id=spec_b.source_context_id, belief_labels=spec_b.belief_labels,
-            model_labels=spec_b.model_labels, state_labels=spec_b.state_labels,
-            block_channel=_block_channel(("a1", "a2")), null_row_policy=spec_b.null_row_policy,
-        )
+        spec_b = CoarseAgentSpec("B", ("a1", "a2"), spec_b.parent_ids, spec_b.source_context_id, spec_b.belief_labels, spec_b.model_labels, spec_b.state_labels, _block_channel(("a1", "a2")), spec_b.null_row_policy)
     return RecursiveCoarseStructure(
-        structure_id="two-parent", source_agent_order=("a0", "a1", "a2", "a3"),
-        coarse_agent_order=("B", "A") if reversed_order else ("A", "B"),
-        agent_specs=(spec_b, spec_a) if reversed_order else (spec_a, spec_b),
-        observation=observation, sparse_record_candidate=sparse,
+        "two-parent", ("a0", "a1", "a2", "a3"), ("B", "A") if reversed_order else ("A", "B"),
+        (spec_b, spec_a) if reversed_order else (spec_a, spec_b), observation, sparse,
     )
 
 
@@ -143,21 +146,58 @@ def test_recursive_contracts_reject_structural_mutations(mutation: str, message:
 
 
 def test_identity_access_declares_total_lossless_observation_access() -> None:
-    access = CoarseAccessSpec(
-        agent_id="A", observation_labels=("coarse-0", "coarse-1"), information_labels=("coarse-0", "coarse-1"),
-        information_by_observation=("coarse-0", "coarse-1"), access_kind="identity_observation",
-    )
+    access = CoarseAccessSpec("A", ("coarse-0", "coarse-1"), ("coarse-0", "coarse-1"), ("coarse-0", "coarse-1"), "identity_observation")
     assert access.information_by_observation == access.observation_labels
     with pytest.raises(ValueError, match="identity access must preserve every observation label"):
-        CoarseAccessSpec(
-            agent_id="A", observation_labels=("coarse-0", "coarse-1"), information_labels=("coarse-0",),
-            information_by_observation=("coarse-0", "coarse-0"), access_kind="identity_observation",
-        )
+        CoarseAccessSpec("A", ("coarse-0", "coarse-1"), ("coarse-0",), ("coarse-0", "coarse-0"), "identity_observation")
 
 
 def test_channel_hash_is_canonical_for_equal_exact_channel_values() -> None:
     channel = _block_channel(("a0", "a1"))
     copied_channel = ExactMarkovChannel(channel.source_labels, channel.target_labels, channel.matrix, recognition_independent=True)
+    payload = {
+        "target_labels": list(channel.target_labels),
+        "matrix": [[{"numerator": value.numerator, "denominator": value.denominator} for value in row] for row in channel.matrix],
+        "source_labels": list(channel.source_labels),
+        "recognition_independent": channel.recognition_independent,
+    }
+    expected = hashlib.sha256(json.dumps(payload, ensure_ascii=True, separators=(",", ":"), sort_keys=True, allow_nan=False).encode("utf-8")).hexdigest()
     assert channel is not copied_channel
-    assert channel_sha256(channel) == channel_sha256(copied_channel)
-    assert len(channel_sha256(channel)) == 64
+    assert channel_sha256(channel) == channel_sha256(copied_channel) == expected
+
+
+@pytest.mark.parametrize("mutation", ("belief", "model", "state"))
+def test_coarse_recognition_rejects_same_agent_id_with_mismatched_support(mutation: str) -> None:
+    agent = _agent("A")
+    if mutation == "belief":
+        recognition_agent = _agent("A", ("x0", "x1"))
+        recognition = AgentRecognitionDatum(recognition_agent, ExactProbabilityLaw(recognition_agent.state_labels, (Fraction(1, 4),) * 4))
+    elif mutation == "model":
+        recognition_agent = _agent("A", model_labels=("n0", "n1"))
+        recognition = AgentRecognitionDatum(recognition_agent, ExactProbabilityLaw(recognition_agent.state_labels, (Fraction(1, 4),) * 4))
+    else:
+        recognition = AgentRecognitionDatum(agent, ExactProbabilityLaw(agent.state_labels, (Fraction(1, 4),) * 4))
+        object.__setattr__(recognition, "state_labels", tuple(reversed(agent.state_labels)))
+    kernel = ExactMarkovChannel(("information",), agent.state_labels, ((Fraction(1, 4),) * 4,), recognition_independent=True)
+    with pytest.raises(ValueError, match="initial recognition supports must equal coarse agent supports"):
+        CoarseRecognitionDatum(agent, recognition, kernel, "0" * 64)
+
+
+def test_source_support_validator_rejects_missing_or_substituted_fine_state() -> None:
+    structure = _valid_structure()
+    source_agents = tuple(_agent(agent_id) for agent_id in structure.source_agent_order)
+    validate_coarse_structure_source_supports(structure, source_agents)
+    assert canonical_agent_assignment_labels(source_agents[:2]) == structure.agent_specs[0].block_channel.source_labels
+    spec = structure.agent_specs[0]
+    missing_channel = ExactMarkovChannel(spec.block_channel.source_labels[:-1], spec.block_channel.target_labels, spec.block_channel.matrix[:-1], recognition_independent=True)
+    missing_spec = CoarseAgentSpec(spec.agent_id, spec.source_agent_ids, spec.parent_ids, spec.source_context_id, spec.belief_labels, spec.model_labels, spec.state_labels, missing_channel, spec.null_row_policy)
+    missing_structure = RecursiveCoarseStructure(structure.structure_id, structure.source_agent_order, structure.coarse_agent_order, (missing_spec, structure.agent_specs[1]), structure.observation, structure.sparse_record_candidate)
+    substituted_labels = list(spec.block_channel.source_labels)
+    substituted_labels[0] = substituted_labels[0].replace('"b0"', '"other"', 1)
+    substituted_channel = ExactMarkovChannel(tuple(substituted_labels), spec.block_channel.target_labels, spec.block_channel.matrix, recognition_independent=True)
+    substituted_spec = CoarseAgentSpec(spec.agent_id, spec.source_agent_ids, spec.parent_ids, spec.source_context_id, spec.belief_labels, spec.model_labels, spec.state_labels, substituted_channel, spec.null_row_policy)
+    substituted_structure = RecursiveCoarseStructure(structure.structure_id, structure.source_agent_order, structure.coarse_agent_order, (substituted_spec, structure.agent_specs[1]), structure.observation, structure.sparse_record_candidate)
+    with pytest.raises(ValueError, match="block channel source labels must equal declared source-agent support"):
+        validate_coarse_structure_source_supports(missing_structure, source_agents)
+    with pytest.raises(ValueError, match="block channel source labels must equal declared source-agent support"):
+        validate_coarse_structure_source_supports(substituted_structure, source_agents)

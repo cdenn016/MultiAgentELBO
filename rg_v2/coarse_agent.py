@@ -22,7 +22,7 @@ from rg_v2.contracts import (
 
 
 def _canonical_json(value: object) -> str:
-    return json.dumps(value, ensure_ascii=True, separators=(",", ":"), allow_nan=False)
+    return json.dumps(value, ensure_ascii=True, separators=(",", ":"), sort_keys=True, allow_nan=False)
 
 
 def _require_identifier(value: str, *, field: str) -> None:
@@ -343,6 +343,12 @@ class CoarseRecognitionDatum:
             raise TypeError("coarse recognition requires an AgentDatum and AgentRecognitionDatum")
         if self.initial_recognition.agent_id != self.agent.agent_id:
             raise ValueError("initial recognition must belong to the coarse agent")
+        if (
+            self.initial_recognition.belief_labels != self.agent.belief_labels
+            or self.initial_recognition.model_labels != self.agent.model_labels
+            or self.initial_recognition.state_labels != self.agent.state_labels
+        ):
+            raise ValueError("initial recognition supports must equal coarse agent supports")
         if not isinstance(self.recognition_kernel, ExactMarkovChannel):
             raise TypeError("recognition kernel must be an ExactMarkovChannel")
         if self.recognition_kernel.target_labels != self.agent.state_labels:
